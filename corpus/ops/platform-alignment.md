@@ -552,6 +552,42 @@ Rules, in order of how often they actually catch something:
     newly-written rule violated it while writing it**, which is evidence that a hand-applied discipline does
     not survive a corpus of this size.
 
+21. **Classify a residual by the CHEAPEST INSTRUMENT that would catch each finding — before concluding it is
+    irreducible.** Rule 20 gets you the induced *rate* and offers three exits: a fence, a narrower clause, or
+    an accepted bounded residual. **Which of the three is available is decided by the induced findings'
+    KIND, and a rate cannot tell you that.** A count is an aggregate, and an undifferentiated count invites
+    an undifferentiated remedy — repair harder, or give up on the target.
+
+    M257x iter-42 re-read the same 18 blockers iter-41 had escalated on, taking each row's class from the
+    ledger's own *"what is true"* column, and asked one question per row: *what is the least expensive thing
+    that could have caught this?* The answer split them **13 / 3 / 2** —
+
+    - **13: the corpus contradicting ITSELF** — a twin site inside the same repository already states the
+      opposite, five of them within a few lines *in the same file*. Detectable with **no ground-truth read
+      at all**.
+    - **3:** an anchor that **resolves but names the wrong construct** — the right line, the wrong function
+      or table row. The existing anchor check proves a line *exists*; it never asks whether the line *says
+      the thing*.
+    - **2:** a derived scalar contradicting source with no corpus twin (a version string, a memory limit).
+
+    And the same cut applied to the **induced** half was decisive: **8 of the 9 repair-induced findings were
+    the single self-contradiction class** — a claim repaired at one site and left standing at another.
+
+    > **A ~50% induction rate is a property of the repair method, not a law about corpora — and homogeneity
+    > is what makes mechanization available.** Had the induced half been nine different kinds of wrong, no
+    > fence could reach it and rule 20's pessimism would stand. Because it was one mechanical class, the
+    > fence exit opened. **A rate says *stop*; a class says *what to build*.**
+
+    Two corollaries worth carrying:
+
+    - **The self-contradiction class is the cheapest one in any corpus, and almost nobody checks it** — it
+      needs no access to the system being documented, only the documentation. If a corpus has been repaired
+      more than once, look here first.
+    - **The fixture is perishable.** A corpus carrying a known, anchored, independently re-verified answer
+      key exists exactly once; repairing it destroys the only thing that can falsify the fence you are
+      building to protect it. **Build the fence and watch it go RED before the repair, not after** (§8, and
+      rule 8 — a check that SKIPS reads exactly like a check that PASSES).
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

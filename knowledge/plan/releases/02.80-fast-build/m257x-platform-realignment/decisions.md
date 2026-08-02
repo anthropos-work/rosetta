@@ -356,3 +356,147 @@ reported without measuring.
 claim would be false about three iters and eight RF items. This is the second consecutive cap accepted
 without stabilization; a third should be read as a signal about the harden cadence itself, not about the
 milestone's test debt.
+
+---
+
+## TOK-02: fence the prose the way the anchors are fenced — 2026-08-02
+
+**Tok type:** triggered (session-terminating) — but **user-directed**, not fired by the 3-no-prog streak.
+The metric moved at iter-41 (`37 → 18`). The user directed a strategy review after **40 consecutive tiks on
+TOK-01 with no revision**, in substance: *address the slowdowns encountered and soften them, or accelerate
+progress in any case.*
+
+**Prior strategy:** [`TOK-01: instrument first, then follow`](#tok-01-instrument-first-then-follow--2026-07-31)
+— *build the instrument before doing the work, and derive every list from the platform instead of
+maintaining it by hand.* Authored at iter-01, never revised, and **it has worked**: the derived migration
+tuple (iter-02), the derived section coverage (iter-08), the derived replay schema (iter-07), the derived
+schema-probe list (iter-05) each ended a recurrence permanently, and **clauses 1, 2, 3 and 4 are all held on
+fences that were watched going RED before they were trusted.**
+
+**Why it stopped working — and it is one clause, not the whole strategy.** Clause 5 is the single surface
+where the milestone **reverted to hand-maintenance**, and it is the single clause still open. Six passes,
+`25 → 13 → 11 → 17 → 37 → 18`, of which iter-39 proved the first five measured *the instruments* and
+iter-41 — holding the instrument fixed on every knob, the first controlled comparison in the series —
+measured the corpus for real and found the residual **halving but not approaching zero**, with
+**9 of 18 manufactured by the repair that preceded it.** Two further regularities, both measured:
+
+- **In two consecutive iterations the author of a newly-written rule violated it while writing it**
+  (iter-40's rule 19; iter-41's `D-M257x-41-2`), and iter-40's hand sweep — run by the rule's own author,
+  with a mandatory post-condition re-grep — had a **27% miss rate**.
+- **For five consecutive passes every `file:line` anchor a sweep introduced resolved correctly** — ~110
+  across 91 hunks, zero failures. **The anchors are clean because a machine checks them on every pass.**
+
+Hand-applied discipline has measurably stopped scaling at this corpus's size. That is not a discipline
+problem to be solved with more discipline.
+
+### The measurement that decides the revision
+
+The 18 were never homogeneous. Classified by **the cheapest instrument that could have caught each**, taken
+row-by-row from iter-41's own `blocker-ledger.md`:
+
+| class | n | instrument |
+|---|---|---|
+| **the corpus contradicts ITSELF** — a twin site in the corpus already states the opposite | **13** | a claim-twin fence. **No platform read needed** |
+| the anchor resolves but names the **wrong construct** (right line, wrong function/row) | **3** | a symbol-aware anchor check |
+| a derived scalar vs platform source with no corpus twin (`go.mod` 1.26 vs "1.25"; `locals.tf` 128 MB vs "256") | **2** | a value fence |
+
+**13 of 18 are the corpus disagreeing with itself** — not with the platform — and in five cases with another
+sentence **in the same file, within a few lines** (`:102-103`, `:69`, `:202`, `:174-176`, `:458`).
+
+**And it names the mechanism of the induced half: of the 9 repair-induced blockers, 8 are
+self-contradiction.** Every one is the same shape — a claim repaired at one site and left standing at
+another: *"added the twin row, left this one"*, *"fixed one twin row, not the other"*, *"the contradiction
+is inside its own text"*, *"a blockquote spliced into a bullet list"*. So iter-41's conclusion is right about
+the arithmetic and incomplete about the cause: **the injected defects are overwhelmingly ONE mechanical
+class, and it is precisely the class a machine can check while knowing nothing about the platform.**
+
+Second measurement: **at least 4 of the 18 are RETURNING claims** — restatements of a claim a prior pass
+already adjudicated and recorded a verdict for (#12 `:5050`, swept at 8 sites by iter-40 and missed *inside*
+clause-5 scope; #18 the retracted EU-first ladder, still published verbatim; #5 the tenancy fence, wrong a
+**fifth** time; #7 a retraction contradicting `platform-migration-status.md:86`, the corpus's own
+machine-fenced SoT, linked by the very section that contradicts it). **Nothing checks whether a refuted
+claim has come back.** The verdicts exist, anchored, in five blocker-ledgers (iters 33/34/38/39/41).
+
+**Stated weakness.** The ledger names each twin because a human found it; a fence must find it *without
+being told*. Not fatal — that direction is **proven manually**: iter-40 swept 8 adjudicated claims tree-wide
+by grep and its post-condition re-grep found 3 more sites. The mechanism works; the hand is what fails at it.
+
+### Revised strategy — apply TOK-01's own principle to the one surface it was never applied to
+
+Ordered, and the order is forced by dependency, not preference:
+
+1. **Build the claim-twin fence** — `CHECK-M257x-iter33-derived-fact-fence`, finally cut correctly. **Not a
+   general fact-checker** (impossible, and never the route). A **claim ledger**: one row per adjudicated
+   claim = `{id, canonical verdict, the refuted form(s) as matchable patterns, the source citation}`,
+   **DERIVED from the five existing blocker-ledgers** — §5 rule 19's list-derivation clause already mandates
+   deriving the claim list from the prior pass's ledger and never by hand. The fence greps the **whole
+   tree** — `corpus/**`, `.claude/skills/**`, `CLAUDE.md` — and goes RED naming `file:line`. Scope is
+   tree-wide from the start because iter-40 measured that **100% of a repair's surviving claim sites pool
+   immediately outside its boundary.**
+2. **Make the fence a POST-CONDITION of every repair, not a later audit.** This is the change that attacks
+   the dominant cost term. Today: repair → hand adversarial pass → the next full read finds what both
+   missed. Under the revision the 8-of-9 induced class **cannot survive the commit**. The hand adversarial
+   pass stays — it found real defects five times running — but stops being the only line of defence.
+3. **Add the two small mechanical fences the classification names**, closing 5 more of the 18: a **markdown
+   structure lint** (a blockquote spliced into a bullet list, an orphaned list member, a doubled word — #6
+   and iter-38's *"The The"* are pure mechanical damage), and a **symbol-aware anchor check** (#13 `:447` is
+   a table *header row*, #16 `:815` is `}))` in the wrong function, #17 `:604` wires 1 of 4 domains). The
+   existing check proves a line **exists**; it never asks whether the line **says the thing**.
+4. **Then repair the 18 once, fence-assisted** — by CLAIM not by FILE (§5 rule 19), tree-wide, with the
+   fence as the commit post-condition.
+5. **Then ONE full 7-auditor read, instrument held fixed at iter-41's** — same seven auditors, same
+   briefing, same partition method, all 40 files top-to-bottom. **That reading is what meets or fails
+   clause 5.** Nothing else does.
+
+**What this revision explicitly does NOT do**, each because the milestone has already measured why:
+- **It does not weaken the audit instrument.** iter-38 measured that narrowing to the high-density files
+  would have found 11 of 17; iter-21 is the precedent for a scoped audit converging on a number a full read
+  then multiplied by five. A cheaper instrument yields an uncomparable number.
+- **It does not re-cut clause 5, or narrow it, or read "met" any other way.** The user has ruled. Only a
+  pass returning zero meets it.
+- **It does not defer the residual to a future milestone.** The 18 are repaired here, at step 4.
+- **It does not replace TOK-01.** It *extends* it. Every fence TOK-01 built is kept and still holds clauses
+  1–4.
+
+**On the other measured slowdowns:**
+- **The hand-off tax** (17 consecutive hand-offs refuted or materially corrected). Do **not** cheapen the
+  re-derivation — it works, and it caught real errors every time. Cheapen the thing being handed: a hand-off
+  whose claims already sit in a machine-checkable ledger costs a *fence run*, not a re-derivation. **The
+  claim ledger is also the hand-off format.**
+- **Budget exit every ~2 tiks / re-orientation cost.** A fence is written once and runs forever; the current
+  repair method pays its full cost every pass. It also makes an interrupted run cheap to resume — the ledger
+  plus fence state is the resumption point, not a narrative.
+
+**Pre-registered, so it can be refuted.** iter-41's projection on the *current* method: a seventh pass
+repairs 18, induces ~9, measures **9–15**. The revision attacks the induced term specifically. **Prediction:
+the reading at step 5 returns fewer than 9.** This is a prediction and not a result; four consecutive passes
+refuted their own predictions, and iter-41's held only once the instrument was held fixed.
+
+**Strategy class:** `retry-with-evidence` — TOK-01's derive-and-fence principle, retried on the one surface
+it was never applied to, now with the measurement (13 of 18 self-contradiction; 8 of 9 induced) that says it
+applies there. It is a continuation, not a reversal.
+
+**Distance-to-gate context:** **4 of 5.** Clauses 1, 2, 3, 4 hold; clause 5 at **18**, fully anchored and
+ready as `FIX-M257x-iter41-blocker-set`. Late-milestone, so diminishing returns are expected — but the
+per-pass return has been *negative-adjusted* by the induced term rather than merely small, which is why the
+revision targets induction rather than throughput. **One conjunction risk to watch:** the gate is an AND
+over five clauses and four are already held. Steps 1–3 add **offline guard/test code only**, on no runtime
+path, so clauses 1/2/4 should be undisturbed by the re-pin — **should be, and that must be verified rather
+than assumed** when the pin moves.
+
+**Next-tik direction:** **iter-43 = `FENCE-M257x-iter42-claim-twin`.** Derive the claim ledger from the five
+blocker-ledgers (never by hand), build the fence, and **watch it go RED on today's corpus** — it must fire on
+the ≥4 known returning claims and on the self-contradiction blockers whose twin is nameable — then GREEN.
+**Do not repair in the same tik.** Today's 18-defect corpus is the fence's only test fixture with a known
+answer key, and it is **perishable**: repair first and the fence can only ever be tested against a corpus
+nobody has measured. This is TOK-01's own rule 3 — *land the fences, each watched going RED, before trusting
+any green* — applied to clause 5.
+
+**Harden recommendation (the orchestrator spawns it, not this iteration):** **run it after iter-43, not
+before.** 14 tiks have closed since the pass-6 window (iters 28–41) against a threshold of 10, so it is
+overdue — but the window is dominated by the clause-5 **reading** iters (33, 34, 38, 39, 41), which ship
+almost no code and are the same cheapest-and-plausibly-empty shape the second `HARDEN-CAP-ACCEPTED` recorded
+for iters 17/19/26. iter-43 ships new guard code, which is exactly the material a harden pass should sweep.
+Noting the counter-argument honestly: two consecutive passes have already closed **un-stabilized**, and that
+ledger entry says a third *"should be read as a signal about the harden cadence itself, not about the
+milestone's test debt."*
