@@ -588,6 +588,50 @@ Rules, in order of how often they actually catch something:
       building to protect it. **Build the fence and watch it go RED before the repair, not after** (§8, and
       rule 8 — a check that SKIPS reads exactly like a check that PASSES).
 
+22. **A FROZEN instrument is not a PRECISE instrument — measure the reading's own variance before you
+    believe any single reading, especially one that returns zero.** Rules 18/20/21 all decompose a residual
+    into a corpus term and an induced term. That arithmetic is sound. What it silently assumes is that the
+    reading *measures* the corpus term — and a reading performed by auditors, however carefully specified,
+    is an instrument with a variance of its own.
+
+    M257x froze its instrument at iter-41 and never touched a knob again: seven seats, one briefing, one
+    size-sorted partition, every file read top-to-bottom under a per-file `wc -l` positive control, plus an
+    adversarial diff seat. Three readings were then taken with it, on a corpus changing only by the repairs
+    between them: **18 → 7 → 12.**
+
+    **iter-47 read 40 files with seven seats and reported the pre-existing residual as ZERO** — all 7 of its
+    findings induced by the repair before it — and concluded the corpus term had converged. **iter-48 read
+    the same 40 files with the same instrument and booked 12, of which 10 were NOT induced and 7 predated
+    the milestone entirely**, authored between four and five months earlier. Those seven sat, unchanged, in
+    seats' own assigned file sets during the reading that reported zero. One was a NOT NULL + UNIQUE +
+    undefaulted column missing from a documented "minimal write-set" — a passage iter-47 **read and booked
+    as a MINOR**.
+
+    > **The run-to-run variance of the frozen instrument (±5) was larger than the residual it was being
+    > used to measure (7). At that point the reading is not measuring the corpus; the corpus is inside the
+    > reading's error bar.**
+
+    Three consequences, and the third is the one that changes what you do:
+
+    - **A zero is the least trustworthy reading, not the most.** Every other value is corroborated by the
+      findings it names; a zero names nothing and is equally consistent with a clean corpus and a poor
+      pass. Treat it as a hypothesis requiring a second independent reading, never as a closed gate.
+    - **"Every better instrument found more" is a warning, not progress.** A series that rises whenever the
+      instrument sharpens (`25 → 13 → 11 → 17 → 37 → 18 → 7 → 12` here, with the jumps at each instrument
+      change) has not been measuring the corpus — it has been measuring reach. Rule 21's classification
+      tells you what to build; this rule tells you when to stop believing the count.
+    - **Do not write an exit gate as "a reading returns zero" for a reading whose variance you have not
+      measured.** It is unreachable-by-construction whenever variance exceeds the residual, and it rewards
+      the pass that happens to read least well. Gate instead on something with a floor of zero *by
+      construction* — no finding of the classes the fences claim to cover, or two consecutive readings
+      agreeing within a declared bound. **Measure the variance FIRST, by reading the same tree twice with
+      no repair between; that is a cheap experiment and this milestone paid eight passes to learn it.**
+
+    The corollary to rule 21's *fixture is perishable*: **capture the answer key of a reading that
+    contradicts an earlier reading, even when — especially when — nothing will be repaired from it.** It is
+    the only artifact that can support the claim *a full multi-auditor pass missed these while they sat in
+    its own file sets*, and that claim is about the method, which outlives the corpus.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
