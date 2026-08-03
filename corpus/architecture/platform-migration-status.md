@@ -12,10 +12,17 @@ below rejects it.
 service that enters or leaves the clone set without a row here turns the guard RED. That is the whole point:
 this file is *allowed* to be out of date only for as long as it takes CI to say so.
 
-> **Measured 2026-08-01 against platform origin HEAD [`2adcf71`](https://github.com/anthropos-work/platform)**
-> ("Merge pull request #23 … chore/drop-wundergraph", 2026-07-31), with every peer repo's clone verified
-> `behind=0` versus its own origin. Re-run [§4 of the protocol](../ops/platform-alignment.md#4--detection--six-signals-cheapest-first)
+> **Re-measured 2026-08-03 against platform origin HEAD [`ef32d4c`](https://github.com/anthropos-work/platform)**
+> ("Merge pull request #24 … chore/prune-merged-services", 2026-08-03). First measured 2026-08-01 at
+> `2adcf71`. Re-run [§4 of the protocol](../ops/platform-alignment.md#4--detection--six-signals-cheapest-first)
 > before trusting any row older than a release.
+>
+> **`2adcf71 → ef32d4c` moved three rows**, and the fence in [§4](#4-the-fence) found it — direction B, three
+> departures, unprompted, on a tree nobody had touched. `d11a403` deletes the **cms**, **jobsimulation** and
+> **roadrunner** compose services *and* their `repos.yml` entries: those three are now decommissioned locally
+> and are no longer cloned by `make init`. **This is the removal [§5](#5-what-this-map-says-about-the-program)
+> named as the one that arms the failure this milestone exists to fence** — it landed under
+> `chore/prune-merged-services`, ahead of the M810 it was expected to wait for.
 
 ---
 
@@ -31,15 +38,17 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 | `external` | third-party or separately-deployed; never in the local Go clone set |
 | `library` | imported as a private Go module, never a process |
 
-**Two traps this table exists to keep straight** (both live at `2adcf71`):
+**Two traps this table exists to keep straight:**
 
 - **`migrations: false` entails nothing on its own.** `sentinel` is `migrations: false` *and* alive *with its
   own `sentinel` schema* (`docker-compose.yml:18`, `search_path=sentinel`). Read the `prod` and
-  `fresh local stack` columns, never the flag alone.
-- **The declared topology and the actual topology disagree by design.** `repos.yml:14-31` calls cms /
-  jobsimulation / roadrunner *"legacy — folded into app"*, while `docker-compose.yml` still defines all three
-  **in the default `graphql` profile** — so a fresh local stack still starts them. Docs merged, compose
-  deferred.
+  `fresh local stack` columns, never the flag alone. Live at `ef32d4c`.
+- **Absent from `repos.yml` no longer means "never was a service".** Until `d11a403` the declared topology
+  and the actual one disagreed — `repos.yml` called cms / jobsimulation / roadrunner *"legacy"* while compose
+  still started all three. `d11a403` closed that gap by deleting both sides at once, so the three now look
+  exactly like `skiller` and `skillpath`: no row in `repos.yml`, no compose service, **repo still on GitHub as
+  the pre-merge reference**. The clone set is therefore no longer a census of what the platform has ever run —
+  which is what this file is for.
 
 ---
 
@@ -58,30 +67,30 @@ return that has no row is a gap.
 | repo | prod | fresh local stack | in `repos.yml` | evidence |
 |---|---|---|---|---|
 | `app` | live-standalone | live-standalone | yes | the monolith. `app/terraform/main.tf:44` `service_desired_count = 1`; **the only migrating repo** — `repos.yml:10-13` (`migrations: true`, `schema: public`); compose service is named `backend` (`docker-compose.yml:28`). Owns four domains in-process, each with **its own** wiring call site — skiller `app/main.go:573`, jobsimulation `:604`, skillpath `:634`, cms `:1034` (`app/internal/{cms,jobsimulation,skiller,skillpath}/`, `app` @ `5ba17044` v1.363.2). An earlier revision attached `:604` alone to all four, where it wires jobsimulation only; corrected M257x iter-46. **`app/internal/roadrunner/` does not exist** — the Judge0 runner was absorbed as `app/internal/jobsimulation/runner/`, constructed at `app/internal/jobsimwiring/wiring.go:118` (`jsrunner.NewRunnerManager(JUDGE0_API_KEY, JUDGE0_BASE_URL)`) |
-| `cms` | merged-into-app | running_but_unfederated | yes | `cms/terraform/main.tf:39` `service_desired_count = 0`; code in `app/internal/cms/`; folded by platform `236771f` (2026-07-29, cms-in-app v8.0) — **but** `docker-compose.yml:144` still defines the service in the default `graphql` profile, and `repos.yml:14-16` marks it `migrations: false # legacy`. Repo **not** archived |
-| `jobsimulation` | merged-into-app | running_but_unfederated | yes | `jobsimulation/terraform/main.tf:40` `service_desired_count = 0`; code in `app/internal/jobsimulation/`, wired unconditionally at `app/main.go:604` (`jobsimwiring.Wire`); tables re-created in `public`; folded by platform `236771f`. Container still starts (`docker-compose.yml:83`). **Repo ARCHIVED on GitHub 2026-07-31** |
-| `roadrunner` | live-standalone | running_but_unfederated | yes | **contradiction, recorded not resolved:** `repos.yml:29-31` says *"legacy — folded into app; backend calls Judge0 directly"*, while `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` — that file has not been touched since `87d8d44` (2026-06-19), before the fold. Container still starts (`docker-compose.yml:281`). Repo **not** archived |
-| `sentinel` | live-standalone | live-standalone | yes | `sentinel/terraform/main.tf:19` `= 1`; `docker-compose.yml:5`, own `sentinel` schema via `search_path=sentinel` (`:18`) **despite `migrations: false`** (`repos.yml:20-22`) — the Trap-A row |
-| `storage` | live-standalone | live-standalone | yes | `storage/terraform/main.tf:19` `= 1`; `docker-compose.yml:189`; `repos.yml:23-25`. **Named as the next fold** — `app` PR #1103 (v9.0 "support-in-app") folds storage + messenger |
-| `messenger` | live-standalone | live-standalone (opt-in profile) | yes | `messenger/terraform/main.tf:19` `= 1`; `docker-compose.yml:240`, `messenger` profile — not started by the default `graphql` profile; `repos.yml:26-28`. Also in the v9.0 fold |
-| `next-web-app` | external (Vercel) | live-standalone | yes | `repos.yml:34-36`; `docker-compose.yml:344` (`frontend` profile). Points at `backend` directly since the router drop — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=…:8082/graphql/query` (`docker-compose.yml:352`) |
-| `studio-desk` | live-standalone | live-standalone | yes | `repos.yml:37-39`; `docker-compose.yml:311` (`studio-desk` profile) |
+| `cms` | merged-into-app | decommissioned | no | `cms/terraform/main.tf:39` `service_desired_count = 0`; code in `app/internal/cms/`; folded by platform `236771f` (2026-07-29, cms-in-app v8.0). **Compose service and `repos.yml` entry both deleted by `d11a403`** (merged `ef32d4c`, 2026-08-03) — `make init` no longer clones it. Repo **not** archived; `repos.yml:9-10` names infrastructure's `services.tf` as the prod rollback path until M810 |
+| `jobsimulation` | merged-into-app | decommissioned | no | `jobsimulation/terraform/main.tf:40` `service_desired_count = 0`; code in `app/internal/jobsimulation/`, wired unconditionally at `app/main.go:604` (`jobsimwiring.Wire`); tables re-created in `public`; folded by platform `236771f`. **Compose service and `repos.yml` entry both deleted by `d11a403`.** **Repo ARCHIVED on GitHub 2026-07-31** |
+| `roadrunner` | live-standalone | decommissioned | no | **Compose service and `repos.yml` entry both deleted by `d11a403`** — whose message states the clone entry *"was already gone, so the `../roadrunner` build context could no longer resolve"*, i.e. the service had been unbuildable, not merely legacy. Judge0 is reached directly: `JUDGE0_BASE_URL` moved onto `backend` (`docker-compose.yml:56`) for `app/internal/jobsimulation/runner/` (`app/internal/jobsimwiring/wiring.go:118`). **The prod contradiction is now explained but still not verified:** `roadrunner/terraform/main.tf:19` remains `service_desired_count = 1`, untouched since `87d8d44` (2026-06-19), while `repos.yml:9-10` says the authoritative rollback declaration lives in **infrastructure's `services.tf`** — a repo this map has never read. Repo **not** archived |
+| `sentinel` | live-standalone | live-standalone | yes | `sentinel/terraform/main.tf:19` `= 1`; `docker-compose.yml:5`, own `sentinel` schema via `search_path=sentinel` (`:18`) **despite `migrations: false`** (`repos.yml:15-17`) — the Trap-A row |
+| `storage` | live-standalone | live-standalone | yes | `storage/terraform/main.tf:19` `= 1`; `docker-compose.yml:90`; `repos.yml:18-20`. **Named as the next fold** — `app` PR #1103 (v9.0 "support-in-app") folds storage + messenger |
+| `messenger` | live-standalone | live-standalone (opt-in profile) | yes | `messenger/terraform/main.tf:19` `= 1`; `docker-compose.yml:141`, `messenger` profile (`:178`) — not started by the default `graphql` profile; `repos.yml:21-23`. **The only surviving service that still talks to cms/jobsimulation as RPC peers**, and `d11a403` repointed both edges at the monolith: `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR` now read `http://backend:8083` (`docker-compose.yml:159`, `:161`) instead of the dead `cms:8091` / `jobsimulation:8401`, because `messenger/cmd/root.go:120-140` genuinely reads all four addrs and `backend` registers `CMSService` + `JobSimulationService` on its own mux. Also in the v9.0 fold |
+| `next-web-app` | external (Vercel) | live-standalone | yes | `repos.yml:26-28`; `docker-compose.yml:211` (`frontend` profile, `:236`). Points at `backend` directly since the router drop — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=…:8082/graphql/query` (`docker-compose.yml:228`) |
+| `studio-desk` | live-standalone | live-standalone | yes | `repos.yml:29-31`; `docker-compose.yml:180` (`studio-desk` profile, `:209`) |
 | `graphql-wundergraph` | live-standalone | decommissioned | no | **the router, dropped from local dev mid-milestone.** Deleted from `repos.yml` **and** compose by `b56d731` + `360efd4`, merged `2adcf71` (2026-07-31); local dev now points at `backend`. In prod it is still declared — `graphql-wundergraph/terraform/main.tf:20` `= 1` — while the **repo is ARCHIVED on GitHub 2026-07-30**. Supergraph is **one** subgraph: `supergraph-config-prod.yaml` lists `backend` alone, `schemas/` holds `backend.graphqls` alone, `subgraphs.conf` = `BACKEND=v1.360.0` (folded by `915da06`, 2026-07-29) |
 | `skiller` | merged-into-app | decommissioned | no | removed from compose + `repos.yml` by platform `21429b7` (2026-07-07); code in `app/internal/skiller/`; taxonomy data in `public`. **Repo ARCHIVED 2026-07-01** |
 | `skillpath` | merged-into-app | decommissioned | no | decommissioned by platform `a4db680` (2026-07-21, M507); code in `app/internal/skillpath/`; session state in `public.skill_path_sessions`. **Repo ARCHIVED 2026-07-31** |
 | `chronos` | decommissioned | decommissioned | no | removed from orchestration by platform `045857c` (2026-04-17). **Repo is NOT archived on GitHub** (last push 2026-04-23) — the corpus called it archived; the org disagrees |
 | `intelligence` | decommissioned | decommissioned | no | removed from orchestration by platform `fdfa189` (2026-04-17). **Repo ARCHIVED 2026-04-02** |
-| `customerio-sync` | live-standalone | live-standalone (opt-in profile) | no | never cloned — compose builds it straight from the git URL (`docker-compose.yml:220-222`, `context: git@github.com:anthropos-work/customerio-sync.git#main`), `customerio-sync` profile (`:238`) |
-| `db-backup` | live-standalone | — | no | production-only; no compose service and no `repos.yml` entry at `2adcf71` |
+| `customerio-sync` | live-standalone | live-standalone (opt-in profile) | no | never cloned — compose builds it straight from the git URL (`docker-compose.yml:121-123`, `context: git@github.com:anthropos-work/customerio-sync.git#main`), `customerio-sync` profile (`:139`) |
+| `db-backup` | live-standalone | — | no | production-only; no compose service and no `repos.yml` entry at `ef32d4c` |
 | `anthropos-studio-room` | merged-into-app | merged-into-app | no | the Python generation pipeline is pulled into the `app` image by CI and orchestrated from `app/internal/cms/studio/`, which spawns it as a subprocess. Not a deployment, not in `repos.yml`. **The repo name is `anthropos-studio-room`, not `studio-room`** |
 | `ant-academy` | external (Vercel) | external | no | deliberately absent from `repos.yml` — run natively, never containerised |
-| `gotenberg` | external | live-standalone | no | third-party image, `docker-compose.yml:371-372` (`gotenberg/gotenberg:8`) |
+| `gotenberg` | external | live-standalone | no | third-party image, `docker-compose.yml:238-239` (`gotenberg/gotenberg:8`), default `graphql` profile (`:251`) |
 | `colony` | library | library | no | private Go module (framework + `colony/authn`); pulled at Docker build via `GH_PAT`/`GOPRIVATE`, never cloned by `make init` |
 | `proto` | library | library | no | private Go module — RPC contracts + domain types |
 | `ai` | library | library | no | private Go module — the multi-provider `ai.AI` wrapper |
 | `authn` | library | library | no | legacy standalone module; the live copy ships **inside** colony as `colony/authn` |
 | `taxonomy` | library | library | no | private Go module — the `NodeID` type only. **Not** the 60K-skill dataset, which lives in `app`'s `public` schema |
-| `postgresql` | external | external | no | the shared database. Not in `docker-compose.yml` at all — it lives in the **included** `common.yml:2` (`docker-compose.yml:1-2`, `include: - common.yml`), which is why a top-level grep of the compose file finds no database |
+| `postgresql` | external | external | no | the shared database. Not in `docker-compose.yml` at all — it lives in the **included** `common.yml:2` (`docker-compose.yml:1-2`, `include: - common.yml`), which is why a top-level grep of the compose file finds no database. Its healthcheck gained a `start_period: 120s` at `6060315` (`common.yml:22`) because permission re-application on a grown data dir outlasted the 25 s the retries allowed — a **bring-up-timing** change, so any cold-cycle timing baseline taken before `ef32d4c` is measuring a different startup contract |
 | `redis` | external | external | no | `common.yml:20`. Streams transport for the Watermill pub/sub |
 | `directus` | external | external | no | the headless CMS at `content.anthropos.work`. **Removed from compose** at `a2a3ee6` (2026-02-27); a local stack gets its own only via rext's `--local-content` cutover, never from the platform repo |
 | `chromedp` | decommissioned | decommissioned | no | headless-Chrome renderer, present from the first commit `cb6ebf5` (2023-04-30), last touched `ef4b449` (2024-09-02) |
@@ -173,11 +182,26 @@ Two of the rows above are therefore already known to be wrong on a schedule.
 The rows to watch, in order:
 
 1. **`storage` and `messenger`** — the named next fold. When `repos.yml` flips either to `migrations: false`
-   with a `legacy` comment, the fold has landed.
-2. **`roadrunner`** — the only row where prod and the platform's own declaration contradict each other.
-3. **`cms` / `jobsimulation` local husks** — `running_but_unfederated` until platform M810 removes the
-   containers and the repos from the clone set. That removal is exactly what arms the failure this milestone
-   exists to fence: tooling that iterates the clone set silently skips what is no longer cloned.
+   with a `legacy` comment, the fold has landed. `messenger` is the more exposed of the two: it is the last
+   process that still calls cms and jobsimulation over RPC, and `d11a403` had to repoint both edges by hand.
+2. **`roadrunner`** — still the only row where a repo's own terraform and the platform's declaration
+   disagree, and now the disagreement is one this map cannot settle without reading **infrastructure**.
+3. ~~**`cms` / `jobsimulation` local husks**~~ — **this happened, on 2026-08-03, ahead of M810.** `d11a403`
+   removed the containers *and* the clone entries under `chore/prune-merged-services`. Two consequences,
+   both live:
+   - **The armed failure is now armed.** Tooling that iterates the clone set — `demo-stack/migrate-demo.sh:81-85`
+     creates the legacy schemas itself and `:106` atlas-applies a hand-maintained 4-tuple, guarded by
+     `[ -d ] || continue` — will now **silently skip** three repos rather than fail. This is the exact shape
+     M257x iter-01 predicted and named a time bomb.
+   - **A box with stale clones cannot observe it.** The three directories still exist on any machine that
+     cloned before 2026-08-03, so the skip is invisible there and fires only on a genuinely fresh `make init`.
+     A local "it still works" is not evidence about a cold box.
+
+4. **The merge itself keeps dropping configuration the merged code still reads.** `d11a403`'s own message
+   records that deleting the three containers *"silently dropped env that `app` still reads in-process"* —
+   `JUDGE0_BASE_URL`, `DIRECTUS_PUBLIC_BASE_ADDR`, `REDIS_WORKER_INDEX`, the LiveKit and Chime blocks and the
+   `~/.aws/credentials` mount, all restored onto `backend`. Merging a service moves its **code**; its
+   **environment** has to be moved separately, and nothing checks that it was.
 
 ---
 
