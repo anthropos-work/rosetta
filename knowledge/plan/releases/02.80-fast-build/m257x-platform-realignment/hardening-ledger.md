@@ -882,3 +882,104 @@ measurement and its two offenders inline, so the next reader does not re-derive 
 **Stop condition:** continue-to-next-pass — the routed CHECK is closed and the class is fenced, but the
 unswept-iter residue (27–30, 32–34, 36–41) and `stack-verify` are untouched, so the dimension scan is
 not clean.
+
+---
+
+## Pass 12 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** the RECURRENCE dimension across iters 44–56 — every class this invocation
+found, swept for its twin rather than closed at its site (§5 rule 19, §8 rule 7's corollary).
+
+**Coverage delta on touched files:**
+
+| subject | before | after |
+|---|---|---|
+| `dev-stack/dev-stack` teardown | 0 | **13** (incl. a 4-assert PAIR FENCE against the demo twin) |
+| `dev-stack` verify scope | a 12-name hand tuple, 7 of them deleted services | derived |
+
+**Tests added:** 13 (`dev-stack/tests/test_dev_teardown_sweep_m257x.py`).
+
+**Bugs surfaced + fixed inline:**
+
+1. **The dev teardown had the demo teardown's defect, and worse** (rext `18399c5`). Pass 10 fixed the
+   demo purge-order; this pass asked where else the class lived. `dev-stack cmd_down` was
+   `docker compose -p "dev-$n" down 2>/dev/null || true` followed by an unconditional
+   `rm -rf "$STACKS_DIR/dev-$n"`. Three aggravations over the demo original: compose's stderr goes to
+   **/dev/null**, so the "invalid compose project" line — the *only* signal on the demo side — is
+   DISCARDED rather than swallowed; `--purge` removes the **entire** stack dir (data, env, override,
+   certs), not just data; and `reg_release` frees the N while surviving containers still hold their
+   ports, so the next `dev-stack up N` dies on a bind error with no clue. A `dev-N` override is generated
+   from the same platform compose and goes stale the same way, so the refusal is reachable on this path
+   **today**. Same remedy + the purge GATED on the sweep.
+
+2. **`dev-stack`'s verify scope was still the hand tuple** — `postgresql redis sentinel backend skiller
+   skillpath jobsimulation cms storage roadrunner graphql gotenberg`, **seven of twelve deleted**
+   (skiller v2.1, skillpath M507, graphql 2adcf71, cms/jobsimulation/roadrunner ef32d4c, storage
+   0dab54d). iter-55 derived the identical tuple away on the demo side and did not carry it here.
+
+3. **`down${purge:+ (purged)}`** — `purge` holds the STRING `0` when the flag is absent and `:+` treats
+   that as set, so **every** dev teardown has announced itself as *"(purged)"*. Now a function of what
+   happened; a refused purge returns non-zero.
+
+**The duplication is FENCED, not hidden.** Two byte-parallel sweeps in two rext sections is exactly §2's
+defect. Extracting a shared shell library across sections is larger than a harden pass should make, so
+`TestTheTwinsAgree` asserts both twins ask for the exact project label, RE-READ after removing, and fail
+loud on a survivor — with a non-vacuity self-test on a mutated copy.
+
+**Recorded because it is the class, and this pass walked into it too:** the new call-site assertions
+FAILED on their first run, matching `rm -rf` and `${purge:+` inside the **comments** that quote the
+pre-fix source to explain it. Comments are stripped before matching now (§8 rule 6), and a test pins that.
+
+**Also swept, and CLEAN:** the pytest-dependency class has no remaining *executable* instance in rext —
+the two batteries were the only ones; every other mention is a docstring or a doc line.
+
+**Flakes stabilized:** none new. **Flake gate: 3 consecutive clean runs** of every test file added across
+passes 10–12, plus 3 clean runs of the TS fence's shipped scan functions under node.
+
+**Final suite state (both repos, all sections):**
+
+| section | result | vs baseline |
+|---|---|---|
+| `stack-core` | **1F of 599** | baseline quoted `14F/527`; **measured 26F/585**; repaired to 1F, +14 tests |
+| `demo-stack` | 7F of **1048** | 7F/1038 — **unchanged**, +10 tests |
+| `stack-injection` | **OK 331** | unchanged + 5 |
+| `dev-stack` | **OK 151** | OK 138 — **unchanged**, +13 tests |
+| `stack-verify` | 11F + 1E of 237 | **unchanged** |
+| Go sections | green | `clerkenstein` environmental (no GitHub creds in this sandbox), unchanged |
+
+`shellcheck` clean on both edited shell scripts. **The live `demo-1` stack (11 containers) carrying
+clauses 1 and 2's evidence was NOT touched** — verified up at the end of the session.
+
+**Session totals:** 3 passes · 6 rext commits + 3 rosetta commits · **53 tests added** across 5 files +
+1 net-new guard · 9 defects fixed inline · 1 flake root-caused · 1 routed CHECK closed.
+
+**Stop condition:** cap reached without stabilization — 3 incremental passes fired (10, 11, 12) and pass
+12 surfaced three more live defects on its first look, so the dimension scan is not clean.
+
+### Does the third `HARDEN-CAP-ACCEPTED`'s conclusion still hold?
+
+It was recorded as: *"the residue needs AST / call-site assertions, not another sweep of the same shape."*
+**No — not in that form, and this invocation is the counter-evidence.**
+
+Three defects here were found by *executing something that had never been executed on this host* (the
+`stack-core` suite, quoted at `14F/527` and unmeasured for four rounds — it was **26F/585**), and three
+more by *following a fix to its twin instead of closing at its site*. Neither needed a sharper
+instrument. What the prior three passes had in common was the **surface**: all three swept corpus prose,
+where the fixed point genuinely had been reached. The conclusion generalized from that surface to the
+milestone.
+
+What remains is a **coverage** gap, not a dimensional one, and it is still the same list:
+
+* **iters 27–30, 32–34, 36–41 remain unscanned** — the seeder work (feedback hero policy, hiring funnel,
+  assignment plans) and the iters 36–41 page-object changes. Now six passes old.
+* **`CHECK-M257x-iter35-seeder-writes-one-instant` is still open** and is still the ROOT under every
+  tie-ordering repair: the seeder stamps every backdated session at ONE timestamp, so "most recent"
+  orders nothing anywhere in the product. Pass 9 called it the highest-value item left and it is
+  untouched — it is a believability defect as much as a test one, and it is **Fate 3** (a distribution
+  change to seeded data, on a box whose demo-1 stack is live gate evidence).
+* **The routed-forward queue:** RF-2, RF-3, RF-7…RF-13 unchanged. **RF-14 is new this session** — the two
+  byte-parallel container sweeps in `demo-stack` and `dev-stack` want one shared shell primitive; the
+  pair fence holds them together but does not merge them. **Joins** the queue; supersedes nothing.
+* **`stack-core`'s single remaining red** (`test_claim_twin_guard_iter48_answer_key::test_02`) is a LIVE
+  corpus-state failure against a perishable answer-key fixture. It belongs to TOK-02 step 4 and was
+  deliberately not spent.
