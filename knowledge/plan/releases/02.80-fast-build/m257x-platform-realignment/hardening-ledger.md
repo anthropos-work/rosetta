@@ -1198,9 +1198,14 @@ pass is the thing this milestone punishes.
 
 **Flakes stabilized:** none new.
 
-**Session totals (passes 13–15):** 2 rext test/fix commits + 3 rosetta ledger commits · **6 tests added**
-across 3 files + 1 shared helper · **2 live defects fixed inline** · **2 untested-property gaps closed** ·
-**12 mutants run, 12 RED**, of which **4 were invisible to the pre-existing tests**.
+**Session totals (passes 13–15):** 2 rext test/fix commits + 3 rosetta ledger commits · **5 test functions
+added** across 3 files (pass 13: 3, pass 14: 2, pass 15: 0) **+ 2 helpers** (`provRun`,
+`assertPlanModelWrittenBeforeAssignments`) · **2 live defects fixed inline** · **2 untested-property gaps
+closed** · **12 mutants run, 12 RED**, of which **4 were invisible to the pre-existing tests**.
+
+*(This line first read "6 tests", which 3 + 2 + 0 does not equal. Corrected in the same pass that wrote it
+— an unchecked count in the ledger of a milestone about claims-versus-measurement is the defect class
+itself, at the smallest possible scale.)*
 
 **Stop condition: stabilized.** Both conditions are met and this is the first pass in five invocations
 where that is true rather than asserted: the coverage delta this pass is **0** (no test was needed), and
