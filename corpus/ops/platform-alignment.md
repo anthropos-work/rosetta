@@ -788,6 +788,30 @@ Rules, in order of how often they actually catch something:
     was true when first written and had been fixed two iterations later by the same milestone. It survived
     because it was *cited* rather than *re-run*. Re-measure, or cite the re-measurement.
 
+28. **Three true facts do not make a cause — join them with one experiment.** M257x iter-55 diagnosed a
+    `backend` container that exited 0 in silence. It measured, correctly and separately, that (a) the
+    container exits 0, (b) `STORAGE_RPC_ADDR` is absent from its environment, and (c) the pinned `app`
+    source reads that variable three times. It then reported the conjunction as the cause and routed a
+    **version-pin advance** for it — the single most dangerous move in that milestone's history, the one
+    that had broken the seeders twice.
+
+    iter-56 refuted it with two `docker run`s against the same image on the same network. The same
+    environment with **no mounts** starts fine and serves on `:8082`; the same environment **plus the
+    host's `$HOME/.aws/credentials` bind mount** reproduces the dead 2-line signature exactly. The env var
+    was never the cause. And the destination was unreachable anyway: `app` at **origin/main IS the newest
+    tag**, and it reads the variable at the same three sites — so no advance could have restored it.
+
+    The diagnosis was not sloppy. Every input was measured; it explained the exit, the silence *and* the
+    137 ms timing; and it named a real platform inconsistency. It was simply not tested. This is the cheap
+    half of the `D-M257x-13` correction (*a mechanism that explains the observation is not the mechanism
+    that produced it*): when a diagnosis has the shape **"X is missing AND the code reads X, therefore X"**,
+    supply X, or remove the other suspect, and watch. It usually costs one command, and the alternative
+    here was a cold cycle plus a pin advance aimed at a release that does not contain the fix.
+
+    **Corollary — check that the proposed remedy contains the fix, before taking the remedy.**
+    `git rev-list --count <newest-tag>..origin/main` and one `git grep` at the target ref would have shown,
+    in ten seconds and before any decision, that the advance was a no-op against the stated cause.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

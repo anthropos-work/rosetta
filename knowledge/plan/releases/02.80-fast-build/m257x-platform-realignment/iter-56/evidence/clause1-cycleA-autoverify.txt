@@ -1,0 +1,19 @@
+▶ autoverify demo-1 (offset 10000) — cheap-win asserts + scoped verify (non-fatal)
+  ✓ backend /api/health 200 on :18082
+  ✓ sentinel.casbin_rules = 1251 (authz policy loaded)
+  ✓ directus.directus_collections = 21 (the content model is REGISTERED — serving is proven separately by directus-serves-content)
+  ✓ directus DB is per-stack-local (not prod): postgres://postgres@postgresql:5432/postgres
+  ✓ verify live: all liveness + readiness probes passed
+  ✓ demo-patches: all applied (none refused, none skipped)
+  ✓ frontend builds: ok (the running images are this run's)
+  ✓ taxonomy replayed: public.skills = 42790
+  ✓ presenter cockpit answering on :17700
+  ✓ clerkenstein fake-FAPI answering (rung A: in-container HTTPS GET /v1/environment — host-TLS-independent); hero login is possible
+  ✓ hiring org set-dressed: 5 shared positions + 42 candidate HIRING sessions (the recruiter comparison is populated)
+  ✓ AI Academy renders its catalog on :13077/library (real course cards)
+  ✓ studio-desk carries an AI provider key (AI_OPENAI_API_KEY present) — the /api/ai/completion builder is wired
+  ✓ container liveness: all 11 expected container(s) running
+▶ autoverify demo-1: OK — verified-working.
+==> [demo-1] UP. Clerk-free demo-1 is live. Status: rosetta-demo status   Down: rosetta-demo down 1 --purge
+
+{"project":"demo-1","offset":10000,"warnings":0,"green":true,"ts":"2026-08-03T14:47:13Z"}
