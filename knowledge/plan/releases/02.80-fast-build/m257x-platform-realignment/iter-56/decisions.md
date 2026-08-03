@@ -102,3 +102,31 @@ The pre-flight sits immediately before `compose up`, which on a cold cycle is **
 builds**. Failing fast would be better and the fix is small. It is deliberately **not** done in this
 iteration: the cycles under way are the measurement, and changing runtime source mid-measurement is the
 thing TOK-04 P2 exists to forbid. Routed as `FIX-M257x-iter56-preflight-fails-late`.
+
+## D-M257x-56-5 — the gate's own evidence lands on git-ignored paths by DEFAULT
+
+Caught while committing this iteration's clause-2 artifacts. Both were silently ignored:
+
+    .gitignore:89   *.log                                -> evidence/clause2-reading2.log
+    .gitignore:147  knowledge/plan/**/*-report.json      -> evidence/clause2-reading2-report.json
+
+The natural filenames for a run log and a Playwright report — the two artifacts a clause-2 reading
+actually produces — are **both** matched by rules written for other reasons. `git add` on a directory
+reports nothing; the files simply do not appear in the commit, and a later reader finds a `progress.md`
+citing evidence that is not in the tree.
+
+This is `TOK-04` **P2** verbatim (*every instrument is a committed file; nothing an instrument depends on
+may live under a git-ignored path*) and a **live instance** of the routed
+`CHECK-M257x-iter54-gitignored-instrument-sweep` — found by accident, on the first iteration that tried to
+commit run evidence since the check was routed. It was caught only because `git check-ignore -v` was run
+on the directory rather than trusting the `git add`.
+
+**Immediate fix:** the artifacts are renamed to `.txt` and committed.
+
+**The rule, added to `platform-alignment.md` §5 rule 26's family (an input that can change without
+appearing in a diff is not a controlled input):** a measurement artifact is an input. Before citing one,
+run `git check-ignore -v` on it. A `git add <dir>` that silently drops files is indistinguishable from one
+that worked — the same skip-reads-as-pass shape as §5 rule 8.
+
+Routed as `FIX-M257x-iter56-evidence-gitignore` — the sweep that check already owns should now be run
+knowing the default filenames collide, not just the known `.agentspace` paths.
