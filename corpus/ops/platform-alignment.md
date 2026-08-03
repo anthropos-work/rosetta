@@ -1271,6 +1271,58 @@ asserts against a recording fake `Conn` that accepts any table name — *a fake 
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
 only check that knows what the migration path actually produced.
 
+### A TEARDOWN is a write path too — and a stale override poisons it before the bring-up (M257x iter-55)
+
+Every rule above is about detecting drift on the way **in**. The way **out** was never examined, and it
+turned out to be where a stale statement of topology does the most damage.
+
+`rosetta-demo down N --purge` printed a clean teardown and exited **0** with **eleven containers still
+running**. The only signal was one line inside compose's own output:
+
+    service "roadrunner" has neither an image nor a build context specified: invalid compose project
+
+A demo's `docker-compose.injected.yml` is generated at bring-up and persists. This one was 45 hours old, from
+before `ef32d4c` deleted `roadrunner`/`cms`/`jobsimulation` and `0dab54d` defaulted `storage` out. Overlaid
+on the *new* base compose, a stale override contributes only **overrides for services that no longer have a
+base definition** — no image, no build — and compose then refuses to act on the **entire project**, including
+the eleven services that were perfectly fine.
+
+What followed was worse than the failure, and is the part to internalise:
+
+- the call site was `compose down … || true`, so the refusal was discarded;
+- `purge_data_dir` then deleted the data directory **out from under eleven running containers**;
+- `data purged` and `removing this stack's images` both printed;
+- the registry slot was released, and `cmd_down` exited 0;
+- the next bring-up started on top of all of it.
+
+**Three rules follow.**
+
+1. **A teardown must have a post-condition, and it cannot be the teardown's own exit code.** §5 rule 7 says a
+   probe must not be able to satisfy itself; `compose down` was treated as its own evidence of teardown. A
+   teardown never asked *"did anything survive?"* reports success by not looking. Ask Docker —
+   `docker ps -aq --filter label=com.docker.compose.project=<project>` — remove what is named, **re-read**,
+   and fail if anything remains.
+
+2. **There is no compose-file-shaped fix, because the compose file is the thing that went stale.** Any repair
+   phrased as *"regenerate the override first"* or *"tear down with the old base compose"* is another
+   statement about topology that can itself go stale. Prefer the source that cannot: the container labels
+   Docker maintains.
+
+3. **`--remove-orphans` does not cover this, and the reason is worth knowing.** It failed twice for two
+   different reasons. Once because the project was invalid, so nothing ran at all. And once — on the *fixed*
+   run, which caught a surviving `storage` container — because `storage` is still **declared** in the base
+   compose under `profiles: [storage-legacy]`, so it is **not an orphan**, while not being in the default
+   profile, so it is **not selected** either. A container can be simultaneously not-an-orphan and
+   not-selected, and fall through both. Expect one of these per fold, at the moment a service moves to a
+   rollback profile rather than being deleted outright.
+
+> **Corollary for the §2 tuple family.** The same iteration found the profile NAME, the verify service set
+> and the injected-build set all held as hand-written literals, and the profile one is the most dangerous
+> thing in this document: `docker compose --profile graphql up` against a renamed platform is a **successful
+> command that starts zero containers**. No error, no non-zero exit, nothing for a log-reader to catch. Prefer
+> a derivation whose correctness you can test at *two* refs — that is the only evidence that distinguishes a
+> derivation from a literal that happens to be right today.
+
 ---
 
 ## 9. Cadence
