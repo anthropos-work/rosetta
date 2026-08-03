@@ -1058,3 +1058,87 @@ evidence was **not touched**.
 **Stop condition:** continue-to-next-pass — the window's remaining code carriers (**iter-36**'s 262-line
 `assignment_plans.go` + `hiring_funnel`/`assignments` deltas, and **iter-37**'s `stack-injection` override
 generator) are unscanned, as are the measurement iters 28/29/32/33/34/38/39/41 and the iter-40 cleanup.
+
+---
+
+## Pass 14 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** iter-36, iter-37 — the unscanned window's remaining CODE carriers
+(iter-36's 262-line `assignment_plans.go` + the `assignments`/`hiring_funnel` deltas; iter-37's
+`stack-injection` override generator).
+
+**No live defect this pass — both are correct TODAY.** What was missing is the ability to NOTICE if they
+stopped being, and in both cases the gap has one shape: **a property asserted at one of its two sites, or
+asserted by its spelling rather than by its behaviour.**
+
+**Coverage delta on touched files:**
+
+| subject | before | after |
+|---|---|---|
+| plan-model FK write ORDER, hiring writer | **0** (fenced for the generic writer only) | shared helper, both writers |
+| skiller Azure fallback RESOLUTION | 0 — spelling only | 4 env scenarios × 2 vars, resolved by a real shell |
+
+**Tests added:** 2 (+1 shared helper extracted).
+
+**Findings:**
+
+1. **The hiring writer had no write-order fence.** iter-36 materializes the M7 plan model from **two**
+   code paths — the `AssignmentsSeeder` tail and `hiringFunnelRows.flush`. The plan model is the FK
+   **parent** of every assignment's four new FKs, so it must be COPIED first, and only the generic path
+   was fenced for it. **Measured** by moving the hiring flush's plan block after its assignments copy:
+
+   | test | verdict on the broken ordering |
+   |---|---|
+   | `TestHiringFunnelSeeder_PlanMaterialized` (rows fence) | **PASS — blind to it** |
+   | `TestPlanModelWriteOrderIsFKSafe` (generic writer) | **PASS — does not cover the twin** |
+   | the new twin fence | **FAIL** |
+
+   The rows fence and the order fence are independent properties: the first proves the FKs point at rows
+   the same run wrote, and stays green with those rows copied *afterwards* — which Postgres rejects
+   outright. The order assert is now a shared helper both writers call.
+
+2. **The skiller Azure fallback was asserted by SPELLING.** iter-37's two tests check that the emitted
+   line CONTAINS `${SKILLER_…:-` and `${AZURE_…:-}`. A concatenating variant,
+   `${SKILLER_AZURE_OPENAI_KEY:-}${AZURE_OPENAI_KEY:-}`, contains both and **passes both** — while
+   resolving to `dedicated-real-keydemo-key` when both are set, i.e. **corrupting an operator's real
+   dedicated production credential by appending the demo one to it**. That is precisely what the secret
+   DNA's DISTINCT-SIMILAR rule exists to prevent, and it was the one claim in iter-37's own docstring that
+   nothing tested. The new test resolves the expression with a real shell under four scenarios.
+
+**Mutation results — 4 mutants on the fallback, all RED on the new test; two of them INVISIBLE to the
+pre-existing pair:**
+
+| mutant | new resolution test | pre-existing iter-37 tests |
+|---|---|---|
+| M8 concatenating (corrupts a real key) | RED | **still GREEN** |
+| **M9 INVERTED precedence (shared wins)** | RED | **still GREEN** |
+| M10 fallback dropped | RED | RED |
+| M11 `:-` → `:+` (inverted operator) | RED | RED |
+
+**M9 justifies the test on its own** — the demo's shared key silently overriding a real dedicated one is
+invisible to every spelling assert. **M10 is what the positive control is aimed at:** dropping the
+fallback satisfies "the operator's value wins" perfectly, so the only thing making the feature real is the
+assert that the shared pair IS used when it is alone.
+
+**A METHOD NOTE WORTH KEEPING (this pass nearly recorded a false RED).** The first mutation run was scored
+with `python3 -m unittest discover -k skiller`, which reported `FAILED (errors=2)` — read as "caught". The
+**pristine** tree reports the identical `FAILED (errors=2)` under that filter: the errors were unrelated
+and the rc was 1 either way. This is the pass-10 pytest finding exactly (`rc 1 regardless`), arrived at
+from the other direction, and the only thing that surfaced it was **baselining the mutation harness on
+unmutated source before trusting a single verdict**. Every verdict in this ledger's mutation tables is now
+scored per-test, by name, against a measured pristine baseline.
+
+**Also checked and CLEAN** (recorded so a later pass need not redo them): `orgLess` members never reach
+`pm.attach()` — the guard precedes it, so no member gains an enrollment in an org she is not in;
+`membershipUUID` returns a `string`, so the enrollment's `%v` `membership_id` is identity today (a real
+fragility only if that return type ever changes); iter-37's `if name == "backend"` gate names the service
+that actually hosts the skills domain, so its guard and action are connected.
+
+**Flakes stabilized:** none new. **Flake gate: 3 consecutive clean runs** of both added tests.
+
+**Suites:** `stack-injection` **OK 332** (was 331), `stack-seeding` seeders green, `go vet` clean. The live
+`demo-1` stack was not touched.
+
+**Stop condition:** continue-to-next-pass — the window's MEASUREMENT iters (28, 29, 32, 33, 34, 38, 39, 41)
+and the iter-40 cleanup are still unscanned, and pass 13's finding rate makes a recurrence sweep across
+them worth one more pass.
