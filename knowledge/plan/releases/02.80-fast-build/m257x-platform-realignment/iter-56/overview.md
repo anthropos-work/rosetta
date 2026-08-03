@@ -2,7 +2,7 @@
 milestone: M257x
 iter: 56
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 created: 2026-08-03
 refs:
   platform: 0dab54dfac6beacdef54a671e2500d3940fd7329   # origin/main, re-fetched at iter open (P3)

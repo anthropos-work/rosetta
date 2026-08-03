@@ -162,3 +162,137 @@ v2.1 and v2.7 did not recur.
 A suite that needs two runs is not a suite that passes, and `FIX-M257x-iter56-assignment-flake` is routed
 with the arithmetic above. Recorded plainly because iter-55's lesson was that a refuted pre-registration is
 the most valuable output available.
+
+## Measurement 3 — clause 1, cycles B and C
+
+Same refs block as cycle A (platform `0dab54d`, app `v1.365.0`, rext `fast-build-m257x-iter-56`, rosetta
+`5c9c099` + this iter's work), each a fresh `down --purge` → `up-injected.sh 1`:
+
+| cycle | window (UTC) | duration | teardown | verdict |
+|---|---|---|---|---|
+| A | 14:38:20 → 14:47:13 | 8 m 53 s | `rc=0 survivors=0` | `{"warnings":0,"green":true,"ts":"2026-08-03T14:47:13Z"}` |
+| B | 15:19:23 → 15:26:37 | 7 m 14 s | `rc=0 survivors=0` | `{"warnings":0,"green":true,"ts":"2026-08-03T15:26:37Z"}` |
+| C | 15:27:02 → 15:34:09 | 7 m 07 s | `rc=0 survivors=0` | `{"warnings":0,"green":true,"ts":"2026-08-03T15:34:09Z"}` |
+
+All three: `backend /api/health 200 on :18082` · `container liveness: all 11 expected container(s)
+running` · `autoverify demo-1: OK — verified-working` · the host bind-mount pre-flight present and passing
+(`1` occurrence in each run log).
+
+**§5 rule 15 — the path each cycle took.** All three took the **identical fresh-bootstrap** path, verbatim:
+
+    [directus] executing the per-stack provision (bootstrap → apply-structure → replay → boot)
+    [directus] bootstrapping the directus_* system schema (node cli.js bootstrap)
+    [directus] restarting the compose service 'demo-1-directus-1' so it serves the provisioned catalog
+    [directus] 'demo-1-directus-1' serving /server/health (verified before autoverify)
+
+**No race was observed and no retry fired in any of the three.** That is worth stating as a limitation
+rather than a strength: three cycles down one branch do not certify the other branch. The nondeterministic
+arm remains uncertified by this reading, exactly as it was after iter-55's single cycle — there are simply
+three unraced runs now instead of one.
+
+**PR-4 held, and then some**: cycle A was predicted green; B and C were deliberately not predicted, and
+both came back green.
+
+## P3 — the close-time re-check, and one ref DID move
+
+    platform  clone 0dab54d == origin/main 0dab54d      LEVEL — the measurements stand
+    app       clone v1.365.0 (bff61c91)                 origin/main has MOVED to b948604f = v1.366.0
+
+**The binding ref is level.** The gate names *platform @ origin HEAD*, and `0dab54d` was origin HEAD at
+open, throughout all three cycles, and at close. `app v1.365.0` was app origin HEAD when every cycle ran.
+Clauses 1 and 2 are therefore measured against current refs, and both refs are stated rather than implied.
+
+**What moved, measured not assumed** — 5 commits, `v1.365.0 → v1.366.0`:
+
+- `a9a2b9f6` / `f464c4a0` — force-join hiring token-link candidates into their org at signup (Clerk)
+- `850917d7` — **`fix(assignments): scope the join fall-through and tighten the already-member match`**
+- **0** new migrations
+- `STORAGE_RPC_ADDR` still read **3×** in `main.go` at `origin/main` — so `D-M257x-56-1` extends: the v9.0
+  storage-in-app app half does not exist at `v1.366.0` either
+
+The assignments commit lands in the same domain as this iteration's `pt-assignment-assign` flake. **That is
+a coincidence of domain, not a diagnosis** — nothing here measures whether it bears on the flake, and
+asserting otherwise would be §5 rule 28 committed one iteration after writing it. Routed for measurement.
+
+**It is deliberately not chased inside this iteration.** Re-pointing at close and re-running would restart
+the race the milestone's own `re_scope_trigger` exists to stop, at a ref that appeared after the
+measurement window closed. P3's "the detecting iteration re-points" is applied at the right granularity:
+the move is recorded here with its contents, and re-pointing is the next iteration's first act.
+
+## Close — 2026-08-03
+
+**Outcome:** clauses 1 and 2 are **restored and MET** against platform origin HEAD `0dab54d` — three
+consecutive cold cycles at `green:true / 0 warnings` and a full `30 passing / 0 failing / 0 error`
+Playthrough suite, each carrying a `refs:` block. The blocker that produced them was **not** the version
+skew iter-55 named and the pin advance did not fix it: `~/.aws/credentials` does not exist on this host,
+Docker auto-created it as a directory, and the app exited 0 on it. Refuted by experiment before acting,
+then fenced by a derivation.
+**Type:** tik
+**Status:** closed-fixed
+**Gate:** NOT MET
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — Outcome: continue
+
+**Gate reading at close, against platform `0dab54d` (re-checked at close; origin has not moved):**
+
+| clause | reading | basis |
+|---|---|---|
+| 1 — 3 cold cycles green | **MET** | A/B/C all `green:true, warnings:0`; teardown `survivors=0` each; 11/11 containers; refs stated |
+| 2 — full Playthrough suite | **MET** | `passing=30 failing=0 unimplemented=1 unimplementable=0`, rc=0, on the cold stack at these refs — **on reading #2**; reading #1 was `29/1` on a named flake, reported |
+| 3 — the migration-status map | **NOT MET** | unchanged from iter-55: membership fence GREEN, 5 map claims falsified by `0dab54d`, two citations resolving to unrelated lines. Untouched this iteration |
+| 4 — zero writes to a dropped schema | **MET** | the four platform-alignment guards **74 OK**, incl. `test_write_target_schema_fence` + `test_migration_derivation_fence` |
+| 5 — KB-fidelity | **NOT MET** | untouched; not re-cut |
+
+**3 of 5**, up from iter-55's 1 of 5. Clauses 1 and 2 moved from *unmeasurable* to *met*; nothing regressed.
+
+**Decisions:** `D-M257x-56-1` … `D-M257x-56-5` (`iter-56/decisions.md`)
+
+**Side-deliverables:**
+- `platform-alignment.md` §5 gains **rule 28** (*three true facts do not make a cause*), per the
+  protocol-evolution rule, in the iter's own commit.
+- `demo-stack/clones.pin.json` advanced to the proven combination — the pin becomes a committed file (P2)
+  rather than whatever a clone happened to be checked out at.
+
+**Routes carried forward:**
+- `FIX-M257x-iter56-assignment-flake` → `pt-assignment-assign` asserts `toBe(before - 1)` over a baseline
+  sampled while the grid is still settling; observed `16 → 14`. Fix the assertion, not the count. **Measure
+  first whether app `850917d7` (`fix(assignments): …`) bears on it** — the domains coincide and nothing has
+  measured the link.
+- `FIX-M257x-iter56-app-ref-moved` → re-point `app` `v1.365.0 → v1.366.0` as the **next iteration's first
+  act** (P3). Contents already enumerated above: 5 commits, 0 migrations, no `STORAGE_RPC_ADDR` change.
+- `FIX-M257x-iter56-preflight-fails-late` → the host bind-mount pre-flight sits before `compose up` but
+  **after ~8 minutes of image builds**. Correct, but it should fail in seconds. Not moved mid-measurement.
+- `FIX-M257x-iter56-evidence-gitignore` → `*.log` and `knowledge/plan/**/*-report.json` silently swallow
+  the two artifacts a clause-2 reading produces (`D-M257x-56-5`). Feeds
+  `CHECK-M257x-iter54-gitignored-instrument-sweep`, which should now be run knowing the *default filenames*
+  collide, not only the known `.agentspace` paths.
+- `CHECK-M257x-iter56-directus-race-uncertified` → three cycles, one branch. The nondeterministic arm of
+  the Directus bootstrap is still uncertified by any reading.
+- `CHECK-M257x-iter56-stale-autoverify-twin` → two files named `autoverify.json` exist
+  (`stack-demo/` and `stack-demo/rosetta-extensions/demo-stack/stacks/demo-1/`); the first is **three days
+  stale** and reads `green:false`. It fails closed, so it is not urgent — but a reader gating on the wrong
+  one gets a verdict about a different week.
+- Unchanged and still open: `FIX-M257x-iter55-map-storage-messenger`, `CHECK-M257x-iter55-map-prose-unfenced`,
+  `FIX-M257x-iter55-stranded-demopatch-revert`, the 81 drift sites / 21 files, `FIX-M257x-iter53-union-set`,
+  `FENCE-M257x-iter54-refs-block`, `CHECK-M257x-iter52-second-ai-manager`, RF-2/3/7–13, root `CLAUDE.md`,
+  `CHECK-M257x-iter38-ai-act-classification`.
+
+**Lessons:**
+1. **A remedy should be checked for the fix before it is taken.** iter-55 routed the single most dangerous
+   move in this milestone's history — a version-pin advance, the one that broke the seeders twice — at a
+   release that did not contain the fix, and could not have, because *no* release does. Two commands
+   (`git rev-list --count <newest-tag>..origin/main`, one `git grep` at the target ref) settled it before
+   any decision was acted on. §5 rule 28's corollary.
+2. **Three separately-true facts are not a cause.** Every input to iter-55's diagnosis was measured; only
+   the joining experiment was skipped, and it cost one `docker run`. The false story was *better* than the
+   true one at explaining the evidence — it accounted for the exit, the silence and the 137 ms — which is
+   precisely why explanatory fit is not evidence.
+3. **The obvious fence would have been green on the defect.** *"Does the bind source exist?"* reports GREEN
+   over Docker's own auto-created stub. The check had to test for the **residue** of the failure, not its
+   precondition, and the existence-only predecessor is now pinned as a negative control so it cannot be
+   quietly simplified back.
+4. **Derivation beat prose a third time, on a third independent event.** iter-55's derived profile/service/
+   build sets carried the `graphql → core` rename and the storage departure into these three cycles with
+   zero human action; the new mount check joined them on the same terms. No hand-maintained topology
+   statement was touched, and none needed to be.
+5. **A `git add` that silently drops files reads exactly like one that worked** (§5 rule 8's family). The
+   gate's own evidence was git-ignored by default, and only `git check-ignore -v` found it.
