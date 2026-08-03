@@ -17,15 +17,22 @@
 > **⚠️ RE-GROUNDED — v2.8 M257x iter-23, against platform origin `2adcf71` / `app` @ `5ba17044`.**
 > **This doc named a table the platform has since DROPPED — which is the worst possible version of the warning
 > directly above.** The score source was `public.local_jobsimulation_sessions`, a `Float32` MIRROR. `app`
-> migration `20260729133514.sql:58-62` — *"5. Drop the mirrors."* — back-fills it into the canonical entity and
-> then `DROP TABLE "local_jobsimulation_sessions"`. Everything below is re-pointed; the three facts that
-> changed:
+> migration `20260729133514.sql:58-62` — *"5. Drop the mirrors."* — **re-points the *referencing* rows** (the
+> assignment-session link ids) and then `DROP TABLE "local_jobsimulation_sessions"`. **There is no back-fill:**
+> `SET "score"` has **0 hits across the entire migration set**, so no score was copied from the mirror to the
+> canonical row — the canonical row already carried it. (This paragraph said "back-fills" until M257x iter-49.)
+> Everything below is re-pointed; the three facts that changed:
 > 1. **Score source → `public.job_simulation_sessions.score`**, read by
 >    `app/internal/organization/intelligence.go:1700` (`m.ent.JobSimulationSession.Query()`). There is no
 >    mirror/canonical **pair** any more, so the write-set is **one** session row, not two.
-> 2. **Everything is in `public`.** `jobsimulation.sessions` was dropped (`20260722104506.sql:79`) and replaced
->    by `public.job_simulation_sessions` (`:2`); `app/atlas.hcl:8` pins `search_path=public`, and the only
->    `CREATE SCHEMA` in the entire migration set is `auth`.
+> 2. **Everything `app` writes is in `public`** — which is *not* the same claim as "the `jobsimulation` schema
+>    is gone." `20260722104506.sql:79` is `DROP TABLE "sessions"` executed under `search_path=public`, so what
+>    it dropped is **`public.sessions`**, replaced by `public.job_simulation_sessions` (`:2`). **No `app`
+>    migration touches the `jobsimulation` schema at all**, and that schema **survives, frozen, until M710**
+>    (`app/internal/askengine/registry.go:192`) — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
+>    and [`dependency_map.md:78`](../architecture/dependency_map.md) already said. `app/atlas.hcl:8` pins
+>    `search_path=public`, and the only `CREATE SCHEMA` in the entire migration set is `auth`.
+>    (This bullet read *"`jobsimulation.sessions` was dropped"* from iter-23 until M257x iter-49.)
 > 3. **One subgraph.** There is no second subgraph for `Session!` to resolve from — no join key, no
 >    NULL-bubble hazard.
 
@@ -143,10 +150,13 @@ schema, read directly by the resolver.
 
 > **History, because a seeder built from the old shape writes to nothing.** Until `app` migration
 > `20260729133514.sql` (2026-07-29) the score lived on `public.local_jobsimulation_sessions`, a `Float32`
-> **MIRROR** that shadowed a `jobsimulation.sessions` row. That migration back-filled the mirror into the
-> canonical entity and **dropped it** (`:58-62`), and the earlier `20260722104506.sql` had already dropped
-> `jobsimulation.sessions` (`:79`) in favour of `public.job_simulation_sessions` (`:2`). **Both halves of the
-> old pair are gone**; there is one row per (candidate × attempt) now.
+> **MIRROR** that shadowed a `jobsimulation.sessions` row. That migration **re-pointed the referencing
+> assignment-session link ids** and **dropped the mirror** (`:58-62`) — it did *not* back-fill (`SET "score"`
+> = 0 hits set-wide). The earlier `20260722104506.sql:79` dropped **`public.sessions`** (a bare
+> `DROP TABLE "sessions"` under `search_path=public`) in favour of `public.job_simulation_sessions` (`:2`);
+> **`jobsimulation.sessions` itself was NOT dropped** — no `app` migration touches that schema, and it
+> survives frozen until M710 (`askengine/registry.go:192`). So what is gone is the **mirror half** of the old
+> pair, not both halves; there is one row per (candidate × attempt) now, in `public`. Corrected M257x iter-49.
 
 **The read-path, traced end-to-end (FE → GraphQL → resolver → Ent → table):**
 
@@ -189,11 +199,19 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 **Minimal write-set per (candidate × sim):**
 
 1. **`public.job_simulation_sessions`** — the **score source** + row generator, and the only session row there
-   is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, plus `score` (0–100),
+   is. Non-null `status`, `started_at`, `ended_at`, `owner_id`, `sim_id`, `sim_type`, **`token`**, plus
+   `score` (0–100),
    `completion_status` (a closed 5-value enum — **exactly** `pending` / `passed` / `failed` / `discarded` /
    `timedout`, `app/internal/data/ent/enum/jobsimulation.go:29-35`, `Values()` at `:37-43`; **no `SIMULATION…`
    member** — that prefix belongs to the adjacent `sim_type` column, which genuinely is `SIMULATION_TYPE_*`),
    `organization_id`, `tenant_id` (NULL or `=org`), `validation_version`.
+   ⚠️ **`token` is the one column that makes the INSERT itself fail, and this contract omitted it until
+   M257x iter-49.** It is `NOT NULL` (`20260722104506.sql:13`), `UNIQUE` (`:29`) and carries **no default** —
+   the *only* required-and-undefaulted column in the table — so an INSERT built from the write-set as it was
+   written here does not render wrong, it **errors**. The shipped seeder has always written it
+   (`persona_write.go:152-158`); the word `token` simply appeared nowhere in this document. Being UNIQUE, it
+   must be generated per row, not reused. (iter-47 read this passage and booked it a MINOR; iter-48's seat
+   escalated it after checking the DDL, the Ent schema and the seeder.)
    ⚠️ **Get `completion_status` wrong and NOTHING catches it — the row does not vanish, it renders wrong.**
    The column is a plain `varchar` with **no CHECK** (a rolled-back
    `UPDATE … SET completion_status='SIMULATION_COMPLETION_STATUS_PASSED'` is accepted); Ent's generated
@@ -273,8 +291,10 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 To make a hiring org's comparison scoreboard render on a demo/dev stack: seed an org with `is_hiring=true`
 (+ Clerkenstein `publicMetadata.isHiring=true`, M224), an active membership per candidate, and — per (candidate ×
 sim) — **one** `public.job_simulation_sessions` row (the score lives on it; the old co-written
-`jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** no longer exists — both tables were
-dropped), plus the `OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured
+`jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** is no longer written — the
+`public.local_jobsimulation_sessions` **mirror** was dropped at `20260729133514.sql:58-62`, while
+`jobsimulation.sessions` still exists, frozen and unwritten, until M710; corrected M257x iter-49), plus the
+`OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured
 snapshot as the org's positions. The scoreboard then reads `insightsJobSimulationByMemberships`, one best-attempt
 row per candidate. The drill-down additionally needs the `public.validation_attempt_results` /
 `validation_attempt_skill_results` / `validation_criterion_results` rows (the PersonaSeeder pattern).

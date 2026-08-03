@@ -566,7 +566,7 @@ mechanics, all in `app/internal/jobsimulation/ai/ai.go`:
 
 **Residency consequence, stated plainly:** the EU posture rests on the *default* vendor clients
 being EU-resident (Azure EU, Bedrock `eu-west-1`), not on a chain that walks EU options before US
-ones. **Four** things can send a request outside the EU, none of them a region-health failover:
+ones. **Five** things can send a request outside the EU, none of them a region-health failover:
 
 1. the `flag_use_azure_us` PostHog flag;
 2. the 429 retry, which switches to direct OpenAI **without** trying another EU provider first;
@@ -585,6 +585,12 @@ ones. **Four** things can send a request outside the EU, none of them a region-h
    **direct US OpenAI**, on the very first attempt rather than as a 429 retry. (The same switch's
    own `default:` arm at `:114-115` is `internalAi.Openai` too, so an *unrecognized* vendor string
    lands in the same place.)
+5. **Studio-Room's own `openai` `TARGET SERVICE`.** The generation pipeline's provider set is
+   `{openai, azure, anthropic}` (`app/studio/services/ai.py:704-724`), and the `openai` arm builds a
+   bare `OpenAI(api_key=…)` against **`https://api.openai.com`** (`:383`, `:706-708`;
+   `config_template.ini:30-31`) — no Azure endpoint, no EU region. Item 3 above already names
+   Studio-Room for its `anthropic` arm, which is what makes leaving this one out an *internal*
+   inconsistency rather than merely an omission. Added M257x iter-49.
 
 > **Why this one was missed, and how to avoid missing it again.** The "only three" version of this
 > paragraph was derived by reading `internal/jobsimulation/ai/ai.go` end to end. That file is
@@ -659,7 +665,7 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
 | **Purpose** | Real-time voice conversations in AI Simulations |
 | **Integration** | Jobsimulation service |
 
-LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** (`anthropos-agent-eu` / `anthropos-agent-us`) inside LiveKit rooms, enabling AI actors to hold voice conversations with players.
+LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** inside LiveKit rooms, enabling AI actors to hold voice conversations with players. **The EU agent is the bare `anthropos-agent`** (`calls/livekit.go:110,120`); **only the US one is suffixed**, `anthropos-agent-us` (`:126`). There is no `anthropos-agent-eu` — the name appears nowhere in the platform, and the eu/us split lives on the **endpoint** (`azure-eu` / `azure-us`), not on the agent name. (Corrected M257x iter-49; the `-eu` form had stood since 2026-03-02.)
 
 - **Audio**: Recorded as MP3
 - **Transcripts**: Generated from conversation events

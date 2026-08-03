@@ -183,9 +183,11 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
   fallback chain (`external_services.md:545`), and the wording mattered because the two US paths *inside
   the AI manager* — the two the bullets below cover — are a flag and a retry target, which a "first"
   implies are tried only after an EU option fails. Corrected M257x iter-46. **Those two are not the whole
-  set**: [`external_services.md:569`](./external_services.md) enumerates **four** ways a request leaves the
-  EU, the other two being `ANTHROPIC_API_KEY` and an authored sequence with `ai_vendor` unset — the latter
-  reaching direct US OpenAI unconditionally, on the first attempt. Scope corrected M257x iter-48
+  set**: [`external_services.md:569`](./external_services.md) enumerates **five** ways a request leaves the
+  EU, the other three being `ANTHROPIC_API_KEY`, an authored sequence with `ai_vendor` unset — the latter
+  reaching direct US OpenAI unconditionally, on the first attempt — and **Studio-Room's own `openai`
+  `TARGET SERVICE`**, a bare client against `https://api.openai.com`. Scope corrected M257x iter-48,
+  count corrected to five at iter-49
 - **⚠️ "EU-first" is not "EU-only", and the US path is a FLAG, not a fallback.** `getClient` swaps
   `azureClientEu` → **`azureClientUs`** whenever the PostHog flag **`flag_use_azure_us`** is enabled
   (`app/internal/jobsimulation/ai/ai.go:263-277`). That is a deliberate switch that can route live

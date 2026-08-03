@@ -487,7 +487,7 @@ Rules, in order of how often they actually catch something:
     alone.** The partition that is *correct for reading* is *wrong for repairing*. Six auditors each owning
     a disjoint file set is precisely what surfaces independent double-finds (rule 18(b), which has now paid
     three times — M257x iter-38 had two auditors refute the same false EU-AI-Act premise from two different
-    files; iter-39 had two find `hiring.md:86` independently). But a **claim does not respect a file
+    files; iter-39 had two find `hiring.md:93` independently). But a **claim does not respect a file
     boundary**, and a repairer who owns `external_services.md` cannot fix the same sentence where it also
     lives in `graphql-wundergraph.md`.
 
@@ -1092,6 +1092,23 @@ Both are the M256 reports-success-without-checking class. Rules:
    section — a section that ships no Go, over a file belonging to the platform — and would next have scored
    the platform's source for rext's schema writes. **Prune `tests/fixtures/` from any walk that derives
    what this repository contains.**
+
+   > **⚠️ This rule was violated by its own milestone four iterations after it was written — and by the
+   > author of the fence it was protecting.** M257x iter-49 shipped `--audit-commit` with five end-to-end
+   > tests driven against the LIVE corpus at the commit `D-M257x-48-12` records as blocked. All five
+   > passed. The same iteration then repaired the 12 blockers, the ratchet fell to 0 new sites, and all
+   > five failed **inside the same session** — with nothing RED there is no admission to make, so the
+   > runner returns before the audit path is reached.
+   >
+   > The tell was available and was missed: *"if you cannot state why an assertion will still be true
+   > after the defect is fixed, it belongs in the fixture."* The fix was a **hermetic temp-git-repo
+   > fixture** — a corpus file, an audit ledger, and two differently-shaped commits — which never goes
+   > stale and exercises the whole pipeline. The live-tree run kept its value as *evidence the mode works
+   > on the real commit*; it simply cannot be the durable assertion.
+   >
+   > **So the rule generalizes beyond fences: it binds any test whose subject is a repairable state of
+   > this repository.** And its recurrence is itself the datum — this is the eighth consecutive
+   > iteration in which the author of a rule broke it while writing the thing the rule governs.
 
 Static and live are **both** required. Static is the only honest offline check, because every seeder test
 asserts against a recording fake `Conn` that accepts any table name — *a fake cannot know a table was

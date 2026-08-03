@@ -168,7 +168,7 @@ configs still contain these rows and a reader will find them there.
   (`docker-compose.yml:334,352`), because the router service no longer exists in compose.
 * **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, `jobsimulation` and `cms`.
 * ~~**Compose `depends_on`**~~ — moot: there is no compose service. Historically `backend`, `jobsimulation`, `cms`, **`storage`** (note `storage` was **not** a GraphQL subgraph but was in the startup-order list).
-* **CI/prod**: GitHub Releases on `anthropos-work/{app,jobsimulation,cms}` (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`.
+* **CI/prod**: GitHub Releases on **`anthropos-work/app` only** (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`. `ci/update-subgraph.sh:9` carries **exactly one** `gh release download`, `-R anthropos-work/app`; the `jobsimulation` and `cms` downloads were **deleted at `915da06`** when those subgraphs folded into `backend`. (This bullet claimed all three until M257x iter-49 — the two bullets above it already carried their historical fence; this one did not.)
 
 ## Local Development
 

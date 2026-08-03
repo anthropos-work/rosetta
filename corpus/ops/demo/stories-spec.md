@@ -596,8 +596,16 @@ Nothing wrote the `organization_settings` or `ai_readiness_*` tables before M51;
 The M48 contract offers two seed strategies (see [`../../services/ai-readiness.md`](../../services/ai-readiness.md)):
 an **active** cycle (the dashboard live-recomputes from signals) or a **closed** cycle (the dashboard reads
 pre-computed `ai_readiness_snapshots` directly). M51's iters 03→06 built and then **falsified** the active-signals
-path — the live-recompute never completes in the coverage harness's budget (a per-skill federated translation N+1,
-the M46 per-object-RPC class). The milestone **shipped the closed-cycle / frozen-snapshot** strategy: the cycle is
+path — believing the live-recompute never completed in the coverage harness's budget (a per-skill federated
+translation N+1, the M46 per-object-RPC class).
+> **⚠️ That premise was REFUTED at v2.3 M219: the live recompute completes in 2.09 s.** The
+> never-completes claim is retracted, and is recorded as retracted at
+> [`seeding-spec.md:496-498`](../seeding-spec.md), [`services/ai-readiness.md:371,449-450`](../../services/ai-readiness.md)
+> and `CLAUDE.md`. It stood here unfenced, as the stated justification for the strategy below, until
+> M257x iter-49. **The closed-cycle strategy is still the one that shipped** — it is simply not held up
+> by this reason.
+
+The milestone **shipped the closed-cycle / frozen-snapshot** strategy: the cycle is
 seeded `closed`, one frozen snapshot per member carries the platform-model score, so the dashboard reads finished
 data. (`ai_readiness_*` were also added to `stackseed --reset` + a baked `--reload-sentinel` after seed, so the
 showcase re-seeds cleanly.)

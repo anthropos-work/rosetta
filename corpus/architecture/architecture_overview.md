@@ -246,9 +246,11 @@ Archived / merged — **but three of these still start locally** (repos still ex
     [`external_services.md:545`](./external_services.md) and is corrected here (M257x iter-46). Inside the
     AI manager there are two US paths — a **feature flag** and a **429 retry target**, not fallback rungs —
     but **that is not the whole set**: [`external_services.md:569`](./external_services.md) enumerates
-    **four** ways a request leaves the EU, and the two outside the manager are `ANTHROPIC_API_KEY` and **an
-    authored sequence with `ai_vendor` unset**, the latter reaching direct US OpenAI *unconditionally, on
-    the first attempt, with no flag and no 429*. Scope corrected M257x iter-48. Measured at
+    **five** ways a request leaves the EU, and the three outside the manager are `ANTHROPIC_API_KEY`, **an
+    authored sequence with `ai_vendor` unset** — the latter reaching direct US OpenAI *unconditionally, on
+    the first attempt, with no flag and no 429* — and **Studio-Room's own `openai` `TARGET SERVICE`**,
+    which builds a bare client against `https://api.openai.com`. Scope corrected M257x iter-48, count
+    corrected to five at iter-49. Measured at
     `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
     `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
     retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"
@@ -295,7 +297,8 @@ isolation is enforced at three layers:
 
 1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter by organization on
    **only 31 of 135 schemas** (the 30 using `OrganizationMixin{}`, plus `Membership`, which declares its
-   own). **16 schemas carry an `organization_id` with no policy at all** — see
+   own). **23 schemas carry an `organization_id` with no policy at all** (16 is the *neither-mixin*
+   subset of those 23, not the total) — see
    [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
    the derivation
 2. **Authorization**: Sentinel (Casbin RBAC/ABAC) validates every API request

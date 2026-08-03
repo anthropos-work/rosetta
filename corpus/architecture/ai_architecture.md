@@ -177,7 +177,7 @@ The previous denormalized `small_embedding3` columns on `job_roles` and `skills`
 The primary voice engine uses **LiveKit rooms** with **OpenAI GPT Realtime** agents:
 
 ```
-Player → LiveKit Room → GPT Realtime Agent (anthropos-agent-eu / anthropos-agent-us)
+Player → LiveKit Room → GPT Realtime Agent (anthropos-agent [EU] / anthropos-agent-us)
 ```
 
 > **The agents have repos, and this corpus has never named one (v2.8 M257x).** The org holds **five**
@@ -199,7 +199,17 @@ Player → LiveKit Room → GPT Realtime Agent (anthropos-agent-eu / anthropos-a
 | `elevenlabs` | Active (legacy default) | ElevenLabs conversational agents; still used by the call/reply pipeline (`getJobSimulationCallSignedUrl` / `getJobSimulationCallConversationToken`) and transcript improvement |
 | `gptrealtime` | Deprecated | Direct OpenAI Realtime without LiveKit |
 
-LiveKit + OpenAI Realtime is the engine for **new** sessions (gated by the `flag_use_realtime_openai` PostHog flag); **ElevenLabs remains the active default** for the call/reply pipeline and transcript improvement, so it is not yet fully replaced.
+**Engine choice is per SEQUENCE, from the CMS `voice_engine` field** — a 4-member enum on the authored
+simulation (`app/internal/cms/directus/collections/jobsimulation.go:1079-1085`); when it is nil the content
+layer supplies `gptrealtime` (`:1594-1600`). **ElevenLabs remains the active default** for the call/reply
+pipeline and transcript improvement, so it is not yet fully replaced.
+
+⚠️ **`flag_use_realtime_openai` does NOT select LiveKit over ElevenLabs, and gates no "new sessions"** —
+this paragraph said so from 2026-06-01 until M257x iter-49. The flag is read **inside** `CreateAgentDispatch`,
+i.e. on the LiveKit path the request has *already* entered (`calls/livekit.go:131-135` read, `:140-144`
+effect), and all it does is swap the dispatched **endpoint** to `openai-hosted`. **This is
+residency-relevant:** flipping it moves a live voice session off an Azure-EU endpoint — a path the routing
+section above does not otherwise cover.
 
 ---
 

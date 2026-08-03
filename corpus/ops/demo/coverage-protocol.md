@@ -613,8 +613,13 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
     snapshot mirror only helps if the read path CONSULTS it** — *as of the M51 iteration this paragraph
     records*, the default AI-readiness dashboard GET took the live-recompute branch (`buildLiveResponse`;
-    the `ai_readiness_live_snapshots` read was gated behind a *closed* `CycleID`), so seeding the snapshot
-    table would NOT short-circuit the default call. **⚠️ No longer true at platform HEAD** — see the
+    the **`ai_readiness_snapshots`** read was gated behind a *closed* `CycleID` — `buildResponseFromSnapshots`
+    calls `ListAIReadinessSnapshots`, `readiness.go:771-772`), so seeding the snapshot
+    table would NOT short-circuit the default call. **This sentence named `ai_readiness_live_snapshots`
+    until M257x iter-49** — a different table entirely: the **askengine / Talk-to-Data write-side mirror**,
+    which says so in its own docstring (`live_snapshots.go:54-57`) and which the twin twelve lines below
+    already named correctly. iter-48 rewrote this sentence's tense and its retraction and preserved the
+    wrong table name it had not noticed. **⚠️ No longer true at platform HEAD** — see the
     correction below (`readiness.go:308-312` also reaches `buildResponseFromSnapshots` on the nil-`CycleID`
     path). This sentence stood in the PRESENT tense thirteen lines above its own retraction until M257x
     iter-48. **Decompose like M46:** if a demo-patch can batch/relax

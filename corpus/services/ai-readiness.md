@@ -406,8 +406,16 @@ decision):**
 - **Active cycle → the dashboard RECOMPUTES from signals.** `GetAIReadinessWithOptions` → `buildLiveResponse` →
   `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
-  `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no step-1 signal** from the
-  aggregate. So an **active**-cycle dashboard requires the **signals-true** seed (write the real skill evidences +
+  `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no PROGRESS ROW** from the
+  aggregate. ⚠️ **It reads no step-1 signal at all**, which this sentence claimed until M257x iter-49:
+  `queryReadinessStarters` (`aireadiness/steps.go:915-938`) is
+  `SELECT DISTINCT user_id FROM public.ai_readiness_user_step_progresses … AND status <> 'not_started'` — a
+  row in the **progress** table, never a `user_skill_evidences` row. The old wording was wrong in **both**
+  directions: a member with step-1 evidence but no progress row is **dropped**, and one with an
+  `in_progress` row and zero evidences is **kept**. The platform states this itself at `steps.go:907-914`
+  (*"This DB signal is the only real 'has started' check"*). So an **active**-cycle dashboard requires the
+  **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
+  counted, not the evidences (write the real skill evidences +
   sim sessions + `ai_readiness_user_step_progresses`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
   is a **materialized cache** (rewritten by `RefreshLiveSnapshots`, consumed by Talk-to-Data SQL) — **NOT** the
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
@@ -415,8 +423,11 @@ decision):**
   directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
   cycle to `closed`) with **no underlying signals** — the world reads as a *finished* assessment. **This is the
   strategy M51 shipped** (`AIReadinessConfigSeeder` writes the cycle `closed` + `AIReadinessFunnelSeeder` writes 199
-  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
-  completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
+  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path — on the premise that the
+  live-recompute never completed in the coverage harness budget (a per-skill federated translation N+1, the M46
+  per-object-RPC class). ⚠️ **That premise was refuted at M219: the recompute takes 2.09 s.** The strategy M51
+  shipped is unchanged; the reason given for it is not. Retracted here and at
+  [`ops/demo/stories-spec.md:599`](../ops/demo/stories-spec.md) at M257x iter-49.
 
   **The frozen path is reachable BOTH cycle-scoped and by default.** `GetAIReadinessWithOptions`
   (`app/internal/aireadiness/readiness.go:289`) has two routes into `buildResponseFromSnapshots`:
