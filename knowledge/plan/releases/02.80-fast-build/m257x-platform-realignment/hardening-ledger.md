@@ -713,3 +713,172 @@ remains:
   **RF-7**, **RF-8**, **RF-9**, **RF-10**, **RF-11**, **RF-12**, and **RF-13** (new this session, pass
   8 — the tenancy derivation block that stops one step short of the number in dispute; **joins** the
   queue, supersedes nothing).
+
+---
+
+## Pass 10 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** iter-44 … iter-56 (13 iters: 11 tiks + 2 toks — iter-51 TOK-03, iter-54
+TOK-04). First pass of the fourth invocation; the prior pass-9 terminating commit is `87a8948`.
+
+**Tiks covered since prior pass:** 11.
+
+**Sequencing note.** TOK-04 held this invocation back until *after* the `app` pin advanced
+`v1.363.2 → v1.365.0`, on the reasoning that the residue is Playthrough- and seeder-heavy and hardening
+against a version about to be replaced hardens the wrong thing. The advance landed at iter-56 and
+clauses 1 and 2 were restored green against it, so this pass hardens the post-advance state. The risk
+that motivated the wait — the advance breaking the seeders, as it did at v2.1 and v2.7 — did **not**
+materialise.
+
+**Coverage delta on touched files:**
+
+| subject | before | after |
+|---|---|---|
+| `demo-stack/rosetta-demo` cmd_down teardown ORDER | 0 executable tests (8 source-string tests on the sweep) | **10**, the shipped block EXECUTED |
+| `stack-injection/platform_topology.py` volume-syntax coverage | short syntax only | **+5**, long syntax refused |
+| `stack-core` mutation batteries (M255 + M220) | **13 of 26 failures**, unattributable | **0**, all 21 mutants RED under distinct signatures |
+| `corpus/ops/demo/demo-up-defaults.md` ↔ parsers | 27 disagreements, guard RED | **0**, guard OK both directions |
+| `playthroughs` baseline-settle class | 0 | **3** (fence + 2 floors), pre-fix watched RED |
+
+**The `stack-core` baseline this pass owns establishing.** Quoted at `14F/527` and unverified for four
+rounds. **Measured: 26F of 585.** Repaired to **1F of 585** (below). The one that remains is
+`test_claim_twin_guard_iter48_answer_key::test_02_the_green_twin_of_every_site_stays_SILENT` — a LIVE
+corpus-state red against a deliberate answer-key fixture. It belongs to TOK-02 step 4's repair queue and
+was **not** touched; the fixture is perishable and this pass did not spend it.
+
+**Tests added:** 26 net-new across 4 files + 1 net-new guard.
+
+- `demo-stack/tests/test_teardown_purge_order_m257x.py` — 10
+- `stack-injection/tests/test_platform_topology.py` — 5
+- `playthroughs/e2e/tests/baseline-settle-fence.unit.spec.ts` — 3
+- (Pass 11: `stack-core/tests/test_evidence_visibility_guard.py` — 14)
+
+**Bugs surfaced + fixed inline:**
+
+1. **The teardown's fix stopped at the diagnosis; the write it was silent about still happened** (rext
+   `458a9a4`). iter-55 made `sweep_project_containers` name the survivors and set `purge_failed`, then
+   ran `purge_data_dir` on the very next line, unconditionally — so on the exact branch the fix exists
+   to describe, `$stack/data` was still `rm -rf`'d from a root container **under a live postgres**. That
+   is verbatim the damage iter-55's own commit message calls *"worse than the failure"*. The wipe is now
+   GATED on the sweep; F-9 is preserved (no mid-flight death, slot and images still reclaimed, re-raise
+   last), and the final `die` distinguishes *"the wipe failed"* from *"the containers are still up"*.
+   The eight iter-55 tests could not have caught it: they are source-string assertions, and **two
+   statements and a gate contain the same two names**. Hence 10 tests that EXTRACT and EXECUTE the
+   shipped block against stubs, with an INVERTED mutant (a removal mutant cannot tell a gate from an
+   inverted one), the literal pre-fix two-statement form, and a no-op control that survives.
+
+2. **A volume spelling the parser cannot read graded GREEN** (rext `8e8ef5c`). iter-56's
+   `check-host-mounts` reads compose's SHORT volume syntax. Against the LONG syntax the mount is silently
+   dropped, and `check_host_mounts` grades the list it collected — so a file written that way yields zero
+   findings and exits **0**, over exactly the missing-source state iter-56 measured costing a cold cycle
+   and a misattributed `STORAGE_RPC_ADDR` diagnosis. Now a `TopologyError` naming the service. Latent,
+   not live — which is the footing `INJECT_SVCS` was on the day before the prune.
+
+3. **The anti-theatre battery ran on a runner this toolchain does not ship** (rext `22c1da8`, `bb474b7`).
+   Both mutation batteries spawn `python -m pytest`; nothing else in rext needs pytest and this host has
+   none. Every nested run exits 1 with no `FAILED` lines, so `test_00` fails with an EMPTY failure set —
+   and, the part worth recording, **`test_01`'s PRIMARY assert (`assertNotEqual(rc, 0, "THEATRE: mutant
+   left the suite GREEN")`) PASSED for all eleven mutants**, because rc was 1 whatever the mutation did.
+   The battery would have certified *"every mutant went RED"* on a host where it never executed one test.
+   It did not — solely because M255 wrote a SECOND assert demanding a **named** failing test rather than
+   a non-zero exit code. That is §5 rule 7 doing its job, and it is the whole argument for the rule.
+   Repaired in **both** batteries in one pass (§8 rule 7's recurrence corollary): M220's carried the
+   identical dependency and its retry ladder was re-taking, three times at 900 s each, a measurement that
+   could not come out differently.
+
+4. **iter-55 added a module dependency the M255 battery's explicit list never learned** (rext `22c1da8`).
+   `gen_injected_override.py` gained `import platform_topology`; `_COPY_FILES` did not. `_stage` asserts
+   every NAMED file exists, which **cannot notice a dependency that was ADDED** — so the staged tree
+   imported a module that was not there. Invisible for two reasons at once: the pytest-less runner could
+   only report "RED, no attribution". Changing the runner named it on the first run.
+
+5. **iter-56 shipped a knob no reader could find, and 22 anchors had rotted** (rosetta `d7440e8`).
+   `demo_knob_guard` — the fence for exactly this — was RED and unread, carrying ten of the 26 stack-core
+   failures. `DEMO_ALLOW_MISSING_HOST_MOUNTS` (up-injected.sh:2136) had no row anywhere, and it gates the
+   only FATAL member of the host pre-flight: the one knob an operator reaches for when the pre-flight
+   blocks them was the one the contract did not mention. Plus 22 stale `file:line` citations (iters 55–56
+   added ~90 lines above them) and four count mirrors at 30-vs-31.
+
+6. **The `pt-assignment-assign` flake, root-caused rather than re-run** (rext `8eb1fb0`). 29/1 then 30/0
+   on an unchanged re-run. The spec read its baseline count from a members table that was **still
+   filling**, and asserted a strict delta against a settled one. `waitForMembersTableSettled()` already
+   existed — written at M256 iter-13 from a real trace whose own docstring measures *"2.2 s after the
+   first row appeared"* — but its first caller ran AFTER the baseline. A short baseline makes `before - 1`
+   unreachable and the Playthrough reports RED about a write that landed. iter-35's shape exactly: the
+   rule applied at the ACTION, not at the MEASUREMENT one statement earlier. Fixed, and the CLASS fenced.
+
+**Knowledge backfill:** `corpus/ops/demo/demo-up-defaults.md` (the missing knob row, stating the
+measurement — no mount → starts; docker's auto-created empty DIRECTORY → exit 0 in 137 ms; a regular
+empty file → starts and stays up — plus 22 re-pointed anchors), `corpus/ops/demo/README.md` and root
+`CLAUDE.md` (count mirrors), and `rosetta-extensions/stack-core/README.md` (the guard registry row, Pass
+11).
+
+**Flakes stabilized:** 1 — `pt-assignment-assign`, root-caused to the pre-settle baseline read (above),
+not papered over with a re-run. **Flake gate:** the tests added in this pass were run 3× consecutively
+clean; the two mutation batteries were each run to completion twice after repair.
+
+**Suite state (both repos):**
+
+| section | result | vs baseline |
+|---|---|---|
+| `stack-core` | **1F of 585** | baseline was quoted `14F/527`, **measured 26F/585** — repaired to 1F |
+| `demo-stack` | 7F of **1048** | baseline 7F/1038 — **unchanged**, +10 tests |
+| `stack-injection` | **OK 331** | 316 (pre-iter-56) + 10 (iter-56) + 5 mine |
+| `dev-stack` | **OK 138** | unchanged |
+| `stack-verify` | not re-run this pass | baseline 11F+1E/237 |
+| Go sections | unchanged | `clerkenstein` still environmental (no GitHub creds in this sandbox) |
+
+shellcheck clean on `rosetta-demo`.
+
+**Stop condition:** continue-to-next-pass — the dimension scan surfaced six live defects on its first
+look, which is not a stabilizing signal. Still unswept: iters 27–30, 32–34, 36–41; `stack-verify` not
+re-run; and `CHECK-M257x-iter35-seeder-writes-one-instant` (the seeder stamping every backdated session
+at one timestamp) remains the root under the tie-ordering repairs and is untouched.
+
+---
+
+## Pass 11 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** iter-53, iter-54, iter-56 (the instrument-provenance thread) — the routed
+`CHECK-M257x-iter54-gitignored-instrument-sweep`.
+
+**Coverage delta on touched files:** `knowledge/plan/**/evidence/**` visibility: **0 checks → 1 guard +
+14 tests**. The class had no instrument at all.
+
+**Tests added:** 14 (`stack-core/tests/test_evidence_visibility_guard.py`).
+
+**Bugs surfaced + fixed inline:**
+
+1. **The sweep, taken — and `.agentspace/rext.tag` was not the only one** (rext `04f72af`, rosetta
+   `04f59b1`). TOK-04 P2's corollary said to *assume it was not the only one until measured*. Measured:
+
+   ```
+   evidence/pt-run-iter26.log                 <- .gitignore  *.log
+   iter-36/evidence/binding-run-report.json   <- .gitignore  knowledge/plan/**/*-report.json
+   ```
+
+   Both sat in this milestone's own evidence directories, on disk, in no diff. **The second is the run
+   artifact of iter-36/37 — the clause-2 GATE-MEETING run TOK-04 re-opened for recording no platform
+   ref.** Its evidence was never in the repository to re-read: the same defect one layer down. Neither
+   ignore rule was wrong for its own purpose; what neither anticipated is that a run log and a Playwright
+   report ARE the two artifacts a reading produces. iter-56 hit the identical trap two days later and
+   worked around it with `.txt`, which fixes one commit and leaves the trap armed — which is why this is
+   a guard, not a `.gitignore` edit. `evidence/` under `knowledge/plan` now always ships; a stray report
+   in an iter-dir ROOT stays ignored, and a test pins that.
+
+2. **The guard's own first cut was 4-of-5 false positive, and was narrowed before shipping.** Matching
+   any path-shaped string containing `evidence/` fired on iter-39's plan sentence (*intent*, not a
+   citation), on iter-56's decisions.md **quoting the two ignored filenames inside the finding that they
+   were ignored**, and on two roadmap link LABELS whose targets resolve. Recogniser narrowed to markdown
+   LINK TARGETS — someone wrote those expecting a reader to follow them. §8 rule 6, and one of the 14
+   tests pins exactly those three shapes as NOT citations. Recorded here rather than quietly fixed,
+   because a fence that cries wolf is disabled within a week and this one nearly shipped as one.
+
+**Knowledge backfill:** `stack-core/README.md` guard-registry row; the `.gitignore` block carries the
+measurement and its two offenders inline, so the next reader does not re-derive it.
+
+**Flakes stabilized:** none observed.
+
+**Stop condition:** continue-to-next-pass — the routed CHECK is closed and the class is fenced, but the
+unswept-iter residue (27–30, 32–34, 36–41) and `stack-verify` are untouched, so the dimension scan is
+not clean.
