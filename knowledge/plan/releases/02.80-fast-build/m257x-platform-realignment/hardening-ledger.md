@@ -983,3 +983,78 @@ What remains is a **coverage** gap, not a dimensional one, and it is still the s
 * **`stack-core`'s single remaining red** (`test_claim_twin_guard_iter48_answer_key::test_02`) is a LIVE
   corpus-state failure against a perishable answer-key fixture. It belongs to TOK-02 step 4 and was
   deliberately not spent.
+
+---
+
+## Pass 13 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** iter-27, iter-30 — the first two of the **unscanned window** (iters 27–30,
+32–34, 36–41), which had been named as the outstanding coverage gap for six passes.
+
+**The hypothesis under test.** The 4th cap was declined on the grounds that the residue is a COVERAGE gap,
+not a dimensional one — that the unscanned window would yield defects at a rate comparable to fresh
+material, rather than needing a sharper instrument. **It held.** Two iters into the window, on their first
+look: **three findings, two of them live defects**, both in the *same function* iter-30 shipped, and both
+of a class this milestone has already paid for twice.
+
+**Coverage delta on touched files:**
+
+| subject | before | after |
+|---|---|---|
+| `write_run_provenance` crash path (binding run, no results) | **0** — the iter-30 helper always pre-created the artifacts, so the branch never ran | 1 executable pair-invariant test + a survive-control |
+| `write_run_provenance` JSON validity | 0 | 7 sub-cases, parsed + round-tripped |
+| hero-share fence "must carry a reason" clause | 1 of 6 files (`feedback.go` only) | **6 of 6**, derived |
+
+**Tests added:** 3 (`playthroughs/manifest/runner_safety_test.go` ×2 executable,
+`stack-seeding/seeders/hero_share_policy_fence_test.go` ×1 AST-derived).
+
+**Bugs surfaced + fixed inline** (rext `ff67f1c`):
+
+1. **The guard and the action were not connected — the pass-10 class, again.** `write_run_provenance()`
+   made both RESULT copies conditional on the artifacts existing and left the PROVENANCE copy
+   **unconditional** beside them. The runner `rm -f`s `last-run.json` before Playwright starts, so a
+   **crashed binding run** reaches the function with the file ABSENT and advanced
+   `last-binding-run.provenance.json` to the new run while `last-binding-run.json` still held the old one.
+   Measured: a sidecar reading `run_start_epoch: 2000, playwright_exit: 1` beside results from epoch 1000.
+   **This is iter-30's own defect rotated.** It shipped so a reader could tell a binding verdict from an
+   advisory probe; in this state a reader cannot tell a **CURRENT** binding verdict from a **STALE** one —
+   and the fresh timestamp actively vouches for the old numbers, which is worse than no sidecar at all.
+2. **The sidecar could be unparseable.** `grep_pattern` is operator argv and was interpolated RAW, so
+   `--grep '@pt:a"b'` emitted `"grep_pattern": "@pt:a"b"` — rejected by every JSON parser, at READ time,
+   far from the run that wrote it. A scoped diagnostic is precisely when an operator reaches for a quoted
+   pattern, so it is reachable on the path the file exists for. Escaped **backslash-first** + control chars.
+3. **iter-27's fence left its own clause unenforced.** The policy map's doc says `heroIndifferent` "must
+   carry a reason"; only `feedback.go`'s reason was ever checked. A new seeder could satisfy every
+   assertion with `{heroIndifferent, ""}` — **accidental indifference re-admitted through the front door**,
+   the one state that fence exists to prevent.
+
+**Twin sweep (§5 rule 19) — CLEAN, and recorded as such.** The
+conditional-copy-beside-unconditional-sidecar shape has no other instance in rext; `last-binding` appears
+in exactly this script and its guard. Pass 12's finding was that fixes travel in pairs; here the pair
+genuinely does not exist, which is worth writing down so the next pass does not re-run the search.
+
+**Mutation results — 6 mutants, all RED, four INVERTED rather than removals (§8 rule 5):**
+
+| mutant | verdict |
+|---|---|
+| M1 unconditional sidecar (the original defect restored) | RED |
+| **M2 sidecar never copied (freeze)** | **RED — caught by the positive control** |
+| M3 raw JSON interpolation | RED |
+| **M4 escape order inverted (quote before backslash)** | **RED — pins the ordering claim itself** |
+| M5 reason blanked · M6 reason whitespace-only | RED |
+
+**M2 is the one that matters.** The cheapest way to pass a staleness assert is to stop writing the sidecar
+entirely, so the control asserts a later *healthy* binding run still advances **both** artifacts — the
+no-op positive control that must SURVIVE. Without it, every assertion in that test would be green against
+a function that does nothing. M4 is the second: the fix's own comment claims backslash must be escaped
+before the quote, and that claim is now tested rather than asserted in prose.
+
+**Flakes stabilized:** none new. **Flake gate: 3 consecutive clean runs** of all 3 added tests.
+
+**Suites:** `playthroughs` green (4 pkgs), `stack-seeding` green (12 pkgs), `go vet` clean both,
+`shellcheck` clean on the edited script. The live `demo-1` stack (11 containers) carrying the clause-1/2
+evidence was **not touched**.
+
+**Stop condition:** continue-to-next-pass — the window's remaining code carriers (**iter-36**'s 262-line
+`assignment_plans.go` + `hiring_funnel`/`assignments` deltas, and **iter-37**'s `stack-injection` override
+generator) are unscanned, as are the measurement iters 28/29/32/33/34/38/39/41 and the iter-40 cleanup.
