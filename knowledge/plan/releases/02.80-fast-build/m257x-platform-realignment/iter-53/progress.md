@@ -113,3 +113,51 @@ drift evidence + a README naming the itemized drift. Protocol-evolution: `platfo
 4. **A tie-break clause is a bigger knob than the whole rest of a briefing.** One sentence — resolve doubt
    downward vs upward — moved the count 46 → 35 and `N̂` 68 → 47, more than any other difference between the
    two briefings. Grading rules should state their tie-break explicitly and treat it as load-bearing.
+
+---
+
+## ⚠️ AMENDMENT — the close-fetch, taken after the close section was written
+
+**The Phase 5 grading above is WRONG on condition (3), and it is corrected here rather than silently
+edited.** It was written from the **open** fetch. The mandatory **close** fetch, run minutes later, returns:
+
+```
+platform origin/main: ef32d4cd8e0ceecf528a74c37d5e2ae5804ce021    (was 2adcf714 at open)
+  ef32d4c  Merge pull request #24 from anthropos-work/chore/prune-merged-services
+  6060315  fix(compose): give postgres a 120s healthcheck start_period
+  d11a403  chore(compose): drop roadrunner, prune dead env, repoint messenger
+```
+
+**A platform commit landed mid-iteration, and it is squarely in this milestone's class.** `d11a403` drops
+roadrunner from compose, prunes dead env, and repoints messenger. Both readings were adjudicated against
+ground-truth clones pinned at `2adcf714`, and **at least one seat's clearance is invalidated by name**:
+reading #12 seat F positively certified that *"compose at `2adcf714` really does still start
+`cms`/`jobsimulation`/`roadrunner` in the default `graphql` profile"* — a statement `d11a403` has just made
+false. Every corpus claim about the compose service set, roadrunner's presence, and messenger's wiring was
+measured against a reference that no longer holds.
+
+### Corrected Phase 5 grading
+
+**Phase 5 grading (corrected):** (1) gate-met: n — (2) triggered-tok: n — (3) **re-scope: y** —
+(4) user-blocker: y (superseded; re-scope is lower-numbered and first-fires-wins) — (5) cap-reached: n —
+(6) protocol-stop: n — Outcome: **exit-3**
+
+**`EXIT_REASON: re-scope-trigger`.** This is **occurrence 2 of 2** — the milestone's `re_scope_trigger`
+field reads: *"If TWO consecutive full-alignment attempts are invalidated by new platform commits landing
+mid-milestone — i.e. the target moves faster than we can track it — STOP and escalate. The answer then is a
+pinning-and-tracking POLICY (how we choose a platform ref, how we notice it moved, who re-points), not more
+alignment work."*
+
+**The trigger's own predicted arithmetic has now happened twice.** The overview noted that origin
+`repos.yml` moved **39 minutes after** the mirror-drop commit and warned that *"'we re-pointed everything'
+has a short shelf life unless the policy exists."* This iteration spent 14 auditor-seats measuring a corpus
+against a platform reference that moved before the measurement was written up.
+
+**It also compounds the iteration's primary finding in an uncomfortable way.** iter-53 found that the
+*audit instrument* was never pinned to a stored artifact; the close-fetch finds that the *ground truth* was
+never pinned to a tracked ref either. **Two of the three legs of every number this milestone has published
+— the instrument, the reference, and the corpus — were free to move without appearing in any diff.**
+
+**Status is unchanged at `closed-fixed`.** The iteration's planned work completed before the platform moved,
+the measurement is a valid measurement *of the corpus against `2adcf714`*, and it is labelled as such
+throughout. What the re-scope fires on is **what happens next**, not what happened here.

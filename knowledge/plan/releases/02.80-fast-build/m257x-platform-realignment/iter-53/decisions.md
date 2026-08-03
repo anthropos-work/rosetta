@@ -40,3 +40,13 @@ audit partition; they repair no audited claim.
 MINOR — which *"YELLOW with 0 blockers"* admits. Choosing on the orchestrator's own authority is precisely
 the single-seat adjudication that put a false `32` into the corpus at iter-49 and a false `31→32` repair into
 it at iter-52. It is surfaced as a user-blocker instead.
+
+## `D-M257x-53-6` — the close-fetch fires the re-scope trigger, and the grading is amended in the open
+
+The Phase 5 grading was written from the open fetch and was wrong on condition (3). It is **amended in an
+explicitly marked block** in `progress.md` rather than silently rewritten, because a milestone whose central
+finding is *"a source of truth that moves without appearing in a diff"* cannot fix a published grading by
+overwriting it.
+
+Occurrence 2 of 2. `EXIT_REASON` corrected from `user-blocker` to **`re-scope-trigger`** (first-fires-wins;
+re-scope is condition 3, user-blocker is condition 4). Both are live and both are reported.
