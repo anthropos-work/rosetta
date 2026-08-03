@@ -1142,3 +1142,87 @@ that actually hosts the skills domain, so its guard and action are connected.
 **Stop condition:** continue-to-next-pass — the window's MEASUREMENT iters (28, 29, 32, 33, 34, 38, 39, 41)
 and the iter-40 cleanup are still unscanned, and pass 13's finding rate makes a recurrence sweep across
 them worth one more pass.
+
+---
+
+## Pass 15 — 2026-08-03 — incremental
+
+**Iters hardened this pass:** the window's MEASUREMENT iters (28, 29, 32, 33, 34, 38, 39, 41) + the
+iter-40 cleanup — **and the RECURRENCE dimension for every class passes 13–14 found** (§5 rule 19, §8
+rule 7's corollary).
+
+**With this pass the unscanned window is CLOSED.** iters 27–30, 32–34, 36–41 — the gap named in four
+consecutive cap-acceptance discussions and six passes old — is fully swept: 27/30 at pass 13, 36/37 at
+pass 14, and the remainder here.
+
+**What these iters are, and what that implies.** iters 28/29 touched **evidence only**; 32/33/34/38/39/41
+are **corpus prose**; 40 is a skills-doc cleanup. This is the surface the third cap-acceptance correctly
+identified as having reached its fixed point — so the dimension worth spending here is not the prose but
+the **GUARDS that fence it**, which are code and can be blind (pass 12's `check-host-mounts` graded GREEN
+over a syntax it could not parse).
+
+**Findings: none. Every sweep a clean negative — established empirically, not by reading.**
+
+1. **Guard vacuity (the pass-12 shape-4 class).** A crude grep suggested seven `stack-core` guards had no
+   vacuity protection. That was the grep being wrong, and running them proved it. Each was pointed at (a)
+   a missing tree, (b) a present-but-empty corpus, and (c) a corpus with zero matching files:
+
+   | guard | missing tree | present-but-empty | zero files |
+   |---|---|---|---|
+   | `anchor_construct_guard` | exit 2 | **exit 2** — *"0 anchor(s) resolved; the resolver, not the corpus, is what this measures"* | — |
+   | `derived_value_guard` | exit 2 | **exit 2** | — |
+   | `markdown_structure_guard` | exit 2 | exit 0, honestly reporting *"scanned 2"* | **exit 2** — *"0 files to scan"* |
+
+   All fail **closed**. `markdown_structure_guard`'s exit 0 on a 2-file clean corpus is correct behaviour
+   (it is a per-file structural check) and it *states its denominator*, which is the property that matters.
+
+2. **Raw JSON interpolation (pass 13's second defect), swept across ALL of rext.** Every `.sh` line
+   emitting a JSON string field from a bare shell expansion: **2 hits, both the ones pass 13 fixed.** Every
+   hand-built JSON string field in non-test Go/Python: **1 hit** —
+   `ai_readiness_funnel.go:680`, which **already escapes** `"` and `\` correctly for its stated surface
+   (code-owned constant prompts) and says so. **No twin.**
+
+**Tests added:** 0 — deliberately. Nothing surfaced that a test would pin, and a test written to justify a
+pass is the thing this milestone punishes.
+
+**Baselines RE-MEASURED this pass (all five python sections + Go), and all unchanged:**
+
+| section | measured | vs baseline |
+|---|---|---|
+| `stack-core` | **1F of 599** | unchanged — the single red is still the iter-48 perishable answer-key fixture (TOK-02 step 4, deliberately not spent) |
+| `demo-stack` | 7F of 1048 | unchanged |
+| `dev-stack` | **OK 151** | unchanged |
+| `stack-verify` | 11F + 1E of 237 | unchanged |
+| `stack-injection` | **OK 332** | 331 + the 1 test pass 14 added |
+| Go sections | green | `clerkenstein` environmental (no GitHub creds here), unchanged |
+
+**Flakes stabilized:** none new.
+
+**Session totals (passes 13–15):** 2 rext test/fix commits + 3 rosetta ledger commits · **6 tests added**
+across 3 files + 1 shared helper · **2 live defects fixed inline** · **2 untested-property gaps closed** ·
+**12 mutants run, 12 RED**, of which **4 were invisible to the pre-existing tests**.
+
+**Stop condition: stabilized.** Both conditions are met and this is the first pass in five invocations
+where that is true rather than asserted: the coverage delta this pass is **0** (no test was needed), and
+the dimension scan — two recurrence sweeps run to completion against measured baselines — **found nothing
+new**. The gap that motivated four declined cap-acceptances is closed.
+
+**What "stabilized" does NOT mean here.** It is a statement about the harden dimension, not about the
+milestone: **`CHECK-M257x-iter35-seeder-writes-one-instant` remains open and Fate 3** (a seeded-data
+distribution change against a live evidence stack), the routed-forward queue **RF-2, RF-3, RF-7…RF-14** is
+unchanged, and `stack-core`'s single red belongs to TOK-02. None of those is a hardening deficit; all of
+them are correctly-routed work with named handlers.
+
+### Did the coverage-gap hypothesis hold?
+
+**Yes, decisively, and the shape of the answer matters more than the verdict.** The 4th cap was declined on
+the argument that the residue was a coverage gap rather than a dimensional one — that fresh material would
+yield defects without needing a sharper instrument. On first contact with the window, pass 13 found **two
+live defects and one unenforced clause**, and pass 14 found **two properties fenced at one of their two
+sites**, one of which (an inverted-precedence secret expression) would corrupt a real dedicated production
+credential while passing every test that existed. **None of the five needed AST or call-site analysis** —
+they needed someone to *run the function under the state it was written for* and to *follow a property to
+its second site*.
+
+And the window is now genuinely exhausted: pass 15 swept its remainder and both recurrence dimensions and
+found **nothing**. The hypothesis held, and it has now been spent.
