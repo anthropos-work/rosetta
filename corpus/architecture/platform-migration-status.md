@@ -21,8 +21,9 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 > departures, unprompted, on a tree nobody had touched. `d11a403` deletes the **cms**, **jobsimulation** and
 > **roadrunner** compose services *and* their `repos.yml` entries: those three are now decommissioned locally
 > and are no longer cloned by `make init`. **This is the removal [§5](#5-what-this-map-says-about-the-program)
-> named as the one that arms the failure this milestone exists to fence** — it landed under
-> `chore/prune-merged-services`, ahead of the M810 it was expected to wait for.
+> named as the one that would have armed the failure this milestone exists to fence** — it landed under
+> `chore/prune-merged-services`, ahead of the M810 it was expected to wait for, and it landed *after* the
+> fix. See §5 row 3: the tooling had already been re-derived, so the removal passed through it harmlessly.
 
 ---
 
@@ -181,21 +182,36 @@ Two of the rows above are therefore already known to be wrong on a schedule.
 
 The rows to watch, in order:
 
-1. **`storage` and `messenger`** — the named next fold. When `repos.yml` flips either to `migrations: false`
-   with a `legacy` comment, the fold has landed. `messenger` is the more exposed of the two: it is the last
-   process that still calls cms and jobsimulation over RPC, and `d11a403` had to repoint both edges by hand.
+1. **`storage` and `messenger`** — the named next fold. **The signal this row used to give was already
+   dead when it was written:** it said *"when `repos.yml` flips either to `migrations: false`, the fold has
+   landed"* — but both have read `migrations: false` since long before the fold was announced (`repos.yml:18-23`
+   @ `ef32d4c`), exactly the Trap-A error §1 warns about. The signal that actually fires is **departure**:
+   the row leaves `repos.yml` and the compose service is deleted, which is what direction B in [§4](#4-the-fence)
+   watches and what caught `d11a403`. `messenger` is the more exposed of the two: it is the last process that
+   still calls cms and jobsimulation over RPC, and `d11a403` had to repoint both edges by hand.
 2. **`roadrunner`** — still the only row where a repo's own terraform and the platform's declaration
    disagree, and now the disagreement is one this map cannot settle without reading **infrastructure**.
-3. ~~**`cms` / `jobsimulation` local husks**~~ — **this happened, on 2026-08-03, ahead of M810.** `d11a403`
-   removed the containers *and* the clone entries under `chore/prune-merged-services`. Two consequences,
-   both live:
-   - **The armed failure is now armed.** Tooling that iterates the clone set — `demo-stack/migrate-demo.sh:81-85`
-     creates the legacy schemas itself and `:106` atlas-applies a hand-maintained 4-tuple, guarded by
-     `[ -d ] || continue` — will now **silently skip** three repos rather than fail. This is the exact shape
-     M257x iter-01 predicted and named a time bomb.
-   - **A box with stale clones cannot observe it.** The three directories still exist on any machine that
-     cloned before 2026-08-03, so the skip is invisible there and fires only on a genuinely fresh `make init`.
-     A local "it still works" is not evidence about a cold box.
+3. ~~**`cms` / `jobsimulation` local husks**~~ — **this happened, on 2026-08-03, ahead of M810 — and the
+   predicted failure did not occur, because the fix had already landed.** `d11a403` removed the containers
+   *and* the clone entries under `chore/prune-merged-services`. What it met on our side:
+   - **The time bomb was disarmed six weeks early, by this milestone.** M257x iter-01 named it:
+     `migrate-demo.sh` created the legacy schemas itself and atlas-applied a hand-maintained
+     `app:public cms:cms jobsimulation:jobsimulation skillpath:skillpath` tuple behind a silent
+     `[ -d ] || continue`. iter-02 (rext `54bccf7`) replaced the tuple with a set **derived from `repos.yml`**
+     and made an absent clone LOUD; iters 06 and 07 re-pointed the last cms/jobsimulation writes, emptying
+     `REXT_TRANSITIONAL_SCHEMAS`. Measured against `repos.yml` @ `ef32d4c` on 2026-08-03: migration set =
+     `app:public`, schema-create set = `extensions sentinel public`, transitional debt = **empty**. The
+     derived set followed the platform's removal with **zero human action** — which is the whole thesis.
+   - **What is still unproven is the cold path, not the logic.** The three directories still exist on any
+     machine that cloned before 2026-08-03, so no local run exercises a genuinely fresh `make init` against
+     this HEAD. A local "it still works" is not evidence about a cold box.
+
+   > **This row asserted the opposite for one commit.** M257x iter-54 first wrote it up as *"the armed
+   > failure is now armed"*, citing `migrate-demo.sh:81-85` / `:106` — line anchors and a code shape that
+   > iter-02 had already deleted. The claim was quoted forward from iter-01 without re-measuring against
+   > this milestone's own repair. It is the milestone's founding class, committed into the map built to stop
+   > it, and the membership fence in §4 cannot see it: the fence checks who is in `repos.yml`, not whether
+   > the prose about our own tooling is still true. Corrected the same day; recorded rather than erased.
 
 4. **The merge itself keeps dropping configuration the merged code still reads.** `d11a403`'s own message
    records that deleting the three containers *"silently dropped env that `app` still reads in-process"* —

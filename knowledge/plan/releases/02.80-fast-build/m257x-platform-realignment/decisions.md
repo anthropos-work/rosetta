@@ -656,3 +656,153 @@ the same tik.** Then **iter-53 = the paired reading #11 + #12**, blind, frozen i
 window** (iters 45–50) against a threshold of 10 — **not yet due**. When it is, the third
 `HARDEN-CAP-ACCEPTED` entry stands: the residue needs AST / call-site assertions, not another sweep of the
 same shape.
+
+---
+
+## TOK-04: pin the target, or stop calling it a measurement — 2026-08-03
+
+**Tok type:** triggered — but not by the 3-no-prog streak. Fired by the milestone's own
+**`re_scope_trigger`, occurrence 2 of 2**, plus a direct user ruling. iter-53 closed `closed-fixed`; the
+streak clause does not apply and was checked before this was written.
+
+**Prior strategy:** `TOK-03: repair the UNION, shrink the estimator, make the edits smaller` — and behind it
+TOK-02 (*fence the prose*) and TOK-01 (*instrument first, then follow*). All three optimised the **reading**:
+a sharper instrument, then a mechanized class, then more readings with smaller repairs.
+
+**Why it stopped working — and the honest version is that it did not stop, it was outrun.** TOK-03's premise
+was a **fixed residual** that better/smaller/more readings could drain. On 2026-08-03 three platform commits
+landed inside one working day and created **81 fresh drift sites across 21 files** — larger than the entire
+46-item union that ten readings had been working on. At the observed rates (repair ~18 per iter, induction
+~9 per 18, external drift 81 in a day) a repair pass is **net −72**. TOK-03 was not wrong about the reading;
+it was measuring a stock while the thing that mattered was a **flow**.
+
+The `re_scope_trigger` predicted this in its own words and prescribed the answer:
+
+> *"The answer then is a pinning-and-tracking **POLICY** (how we choose a platform ref, how we notice it
+> moved, who re-points), not more alignment work. Grinding against a moving target is the failure mode this
+> trigger exists to catch."*
+
+### The class, generalized — because a platform-only policy would miss two thirds of it
+
+This milestone has now been bitten by the same class **four times, in its own instruments**:
+
+| # | instrument | how it moved unseen | found at |
+|---|---|---|---|
+| 1 | the rext version pin (`.agentspace/rext.tag`) | **git-ignored** — never in a diff; 11/11 clones reported `behind: null` while the log claimed *"provably fresh"* | iter-01 |
+| 2 | the audit briefing — *"the whole instrument"* | **git-ignored** scratch path, re-authored from a summary each pass; six knobs drifted, incl. an **inverted tie-break** | iter-53 |
+| 3 | the ground-truth platform clone | free to move; moved **during** iter-53, invalidating a seat's clearance by name | iter-53/54 |
+| 4 | **clause 2's gate-meeting run (iter-37)** | recorded **no platform ref at all** — the only sha in the file is `ad524614`; its ref exists only by adjacency to iter-36 | **iter-54, today** |
+
+**The generalization: an input that can change without appearing in a diff is not a controlled input.**
+Three of the four were git-ignored files; the fourth was an external ref nobody wrote down. Same class, and
+a policy scoped to the platform repo would have caught exactly one of them.
+
+### New strategy — four rules, each fenceable
+
+**P1 — Every measurement states its refs, in the artifact, at the moment it is taken.**
+A `refs:` block in the measuring iter's `overview.md` frontmatter *and* in the run artifact: platform sha,
+rext tag, corpus HEAD, instrument-file sha. **A measurement without a `refs:` block is an anecdote, not a
+measurement.** Fenceable: a guard that fails any `status: closed-*` iter whose progress claims gate-clause
+movement without one. iter-37 is the retrofit case and it has to be re-run anyway.
+
+**P2 — Every instrument is a committed file, and the measurement cites its sha.**
+Not *"the briefing described in the previous overview."* `instrument/briefing-canonical-iter41.md` is now
+that file. **Corollary, and the one with teeth: nothing an instrument depends on may live under a
+git-ignored path.** `.agentspace/rext.tag` is the known offender; **assume it is not the only one until
+measured** — the same wording this milestone's scope used about rext write paths, where it was right.
+
+**P3 — The platform ref is chosen, recorded, and re-checked at open AND close of every measuring iter.**
+- *Chosen*: origin HEAD at iter open, never a pinned pre-drift commit. The gate already says this; P3 makes
+  it operational rather than aspirational.
+- *Recorded*: in the P1 `refs:` block.
+- *Re-checked at close*: iters 32 and 36 already did this **voluntarily**, and it is what detected both
+  occurrences of the re-scope trigger. Make it mandatory. A close-time re-fetch that finds the ref moved
+  **invalidates the measurement by construction** — it does not "probably still hold."
+- *Who re-points*: **the iter that detects the move, in that iter, as its first act.** Not a routed-forward
+  item. iter-54 absorbed a 3-commit move in under an hour; deferring is what makes it expensive.
+
+**P4 — Derive; else fence; else DECLARE it prose-under-review. In that order, and mark which one you used.**
+Today produced a **rank ordering of the three, measured on a single event**:
+
+| approach | what happened on 2026-08-03 |
+|---|---|
+| **derived** (clause 4's `repos_yml_*`) | tracked the removal with **zero human action**; reading identical at `2adcf71` and `ef32d4c`, and identical *correctly* |
+| **fenced** (clause 3's membership guard) | caught the departure **unaided, 3 for 3, within hours**, on a tree nobody had touched — the first non-staged catch in the milestone |
+| **hand-maintained prose** (the map's §5 narrative; the corpus's 81 sites) | **falsified inside one working day** — and one of the falsehoods was written *by this milestone*, while updating the map, citing line anchors its own iter-02 had deleted |
+
+That is not three anecdotes. It is the milestone's founding thesis, measured, on one event, with a control
+in each row. **The engineering rule follows: before writing a claim, ask whether it can be derived; if not,
+whether it can be fenced; if neither, mark it explicitly as prose-under-review with a re-check date.** The
+map must carry that third category **visibly** — it currently does not, which is exactly why a false §5
+narrative read as authoritative as a fenced table row.
+
+### What TOK-04 keeps from TOK-03, because the evidence still supports it
+
+- **Union-of-two readings stays.** Recall ≈ **43–48%** per 7-seat pass makes a single reading a coin flip.
+  This is the one instrument-independent fact the series produced and it is not in dispute.
+- **Pre-commit double-reads stay — and today upgraded them from "recommended" to "load-bearing."** TOK-03
+  move 4 recorded that two blind adversarial diff seats caught **5 blockers inside a repair**. Today's
+  over-claim is the **sixth instance of the same class, and it ESCAPED**, because job 1 was committed
+  without one. Same-day confirmation of both the value and the cost of skipping it.
+- **Smaller edits stay.** ~50% induction on the 18-claim repair is the reason.
+
+### What TOK-04 changes
+
+1. **Meter the flow, not the stock.** The clause-5 metric becomes **net**: *(sites repaired) − (sites
+   induced) − (sites newly falsified by platform movement)*, per unit time. **This is the first clause-5
+   metric that can go negative** — which is the entire point, because the old one could not, and therefore
+   could never tell us we were losing. It reads **−72** for the last cycle.
+2. **Re-establish the ref baseline BEFORE any further reading.** Clause 2 costs ~5 min, clause 1 ~35 min —
+   together less than one reading pass. Taking them first means every subsequent clause-5 number is anchored
+   to a stated, current ref, which **no number in the ten-reading series has ever been.**
+3. **Repair the 81 as ONE derived-and-fenced class, not as 81 claims.** They share a single false predicate
+   (*three services are live-local husks*). That is precisely the mechanizable shape TOK-02 identified and
+   closed successfully. Routing it through the reading instrument claim-by-claim would be the most expensive
+   available route to the cheapest available win.
+
+### What this revision explicitly does NOT do
+
+- **It does not re-cut clause 5, narrow it, or read "met" any other way.** The user has ruled **three**
+  times. Met only by a reading that returns zero.
+- **It does not defer the residual** and does not propose closing at 4 of 5 — which is moot anyway, since
+  the honest count against origin HEAD is **2 of 5**.
+- **It does not weaken the instrument.** It freezes it harder (P2) and adds a ref record (P1).
+- **It does not discard anything TOK-01/02/03 built.** Every fence, every derived list, every artefact is
+  kept. TOK-01's derived sets are the reason clause 4 passed today unaided.
+
+**Strategy class:** `new-direction`. TOK-01 built instruments, TOK-02 fenced a mechanizable prose class,
+TOK-03 attacked coverage and repair surface — all three optimised the **reading**. TOK-04 accepts the
+re-scope trigger's own prescription and optimises **the target's stability and the accounting**. Different
+term again, and this time chosen by the trigger rather than by us.
+
+**Distance-to-gate context:** **2 of 5 verified at origin HEAD `ef32d4c`** — clauses 3 and 4 hold, clause 4
+now *under test*. Clauses 1 and 2 are **stale by the gate's own "against origin HEAD" wording**, not failed,
+and cost ~40 min of machine time to restore. Clause 5 is **not met and moved further away today by 81
+sites**. Full detail: `iter-54/reassessment.md`.
+
+**Cross-refs to prior TOKs:** **TOK-01** (*instrument first, then follow*) built the derived sets and fences
+that just passed their first unplanned live test — untouched, and vindicated more strongly than any reading
+vindicated anything. **TOK-02** (*fence the prose*) correctly identified a mechanizable class; its thesis is
+exactly what change 3 above applies to the 81 sites. **TOK-03** (*repair the union, smaller edits*) keeps all
+three of its moves; what is refuted is its **premise** — a fixed residual that more and smaller readings can
+drain — by a platform that delivered 81 sites in a day.
+
+**Next-tik direction:**
+- **iter-55 = re-establish the ref baseline.** Re-run clause 2 (~5 min) then clause 1 (3 cycles, ~35 min)
+  against `ef32d4c`, each carrying a P1 `refs:` block. **Pre-registered, therefore refutable: both come back
+  green**, because clause 4's derivation is ref-independent and `d11a403` *restored* env onto `backend`
+  rather than removing it. If either goes red, that is a real finding and the highest-value one available.
+- **iter-56 = the 81-site sweep as one derived class** (P4 + TOK-02's mechanism), with TOK-03 move 4's two
+  blind pre-commit diff seats — which today's escape proves are not optional.
+- **Then** the next paired reading — the first in the series taken against a stated, current, committed set
+  of refs.
+
+**Harden recommendation (the orchestrator spawns it, not this iteration):** **10 tiks since the pass-7/8/9
+window** (iters 45–50 → iter-54) against a threshold of 10 — **due now**. But it should sit **after
+iter-55, not before.** The last pass stopped on *"cap reached without stabilization"*, and its named residue
+— iters 27–30, 32–34, 36–41 unswept, with `CHECK-M257x-iter35-seeder-writes-one-instant` still the root — is
+all **Playthrough and seeder** surface, precisely what iter-55 re-exercises against the new platform ref.
+Hardening that surface against a stale ref would repeat the mistake this tok exists to name. **Order:
+iter-55 (ref baseline) → `/developer-kit:harden-mstone-iters` → iter-56.** That pass also owns the **rext
+`stack-core` suite that was not run to completion two iterations ago** — those baselines stand unmeasured
+and belong to a harden, not to a tik.

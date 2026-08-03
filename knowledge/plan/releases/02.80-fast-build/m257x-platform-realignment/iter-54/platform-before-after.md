@@ -98,17 +98,38 @@ departure it was not shown**, rather than a defect deliberately staged to watch 
 direction that fired in anger all three prior occurrences (skiller, skillpath, jobsimulation) and it fired
 again, correctly, within hours.
 
-### The armed failure is now armed — and a stale box cannot see it
+### The time bomb's condition occurred — and the bomb had already been defused
 
-M257x iter-01 named the time bomb: `demo-stack/migrate-demo.sh:81-85` creates the legacy schemas itself and
-`:106` atlas-applies a hand-maintained 4-tuple, guarded by `[ -d ] || continue`. **The condition it was
-waiting for has now occurred**, ahead of the M810 everyone expected to wait for. Three repos are no longer
-cloned, so that guard now *silently skips* rather than fails.
+M257x iter-01 named the time bomb: `migrate-demo.sh` created the legacy schemas itself and atlas-applied a
+hand-maintained `app:public cms:cms jobsimulation:jobsimulation skillpath:skillpath` tuple behind a silent
+`[ -d ] || continue`. **The condition it was waiting for has now occurred**, ahead of the M810 everyone
+expected to wait for: three repos are no longer cloned.
 
-**And our box cannot observe it.** `stack-demo/{cms,jobsimulation,roadrunner}` still exist on disk — cloned
-before 2026-08-03, last commits `ca50c81` / `462343b0` / `87d8d44`. The skip fires only on a genuinely fresh
-`make init`. **A local "it still works" is not evidence about a cold box** — which is precisely how B1 and B2
-went undetected for four days in M257.
+**Nothing broke, because iter-02 had already removed the tuple.** rext `54bccf7` derives the migration set
+from `repos.yml` and makes an absent clone LOUD instead of skipped; iters 06/07 re-pointed the last
+cms/jobsimulation writes and emptied `REXT_TRANSITIONAL_SCHEMAS`. Run live against `repos.yml` @ `ef32d4c`:
+
+```
+migration pairs:     app:public
+schemas to create:   extensions  sentinel  public
+transitional debt:   (empty)
+```
+
+Identical to the reading at `2adcf71`, and identical *correctly* — the three departing repos declared no
+`schema:` key and `migrations: false`, so a set derived from those fields simply never mentioned them. **The
+derived set tracked the platform's removal with zero human action.** That is clause 4's thesis surviving its
+first unplanned test.
+
+**What is still unproven is the cold path.** `stack-demo/{cms,jobsimulation,roadrunner}` still exist on disk
+— cloned before 2026-08-03, last commits `ca50c81` / `462343b0` / `87d8d44` — so no local run exercises a
+genuinely fresh `make init` against this HEAD. **A local "it still works" is not evidence about a cold box**
+— which is precisely how B1 and B2 went undetected for four days in M257.
+
+> **This section asserted the opposite when it was committed.** Its first version read *"the armed failure is
+> now armed"* and cited `migrate-demo.sh:81-85` / `:106` — anchors into code iter-02 deleted. iter-01's
+> finding was quoted forward without re-measuring against this milestone's own repair. Kept visible, because
+> it is the cheapest possible demonstration of the class: **a claim about our tooling, in the map built to
+> stop stale claims, that no fence covers** — §4's guard checks `repos.yml` membership, not rext's state.
 
 ---
 

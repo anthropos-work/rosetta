@@ -747,6 +747,47 @@ Rules, in order of how often they actually catch something:
     per-finding detection probability of one 7-seat pass measured 43%, 42% and 48%. Prefer the quantity that
     replicates.
 
+26. **An input that can change without appearing in a diff is not a controlled input — and a measurement
+    that does not name its refs is an anecdote.** Rule 25 caught one instance of this and read it as a
+    fact about instruments. It is wider. M257x has now been bitten **four times, in its own apparatus**:
+    the rext version pin (`.agentspace/rext.tag` — **git-ignored**, so 11/11 clones reported `behind: null`
+    while the log claimed *"provably fresh"*); the auditor briefing (**git-ignored**, rule 25); the
+    ground-truth platform clone (free to move, and it moved *during* a reading, invalidating a seat's
+    clearance by name); and — the one that hurts — **the gate-meeting run of a gate clause, which recorded
+    no platform ref at all.** Three were git-ignored files; the fourth was an external ref nobody wrote
+    down. Same class.
+
+    So, operationally:
+    - **State the refs in the artifact, at the moment of measurement** — platform sha, tooling tag, corpus
+      HEAD, instrument-file sha. Not in the surrounding narrative, not by adjacency to the previous
+      measurement.
+    - **Nothing an instrument depends on may live on a git-ignored path.** Store it; cite its sha.
+    - **Re-check the moving ref at close as well as open.** A close-time re-fetch that finds it moved
+      **invalidates the measurement by construction** — it does not "probably still hold." The two
+      occurrences of M257x's re-scope trigger were both found this way, voluntarily.
+    - **The iter that detects the move re-points it, in that iter.** M257x iter-54 absorbed a three-commit
+      move in under an hour; the expense is in deferring it, not in doing it.
+
+27. **Derive, else fence, else DECLARE it prose-under-review — and that order is now measured, not
+    preferred.** On 2026-08-03 three platform commits removed cms, jobsimulation and roadrunner from
+    `repos.yml` and from compose, in one working day. The same event hit all three approaches at once:
+
+    | approach | outcome |
+    |---|---|
+    | **derived** — the migration/schema sets read from `repos.yml` at runtime | tracked the removal with **zero human action**; reading identical before and after, and identical *correctly* |
+    | **fenced** — the map↔`repos.yml` membership guard | caught it **unaided, 3 for 3**, within hours, on a tree nobody had touched — its first non-staged catch |
+    | **hand-maintained prose** — the map's narrative sections, and 81 sites across 21 corpus files | **falsified the same day**; one falsehood was written *by the milestone itself*, while updating the map, citing line anchors its own earlier iter had deleted |
+
+    Three approaches, one event, one day, a control in each row. **Before writing a claim, ask whether it
+    can be derived; if not, whether it can be fenced; if neither, mark it explicitly as prose-under-review
+    with a re-check date.** A document that mixes the three without marking which is which invites the
+    reader to extend a fenced row's authority to an unfenced paragraph — which is exactly how a false
+    narrative survived beside a guard that was, at that moment, green.
+
+    And the sharpest corollary: **quoting a prior finding forward is not evidence.** The false claim above
+    was true when first written and had been fixed two iterations later by the same milestone. It survived
+    because it was *cited* rather than *re-run*. Re-measure, or cite the re-measurement.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
