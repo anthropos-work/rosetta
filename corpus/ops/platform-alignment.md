@@ -594,7 +594,9 @@ Rules, in order of how often they actually catch something:
     reading *measures* the corpus term — and a reading performed by auditors, however carefully specified,
     is an instrument with a variance of its own.
 
-    M257x froze its instrument at iter-41 and never touched a knob again: seven seats, one briefing, one
+    M257x believed it froze its instrument at iter-41 and never touched a knob again — **a belief rule 25
+    below refutes: the briefing was git-ignored and was re-authored every pass.** As believed at the time:
+    seven seats, one briefing, one
     size-sorted partition, every file read top-to-bottom under a per-file `wc -l` positive control, plus an
     adversarial diff seat. Three readings were then taken with it, on a corpus changing only by the repairs
     between them: **18 → 7 → 12.**
@@ -708,6 +710,42 @@ Rules, in order of how often they actually catch something:
     and it matches"* as the weakest form of clearance a report can contain, because a silence is merely
     uninformative while a wrong audited zero is evidence pointing the wrong way — and a pass reporting
     zero blockers is made of nothing else.
+
+25. **An instrument that is DESCRIBED rather than STORED is not frozen — and a rising series then measures
+    the re-authoring, not the corpus.** Rule 22 above records that M257x *"froze its instrument at iter-41
+    and never touched a knob again."* **That sentence was false, and no diff could show it.** The auditor
+    briefing — *"the whole instrument"*, in its own words — lived in a **git-ignored scratch directory**. It
+    appeared in no commit and no iter directory, so every pass "held it fixed" by **re-authoring it from a
+    one-line summary in the previous iter's `overview.md`.**
+
+    M257x iter-53 discovered this by doing it: it looked for the briefing inside the milestone directory,
+    did not find it, re-authored it, and its two blind readings came in at **32 and 26** where the previous
+    pair had come in at **14 and 7**. Re-grading iter-53's union against the recovered canonical rule
+    *verbatim* brings it to **23 and 23** — so roughly half the jump was grading drift and half was not, and
+    **neither half is a statement about the corpus.**
+
+    The drift was concentrated in one clause. The canonical rule resolved doubt **downward** — *"if you
+    cannot cite the refutation, it is not a blocker"* — and carved out **undercount**, **omitted list
+    member** and **line drift** as MINOR explicitly. The re-authored rule resolved doubt **upward** (*"when
+    in doubt, book it as a BLOCKER"*) and carved out none of them. A grading rule that resolves doubt upward
+    cannot produce a number comparable to one that resolves it downward, and no amount of care in the
+    reading recovers the comparability afterwards.
+
+    > **Rule 22's warning arrives from the direction it did not anticipate.** It assumed instrument changes
+    > would be *deliberate*, and told you to distrust the count when you sharpen the instrument. The failure
+    > mode is worse than that: an instrument kept only as prose is re-sharpened, or re-blunted, **every time
+    > it is used**, by whoever restates it.
+
+    So: **store the instrument as a versioned file in the repository, and diff it.** Not in scratch, not in
+    `.agentspace`, not paraphrased into the next iter's plan. If a measurement's procedure is a prose
+    description that the next run re-instantiates, then *"held fixed"* is a claim about nothing, and a
+    metric built on it — including one with a floor of zero by construction — inherits the drift. **A
+    gate-bearing metric requires a stored instrument before it requires anything else.**
+
+    The corollary for capture–recapture specifically: **recall survives this confound and the count does
+    not.** Across two paired experiments at two different grading rules and on two different trees, the
+    per-finding detection probability of one 7-seat pass measured 43%, 42% and 48%. Prefer the quantity that
+    replicates.
 
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
