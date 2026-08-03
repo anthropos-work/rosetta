@@ -632,6 +632,71 @@ Rules, in order of how often they actually catch something:
     the only artifact that can support the claim *a full multi-auditor pass missed these while they sat in
     its own file sets*, and that claim is about the method, which outlives the corpus.
 
+23. **Rule 22's experiment, actually run: read the same tree TWICE, blind, and treat the two readings as a
+    capture–recapture sample. The recall it measures is low enough to change what you do.** Rule 22 says
+    measure the variance and calls the experiment cheap. M257x iter-50 ran it, and it was cheaper still —
+    reading #9 was already the first half, so the whole design cost **one** reading, in a window that
+    existed exactly once, between a reading and the repair of its findings.
+
+    The control was total: the 40 audited files byte-identical (`git diff --stat` empty), all 13
+    ground-truth clones at the same shas, the partition therefore dealing the **same hand**, the diff seat
+    given the identical diff, and every seat **blind** — fresh, told nothing of a prior reading, barred
+    from the plan directory that holds the answer key. **No partition, ground-truth or corpus confound.**
+    Whatever the two readings disagree about is the instrument.
+
+    | | reading #9 | reading #10 |
+    |---|---|---|
+    | blockers | 14 | 7 |
+    | per seat | A 1 · B 1 · C 2 · D 2 · E 3 · F 0 · G 5 | A 1 · B 0 · C 0 · D 1 · E 0 · F 0 · G 5 |
+
+    **Matched: 4. Union: 18. Recall: 4/14 = 29% and 4/7 = 57%.** Chapman's estimator puts the tree at
+    **~23** blockers — and because heterogeneous detectability biases capture–recapture **downward**, that
+    is a **floor**.
+
+    Three consequences, and the third is the one that changes the work:
+
+    - **A single reading is a SAMPLE, not a census.** Two full multi-auditor passes over an unchanged tree
+      named 18 findings between them and neither named more than 14. Every count this protocol has ever
+      published is a draw from a larger pool.
+    - **A "zero" reading is not weak evidence in the way rule 22 implies — it is weak *relative to a small
+      residual*.** With recall ≈ 0.43, missing all of a residual of 23 has probability ≈ 10⁻⁵. The problem
+      is not that a zero could be luck; it is that **a zero is not drawable while the residual is 23**.
+    - **A repair pass can only repair what a reading NAMES.** With recall < 1 and a non-zero induction
+      rate, repair-then-read has a **fixed point**, and it sits where the series has been sitting. A series
+      that stops falling is not necessarily near zero; it may be at the equilibrium of its own method. Do
+      not read a flat series as convergence without measuring recall.
+
+    What to do instead, and it is not more passes of the same shape:
+
+    - **Repair the UNION of two blind readings, never one reading.** Two cost 2× and cover far more than
+      2× — 78% of the estimated pool here, against 61% for the richer reading alone.
+    - **`N̂` is a metric with a floor of zero BY CONSTRUCTION**, which is exactly the property rule 22 asks
+      a gate to have: when there is nothing to find, `m`, `n₁` and `n₂` collapse together.
+    - **Record what a reading CLEARS, not only what it finds.** The paired design's most valuable output
+      was the list of things reading #10 positively certified that reading #9 had booked as blockers —
+      which is how the next rule was found.
+
+24. **An AUDITED ZERO can be wrong, and a wrong audited zero is worse than a silence.** M257x iter-50:
+    three independent seats each re-derived the corpus's *"31 of 135 schemas auto-filter by organization"*
+    and each recorded it as a positively audited zero. One ran the document's own `comm`/`xargs`
+    derivation; one re-computed the split by hand; one *"re-derived independently — every figure matches."*
+    **All three were wrong.** The count is 32: `schema/organization.go:56` declares its own `Policy()`
+    whose query rule is `rule.FilterSameOrganizations()`, and it uses neither mixin.
+
+    Every seat verified **the arithmetic the document showed** instead of **the predicate the document
+    claimed**. That is rule 17 — *a count can be exactly right while the claim it supports is false* —
+    violated three times in one pass by auditors briefed on rule 17.
+
+    > **A document that shows its own derivation is harder to audit than one that does not.** The visible
+    > arithmetic is an attractor: it is checkable, it checks out, and checking it feels like auditing the
+    > claim. The incompleteness is never in the arithmetic; it is in the SET the arithmetic ranges over.
+
+    So: when a passage shows its derivation, **re-derive the set from the source, not the sum from the
+    set** — enumerate the predicate independently and compare cardinalities. And treat *"I re-derived it
+    and it matches"* as the weakest form of clearance a report can contain, because a silence is merely
+    uninformative while a wrong audited zero is evidence pointing the wrong way — and a pass reporting
+    zero blockers is made of nothing else.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
