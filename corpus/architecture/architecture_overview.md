@@ -246,11 +246,12 @@ Archived / merged — **but three of these still start locally** (repos still ex
     [`external_services.md:545`](./external_services.md) and is corrected here (M257x iter-46). Inside the
     AI manager there are two US paths — a **feature flag** and a **429 retry target**, not fallback rungs —
     but **that is not the whole set**: [`external_services.md:569`](./external_services.md) enumerates
-    **five** ways a request leaves the EU, and the three outside the manager are `ANTHROPIC_API_KEY`, **an
-    authored sequence with `ai_vendor` unset** — the latter reaching direct US OpenAI *unconditionally, on
-    the first attempt, with no flag and no 429* — and **Studio-Room's own `openai` `TARGET SERVICE`**,
-    which builds a bare client against `https://api.openai.com`. Scope corrected M257x iter-48, count
-    corrected to five at iter-49. Measured at
+    **four live** ways a request leaves the EU, of which the two outside the manager are `ANTHROPIC_API_KEY`
+    and **an authored sequence with `ai_vendor` unset** — the latter reaching direct US OpenAI
+    *unconditionally, on the first attempt, with no flag and no 429*. A fifth arm, **Studio-Room's own
+    `openai` `TARGET SERVICE`**, exists in code but is **selected by no shipped config** (all three
+    `app/studio/configs/*.ini` pin `azure`). Scope corrected M257x iter-48, count corrected to five at
+    iter-49 and to four-live-plus-one-latent at iter-52. Measured at
     `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
     `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
     retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"
@@ -296,8 +297,11 @@ The platform uses **shared database, shared schema**, with `organization_id` on 
 isolation is enforced at three layers:
 
 1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter by organization on
-   **only 31 of 135 schemas** (the 30 using `OrganizationMixin{}`, plus `Membership`, which declares its
-   own). **23 schemas carry an `organization_id` with no policy at all** (16 is the *neither-mixin*
+   **only 31 of 135 schemas** (the **29** live `OrganizationMixin{}` users — a 30th is commented out at
+   `user_resource.go:22` — plus `Membership` and `Organization`, which each declare their own). An M257x
+   iter-49 audit called this **32**; that was **refuted** at iter-52 by two independent readers and by
+   re-measurement — the earlier 31 was right, but reached by two compensating errors.
+   **23 schemas carry an `organization_id` with no policy at all** (16 is the *neither-mixin*
    subset of those 23, not the total) — see
    [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
    the derivation

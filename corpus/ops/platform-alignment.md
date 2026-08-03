@@ -680,8 +680,20 @@ Rules, in order of how often they actually catch something:
     three independent seats each re-derived the corpus's *"31 of 135 schemas auto-filter by organization"*
     and each recorded it as a positively audited zero. One ran the document's own `comm`/`xargs`
     derivation; one re-computed the split by hand; one *"re-derived independently — every figure matches."*
-    **All three were wrong.** The count is 32: `schema/organization.go:56` declares its own `Policy()`
-    whose query rule is `rule.FilterSameOrganizations()`, and it uses neither mixin.
+    **All three were wrong about the SET — and right about the TOTAL, which nobody noticed for two
+    iterations.** `schema/organization.go:56` does declare its own `Policy()` with
+    `rule.FilterSameOrganizations()` and uses neither mixin, so the audit's *addition* was real. But the
+    base was also wrong: `grep -c 'OrganizationMixin{}'` returns 30 and **one of them,
+    `user_resource.go:22`, is commented out**, so the live mixin set is **29**. The true count is
+    **29 + `Membership` + `Organization` = 31** — the number the corpus already had, reached by two
+    compensating errors.
+
+    > **iter-52 repaired the corpus from 31 to 32 on this ledger's authority, and its two blind pre-commit
+    > readers independently refuted it.** The audit that corrected an audited zero was itself wrong, in the
+    > same direction and for the same reason: it re-derived a *sum* over a *set* it never enumerated. This
+    > rule now has three generations of the identical failure, the third committed by the rule's own author.
+    > **A `grep -c` over source counts commented-out code.** Enumerate the set, exclude what does not
+    > compile, and state the cardinality before the arithmetic.
 
     Every seat verified **the arithmetic the document showed** instead of **the predicate the document
     claimed**. That is rule 17 — *a count can be exactly right while the claim it supports is false* —

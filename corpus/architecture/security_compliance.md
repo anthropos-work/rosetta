@@ -73,7 +73,22 @@ Three layers of isolation ensure tenant data cannot leak:
 > (`mixin.go:98`) applies a row-level **owner** filter (`rule.FilterOwnerRule()`) — scoped by *user*, not by
 > organization.
 >
-> **So: 31 schemas auto-filter by ORGANIZATION** (the 30 mixin users + `Membership`), and **23 carry an
+> **So: 31 schemas auto-filter by ORGANIZATION** — **29** `OrganizationMixin{}` users, plus **two** that
+> declare their own: `Membership` (`org_membership.go:172`, `rule.AllowCurrentOrgEdgesOrSkipRule()`) and
+> **`Organization` itself** (`organization.go:56`, `rule.FilterSameOrganizations()` at `:96`, and it uses
+> neither mixin). `User` also declares its own `Policy()` (`user.go:116`) but filters by **user**, not
+> organization, so it is correctly excluded.
+>
+> ⚠️ **The total is 31, but the old derivation of it was wrong — and so was the audit that "corrected" it.**
+> `grep -c 'OrganizationMixin{}' schema/*.go` returns **30**; one of them,
+> `user_resource.go:22`, is **commented out** (`// OrganizationMixin{},  // We need to work on this`), so the
+> live count is **29**. The long-standing *"30 mixin users + `Membership` = 31"* was therefore right by two
+> compensating errors: it over-counted the mixin set by one and omitted `Organization`. M257x iter-49's audit
+> booked the total as **32**; iter-52 repaired the corpus to 32 and its two pre-commit readers **independently
+> refuted it** — 29 + 2 = **31**. The number is restored; the derivation is now the correct one.
+> **Re-derive the SET, not the sum, and exclude commented lines when you do** — a `grep -c` over Go source
+> counts code that does not compile into anything. `user_resources` is user-scoped, NOT org-scoped by the ORM.
+> And **23 carry an
 > `organization_id` with no policy of any kind.** Sixteen of the 23 have neither mixin — `org_subscription.go`, `organization_settings.go`,
 > `organization_feature.go`, `api_key.go`, `lab_session.go`, `interview_aggregated_report.go`,
 > `admin_audit_log.go`, `job_simulation_session.go`, `jobsimulation_feedback.go`,
@@ -117,7 +132,7 @@ Three layers of isolation ensure tenant data cannot leak:
 > deliberately globally readable. **Scoping on the jobsim fan-out and the taxonomy is the caller's job.**
 
 - Org-scoped tables carry an `organization_id` column
-- Ent privacy policies auto-filter by organization on **31** schemas — the 30 using `OrganizationMixin{}` plus `Membership`, which declares its own
+- Ent privacy policies auto-filter by organization on **31** schemas — the **29** live `OrganizationMixin{}` users (a 30th is commented out at `user_resource.go:22`), plus `Membership` and `Organization`, which each declare their own
 - Cross-tenant reads are prevented at the query level **on those tables**; elsewhere isolation is
   enforced by Layer 2 (Sentinel) and by explicit query scoping, not by the ORM
 
@@ -183,11 +198,12 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
   fallback chain (`external_services.md:545`), and the wording mattered because the two US paths *inside
   the AI manager* — the two the bullets below cover — are a flag and a retry target, which a "first"
   implies are tried only after an EU option fails. Corrected M257x iter-46. **Those two are not the whole
-  set**: [`external_services.md:569`](./external_services.md) enumerates **five** ways a request leaves the
-  EU, the other three being `ANTHROPIC_API_KEY`, an authored sequence with `ai_vendor` unset — the latter
-  reaching direct US OpenAI unconditionally, on the first attempt — and **Studio-Room's own `openai`
-  `TARGET SERVICE`**, a bare client against `https://api.openai.com`. Scope corrected M257x iter-48,
-  count corrected to five at iter-49
+  set**: [`external_services.md:569`](./external_services.md) enumerates **four live** ways a request leaves
+  the EU, the other two being `ANTHROPIC_API_KEY` and an authored sequence with `ai_vendor` unset — the
+  latter reaching direct US OpenAI unconditionally, on the first attempt. A fifth arm, **Studio-Room's own
+  `openai` `TARGET SERVICE`**, is a bare client against `https://api.openai.com` that **no shipped config
+  selects** (all three `app/studio/configs/*.ini` pin `azure`). Scope corrected M257x iter-48,
+  count corrected to five at iter-49 and to four-live-plus-one-latent at iter-52
 - **⚠️ "EU-first" is not "EU-only", and the US path is a FLAG, not a fallback.** `getClient` swaps
   `azureClientEu` → **`azureClientUs`** whenever the PostHog flag **`flag_use_azure_us`** is enabled
   (`app/internal/jobsimulation/ai/ai.go:263-277`). That is a deliberate switch that can route live

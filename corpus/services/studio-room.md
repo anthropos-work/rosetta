@@ -385,7 +385,7 @@ python gen.py --media simulation --blueprint technical.json --branch stable
 
 ### Integration Points
 
-Orchestration is performed by the **CMS Go code**, not by studio-room itself. studio-room makes no GraphQL or Directus calls; its only outbound API call is to the skills taxonomy service (`api.anthropos.work`) via `services/taxonomy.py`.
+Orchestration is performed by the **CMS Go code**, not by studio-room itself. studio-room makes no GraphQL or Directus calls. Its outbound calls are to the **AI providers** — `services/ai.py` instantiates OpenAI / AzureOpenAI / Anthropic clients (`:1-2, 383, 530, 664`), consistent with `:36` and `:261-266` above — plus the skills taxonomy service (`api.anthropos.work`) via `services/taxonomy.py`.
 
 #### With CMS Service
 The CMS service drives the full lifecycle:

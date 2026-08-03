@@ -142,7 +142,7 @@ the response (parse accordingly). Retry policy: 10 attempts, exponential backoff
 |:---------|:------|
 | **Module (standalone)** | `github.com/anthropos-work/authn` — **legacy** (tag `v1.7.0`) |
 | **Live form** | `github.com/anthropos-work/colony/authn` (absorbed into colony) |
-| **Imported by** | via colony: app (the former cms / jobsimulation / skillpath usage is all folded in) |
+| **Imported by** | via colony: app — **and the cms and jobsimulation husk repos still import `colony/authn` directly** (6 and 8 files at `cms ca50c817` / `jobsimulation 462343b0`). Only the skillpath usage is fully folded in |
 
 Provider-agnostic authentication: verifies bearer tokens (Clerk JWTs in practice) and
 injects a typed `User`/`Organization` into request context for `net/http`, Echo, and

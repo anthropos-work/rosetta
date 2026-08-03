@@ -28,8 +28,9 @@
 > 2. **Everything `app` writes is in `public`** — which is *not* the same claim as "the `jobsimulation` schema
 >    is gone." `20260722104506.sql:79` is `DROP TABLE "sessions"` executed under `search_path=public`, so what
 >    it dropped is **`public.sessions`**, replaced by `public.job_simulation_sessions` (`:2`). **No `app`
->    migration touches the `jobsimulation` schema at all**, and that schema **survives, frozen, until M710**
->    (`app/internal/askengine/registry.go:192`) — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
+>    migration touches the `jobsimulation` schema at all**, and **in production** that schema **survives,
+>    frozen, until M710** — while **no local dev/demo stack creates it at all** (`platform/repos.yml:17-19`
+>    `migrations: false`; qualified M257x iter-52) — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
 >    and [`dependency_map.md:78`](../architecture/dependency_map.md) already said. `app/atlas.hcl:8` pins
 >    `search_path=public`, and the only `CREATE SCHEMA` in the entire migration set is `auth`.
 >    (This bullet read *"`jobsimulation.sessions` was dropped"* from iter-23 until M257x iter-49.)
@@ -65,8 +66,10 @@ surface gated client-side on a Clerk org flag.
    (`resolver_cms_queries.go:95,210,258,295` — `isHiring` picks `hiringLibraryTypes()` over
    `workforceLibraryTypes()` at `:99-103`), as do `organization/manager.go:448` (a forced Clerk membership
    is created with role `candidate` instead of `member`) and `:485` + `siminvitationlink.go:62` (both
-   **hard-error `"organization is not hiring"`** — the latter is `CreateOrganizationSimInvitationLink`, the
-   very call the `HiringConfigSeeder` uses to write the 5 positions). And the client re-skin is **not**
+   **hard-error `"organization is not hiring"`** — the latter is `CreateOrganizationSimInvitationLink`. Note
+   the `HiringConfigSeeder` does **not** go through that RPC: it writes the 5 positions straight into
+   `public.organization_sim_invitation_links` with `CopyRowsIdempotent` (`hiring_config.go:99`), so this
+   hard-error never reaches it. This passage claimed the opposite until M257x iter-52). And the client re-skin is **not**
    driven by this column either: it is read from Clerk `publicMetadata.isHiring`
    (`useGetClerkOrganization.tsx:20`, quoted below). So the column gates the content library and the
    org-type surfaces; the *insights* scoreboard is indifferent to it.
@@ -112,7 +115,9 @@ surface gated client-side on a Clerk org flag.
 >   recruiter to `apps/hiring`. What breaks is server-side: the content library serves the **workforce**
 >   type-set instead of the hiring one (`resolver_cms_queries.go:99-103`), and
 >   `CreateOrganizationSimInvitationLink` hard-errors `"organization is not hiring"` (`siminvitationlink.go:62`)
->   — so the `HiringConfigSeeder` cannot write the 5 positions in the first place.
+>   for any caller that uses it. **The `HiringConfigSeeder` is not such a caller** — it writes the 5 positions
+>   directly (`hiring_config.go:99`) and is unaffected. This bullet previously said it *"cannot write the 5
+>   positions in the first place"*; that consequence is **refuted** (M257x iter-52).
 >
 > **Neither half, however, gates the insights scoreboard** — the text here used to say Clerk-only meant *"the
 > insights read-path won't treat the cohort as hiring"*, and that sent every empty-scoreboard debug to the wrong
@@ -154,8 +159,11 @@ schema, read directly by the resolver.
 > assignment-session link ids** and **dropped the mirror** (`:58-62`) — it did *not* back-fill (`SET "score"`
 > = 0 hits set-wide). The earlier `20260722104506.sql:79` dropped **`public.sessions`** (a bare
 > `DROP TABLE "sessions"` under `search_path=public`) in favour of `public.job_simulation_sessions` (`:2`);
-> **`jobsimulation.sessions` itself was NOT dropped** — no `app` migration touches that schema, and it
-> survives frozen until M710 (`askengine/registry.go:192`). So what is gone is the **mirror half** of the old
+> **`jobsimulation.sessions` itself was NOT dropped** — no `app` migration touches that schema, and in
+> **production** it survives frozen until M710. (`askengine/registry.go:192` is cited for the M710 horizon
+> only: it is an LLM-facing name-alias map whose `jobsimulation.*` names **resolve to the public tables** —
+> it is not evidence that the schema is physically present. On a **local dev/demo stack it is not**:
+> `repos.yml:17-19` `migrations: false`. Qualified M257x iter-52.) So what is gone is the **mirror half** of the old
 > pair, not both halves; there is one row per (candidate × attempt) now, in `public`. Corrected M257x iter-49.
 
 **The read-path, traced end-to-end (FE → GraphQL → resolver → Ent → table):**
@@ -207,7 +215,8 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
    `organization_id`, `tenant_id` (NULL or `=org`), `validation_version`.
    ⚠️ **`token` is the one column that makes the INSERT itself fail, and this contract omitted it until
    M257x iter-49.** It is `NOT NULL` (`20260722104506.sql:13`), `UNIQUE` (`:29`) and carries **no default** —
-   the *only* required-and-undefaulted column in the table — so an INSERT built from the write-set as it was
+   one of **four** required-and-undefaulted columns (`owner_id` `:6`, `sim_id` `:7`, `sim_type` `:10`,
+   `token` `:13`; every other `NOT NULL` column in the DDL carries a `DEFAULT`) — so an INSERT built from the write-set as it was
    written here does not render wrong, it **errors**. The shipped seeder has always written it
    (`persona_write.go:152-158`); the word `token` simply appeared nowhere in this document. Being UNIQUE, it
    must be generated per row, not reused. (iter-47 read this passage and booked it a MINOR; iter-48's seat
@@ -238,8 +247,11 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 
 > **The write-set used to be a PAIR and is now a single row** (M257x iter-23). Before the mirror drop it was
 > `public.local_jobsimulation_sessions` (score) + a co-written `jobsimulation.sessions` twin (so the federated
-> non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). Neither table exists and
-> there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.** The old
+> non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). The mirror table is
+> dropped and there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.**
+> (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of `:157-159` above, which is
+> the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was not, and no local stack creates
+> that schema either way.) The old
 > "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
 
 **Org prerequisites:** `public.organizations.is_hiring = true` (§ *the gate*) + Clerk `publicMetadata.isHiring =
@@ -288,12 +300,18 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 
 ## Local development
 
+*(This section **previously said** `jobsimulation.sessions` still exists on a local stack; that is
+**refuted** — M257x iter-52. There is no `jobsimulation` schema on a dev/demo stack at all.)*
+
 To make a hiring org's comparison scoreboard render on a demo/dev stack: seed an org with `is_hiring=true`
 (+ Clerkenstein `publicMetadata.isHiring=true`, M224), an active membership per candidate, and — per (candidate ×
 sim) — **one** `public.job_simulation_sessions` row (the score lives on it; the old co-written
 `jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** is no longer written — the
-`public.local_jobsimulation_sessions` **mirror** was dropped at `20260729133514.sql:58-62`, while
-`jobsimulation.sessions` still exists, frozen and unwritten, until M710; corrected M257x iter-49), plus the
+`public.local_jobsimulation_sessions` **mirror** was dropped at `20260729133514.sql:58-62`, and **on a
+dev/demo stack there is no `jobsimulation` schema at all** — `platform/repos.yml:17-19` sets
+`migrations: false`, and app's only `CREATE SCHEMA` is `auth`, so `to_regclass('jobsimulation.sessions')`
+is NULL. Do not seed into it. This passage **previously said** `jobsimulation.sessions` *"still exists,
+frozen and unwritten, until M710"* unqualified — **refuted** for local stacks at M257x iter-52), plus the
 `OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured
 snapshot as the org's positions. The scoreboard then reads `insightsJobSimulationByMemberships`, one best-attempt
 row per candidate. The drill-down additionally needs the `public.validation_attempt_results` /

@@ -406,16 +406,27 @@ decision):**
 - **Active cycle → the dashboard RECOMPUTES from signals.** `GetAIReadinessWithOptions` → `buildLiveResponse` →
   `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
-  `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no PROGRESS ROW** from the
-  aggregate. ⚠️ **It reads no step-1 signal at all**, which this sentence claimed until M257x iter-49:
+  `ai_readiness_sims` config — and, **for an active cycle, the membership filter is `keepInCycleStep1`**
+  (`readiness.go:388`, `:662-664`): it keeps only members who **FINISHED step 1 inside the cycle window**
+  (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers` is the **other**
+  branch — the lifetime filter used when there is **no** active cycle (`:390`, `:684`). This passage named
+  the wrong one of the two until M257x iter-52.
+
+  ⚠️ The no-active-cycle filter `keepStartedMembers` **excludes members with no PROGRESS ROW** from the
+  aggregate, and **reads no step-1 evidence signal at all**, which this sentence claimed until M257x iter-49:
   `queryReadinessStarters` (`aireadiness/steps.go:915-938`) is
   `SELECT DISTINCT user_id FROM public.ai_readiness_user_step_progresses … AND status <> 'not_started'` — a
   row in the **progress** table, never a `user_skill_evidences` row. The old wording was wrong in **both**
   directions: a member with step-1 evidence but no progress row is **dropped**, and one with an
-  `in_progress` row and zero evidences is **kept**. The platform states this itself at `steps.go:907-914`
+  `in_progress` row and zero evidences is **kept**. (This paragraph **previously said** the active-cycle
+  path used this filter; that attribution is **refuted** — see the `keepInCycleStep1` correction above.) The platform states this itself at `steps.go:907-914`
   (*"This DB signal is the only real 'has started' check"*). So an **active**-cycle dashboard requires the
   **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
-  counted, not the evidences (write the real skill evidences +
+  counted, not the evidences. **Both branches read that one table, at different strictness**, and the
+  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:638-652`) demands
+  `step_type = skill_mapping` **AND** `status = completed` **AND** `completed_at >= cycle.start`, so a
+  progress row seeded `in_progress` — enough for `keepStartedMembers` — leaves the member **invisible**
+  on an active cycle (write the real skill evidences +
   sim sessions + `ai_readiness_user_step_progresses`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
   is a **materialized cache** (rewritten by `RefreshLiveSnapshots`, consumed by Talk-to-Data SQL) — **NOT** the
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.

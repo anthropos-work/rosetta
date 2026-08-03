@@ -99,8 +99,11 @@ internal/
 > **persisted read**, not a live recompute — `internal/graph/queries.resolvers.go:70` does plain Ent SELECTs over
 > `validation_attempt_results`, so a seeded result fan-out renders a full result. (2) The **manager** view
 > reads the **same** table — **the mirrors are GONE.** `app/terraform/migrations/20260729133514.sql:58-62`
-> (*"5. Drop the mirrors."*) back-fills then `DROP TABLE`s both `local_jobsimulation_sessions` and
-> `local_skill_path_sessions`, and `intelligence.go:1700` now reads `m.ent.JobSimulationSession.Query()`.
+> (*"5. Drop the mirrors."*) **re-points** `organization_assignment_sessions`' two foreign keys off the mirror
+> ids (`:15-23`), NULLs the orphans (`:36-44`), then `DROP TABLE`s both `local_jobsimulation_sessions` and
+> `local_skill_path_sessions` (`:62-63`), and `intelligence.go:1700` now reads `m.ent.JobSimulationSession.Query()`.
+> **No session row is back-filled — the file contains 0 `INSERT`s** (this said *"back-fills then DROPs"* until
+> M257x iter-52).
 > **There is one row to seed, not a pair** — the older "seed the mirror or the scoreboard is blank"
 > guidance is superseded. Full route-by-route treatment lives in
 > [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md); the write side is
@@ -120,10 +123,10 @@ internal/
 
 * **LiveKit** — primary voice engine (`LIVEKIT_HOST_URL`, `LIVEKIT_RECORDINGS_BUCKET_NAME`)
 * **AWS Chime SDK** — video/camera/screensharing recording (`CHIME_RECORDINGS_BUCKET_NAME=ant-prod-chime-demo`)
-* **ElevenLabs** — voice agents still used in the call/reply pipeline (`ELEVENLABS_TEMPLATE_AGENT_ID`, `ELEVENLABS_EU_TEMPLATE_AGENT_ID`); new sessions increasingly use LiveKit + OpenAI Realtime (gated by the `flag_use_realtime_openai` PostHog flag)
+* **ElevenLabs** — voice agents still used in the call/reply pipeline (`ELEVENLABS_TEMPLATE_AGENT_ID`, `ELEVENLABS_EU_TEMPLATE_AGENT_ID`). Engine choice is per sequence, from the CMS `voice_engine` field, not from a flag; **when that field is nil the default is `gptrealtime`** (`cms/directus/collections/jobsimulation.go:1594-1597`), not ElevenLabs
 * **AssemblyAI** — EU voice transcription for call recordings (`ASSEMBLYAI_API_KEY`)
 * **Bunny.net** — video stream hosting / tokenized playback (`BUNNY_REC_STREAM_API_KEY`, `BUNNY_TOKEN_HASH_KEY`)
-* **PostHog** — feature flags + telemetry (`POSTHOG_API_KEY`); the OpenAI Realtime voice path is gated by the `flag_use_realtime_openai` PostHog flag
+* **PostHog** — feature flags + telemetry (`POSTHOG_API_KEY`); `flag_use_realtime_openai` selects **no engine** — read *inside* `CreateAgentDispatch` (`calls/livekit.go:131-135`), it sets the endpoint to `openai-hosted` **and resets the agent name to the bare `anthropos-agent`** (`:140-144`), silently overriding a US session's `anthropos-agent-us`. See [`../architecture/ai_architecture.md`](../architecture/ai_architecture.md)
 * **AI providers** — via the shared `ai` library
 
 ### Redis Streams

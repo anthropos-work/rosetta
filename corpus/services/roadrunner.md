@@ -46,7 +46,7 @@ Roadrunner is the **code-execution proxy** for the platform. When a simulation i
 
 Roadrunner exists for one reason: it gives the platform a clean, language-agnostic boundary for running untrusted code without ever executing it in our own services or on our own infrastructure.
 
-It also runs an **Asynq** worker pool for asynchronous batch submissions.
+It also runs an **Asynq** worker pool that polls Judge0 for results — **one task per single submission**, as § Async tasks below states.
 
 ## Architecture & Code Map
 
@@ -84,7 +84,7 @@ internal/
 | Method | Purpose |
 |--------|---------|
 | `Submission(runtime, source_code, stdin)` | Submit a single execution; returns a `token` |
-| `SubmissionPackage(...)` | Submit a batch of runs in one call |
+| `SubmissionPackage(...)` | Submit one **multi-file** program in one call; returns a single `token` |
 | `SubmissionResult(token)` | Poll for execution result (output, errors, status, time) |
 
 ### HTTP / WebSocket

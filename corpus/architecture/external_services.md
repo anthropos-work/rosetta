@@ -538,7 +538,7 @@ For full details on models, routing, voice engines, and recording architecture, 
 | **AWS Bedrock (EU)** | `vendor = AnthropicAws` **or** `Anthropic` — both resolve to the *same* Bedrock client | Jobsimulation domain, Backend (app) | `eu.anthropic.claude-sonnet-4-6` (simulation report agent, `app/internal/jobsimulation/agent/report_agent.go:31`; ask-engine, `app/internal/askengine/bedrock.go:25`) and `eu.anthropic.claude-opus-4-8` / `eu.anthropic.claude-sonnet-4-6` (course-builder author/grader, `app/internal/coursebuilder/bedrock.go:23,29`) |
 | **Mistral (EU)** | direct client, not via the AI manager | cms domain **only** | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19`, for studio attachment → markdown |
 | **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
-| **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, selected by `TARGET SERVICE = anthropic` in `configs/*.ini`) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:756-762`, `coursebuilder.ModelBackendName()`) |
+| **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:756-762`, `coursebuilder.ModelBackendName()`) |
 
 ### Routing: what is actually implemented
 
@@ -566,14 +566,21 @@ mechanics, all in `app/internal/jobsimulation/ai/ai.go`:
 
 **Residency consequence, stated plainly:** the EU posture rests on the *default* vendor clients
 being EU-resident (Azure EU, Bedrock `eu-west-1`), not on a chain that walks EU options before US
-ones. **Five** things can send a request outside the EU, none of them a region-health failover:
+ones. This list **previously said five**, counting a latent arm as live; that count is **refuted** (M257x
+iter-52). **Four** things can send a request outside the EU, none of them a region-health failover — plus a
+**fifth arm that exists in code but is selectable by no shipped config** (item 5, and it is listed because a
+config change would arm it, not because it is live):
 
 1. the `flag_use_azure_us` PostHog flag;
 2. the 429 retry, which switches to direct OpenAI **without** trying another EU provider first;
 3. setting `ANTHROPIC_API_KEY`, which flips **Course Builder** off Bedrock onto Anthropic's
    first-party API (`coursebuilder/bedrock.go:106-113`) and supplies **Studio-Room** the credential
    its `anthropic` `TARGET SERVICE` needs — *Studio-Room was never on Bedrock*, so nothing is flipped
-   off it there (`:541` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48);
+   off it there (`:541` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
+   **This item is live on the Course Builder half only.** Its Studio-Room half is latent for exactly the
+   reason item 5 is: no shipped `configs/*.ini` selects `anthropic` either — all 30 `*_AI_*_MODEL` lines
+   pin `azure`. Symmetry noted M257x iter-52, after two pre-commit readers caught the same evidence being
+   applied to one arm and not the other;
 4. **an authored simulation sequence that simply leaves `ai_vendor` unset** — the easiest of the
    four to miss, because nothing in the AI manager looks like a US default. `ai_vendor` is a
    *nullable* Directus field (`app/internal/cms/directus/collections/jobsimulation.go:905`
@@ -591,6 +598,11 @@ ones. **Five** things can send a request outside the EU, none of them a region-h
    `config_template.ini:30-31`) — no Azure endpoint, no EU region. Item 3 above already names
    Studio-Room for its `anthropic` arm, which is what makes leaving this one out an *internal*
    inconsistency rather than merely an omission. Added M257x iter-49.
+   ⚠️ **This arm is NOT reachable as shipped, and iter-49 counted it as if it were.** Every
+   `*_AI_*_MODEL` line in all three `app/studio/configs/*.ini` pins the service to **`azure`**, and
+   `gen.py:41-53` overrides only `*_API_KEY` / `*_ENDPOINT` from the environment — **never the service
+   selector**. So the arm exists and nothing selects it: a config edit would arm it, no env var will.
+   Count corrected from *five* to *four live + one latent* at M257x iter-52.
 
 > **Why this one was missed, and how to avoid missing it again.** The "only three" version of this
 > paragraph was derived by reading `internal/jobsimulation/ai/ai.go` end to end. That file is
@@ -605,17 +617,22 @@ AI services are configured via environment variables in `platform/.env`:
 
 ```bash
 # OpenAI
-OPENAI_API_KEY=sk-proj-xxxxx
-OPENAI_ORG_ID=org-xxxxx
+OPENAI_KEY=sk-proj-xxxxx
 
 # Anthropic
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 
 # Azure OpenAI
 AZURE_OPENAI_KEY=xxxxx
-AZURE_OPENAI_ENDPOINT=https://resource.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT=deployment-name
+AZURE_OPENAI_ENDPOINT_URL=https://resource.openai.azure.com/
 ```
+
+Re-derive with `command grep -rho '\b<NAME>\b' --include='*.go'` in `app` (`5ba17044`): the four names above
+return **5 / 26 / 13 / 13**. `OPENAI_ORG_ID`, `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT` return
+**0** and were removed; `OPENAI_API_KEY` returns 2, both the studio subprocess remap. Use `command grep` —
+a `grep` aliased to a `.gitignore`-honouring wrapper undercounts, which is how iter-52 first published
+12 / 12. **This block covers `app`'s Go only**; `app/studio/gen.py:45-47` reads the separate bare names
+`AZURE_API_KEY` / `AZURE_ENDPOINT` / `OPENAI_ENDPOINT`. (Corrected M257x iter-52.)
 
 ### Usage Patterns
 
@@ -665,11 +682,11 @@ AZURE_OPENAI_DEPLOYMENT=deployment-name
 | **Purpose** | Real-time voice conversations in AI Simulations |
 | **Integration** | Jobsimulation service |
 
-LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** inside LiveKit rooms, enabling AI actors to hold voice conversations with players. **The EU agent is the bare `anthropos-agent`** (`calls/livekit.go:110,120`); **only the US one is suffixed**, `anthropos-agent-us` (`:126`). There is no `anthropos-agent-eu` — the name appears nowhere in the platform, and the eu/us split lives on the **endpoint** (`azure-eu` / `azure-us`), not on the agent name. (Corrected M257x iter-49; the `-eu` form had stood since 2026-03-02.)
+LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** inside LiveKit rooms, enabling AI actors to hold voice conversations with players. **The EU agent is the bare `anthropos-agent`** (`calls/livekit.go:110,120`); the US one is suffixed `anthropos-agent-us` (`:126`), and the voice-chain engine dispatches `anthropos-agent-chain` (`:115`). There is no `anthropos-agent-eu` — the name appears nowhere in the platform, and the eu/us split lives on the **endpoint** (`azure-eu` / `azure-us`), not on the agent name. (Corrected M257x iter-49; the `-eu` form had stood since 2026-03-02.)
 
 - **Audio**: Recorded as MP3
 - **Transcripts**: Generated from conversation events
-- **Coexists with ElevenLabs**: LiveKit + OpenAI Realtime powers new sessions (gated by `flag_use_realtime_openai`); ElevenLabs remains the active default for the call/reply pipeline and transcript improvement
+- **Coexists with ElevenLabs**: ElevenLabs credentials are still wired for the call/reply pipeline. Engine choice is the per-sequence CMS `voice_engine` field, and **its nil default is `gptrealtime`** — `flag_use_realtime_openai` selects no engine at all. See [`ai_architecture.md`](ai_architecture.md) § voice engines
 
 ---
 
