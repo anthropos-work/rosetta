@@ -529,3 +529,130 @@ now begun and which `platform-alignment.md` §8 records.
 **`CHECK-M257x-iter35-seeder-writes-one-instant`**, the seeder stamping every backdated session at a
 single timestamp, which flattens recency ordering **in the product** and is the root cause behind two
 assertions that were found true by coin-flip.
+
+---
+
+## TOK-03: repair the UNION, shrink the estimator, make the edits smaller — 2026-08-03
+
+**Tok type:** triggered (3-no-prog streak: iters 48, 49, 50). Session-terminating.
+
+**Prior strategy:** [`TOK-02: fence the prose the way the anchors are fenced`](#tok-02-fence-the-prose-the-way-the-anchors-are-fenced--2026-08-02)
+— *apply TOK-01's derive-and-fence principle to the one surface it was never applied to.* Five fences
+were built under it, each watched RED before it was trusted. **They work.** The mechanical classes they
+close stay closed and are not the subject of this revision.
+
+### Why it stopped working — and this time the mechanism is measured, not inferred
+
+TOK-02's own pre-registered prediction was *"the reading at step 5 returns fewer than 9."* Three readings
+later: **7, 12, 14.** Its step-2 premise — *"the 8-of-9 induced class cannot survive the commit"* — became
+true of a class that had stopped being the majority (iter-49). And iter-49's two new fences closed exactly
+the gaps they were built for while the induced term rose **2 → 7**.
+
+The decisive evidence is iter-50's **paired same-tree reading** — §5 rule 22's own prescribed experiment,
+run under total control (40 files byte-identical, 13 clone shas identical, the same partition hand, the
+identical diff for seat G, every seat blind):
+
+| | reading #9 | reading #10 |
+|---|---|---|
+| blockers | **14** | **7** |
+| per seat | A 1 · B 1 · C 2 · D 2 · E 3 · F 0 · G 5 | A 1 · B 0 · C 0 · D 1 · E 0 · F 0 · G 5 |
+
+**Matched 4. Union 18. Recall 29% and 57%. Chapman `N̂` ≈ 23 — and a FLOOR**, because heterogeneous
+detectability biases capture–recapture downward.
+
+Three things fall out, and together they name the error in both prior strategies:
+
+1. **A single reading is a SAMPLE, not a census.** Two full 7-seat passes over an unchanged tree named 18
+   findings between them, and neither named more than 14. One of #10's four new findings sits **inside a
+   hunk seat G reviewed and PASSED at #9**.
+2. **A repair pass can only repair what a reading NAMES.** With recall ≈ 0.43 and a non-zero induction
+   rate, repair-then-read has a **fixed point** — and it sits exactly where `18 → 7 → 12 → 14 → 7` has
+   been sitting. **The series was never noise around zero; it is the equilibrium of the method.**
+3. **The two prior strategies both optimised the reading.** TOK-01 built the instruments; TOK-02 sharpened
+   the prose fences. Neither touched coverage. **Coverage is the binding constraint and always was.**
+
+### Revised strategy — four moves, ordered by dependency
+
+1. **Repair the UNION of two blind readings, never one.** `FIX-M257x-iter50-union-set` is **18**, not 14 —
+   `#9 ∪ #10`, anchored across `iter-50/fixture-14.md` + `iter-50/blocker-ledger.md`. Two readings cost 2×
+   and cover **78%** of the estimated pool against 61% for the richer one alone. From here a repair cycle
+   is *read, read, repair* — and the second reading is **blind** (`D-M257x-50-2`), which is now part of the
+   instrument.
+
+2. **Drive `N̂` down, and only then take the reading clause 5 asks for.** This is the sequencing change,
+   and it is the whole point. With recall ≈ 0.43, a single pass missing all of a residual of 23 has
+   probability ≈ 10⁻⁵ — **so attempting clause 5's zero reading while `N̂` ≈ 23 is not a long shot, it is
+   arithmetically hopeless.** Attempting it at `N̂` ≈ 2 is not. `N̂` is the quantity to drive; it has a
+   **floor of zero by construction** (when nothing is there, `m`, `n₁` and `n₂` collapse together), which
+   is the property §5 rule 22 asks a gate metric to have and which the raw blocker count never had.
+   **Clause 5 is unchanged and is still the gate.** `N̂` is a progress metric, not a substitute verdict.
+
+3. **Cut the induction rate by shrinking the EDIT, not by adding fences.** iter-49 measured the induced
+   classes as paraphrase leak (3), overshoot-in-new-text (3), wrong-mechanism (1), and proved none is
+   mechanically reachable — a paraphrase shares no token run; an overshoot lives in prose that did not
+   exist before the commit. **The only available lever on an unreachable class is to shrink the surface it
+   can live on.** Both classes are properties of *rewriting*. So the repair discipline changes:
+   - **Prefer DELETION > minimal scoping edit > rewrite.** A false claim removed cannot be over-corrected
+     and leaves no paraphrase twin. The corpus does not owe every retraction an explanation.
+   - **Budget the new prose.** Count added words per repaired claim; a repair that adds more than it
+     removes is the highest-risk shape this milestone has (eight consecutive occurrences of *the author of
+     a correction violating it while writing it*, the latest being `dependency_map.md:19`).
+   - **Pre-registerable, therefore refutable:** the induced term falls below 4 at the next paired reading.
+
+4. **Put a READER on the repair diff, before the commit.** iter-49 named this and did not build it
+   (`CHECK-M257x-iter49-overshoot-has-no-instrument`): the overshoot class *"needs either a reader or a
+   different kind of check entirely."* Seat G **is** that reader — it has been the highest-yield seat in
+   both readings — but it runs *after* the commit, in the next pass. Move it in front: **two blind
+   adversarial diff seats on the repair diff pre-commit**, allowed to disagree. A diff is small, so this
+   is cheap; and its own recall is measurable by the same paired method.
+
+### What this revision explicitly does NOT do
+
+- **It does not re-cut clause 5, narrow it, or read "met" any other way.** The user has ruled twice.
+- **It does not defer the residual**, and does not propose closing at 4 of 5.
+- **It does not weaken the instrument** — it runs *two* frozen instruments rather than one cheaper one.
+- **It does not discard the fences.** All five are kept; they hold clauses 1–4 and the mechanical classes.
+
+### Also carried, because iter-50 surfaced them
+
+- **`FENCE-M257x-iter50-consecutive-audit-mode`** — `--audit-commit` assumes *audit → repair → audit* and
+  cannot represent *audit → audit*, so iter-50 landed with a recorded `--no-verify` (`D-M257x-50-7`).
+  Widen condition 1 (*the ledger row is a line **this** commit added*) to *any commit since that claim was
+  last repaired*; leave condition 2 — the anti-laundering key — untouched, and watch it REFUSE a
+  repair-shaped commit before trusting it.
+- **`CHECK-M257x-iter50-audited-zero-is-evidence`** — §5 rule 24. Three seats cleared the same false count
+  as a *positively audited zero*, each re-deriving the arithmetic the document showed instead of the
+  predicate it claimed. The seat report format must distinguish *"I re-derived the document's own
+  arithmetic"* from *"I enumerated the predicate from source"*; only the second is a clearance.
+- rosetta's root `CLAUDE.md` is the stale side of **two** claims and **lies outside the 40-file
+  partition**, so no reading will ever book it. It needs a deliberate pass.
+
+**Strategy class:** `new-direction`. TOK-01 built the instruments; TOK-02 sharpened them. TOK-03 stops
+optimising the reading and attacks **coverage** and **repair surface** instead. It is informed by the two
+prior strategies rather than a reversal of them — every artefact they produced is kept — but the term
+being optimised is different, which is what makes it a new direction rather than another
+`retry-with-evidence`.
+
+**Distance-to-gate context:** **4 of 5.** Clauses 1–4 hold. Clause 5's residual is **~23 and biased low**,
+of which **18 are anchored and ready**. Late-milestone, and the honest characterization has changed: the
+per-pass return was not merely small, it was **zero in expectation**, because the method's fixed point sat
+where the readings were landing. TOK-03's first cycle should therefore produce the first genuinely
+non-zero expected return of the clause-5 series — **which is a prediction, and four consecutive passes
+before this one refuted their own.**
+
+**Cross-refs to prior TOKs:** TOK-01 (*instrument first, then follow*) built the derived lists and fences
+that still hold clauses 1–4; it is untouched. TOK-02 (*fence the prose*) correctly identified a
+mechanizable class, closed it, and measured its own premise expiring — iter-49's ledger records that in
+its own words. TOK-03 keeps both and changes the term: **not a sharper reading, but more readings, smaller
+repairs, and a residual estimate with a floor of zero.**
+
+**Next-tik direction:** **iter-52 = `FIX-M257x-iter50-union-set`** — repair the **18** by CLAIM, tree-wide
+(§5 rule 19), under move 3's minimal-edit discipline (deletion preferred; added-word count recorded per
+claim) with move 4's two blind pre-commit diff readers as the post-condition. **Do not take a reading in
+the same tik.** Then **iter-53 = the paired reading #11 + #12**, blind, frozen instrument, and recompute
+`N̂`. **Pre-registered now, so it can be refuted: `N̂` below 12, and the induced term below 4.**
+
+**Harden recommendation (the orchestrator spawns it, not this iteration):** **7 tiks since the pass-7/8/9
+window** (iters 45–50) against a threshold of 10 — **not yet due**. When it is, the third
+`HARDEN-CAP-ACCEPTED` entry stands: the residue needs AST / call-site assertions, not another sweep of the
+same shape.
