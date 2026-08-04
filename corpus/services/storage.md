@@ -6,8 +6,27 @@ Storage is the **centralized file/blob service** for the platform.
 
 > **⚠️ Since the merges, the sole live caller is `app`.** The jobsimulation and cms domains run
 > **in-process inside `backend`** (`app/internal/jobsimulation/recording/recording.go:12`,
-> `anticheat.go:34`, `app/main.go:992` `storage.NewClient(…, storagens.CMS)`); their compose containers
-> are unfederated husks sitting off every storage path, and stay up only until platform **M810**.
+> `anticheat.go:34`, `app/main.go:992` `storage.NewClient(…, storagens.CMS)`); at platform `0dab54d`
+> they have **no compose containers at all** — the local husks are gone, along with the `cms` and
+> `jobsimulation` `repos.yml` entries. (Local compose only; the production **M810** rollback-path
+> teardown was not measured here.)
+>
+> **⚠️⚠️ And storage itself is now MID-FOLD — a half-landed fold, recorded here on BOTH sides
+> because one side alone is not a claim (`D-M257x-59-4`).**
+>
+> | side | measured at `0dab54d` / app `v1.366.0` |
+> |---|---|
+> | **config** | `STORAGE_RPC_ADDR` is set by **no** compose file and is **absent from `.env_example`** — 0 occurrences across `docker-compose.yml`, `common.yml`, `.env_example` |
+> | **compose** | the `storage` service moved to `profiles: [storage-legacy]`, so a default bring-up never starts it (`docker-compose.yml:130-133`, rationale in-comment) |
+> | **`repos.yml`** | `storage` is **still an entry** — still cloned |
+> | **consumer** | `app` **still reads it**: `app/main.go:446`, `:524`, `:992`, and **hard-requires** it in two tools — `cmd/academyImport/main.go:231` and `cmd/academy-asset-upload/main.go:129` each `return … "STORAGE_RPC_ADDR is required"` (`:235` / `:133`) |
+>
+> So on every stack we currently run green, `os.Getenv("STORAGE_RPC_ADDR")` returns the empty string
+> and a storage client is built against it — **a failure deferred to call time, not boot time** — and
+> **those two commands hard-fail outright.** This is neither `live-standalone` nor `merged-into-app`;
+> the migration map has no token for it yet. Fenced by `platform_predicate_guard.py` G6, which requires
+> exactly this two-sided record. **Messenger is next by the platform developer's own account, so this
+> row shape will be needed again.**
 
 Callers push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
 
@@ -120,9 +139,12 @@ storage sync <source> <dest> [--dry-run]      # bulk migrate
 
 ```bash
 cd platform
-make up                       # default graphql profile — includes storage
-# or just storage:
-make up PROFILE=storage
+make up                       # the `core` profile — which does NOT include storage any more
+# `storage` moved to `profiles: [storage-legacy]` at platform 0dab54d. To start the
+# standalone service (rollback comparison only — app serves storage in-process, and running
+# both means two writers on one bucket):
+docker compose --profile storage-legacy up storage
+# Asking for the retired `storage` token does NOT fail: it exits 0 and starts only the floor.
 ```
 
 In local dev the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically (`STORAGE_S3_BUCKET` is unset in compose), and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is NOT sandboxed locally — compose hardcodes `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and fail without AWS credentials (none are set in `platform/.env`). To run public storage fully local, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).

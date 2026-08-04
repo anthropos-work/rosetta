@@ -285,16 +285,29 @@ make reset-db          # Wipe DB, restart, re-migrate (WARNING: data loss)
 
 Docker Compose profiles control which services start:
 
-| Profile | Services |
-|---------|----------|
-| `graphql` (default) | All backend services. **The profile name outlives the router it was named for** — `2adcf71` deleted the `graphql` *service* but kept the `graphql` *profile* on sentinel/backend/jobsimulation/cms/storage/roadrunner/gotenberg, so `COMPOSE_PROFILES=graphql` still selects the backend tier and nothing about the profile warns |
-| `backend` | app only |
-| `cms` | cms only |
-| `frontend` | next-web-app (containerized) |
-| `studio-desk` | studio-desk (containerized) |
-| `all` | Everything |
+> **⚠️ `graphql` is no longer a profile, and asking for it does NOT fail.** Platform `0dab54d`
+> (*"rename graphql -> core"*) renamed the profile and dropped the standalone storage; the `Makefile`
+> now reads `PROFILE ?= core`. **`postgresql`, `redis` and `sentinel` declare no `profiles:` key at
+> all**, so they are in *every* selection — which means asking for the old `graphql` token **exits 0
+> and starts those three**. Postgres answers, `docker ps` is non-empty, the stack looks alive, and
+> the application is simply absent. The retired `cms`, `jobsimulation`, `roadrunner` and `storage`
+> tokens behave identically. **Grade a documented compose command on "does it still select
+> anything", never on "does it still parse."** Fenced by
+> `rosetta-extensions/stack-core/platform_predicate_guard.py` (G1/G3), which is also why no retired
+> token is spelled here in runnable form — a copy-pasteable command for a silent no-op is the defect.
 
-Usage: `make up PROFILE=cms`
+| Profile | Services started (besides the always-on floor `postgresql`, `redis`, `sentinel`) |
+|---------|----------|
+| `core` *(default — `PROFILE ?= core`)* | backend, gotenberg |
+| `backend` | backend, gotenberg |
+| `all` | backend, gotenberg, customerio-sync, next-web-app, studio-desk |
+| `storage-legacy` | storage — the rollback path only; `app` serves storage in-process, and running both means two writers on one bucket (`docker-compose.yml:130-133`) |
+| `customerio-sync` | customerio-sync |
+| `frontend` | next-web-app — **but selecting it alone exits 1**: `next-web-app` declares `depends_on: backend`, which this profile does not select, so compose rejects the project as invalid |
+| `studio-desk` | studio-desk — **also exits 1**, same `depends_on: backend` reason |
+| `messenger` | messenger — **also exits 1**, same reason; combine it with `core` |
+
+Usage: `make up PROFILE=core`
 
 ## Key Documentation Locations
 

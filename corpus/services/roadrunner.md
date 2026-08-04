@@ -36,10 +36,10 @@
 > archived** (last push 2026-04-23), only removed from orchestration at platform `045857c`. The corpus called it
 > archived; the org disagrees. See [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
-> roadrunner is also **still a live `docker-compose.yml` service** (profile `graphql`; the container is started and
-> `ROADRUNNER_RPC_ADDR=http://roadrunner:10401` is still *set* in jobsimulation's environment — but that variable is
-> now dead config, and a live container is not a live caller). It is **built + started but off every request path** —
-> so it stays classified **ORPHANED (Tier-1, running-but-unused)**, not ARCHIVED. **Everything below describes the
+> roadrunner is **no longer a `docker-compose.yml` service at all**, and `ROADRUNNER_RPC_ADDR` is set by **no**
+> compose file and is absent from `.env_example` — measured at platform `0dab54d`. (Both were true as recently as
+> `2adcf71`; the container and its env went together.) There is no roadrunner profile either, and asking for one
+> does not fail — it exits 0 and starts the 3-service floor. **Everything below describes the
 > service as built, not as used.** Treat retirement as pending, not done.
 
 Roadrunner is the **code-execution proxy** for the platform. When a simulation includes a coding task, jobsimulation hands the user's source code to Roadrunner, which forwards it to **Judge0** (a sandboxed code-execution API) and returns the results (stdout, stderr, status, time).
@@ -100,7 +100,7 @@ On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carr
 
 ## Dependencies
 
-* **Upstream consumers**: **none (orphaned — see the banner at the top).** Historically jobsimulation was the only caller via `ROADRUNNER_RPC_ADDR=http://roadrunner:10401`; that env var is still set in compose but is no longer read by any Go code, code execution having moved in-process to `jobsimulation/internal/runner/`
+* **Upstream consumers**: **none (orphaned — see the banner at the top).** Historically jobsimulation was the only caller via `ROADRUNNER_RPC_ADDR`; at platform `0dab54d` that variable is set by **no** compose file, is absent from `.env_example`, and is read by no Go code — code execution having moved in-process to `jobsimulation/internal/runner/`
 * **Downstream**: Judge0 at `JUDGE0_BASE_URL=http://52.48.139.23:2358` (default in compose), Redis (Asynq backend)
 * **No database** — roadrunner owns no Postgres schema and stores no persistent state of its own. Judge0 holds submission state by token.
 
@@ -110,9 +110,9 @@ On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carr
 
 ```bash
 cd platform
-make up                  # default graphql profile — includes roadrunner
-# or just roadrunner:
-make up PROFILE=roadrunner
+make up                  # the `core` profile — `backend` calls Judge0 directly
+# There is NO roadrunner profile and no roadrunner container. Asking for one does NOT fail:
+# it exits 0 and starts only postgresql, redis and sentinel.
 ```
 
 ### Run natively

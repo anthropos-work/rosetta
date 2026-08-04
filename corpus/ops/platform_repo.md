@@ -8,7 +8,7 @@
 ## Role & Responsibility
 
 `platform` is **not a deployed service**. It is the dev-environment control plane: a
-**Makefile + Docker Compose** orchestrator that clones the 10 sibling repos and
+**Makefile + Docker Compose** orchestrator that clones the 6 sibling repos and
 builds/runs the microservices locally **from source**. It is the one repo you `cd` into to
 operate everything else.
 
@@ -74,14 +74,16 @@ service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, sentinel, storage, gotenberg, **graphql** |
+| `core` *(default — `PROFILE ?= core`)* | backend, gotenberg |
 | `backend` | backend, gotenberg |
-| `storage` | **only that one service** (the `jobsimulation`, `cms`, `skiller`, `skillpath` and `roadrunner` profiles are gone) |
-| `messenger` | messenger (bring up its dep too: backend — it now serves the cms/jobsim/skiller RPC surfaces) |
+| `all` | backend, gotenberg, customerio-sync, next-web-app, studio-desk |
+| `storage-legacy` | storage — the rollback path only. `docker-compose.yml:130-133`: *"v9.0: NOT in the default profiles any more — app serves storage in-process, and running both means two writers on one bucket. Kept startable for rollback comparison."* |
 | `customerio-sync` | customerio-sync |
-| `frontend` | next-web-app (containerized Workforce) |
-| `studio-desk` | studio-desk (containerized) |
-| `all` | everything |
+| `messenger` / `frontend` / `studio-desk` | **selecting one alone exits 1** — each service declares `depends_on: backend`, which its own profile does not select, so compose rejects the project as invalid. Combine with `core` |
+
+**Retired tokens.** `graphql` (*renamed* to `core` at `0dab54d`), `storage`, `cms`, `jobsimulation`
+and `roadrunner` are not profiles any more — and asking for one **exits 0**, starting only the
+always-on floor. Deliberately not spelled above in runnable form.
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.

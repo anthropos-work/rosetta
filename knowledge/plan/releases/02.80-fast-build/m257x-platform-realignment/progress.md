@@ -361,3 +361,38 @@ defect and would also explain why no amount of accessor work has helped.
 - iter-58 (tik): both held-back pins advanced (app v1.366.0 + rext iter-58) and PROVEN COLD — clauses 1+2 re-established at current refs; the advance moved 22 of 23 `main.go` citations and the fence caught 1 — see iter-58/progress.md
 
 - iter-59 (tok/triggered — by a **direct user directive**, not the 3-no-prog streak; iters 56/57/58 all closed `closed-fixed`, checked first): **TOK-05 authored — the unit of repair moves from the CLAIM to the PREDICATE.** The platform developer's PR scopes the fold as a 5-done / 2-pending program (**storage and messenger are next, not yet done**), and rosetta PR #14 — fetched read-only as `origin/pr-14`, reconciled at **92 absorbed / 30 superseded / 5 standing / 0 refuted / ZERO new information, verdict DO NOT MERGE** — turns out to be valuable only as **negative space**: all seven live defects sit where the PR and our corpus *agree*, which is structurally invisible to any method that diffs two documents. So: **adjudicate against platform artifacts, never against another doc.** The residual re-reads as **119 sites over 3 predicates** — the 81 drift sites (*three services are live-local husks*), 17 files / 30 occurrences (*a `graphql` profile exists*), 21 moved citations (*this line number names this construct*) — each with a legal set derivable from an artifact we already parse. A reading names *instances*; only a derivation names the *predicate*, which is why ten readings at 43–48% recall had a fixed point. **Step 0 re-derived all 12 denominators and corrected one, making the headline defect worse:** `docker-compose.yml` opens with `include: [common.yml]`, so there are **10** services not 8, and the two it adds declare no `profiles:` key — therefore `make up PROFILE=graphql` does **not** "start nothing", it starts **three** (`postgresql redis sentinel`). Postgres answers, `docker ps` is non-empty, and the *application* is absent: the silent no-op dressed as a partially-working stack. **Five decisions:** `D-M257x-59-1` predicate-scoping (union-set left as a **pending user decision**, subsumed but not answered; clause 5 **not** re-cut — still zero-or-nothing); `-2` a **new sibling guard** rather than widening `platform_alignment_guard.py` (whose `FENCE_KIND="standalone"` and repos_yml-derived roots are load-bearing), 6 derived assertions run **both ways**; `-3` **§7 rule 4 gains a citation-safety half** — iter-58 passed every schema dimension and still moved **22 of 23** citations at a **4.5%** catch rate, because rule 4's dimensions are about *removal* and this class is caused by *addition*; `-4` an 8th map state **`mid-fold`**, valid only with a **two-sided** citation — storage measured as compose-`storage-legacy` + `STORAGE_RPC_ADDR` set **nowhere** while app `v1.366.0` reads it at 3 sites and **hard-requires** it in 2 tools, recorded nowhere in the corpus; `-5` **fence first, then citations, then the map state, then read** — with recall at 43–48% a reading over an unfenced corpus samples a pool refilling faster than repair drains it (**net −72**). `stack-core` verified at its **1F/610** baseline before authoring — see iter-59/progress.md
+
+- iter-60 (tik, **the first predicate fence**): **TOK-05 mechanised — `platform_predicate_guard.py` shipped
+  GREEN, and the `graphql`-profile predicate class is closed by derivation rather than by 56 edits.** A **new
+  sibling** of `platform_alignment_guard.py` (`D-M257x-59-2` — that guard's `FENCE_KIND="standalone"` scoping and
+  its `repos_yml_path`-derived roots are what make assertion F trustworthy, so it was extended in *code*, not in
+  *subject*). Six assertions, each run **both directions**, over `repos.yml` + `docker-compose.yml` (**`include:`
+  resolved**) + `Makefile`. All six denominators re-derived at platform `0dab54d` **and cross-checked against
+  `docker compose --profile X config --services`**: 10 services · floor **3** · 8 legal profiles · 6 repos ·
+  default `core`→**5** · 4 `*_RPC_ADDR` all `http://backend:8083` · 1 migrating repo · the storage mid-fold split.
+  Watched **RED at 37 → 21 → 2 → GREEN 0**, with **28 tests** including **three INVERSION mutants** (a guard
+  hardcoding *"graphql is dead, core is alive"* survives all three; a derived one cannot — §8 rule 5's corollary
+  that removal mutants do not catch inversion) and a **no-op positive control that survives** re-running with
+  identical reach. **Of the 37 first-draft findings, 16 were the guard's own**, and every one was removed by
+  **replacing the rule with one derived from the artifact's structure** rather than by excepting a name
+  (`--profile` needs a compose driver in-window — `buildbench --profile billion` is a *host* profile; a token must
+  match compose's own token shape; a repo-count's modifier slot is case-sensitive; a name adjacent to `.`/`/` is an
+  identifier). One rule was **dropped rather than fixed** and the drop **reported**: per-name attribution of
+  `migrations:` flags is not decidable in English prose, so G5 names **22 of 26** lines UNREACHED. **The briefed
+  taxonomy was incomplete — there are THREE classes, not two:** works (5 tokens) · **silent no-op, rc=0** (5
+  tokens, starting only the floor) · **hard-fail, rc=1** (`frontend`/`studio-desk`/`messenger`, `depends on
+  undefined service "backend"`) — and `make up PROFILE=frontend` + `PROFILE=studio-desk` are **documented commands
+  that exit 1**. Of `CLAUDE.md`'s six profile rows, **one** was accurate. **11 files repaired, +241/−74, to zero
+  fence findings** — including two claims **fortified against repair**: `cms.md`'s *"the husk still starts …
+  messenger is still pointed at it"* (M809 has landed) and, worse, `platform-alignment.md` §5 carrying iter-22's
+  correct-at-`2adcf71` refutation as standing guidance, so **the protocol doc forbade the repair now required**.
+  The protocol doc's own *"starts **zero** containers"* corrected to **three** — worse than zero, because a
+  partially-working stack sends the reader debugging the application. **Six protocol-doc rules written** (the ones
+  TOK-05 deliberately withheld): §5 **29** *a reading names instances; only a derivation names a predicate*, §5
+  **30** *grade on does-it-still-SELECT*, §5 **31** *a refutation expires exactly like the claim it refuted*, §5
+  **32** *re-derive the hand-off's numbers, including the orchestrator's*, §6 *the platform's CONFIG is its
+  documentation of record*, and §7 rule 4's **citation-safety half** (`D-M257x-59-3`). `storage.md` carries the
+  first **two-sided mid-fold record**, G6-fenced. **Two inherited denominators corrected**: "17 files / 30
+  occurrences" measures **26 docs / 56 lines**; `academyImport/main.go:235` is the *return*, the `Getenv` is `:231`.
+  rext tagged `fast-build-m257x-iter-60`, **verified on origin**; pin advanced. Gate **4 of 5** — see
+  iter-60/progress.md

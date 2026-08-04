@@ -812,6 +812,68 @@ Rules, in order of how often they actually catch something:
     `git rev-list --count <newest-tag>..origin/main` and one `git grep` at the target ref would have shown,
     in ten seconds and before any decision, that the advance was a no-op against the stated cause.
 
+29. **A reading names INSTANCES; only a derivation can name a PREDICATE.** This is why the M257x
+    ten-reading series had a fixed point rather than a slope. A seven-seat blind reading of the same tree
+    recalls **43–48%** of the sites present (iter-50's paired experiment); it can find *this* wrong
+    sentence and *that* one, but it has no way to say *"every sentence in the tree that assumes a `graphql`
+    profile exists."* The residual it leaves is therefore not a shrinking pile — the un-named sites are
+    re-drawn from the same distribution on every pass, while the platform adds new ones faster (one working
+    day of commits produced **81** fresh sites across 21 files). Net repair rate over ten readings: **−72**.
+
+    The three largest residual classes turned out to share **one false predicate each** — *a `graphql`
+    profile exists* (26 live docs), *messenger reaches cms/jobsim at husk containers*, *this line number
+    names this construct*. **Repair by PREDICATE, not by claim** — this extends rule 19 (*by claim, not by
+    file*) one level down. A predicate whose legal set is derivable from a platform artifact is a rule-27
+    row-one candidate: derive the set, fence it both ways, and the class closes in one build instead of
+    N edits — and stays closed, which no edit does.
+
+    **A reading is still how you find out you were wrong.** Predicate-scoping changes the unit of
+    *repair*; it does not replace the reading, and a residual is still graded by a reading that returns
+    zero.
+
+30. **Grade a documented command on "does it still SELECT something", not "does it still parse."** The
+    dominant failure mode after a rename is not an error — it is a **successful command that does nothing
+    visible**. And the measured version is worse than the reported one. `docker-compose.yml` at platform
+    `0dab54d` gives `postgresql`, `redis` and `sentinel` **no `profiles:` key at all**, so they belong to
+    *every* selection. A `--profile` naming the retired `graphql` token therefore exits **0** and starts
+    **three containers**: Postgres answers, `docker ps` is non-empty, and the application is simply
+    absent. The corpus had recorded this as *"starts zero containers"* — "zero"
+    would at least be unambiguous; **three** presents as a partially-working stack and sends the reader
+    debugging the application instead of the invocation.
+
+    Two corollaries, both learned the same afternoon:
+
+    * **Enumerate the always-on floor first.** It is the set that makes a dead token look alive, and it is
+      derivable: *the services declaring no `profiles:` key*. Resolving compose's `include:` is
+      load-bearing here rather than tidy — two thirds of that floor lives in `common.yml`, so a parser
+      reading only `docker-compose.yml` computes `floor = {sentinel}` and concludes, wrongly and quietly,
+      that a dead token starts nothing.
+    * **Do not spell a dead command in runnable form, even to warn about it.** A warning that contains a
+      copy-pasteable `PROFILE=<retired>` is indistinguishable, to a reader in a hurry and to a fence, from
+      an instruction. Name the token; do not write the invocation. (iter-60 hit this on its own repair
+      text: the fence went RED on the corrections, which was the fence being right.)
+
+31. **A REFUTATION is a measurement, and it expires exactly like the claim it refuted.** M257x iter-22
+    correctly refuted a proposed correction: at `2adcf71`, `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR`
+    really did still address the husk containers, and applying the "fix" would have replaced two true
+    statements with false ones. That refutation was written up as standing guidance — *"That address is
+    **CURRENT, not stale text**"* — and by `0dab54d` the M809 re-point had landed and inverted it.
+
+    A refuted-correction note is **more** dangerous than an ordinary stale claim once it expires, because
+    its emphatic anti-repair language reads as *already adjudicated* and survives readings that would have
+    caught plain prose. **Pin a refutation to the ref at which it was taken, in every sentence that depends
+    on it**, or it will be read as standing. The mechanical test: if removing the ref would not change how
+    the sentence reads, the ref is decoration and the sentence is a standing claim.
+
+32. **Re-derive the hand-off's numbers — including the orchestrator's.** Rule 1's oldest lesson does not
+    stop applying because the sender is trusted. Two consecutive M257x iterations corrected an
+    orchestrator-supplied fact: one reported *"demo-1 GONE — 0 containers"* when the Docker daemon was
+    merely down and all 11 were present; the next handed down *"17 files / 30 occurrences"* for a class
+    that measured **26 live docs / 56 lines**, and `cmd/academyImport/main.go:235` for a `Getenv` that is
+    at `:231` (`:235` is the `is required` return — both true, different lines, and only one of them is
+    the read site). None of the three was careless. Re-derivation costs one command; inheriting costs a
+    milestone's credibility.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
@@ -852,10 +914,12 @@ prose further down* — and that prose rarely uses the banner's words. The misse
 diagram**. No grep for "router", "subgraph" or "merged" reaches any of them. The mermaid edge is the sharpest
 case: `Web --> GraphQL` contains no drift vocabulary at all, and survived three audits for that reason.
 
-> **Correction (M257x iter-22).** This list originally also named
-> `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`. **It was not a miss — it is correct at origin HEAD**
-> (`docker-compose.yml:52`, `:258` @ `2adcf71`). See the rule below; the example is kept struck rather than
-> deleted because it is the one that taught the rule.
+> **Correction (M257x iter-22), itself superseded (iter-60).** This list originally also named
+> `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` @ `2adcf71`. **It was not a miss — it was correct
+> at that ref** (`docker-compose.yml:52`, `:258` @ `2adcf71`). **It is no longer:** at `0dab54d` compose
+> sets that variable to `http://backend:8083` like the other three. See the rule below; the example is
+> kept struck rather than deleted because it is the one that taught the rule — twice, in both
+> directions.
 
 > **If the deliverable is *"this tree is true"*, the audit reads the tree.** Scope by *file set*, not by
 > search term; fan the read out across sub-agents if it is large. The cost difference here was minutes, and
@@ -871,12 +935,22 @@ iter-21 handed iter-22 an enumerated residual: 21 blockers, each with `file:line
 refuting citation and a one-line correction — authored to be executed without re-exploration. **All 21
 anchors verified.** Two of the *corrections* were false.
 
-Items #8/#10 said `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` was stale and should read
-`http://backend:8083`. Origin HEAD `2adcf71` says otherwise: **only `SKILLER_RPC_ADDR` was re-pointed**;
-`CMS_RPC_ADDR=http://cms:8091` and `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` still address the husk
+Items #8/#10 said, at `2adcf71`, that `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` was stale and
+should read `http://backend:8083`. Origin HEAD `2adcf71` said otherwise: **only `SKILLER_RPC_ADDR` was
+re-pointed**; at `2adcf71` both `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR` still addressed the husk
 containers — deliberately, per `app/main.go:1196-1202`, *"additive + DORMANT: external callers (messenger)
 keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."* Applying the correction
-would have replaced two true statements with false ones.
+**at that ref** would have replaced two true statements with false ones.
+
+> **And then it flipped — which is the second half of the lesson (M257x iter-60).** At platform
+> `0dab54d` the M809 re-point **has landed**: compose sets **four** `*_RPC_ADDR` values and **all four**
+> read `http://backend:8083`; there is no cms or jobsimulation container left to address. So a passage
+> written to warn *"do not apply this correction"* became a passage that **forbids the correction now
+> required** — and it was fortified, which is worse than merely wrong: emphatic anti-repair language
+> ("**That address is CURRENT, not stale text**") survives readings precisely because it looks
+> adjudicated. **A refutation is a measurement, and it expires exactly like the claim it refuted.**
+> Pin it (this passage now names `2adcf71` in every sentence that depends on it) or it will be read as
+> standing. Fenced by `platform_predicate_guard.py` G4.
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
 `corpus/services/backend.md:175` — a corpus line asserting messenger points *all four* addresses at
@@ -952,6 +1026,38 @@ pick one and be wrong about the other.
 unconditionally; do the tables live in `public` under `app/terraform/migrations/`; is the standalone scaled to
 zero? All three yes ⇒ merged, regardless of whether the repo or its container still exists.
 
+### The platform's CONFIG is its documentation of record; its NARRATIVE docs are not (M257x iter-60)
+
+When a row needs adjudicating, go to the platform's **configuration files** — not to its prose, and never to
+another document of ours. Measured, not asserted: config is edited **in the same commit as the change** and
+carries the rationale inline, because the person making the change has to touch it either way.
+
+| artifact | what it says, in its own words |
+|---|---|
+| `repos.yml` header | *"`app` is the ONLY repo with migrations to run… they own no local schema."* |
+| `docker-compose.yml:130-133` | *"v9.0: NOT in the default profiles any more — app serves storage in-process, and running both means two writers on one bucket. Kept startable for rollback comparison."* |
+| the commit subject at `0dab54d` | *"run without the standalone storage; rename graphql -> core"* |
+
+Its narrative docs lag and are partly unmeasured. App `v1.366.0`'s own `knowledge/*.md` asserts *"60K+ skills"*
+with no measurement attached, and **the repo contains no job-role count anywhere** — so the long-quoted
+"18K roles" has **zero upstream provenance in the very repo we would be deferring to**. Deferring to their prose
+would have imported a figure this corpus had already refuted by measurement.
+
+**And two documents that agree are not two witnesses.** A read-only reconciliation of an entire external
+documentation PR against this corpus returned **92 claims absorbed · 30 superseded · 5 contradictions standing ·
+0 refuted · ZERO new information** — while every live defect found that week sat exactly where the two documents
+*agreed*. Diffing two documents is structurally incapable of finding what they share. **Adjudicate against
+platform artifacts.**
+
+**Corollary — a half-landed fold needs a state, and it is recorded on both sides or not at all.** The seven-token
+vocabulary above has no token for *mid-fold*, so a split like storage's is currently recorded nowhere: config
+sets `STORAGE_RPC_ADDR` in **no** compose file and not in `.env_example`, the service moved to
+`profiles: [storage-legacy]`, `repos.yml` **still clones it**, and `app v1.366.0` **still reads** it at
+`main.go:446`, `:524`, `:992` and hard-requires it in two `cmd/` tools. That is neither `live-standalone` nor
+`merged-into-app`, and one side alone is not a claim — the config side reads as "removed", the consumer side as
+"live". Record both, cited, or record neither. (Worked example: [`storage.md`](../services/storage.md); fenced by
+`platform_predicate_guard.py` G6, which refuses a mid-fold variable that no document cites a read site for.)
+
 ---
 
 ## 7. Re-point — the procedure
@@ -979,6 +1085,20 @@ zero? All three yes ⇒ merged, regardless of whether the repo or its container 
 3. **Leave the history in a comment.** Name what the relation *was* and which migration removed it, so the
    next reader who greps the dead name lands on the explanation rather than on nothing.
 4. **Advance the pins deliberately** and record what the advance contained.
+
+   **Schema-safety and CITATION-safety are unrelated properties, and this rule only ever measured the
+   first (M257x iter-58 → `D-M257x-59-3`).** That advance was vetted exactly as written above — 0
+   migrations, 0 destructive DDL, 0 newly hard-required config, all three correct — and it still moved
+   **22 of 23** corpus `main.go:N` citations into the wrong construct. The fence that watches citations
+   caught **1**: a **4.5% catch rate**, because a whole-file line shift moves nearly every citation by the
+   same delta and only the one that crossed a construct boundary is detectable as *wrong* rather than
+   merely *moved*.
+
+   So: **before taking an advance, re-resolve every corpus citation whose path lands in the advancing
+   repo, at the new ref, and record moved / dead / held.** It is bounded and cheap — the whole set was
+   **23**. The repair belongs to the **advancing iter**, for the same reason the ref rule already gives:
+   *the iter that detects the move re-points, in that iter.* Deferred, it becomes a second milestone's
+   problem and the citations rot in the interval.
 5. **Prove it cold.** `demo-down --purge` + `demo-up`. A warm cycle hid a four-day-old total breakage.
 
 ---
@@ -1342,8 +1462,11 @@ What followed was worse than the failure, and is the part to internalise:
 
 > **Corollary for the §2 tuple family.** The same iteration found the profile NAME, the verify service set
 > and the injected-build set all held as hand-written literals, and the profile one is the most dangerous
-> thing in this document: `docker compose --profile graphql up` against a renamed platform is a **successful
-> command that starts zero containers**. No error, no non-zero exit, nothing for a log-reader to catch. Prefer
+> thing in this document: a `--profile` naming a renamed token, run against the renamed platform, is a
+> **successful command that starts the always-on floor and nothing else** — measured at `0dab54d`: **three** containers
+> (`postgresql`, `redis`, `sentinel`), not zero, because those three declare no `profiles:` key. That is worse
+> than zero: Postgres answers, `docker ps` is non-empty, and the stack presents as *partially working*.
+> No error, no non-zero exit, nothing for a log-reader to catch. Prefer
 > a derivation whose correctness you can test at *two* refs — that is the only evidence that distinguishes a
 > derivation from a literal that happens to be right today.
 

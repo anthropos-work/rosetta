@@ -94,8 +94,10 @@ This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, 
 Start only the services you need:
 
 ```bash
-make up PROFILE=backend    # Backend (app) only
-make up PROFILE=cms        # CMS only
+make up PROFILE=core       # the default: backend + gotenberg (+ the always-on floor)
+make up PROFILE=backend    # the same five — `backend` and `core` select identically
+# NB: the retired cms / graphql / storage tokens EXIT 0 and start ONLY postgresql, redis,
+#     sentinel. Nothing warns; the stack just has no application in it.
 make up-all                # Everything including frontend and studio-desk
 ```
 

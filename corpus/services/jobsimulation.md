@@ -92,7 +92,8 @@ internal/
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
-* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`. **That address is CURRENT, not stale text** — re-verified against platform origin `2adcf71` (`docker-compose.yml:52` for backend, `:258` for messenger). Unlike `SKILLER_RPC_ADDR`, it was **not** re-pointed at `backend`: it still resolves to the **unfederated husk container**. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1195`); re-pointing the external callers is the M809/M810 work.
+* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR`, which at platform `0dab54d` reads **`http://backend:8083`**, like all four values compose sets. **M809 has landed** and there is no husk container left to resolve to. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1195`).
+  > **This line used to say the opposite, emphatically — keep the note (M257x iter-60).** Until `2adcf71` it read *"That address is **CURRENT, not stale text**"*, and it was **right at that ref**: only `SKILLER_RPC_ADDR` had been re-pointed then. A refutation is a measurement and expires exactly like the claim it refuted — and anti-repair wording is the kind that survives readings, because it looks already-adjudicated. See [`platform-alignment.md`](../ops/platform-alignment.md) §5 rule 31.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
 > played session render?" will not find here. (1) The **player** result page `/sim/<slug>/result/<sessionId>` is a
@@ -112,7 +113,7 @@ internal/
 ### Direct dependencies (from compose `depends_on` + env)
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop); the **husk container** still holds `CMS_RPC_ADDR=http://cms:8091` (`docker-compose.yml:104`) and reaches the husk cms over RPC.** **The M23 content cutover does NOT ride on the `cms` husk.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:971-973` `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
+* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop), and since M809 there is no husk container on either end — compose's `CMS_RPC_ADDR` reads `http://backend:8083` (measured at platform `0dab54d`).** **The M23 content cutover does NOT ride on the `cms` husk.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:971-973` `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
@@ -195,9 +196,9 @@ bring-up's autoverify used to report.
 
 ```bash
 cd platform
-make up                           # default graphql profile
-# or just jobsimulation:
-make up PROFILE=jobsimulation
+make up                           # the `core` profile — `backend` (app) runs the jobsim engine
+# There is NO jobsimulation profile and no jobsimulation container. Asking for one does NOT
+# fail: it exits 0 and starts only postgresql, redis and sentinel.
 ```
 
 ### Run natively

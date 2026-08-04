@@ -8,12 +8,14 @@
 > subgraph is gone from the supergraph. It is the fourth and last engine consolidated into `app`, after
 > [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md).
 >
-> **⚠️ But locally the husk still starts — "merged" is not "removed from compose."**
-> `docker-compose.yml:144` @ platform `2adcf71` still defines a `cms` service **in the default `graphql`
-> profile**, `repos.yml:14-16` still lists the repo (marked `migrations: false # legacy`), and **messenger is
-> still pointed at it** (`CMS_RPC_ADDR=http://cms:8091`) — deliberately, until the **M809** re-point
-> (`app/main.go:1196-1202`: *"additive + DORMANT … until the M809 re-point"*). The state is
-> **`running_but_unfederated`**; container teardown is **M810**. See
+> **✅ The husk is GONE locally, and M809 has landed (measured at platform `0dab54d`).**
+> There is no `cms` compose service, no `cms` entry in `repos.yml` (6 entries: app, sentinel, storage,
+> messenger, next-web-app, studio-desk) and no `cms` profile. Compose sets **four** `*_RPC_ADDR` values
+> and **all four** read `http://backend:8083` — messenger now reaches the cms domain inside `backend`.
+> *(Until `2adcf71` all of the above was false, and this banner said so; the M809 re-point is what
+> changed it.)* **Scope note: this is the LOCAL compose topology only.** Whether production's
+> `module.cms_euwest1` rollback path has also been torn down (**M810**) was not measured here — do not
+> read the local removal as the production one. See
 > [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > **The Directus content edge stays external.** The merge moved the *Go service*; the authored content still
@@ -154,7 +156,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ## Interface Discovery
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
-* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **until M809, still calls the husk**: `CMS_RPC_ADDR=http://cms:8091` locally (`docker-compose.yml:256`), `http://backend.internal.anthropos:8081` in production.
+* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **since M809, reaches it inside `backend`**: compose sets `CMS_RPC_ADDR=http://backend:8083` locally (measured at platform `0dab54d`), `http://backend.internal.anthropos:8081` in production.
 * **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Cosmo Router now composes `backend` alone.
 
 ### Upstream consumers
@@ -162,8 +164,8 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 * Studio-Desk (GraphQL for studio entities)
 * Backend (`app`) — the skill-path engine, the jobsimulation engine and the cms domain all run **in the same
   process**, so those hops are plain function calls, **not RPC**; the Redis Streams edge has `app` on both
-  ends. (The husk `cms` container does still receive real RPC — from **messenger** at
-  `CMS_RPC_ADDR=http://cms:8091`, until M809.)
+  ends. (**messenger**'s `CMS_RPC_ADDR` now resolves to `backend` too — there is no husk `cms`
+  container left to receive RPC. M809 landed; measured at platform `0dab54d`.)
 
 ### Downstream dependencies
 * Directus (content storage)
@@ -194,9 +196,9 @@ make gen           # regenerates GraphQL resolvers + Ent code
 
 ```bash
 cd platform
-make up                  # graphql profile — includes cms
-# or just cms:
-make up PROFILE=cms
+make up                  # the `core` profile — `backend` (app) serves the cms domain in-process
+# There is NO cms profile and no cms container. Asking for one does NOT fail: it exits 0
+# and starts postgresql, redis and sentinel — a stack with no application in it.
 ```
 
 ### Run natively (single service)

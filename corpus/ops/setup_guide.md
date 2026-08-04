@@ -498,11 +498,11 @@ Start specific service groups instead of the full stack:
 
 | Command | What it starts |
 |---------|---------------|
-| `make up` | All backend + GraphQL router (default) |
-| `make up PROFILE=backend` | Backend (app) only |
-| `make up PROFILE=cms` | CMS only |
-| `make up PROFILE=frontend` | Next.js in Docker |
-| `make up PROFILE=studio-desk` | Studio-Desk in Docker |
+| `make up` | the `core` profile (`PROFILE ?= core`): postgresql, redis, sentinel, backend, gotenberg |
+| `make up PROFILE=backend` | the same five — `backend` and `core` select identically |
+| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend`, which this profile does not select |
+| `make up PROFILE=studio-desk` | **exits 1**, same reason |
+| *(the retired `cms` / `graphql` / `storage` tokens)* | **exit 0 and start nothing but the floor** — not profiles any more; deliberately not spelled runnably |
 | `make up-all` | Everything |
 
 Base services (PostgreSQL, Redis, Sentinel) always start regardless of profile.

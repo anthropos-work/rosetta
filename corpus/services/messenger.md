@@ -75,9 +75,10 @@ Most messenger sends are reactive — driven by **Redis Streams** events from ot
 
 ```bash
 cd platform
-make up PROFILE=messenger
-# or include alongside the default stack:
-docker compose --profile graphql --profile messenger up --build -d
+# NB: `make up PROFILE=messenger` alone EXITS 1 — messenger declares `depends_on: backend`,
+# which the `messenger` profile does not select, so compose rejects the project as invalid.
+# Bring it up alongside the default stack instead:
+docker compose --profile core --profile messenger up --build -d
 ```
 
 Messenger depends on `backend`, `cms`, `jobsimulation` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack. (skillpath was removed from this `depends_on` list when it merged into `app`.)

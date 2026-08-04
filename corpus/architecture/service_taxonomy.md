@@ -354,7 +354,7 @@ Locally, both of those now consume `backend` directly at `:8082/graphql/query`.
 ## Service Communication Patterns
 
 ### Core Services ↔ Core Services
-- **Synchronous**: HTTP RPC (e.g., `CMS_RPC_ADDR=http://cms:8091`; note `SKILLER_RPC_ADDR=http://backend:8083` — the skiller surface is served by backend since the merge)
+- **Synchronous**: HTTP RPC — at platform `0dab54d` **all four** `*_RPC_ADDR` values compose sets (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_`) read `http://backend:8083`. The M809 re-point has landed; the husk addresses are gone along with the husk containers
 - **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
 
 ### Studio Services → Core Services
@@ -412,15 +412,19 @@ go run .               # Run natively — this one process covers skiller,
 ### Profiles
 | Profile | Services started |
 |---------|------------------|
-| (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, jobsimulation, cms, storage, roadrunner, gotenberg — **and no `graphql` container**: platform `2adcf71` deleted the service, so the **profile name survives, the service does not**. `jobsimulation` / `cms` / `roadrunner` start as **unfederated husks** (M810) |
-| `backend` | postgresql, redis, sentinel, backend, gotenberg |
-| `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
-| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation — bring those up too) |
-| `customerio-sync` | postgresql, redis, sentinel, customerio-sync |
-| `frontend` | + next-web-app (containerized) |
-| `studio-desk` | + studio-desk (containerized) |
-| `all` | Everything in the compose file |
+| (none — default `docker compose up`) | postgresql, redis, sentinel only — **the floor**, the three services that declare no `profiles:` key and are therefore in *every* selection |
+| `core` (the Makefile default — `PROFILE ?= core`) | the floor + backend, gotenberg |
+| `backend` | the floor + backend, gotenberg |
+| `all` | the floor + backend, gotenberg, customerio-sync, next-web-app, studio-desk |
+| `storage-legacy` | the floor + storage — the rollback path; `app` serves storage in-process now |
+| `customerio-sync` | the floor + customerio-sync |
+| `frontend` / `studio-desk` / `messenger` | **exit 1** — each named service declares `depends_on: backend`, which its own profile does not select, so compose rejects the project |
+
+**Retired tokens — and they do not fail.** `graphql` (renamed to `core` at platform `0dab54d`), plus
+`cms`, `jobsimulation`, `roadrunner` and `storage`, are no longer profiles. Selecting any of them
+**exits 0 and starts the 3-service floor and nothing else**. Grade a documented command on *does it
+still select anything*, not *does it still parse* — which is why none of them appears above in a
+runnable form.
 
 Use `docker compose --profile <name> config --services` to verify the actual member list for a given profile.
 
