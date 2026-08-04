@@ -625,3 +625,30 @@ defect and would also explain why no amount of accessor work has helped.
   guess. **iter-69's claim that this class blocked the graded read is retracted.** Five corpus
   guards OK; no code touched, so iter-69's suite runs stand. Gate **4 of 5**, unchanged — see
   iter-70/progress.md
+- iter-71 (tik, closed-fixed): **`FENCE-M257x-iter68-citation-resolution` lands — iter-68 gave three
+  guards a ref and gave each of them ONE, and the corpus does not have one ref.** Measured at open:
+  of **125** resolvable citations, **31 sit in a block naming exactly one ref that resolves in their
+  own clone** — a quarter of the class, every one read at `origin/main` regardless of what its
+  sentence said. `backend.md:39` pins to `app` `b948604` v1.366.0; iter-69 re-pointed
+  `shared_libraries.md:79` to `9d00a313` v1.367.0; **no single knob can be right about both**, and
+  iter-68 had already measured the consequence — the same corpus is GREEN at origin HEAD and
+  **4-findings RED** at the pinned build ref. `anchor_construct_guard` now resolves **per citation**:
+  exactly one resolvable sha in the block → read at it; **more than one → fall back AND COUNT IT as
+  `ambiguous`** (a block naming two refs is *contrasting* them — `platform-alignment.md` rule 32 does
+  exactly that — and guessing would be §4 Trap A, while a silent fallback would hide 12 citations
+  inside `default`); none → the `CITE_REF` ladder unchanged. A sha that does not resolve in that
+  citation's **own** clone is not a pin; a pin at which the **file does not exist** is **UNMEASURED,
+  not clean** (§5 rule 7); and **`CITE_REF=worktree` still overrides every block pin** — verified
+  live, still 1 finding under `worktree`, GREEN by default. Reach is now printed beside provenance:
+  `ref chosen by default x57, block-pinned x31, no-clone x30, ambiguous x12`. **A mutant SURVIVED**:
+  narrowing the window from the block to `lines[i]` passed the entire suite, because every fixture I
+  wrote put the pin on the citation's own line and **the corpus does not write that way** — the
+  **third one-line-window bug of this milestone and the first inside a test**; two corpus-shaped
+  fixtures added (pin two lines above, in-block → found; pin one blank line away → not found, rule
+  33) and both window mutants now die. **7 mutants caught, no-op control survived.** And the
+  battery's own baseline caught a real breakage: one new reach counter grew `run()`'s return from a
+  6- to a **7-positional tuple** and broke **four existing callers** — visible only because the
+  baseline line read `4 errors` where `OK` was expected, which is why a battery is run against a
+  *stated* baseline and not a remembered one. `tests/test_iter45_mechanical_fences.py` **46 → 55**.
+  Five corpus guards OK. rext NOT tagged (offline guard code only); pin stays
+  `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-71/progress.md
