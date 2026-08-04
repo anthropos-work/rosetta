@@ -603,3 +603,25 @@ defect and would also explain why no amount of accessor work has helped.
   `stack-core` **753 / 1F** (the perishable iter-48 fixture, by IDENTITY) · `stack-injection` 332 OK
   · `dev-stack` 151 OK solo. rext NOT tagged (offline guard code only); pin stays
   `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-69/progress.md
+- iter-70 (tik, closed-fixed): **the class iter-69 routed as "23 citations across 14 lines" — and
+  called a prerequisite for the graded read — is 4 citations across 3 lines.** Twelve of the
+  seventeen are **PORT NUMBERS**: `repos.yml` has 31 lines and the citation is `:5050`;
+  `docker-compose.yml` has 271 and it is `:8082`; `cors.go` has 110 and they are `:8000`/`:9000`.
+  One mechanical discriminator settles it — *does the antecedent file even have that many lines?* —
+  **and the discriminator's own defect is reported beside its result**: it sized the antecedent by
+  `max()` over every same-basename file on disk, so `labsapi/client.go` resolved to a 23,437-line
+  namesake and *"default `:7070`"* came back line-plausible. **§5 rule 32 against my own hand-off,
+  off by a factor of six, one iteration later.** Three of the four hold — `org_membership.go:172-188`
+  is exactly the fail-closed `Policy()` at `9d00a313`, and `ai-readiness.md:45`'s bare `:33` binds to
+  the yaml already named on its line (the detector was wrong, not the corpus). The one repair is a
+  dangling *"consistent with `:36` and `:261-266` **above**"* in `studio-room.md:388` where
+  `services/ai.py` is cited **nowhere earlier in that document** — corpus-internal, no ref needed.
+  Whether those are the right *lines* stays **UNMEASURED**: studio-room is not cloned on this box and
+  the CI-pulled in-image copy is in no ref, so a verdict off it would not be a measurement —
+  **recorded, not patched on speculation**. And `FENCE-M257x-iter69-citation-antecedent` is
+  **falsified as designed**: the corpus uses the port sense 3× more often, so the rule would be a
+  false-positive generator (§4 Trap A); replaced by `FENCE-M257x-iter70-line-or-port`, which adds a
+  *decidable* side-condition (`N ≤` the file's length at the adjudication ref) rather than a better
+  guess. **iter-69's claim that this class blocked the graded read is retracted.** Five corpus
+  guards OK; no code touched, so iter-69's suite runs stand. Gate **4 of 5**, unchanged — see
+  iter-70/progress.md
