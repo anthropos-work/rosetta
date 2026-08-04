@@ -768,3 +768,38 @@ defect and would also explain why no amount of accessor work has helped.
   **Both known-bad citation classes are now closed**, which was the stated precondition for the
   graded read. rext NOT tagged (offline guard code only); pin stays `fast-build-m257x-iter-67`.
   Gate **4 of 5**, unchanged — see iter-75/progress.md
+- iter-76 (tik, closed-fixed): **the graded READ was taken, and clause 5 is not met by a wide
+  margin — 77 blockers in reading #13, 75 in #14, against a pre-registered ceiling of 10.** 14 blind
+  seats, identical partition, instrument held fixed at iter-41's and STORED as
+  `instrument/briefing-iter76-AS-RUN.md` (its only deltas: the ground-truth shas, and an explicit
+  ref-selection rule — recorded, not applied silently). Taken only once iter-74 and iter-75 had
+  closed both known-bad citation classes, because *a reading taken over a known-unrepaired class
+  measures the instrument, not the corpus*. **The headline is not the count — it is that the count
+  coexists with a green board.** Five corpus guards were OK throughout **and were right to be**:
+  `platform_predicate_guard` prints on every single run that **G5 reaches 1 migration claim of 24
+  and G2 reaches 3 repo-count claims**, so the corpus's false predicates live in the twenty-one it
+  cannot see. *Every GREEN verdict is a statement about reach* — this iteration is that sentence
+  with a measurement attached. Each dominant class was confirmed against the guard's **own derived
+  denominators**, never against another document: **no compose service exists for cms /
+  jobsimulation / roadrunner** while six documents say the container *"still starts locally"*;
+  **`repos.yml` has 6 entries** (app · sentinel · storage · messenger · next-web-app · studio-desk)
+  while the corpus says *"1 of 9"*; **`core` selects 5 containers** while the corpus says nine; and
+  **`graphql` is not one of the 8 legal profile tokens** while `make up` is annotated with it in
+  three documents. **Prediction 5 HOLDS — no seat booked a blocker inside the iter-74 or iter-75
+  classes**, so both closes stand. Two of five pre-registrations were falsified, one by an order of
+  magnitude, and the falsifications are the iteration's most useful output. **The first adjudicated
+  finding is a FALSE POSITIVE with a systematic mechanism**: the *"past the end of a 271-line file"*
+  class sits in blocks pinning `2adcf71`, where `docker-compose.yml` is **387 lines**, so §5 rule 33
+  settles those citations as correct — **~150 is an upper bound, not a work item**, and the seats
+  hesitated correctly (both booked `medium`). The instrument lesson is mine, not the seats': **a
+  rule stated in a briefing is not a rule enforced by an instrument** — the same ref-selection
+  predicate is already mechanical inside `anchor_construct_guard.block_ref`, one directory away, and
+  the read had no access to it. Repair **routed whole** per the iter's own pre-registered escalation
+  (*">~15 union blockers → measure and route"*), as `FIX-M257x-iter76-read-union`, under three
+  binding conditions: **adjudicate before repairing** (four routed counts in a row have collapsed on
+  adjudication — 64→5, 23→1, 21→0, 92→0), **repair by PREDICATE not by claim** (`D-M257x-59-1`; six
+  predicates cover most of the ~150 and every one has a legal set the guard already derives), and
+  **not closed until the G5/G2 reach hole is closed**, since 1-of-24 is *why* these claims survived
+  seventy-five iterations of a milestone whose entire subject is this fold. One denominator (8 vs 9
+  vs 10 compose services) is left **explicitly unsettled** rather than resolved by assertion. Gate
+  **4 of 5**, unchanged — see iter-76/progress.md
