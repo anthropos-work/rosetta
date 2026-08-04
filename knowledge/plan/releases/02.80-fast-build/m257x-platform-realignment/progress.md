@@ -534,3 +534,24 @@ defect and would also explain why no amount of accessor work has helped.
   **`FENCE-M257x-iter66-tier-membership`** — *"service X is in selection Y"* has a derivable legal set
   (`compose.select(default_profile)`) and nothing checks it; same shape as G1 but about **membership**
   rather than the token. Gate **4 of 5**, unchanged — see iter-66/progress.md
+
+- iter-67 (tik, **G7 — the service list beside a profile**): consumes `FENCE-M257x-iter66-tier-membership`
+  **one iteration after iter-66 opened it**, so the rule is proven by use. iter-66's defect (`storage`
+  placed in the default selection) was unreachable by every existing assertion — G1 checks the token is
+  legal and selects *something*, G3 checks the default's *count*, **nothing checked the LIST**. G7
+  asserts the services named beside a profile equal `compose.beyond_floor(tok)`, **both directions**
+  (MISSING / NOT STARTED), with the services column found by its **header** (like the profile column at
+  iter-63) and its cells read **by shape**; a prose cell yields no tokens and is **UNREACHED, never an
+  empty claim**. Live: **22 membership rows, 12 checked, 10 UNREACHED — GREEN**, which is the right
+  outcome for a fence built right after a hand-repair and is **not** the evidence; the fixtures and
+  mutants are. Two findings on the way: **the corpus's most important row was invisible to G1 too** —
+  `` | `core` *(default — `PROFILE ?= core`)* | `` defeated a `(default)`-only strip because the
+  qualifier is emphasised and carries its own backticks (fixed by stripping a trailing parenthetical
+  before the default mark; rows checked 10 → 12, profile sites 91 → 94, `D-M257x-67-2`); and **the
+  mutation battery caught a weak TEST of mine, not a weak rule** — a `membership_rows >= 1` assertion
+  that passes on the base corpus alone and therefore survived its own mutant, re-written to assert the
+  **delta** (`D-M257x-67-3`). 67 predicate tests (was 60); `stack-core` **682 / 1F** (the perishable
+  iter-48 fixture) — a second failure, `test_m220_mutation_battery`, was **my own contention** (a prior
+  suite still running; solo re-run **10/10 OK**), the same mistake iter-63 recorded, repeated in the
+  same session. rext tagged `fast-build-m257x-iter-67`, **verified on origin**; pin advanced.
+  Gate **4 of 5**, unchanged — see iter-67/progress.md
