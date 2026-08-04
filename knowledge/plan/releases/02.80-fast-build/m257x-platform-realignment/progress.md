@@ -472,3 +472,25 @@ defect and would also explain why no amount of accessor work has helped.
   (new classes appended *after* the `__main__` guard) — the fence caught it. rext tagged
   `fast-build-m257x-iter-63`, **verified on origin**; pin advanced.
   Gate **4 of 5**, unchanged — see iter-63/progress.md
+
+- iter-64 (tik, **the map's eighth state**): `DOC-M257x-iter59-storage-mid-fold` closed — routed forward
+  **five times**, and `D-M257x-64-1` names why it kept slipping: **the measurement had nowhere legal to
+  go.** iter-59 measured the storage split and wrote it into `storage.md`; the *map* — the fenced
+  artifact, policed by `platform_alignment_guard.py` assertion C — had a **seven-token** vocabulary with
+  no token for it, so `storage` kept reading `live-standalone` on both sides. Not from belief: inventing
+  a token in a fenced field turns the guard RED. **The fence had eight things to say and seven words** —
+  the same shape as `D-M257x-63-2` one layer up, *the instrument reports agreement it never tested*.
+  **`mid-fold` added as the eighth token**, `storage` re-stated with both halves cited, `ALLOWED_STATES`
+  widened 7 → 8, and the protocol's own *"the seven-token vocabulary above has no token for mid-fold"*
+  sentence retired. Re-deriving the split from artifacts (never from `storage.md`) found iter-59's
+  consumer count **short by one**: **three** `cmd/` readers, not two — `academyImport:231` and
+  `academy-asset-upload:129` hard-require it, while **`cmd/import/main.go:50` builds a storage client
+  against the empty string without complaint**. Watched RED: the guard fired on the first attempt for
+  the *wrong* reason — the new cell is bolded and `_state_head` read `**mid-fold**` literally — fixed by
+  **stripping markdown emphasis** (`D-M257x-64-2`), derived from the format, rather than by un-bolding
+  the cell and leaving the next author the same trap. **Two inversion mutants, both taking the LIVE map
+  RED as well as the fixtures.** 35 alignment-guard tests (was 30); `stack-core` **669 / 1F** (the
+  perishable iter-48 fixture). Side: the map's freshness pin advanced `ef32d4c` → **`0dab54d`**, and
+  `service_taxonomy.md`'s *"CMS, Jobsimulation and Roadrunner are NOT out of local orchestration"* block
+  retired — that phase closed at `d11a403`. rext tagged `fast-build-m257x-iter-64`, **verified on
+  origin**; pin advanced. Gate **4 of 5**, unchanged — see iter-64/progress.md

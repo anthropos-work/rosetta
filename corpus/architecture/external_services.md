@@ -141,7 +141,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 >
 > **That retraction over-corrected, and this corrects the correction (M257x iter-48).** The twin of this
 > paragraph said *"all of that is false; that service **has never existed**"* — repaired at
-> [`service_taxonomy.md:306-312`](./service_taxonomy.md) and left standing here. The service **did** exist,
+> [`service_taxonomy.md:308-314`](./service_taxonomy.md) and left standing here. The service **did** exist,
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. And a check

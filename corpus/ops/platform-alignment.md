@@ -1095,14 +1095,23 @@ documentation PR against this corpus returned **92 claims absorbed · 30 superse
 *agreed*. Diffing two documents is structurally incapable of finding what they share. **Adjudicate against
 platform artifacts.**
 
-**Corollary — a half-landed fold needs a state, and it is recorded on both sides or not at all.** The seven-token
-vocabulary above has no token for *mid-fold*, so a split like storage's is currently recorded nowhere: config
-sets `STORAGE_RPC_ADDR` in **no** compose file and not in `.env_example`, the service moved to
-`profiles: [storage-legacy]`, `repos.yml` **still clones it**, and `app v1.366.0` **still reads** it at
-`main.go:446`, `:524`, `:992` and hard-requires it in two `cmd/` tools. That is neither `live-standalone` nor
+**Corollary — a half-landed fold needs a state, and it is recorded on both sides or not at all.** Stated as a
+gap at iter-59 and **closed at iter-64**: the map's vocabulary now has an **eighth** token, `mid-fold`, and
+`storage` is its instance. Config sets `STORAGE_RPC_ADDR` in **no** compose file and not in `.env_example` (0
+occurrences), the service moved to `profiles: [storage-legacy]`, `repos.yml` **still clones it**, and `app`
+`b948604` v1.366.0 **still reads** it at `main.go:446`, `:524`, `:992` and in **three** `cmd/` tools — two of
+which hard-require it (`academyImport/main.go:235`, `academy-asset-upload/main.go:133`) while
+`cmd/import/main.go:50` builds a client against the empty string. That is neither `live-standalone` nor
 `merged-into-app`, and one side alone is not a claim — the config side reads as "removed", the consumer side as
-"live". Record both, cited, or record neither. (Worked example: [`storage.md`](../services/storage.md); fenced by
+"live". Record both, cited, or record neither. (Worked example: [`storage.md`](../services/storage.md); the
+state itself is fenced by `platform_alignment_guard.py` assertion C, and the variable by
 `platform_predicate_guard.py` G6, which refuses a mid-fold variable that no document cites a read site for.)
+
+> **A vocabulary gap is a claim the map cannot make.** Between iter-59 and iter-64 the map called `storage`
+> `live-standalone` on both sides — not because anyone believed it, but because the alternative was to invent
+> a token in a fenced field. **The fence had eight things to say and seven words.** When a measurement has no
+> legal way to be recorded, widen the vocabulary in the same iter that measures it, or the measurement lands
+> in a service doc and the fenced artifact keeps the old answer.
 
 ---
 
@@ -1156,7 +1165,7 @@ success without checking.
 
 | layer | asserts | lives in |
 |---|---|---|
-| map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo; every state is one of the seven; every row cites a sha or `file:line`; the net-new census does not overlap the clone set | `stack-core/platform_alignment_guard.py` (M257x iter-20) — landed, with `tests/test_platform_alignment_guard.py`. **What runs unconditionally is C+D+E** (vocabulary, citations, census overlap): those are properties of the map alone, so they are checked against the **real** map on every suite run, everywhere. **A and B need a real `repos.yml`, and a platform clone is git-ignored and ephemeral** — the test searches `PLATFORM_REPOS_YML` then every `stack-*/platform/repos.yml`, and *skips A/B/E-against-the-clone-set* if it finds none, naming what it looked for. Until M257x harden pass 5 it looked at one hardcoded path and this row claimed the whole thing ran "on every suite run" — on a box with no demo stack it silently skipped, i.e. the fence's own documentation was the claim-without-a-measurement shape this protocol exists to catch |
+| map ↔ `repos.yml`, both ways | every `repos.yml` service has a map row; no map row invents a repo; every state is one of the **eight** (`mid-fold` added M257x iter-64); every row cites a sha or `file:line`; the net-new census does not overlap the clone set | `stack-core/platform_alignment_guard.py` (M257x iter-20) — landed, with `tests/test_platform_alignment_guard.py`. **What runs unconditionally is C+D+E** (vocabulary, citations, census overlap): those are properties of the map alone, so they are checked against the **real** map on every suite run, everywhere. **A and B need a real `repos.yml`, and a platform clone is git-ignored and ephemeral** — the test searches `PLATFORM_REPOS_YML` then every `stack-*/platform/repos.yml`, and *skips A/B/E-against-the-clone-set* if it finds none, naming what it looked for. Until M257x harden pass 5 it looked at one hardcoded path and this row claimed the whole thing ran "on every suite run" — on a box with no demo stack it silently skipped, i.e. the fence's own documentation was the claim-without-a-measurement shape this protocol exists to catch |
 | static schema fence | every schema a seeder WRITES to **through a statically-visible construct** is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
 

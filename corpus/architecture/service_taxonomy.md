@@ -87,12 +87,14 @@ Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:80
 
 **Archived / merged — but read the `Local container?` column** (repo dirs may still exist on disk):
 
-> **⚠️ Two different fates share this table.** *Merged into `app`* does **not** imply *gone from compose*.
-> Chronos, Intelligence, Skiller and Skillpath really are out of local orchestration. **CMS,
-> Jobsimulation and Roadrunner are NOT** — all three are still defined in `docker-compose.yml` (`:144`,
-> `:83`, `:281`) in the then-default profile, so a bare `make up` used to start them as unfederated
-> husks. Consistent with the profile table at :371 and
-> [`platform-migration-status.md`](./platform-migration-status.md) (`running_but_unfederated`).
+> **⚠️ Two different fates shared this table, and the second one has now closed.** *Merged into `app`*
+> did **not** imply *gone from compose*: until `d11a403` (merged `ef32d4c`, 2026-08-03) CMS,
+> Jobsimulation and Roadrunner were still defined in `docker-compose.yml` in the then-default profile,
+> so a bare `make up` started all three as unfederated husks — the `running_but_unfederated` state in
+> [`platform-migration-status.md`](./platform-migration-status.md). **At `0dab54d` all three are gone
+> from compose and from `repos.yml`**, so every row below now reads `no` and the two fates have
+> converged. Keep the distinction in mind anyway: it is a *phase*, and the next fold will pass through
+> it too.
 
 | Service | Why removed | Local container? | Reference |
 |:--------|:------------|:-----------------|:----------|
@@ -308,7 +310,7 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. *"Does not
 > exist now"* became *"has never existed"* — and the stronger form contradicted the corpus's own fenced
-> source of truth, [`platform-migration-status.md:86`](./platform-migration-status.md), which the very
+> source of truth, [`platform-migration-status.md:87`](./platform-migration-status.md), which the very
 > paragraph above links.)
 
 **Integration Pattern**:
