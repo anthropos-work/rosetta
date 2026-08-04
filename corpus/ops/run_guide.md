@@ -79,13 +79,13 @@ cd stack-dev/platform
 
 ### Option A: Start Full Backend (Recommended)
 
-This starts all backend services + GraphQL router (default `graphql` profile):
+This starts the backend tier (default `core` profile — `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`). There is no GraphQL router: platform `2adcf71` deleted it and `0dab54d` renamed the profile.
 
 ```bash
 make up
 ```
 
-This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath and skiller are all merged into `app`; the standalone storage moved to the `storage-legacy` profile; the Cosmo router was deleted at platform `2adcf71`.)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
@@ -136,7 +136,7 @@ curl -s -X POST http://localhost:8082/graphql/query \
 
 ## 4. Start Frontend (Next.js Web App)
 
-**Required** — the frontend always runs natively (not in Docker for the `graphql` profile). It must be
+**Required** — the frontend always runs natively (not in Docker for the `core` profile). It must be
 started in a **tmux session** so it survives Claude Code session closure.
 
 ### Verify Node.js Version
@@ -200,7 +200,7 @@ cd stack-dev/platform
 make up PROFILE=studio-desk
 ```
 
-This starts Studio-Desk in Docker along with its dependencies (GraphQL, CMS).
+**NB: `make up PROFILE=studio-desk` exits 1** — `studio-desk` declares `depends_on: backend`, which its own profile does not select, so compose rejects the project. Combine it with the default: `docker compose --profile core --profile studio-desk up --build -d`.
 
 ### Option B: Run Natively
 

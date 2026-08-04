@@ -434,7 +434,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     cd platform
     ```
 
-2.  **Start all backend services** (default `graphql` profile):
+2.  **Start the backend tier** (default `core` profile):
     ```bash
     make up
     ```

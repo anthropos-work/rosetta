@@ -43,7 +43,7 @@ make up                   # rebuild + start
 make ps                   # count re-derived per run — the old "11" predates the merges (see the service-set table below)
 ```
 
-### Expected service set (default `graphql` profile, main dev stack)
+### Expected service set (default `core` profile, main dev stack)
 
 | Container | Port(s) | Notes |
 |-----------|---------|-------|

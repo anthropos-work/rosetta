@@ -166,7 +166,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 ### Architecture
 
 In the **default local posture**, Directus is **not** part of the local stack — `backend` (which hosts the cms
-domain since cms-in-app) reaches the **production** Directus over the network. The default `graphql` profile is
+domain since cms-in-app) reaches the **production** Directus over the network. The default `core` profile is
 **not** just Postgres + `backend`: it starts **nine** containers — `postgresql` + `redis` (from the included
 `common.yml`, profile-less so they always start) and seven application services, `sentinel` · `backend` ·
 `jobsimulation` · `cms` · `storage` · `roadrunner` · `gotenberg`. The `jobsimulation` and `cms` containers are

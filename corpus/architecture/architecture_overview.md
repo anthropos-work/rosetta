@@ -9,10 +9,10 @@ This document provides a high-level overview of the Anthropos platform architect
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
+*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — a graph of **≥42,790 skills** across **≥22,470 job roles** (the measured *public* subset; see [Shared Libraries → the "60K / 18K" figures](./shared_libraries.md#taxonomy-figures)), vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. **But a standalone container still starts here:** `docker-compose.yml:83` puts it in this very `graphql` profile as an unfederated husk, until **M810**.)
+    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. The husk container is **gone from compose** at platform `0dab54d` — no `jobsimulation` service, no entry in `repos.yml`. Production's `module.jobsimulation_euwest1` rollback path is a separate question, not measured here.)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
     *   **Storage**: File/blob storage
     *   **Roadrunner**: **orphaned husk** — the container still starts, but nothing calls it;
@@ -56,7 +56,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private access
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
-**Service Tiers** (local development reality, default `graphql` profile):
+**Service Tiers** (local development reality, default `core` profile):
 1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage + Gotenberg (third-party PDF service) — **plus the three unfederated husks the default profile still starts**: `jobsimulation` (`docker-compose.yml:83`), `cms` (`:144`) and `roadrunner` (`:281`). Messenger when opted in. Dockerized. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only. So a bare `make up` gives you **six Go services**, not three.
 
    Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
@@ -178,7 +178,7 @@ Archived / merged — **but three of these still start locally** (repos still ex
 
 > **⚠️ This table and the *Default local development set* table above overlap by design, and the overlap is
 > the point.** CMS, Jobsimulation and Roadrunner appear in **both**: they are merged into `app` (no
-> subgraph, prod desired_count `0`) **and** still started by the default `graphql` profile as unfederated
+> subgraph, prod desired_count `0`) **and**, until platform `2adcf71`, still started by the default profile as unfederated
 > husks. Only Chronos, Intelligence, Skiller and Skillpath are genuinely out of local orchestration.
 
 | Service Name | Status | Documentation |

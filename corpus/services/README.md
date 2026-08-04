@@ -18,7 +18,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 > `repos.yml` contradict each other. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > And **three of the four** (cms, jobsimulation, roadrunner) still start CONTAINERS locally in the default
-> `graphql` profile as unfederated husks — *merged* is not *gone from compose*. Teardown is platform **M810**.
+> then-default profile as unfederated husks. At platform `0dab54d` they are **gone from compose and from `repos.yml`** as well.
 > Read [`backend.md`](backend.md) for the current shape.
 
 ## Core backend services (Tier 1 — Go)

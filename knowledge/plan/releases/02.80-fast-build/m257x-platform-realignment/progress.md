@@ -419,3 +419,17 @@ defect and would also explain why no amount of accessor work has helped.
   iter-58's "21 of 22" is, at app `v1.366.0`, **5 of 16 distinct `app/main.go:N` citations still landing on
   their claimed construct**. rext tagged `fast-build-m257x-iter-61`, **verified on origin**; pin advanced.
   Gate **4 of 5**, unchanged — see iter-61/progress.md
+
+- iter-62 (tik, the repair half): **iter-61's enumerated 22-site / 12-file prose class repaired WHOLE to
+  guard-GREEN** — and **12 of those sites carried a SECOND false predicate** the sweep caught: the husk
+  containers. `dependency_map.md:31` asserted *"They are NOT gone from compose or `repos.yml`"* (they are gone
+  from **both**); `service_taxonomy.md:97` answered **"YES — container still starts"** (it does not);
+  `run_guide.md:88` listed **10** services incl. the Cosmo router for `make up` (it starts **five**); and
+  `run_guide.md:203` documented `make up PROFILE=studio-desk` as starting Studio-Desk when it **exits 1**.
+  **`D-M257x-62-1`: repair by predicate, but do not edit only the predicate** — the predicate is what finds
+  the sites, the sentence is what you fix. **`D-M257x-62-2`: the ref-pin hole has a SECOND instance and is
+  promoted to the next fence build** — `service_taxonomy.md:55-67`'s entire Services table is headed
+  *"@ platform `2adcf71`"*, so every row listing Jobsimulation/CMS/Roadrunner as starting containers is
+  exempt by the guard's own rule; `messenger.md:107-110`'s two stale RPC values were the first. Fix shape:
+  a pin exempts only when its ref **is** the guard's ref. `markdown_structure_guard` clean at 112 files.
+  Gate **4 of 5**, unchanged — see iter-62/progress.md
