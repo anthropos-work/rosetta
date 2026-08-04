@@ -1231,3 +1231,116 @@ its second site*.
 
 And the window is now genuinely exhausted: pass 15 swept its remainder and both recurrence dimensions and
 found **nothing**. The hypothesis held, and it has now been spent.
+
+## Pass 16 — 2026-08-04 — incremental
+
+**Iters hardened this pass:** iter-58, iter-59 (tok), iter-60 … iter-68
+**Tiks covered since prior pass:** 10 (iters 58, 60–68; iter-59 was a tok)
+
+**Scope.** The window that built the milestone's primary deliverable — the `platform_predicate_guard`
+predicate fence (G1–G7, ~1 360 lines net-new), assertion F in `platform_alignment_guard`, and iter-68's
+ref-awareness across three guards. `stack-core` 610 → 682+ tests before this pass.
+
+### The dimension this pass ran: REACH vs CLASS, measured per assertion
+
+iter-61 stated the milestone's sharpest rule — *a fence whose reach is narrower than its class
+over-reports its own GREEN, invisibly, because the fence is what you'd check with* — and iter-67
+demonstrated it. This pass **applied that rule to the fence family itself**, by enumerating every
+assertion's class and measuring what fraction of it the assertion can actually read. That is a different
+instrument from a test, and it found what tests had not.
+
+**Every assertion's reach, live, before → after:**
+
+| assertion | class | reach BEFORE | reach AFTER |
+|---|---|---|---|
+| G1 profile tokens | documented profile tokens | 99 sites / 8 tokens | unchanged |
+| G2 repo-count | repo-count claims in clone context | 3 (2 ref-pinned) | unchanged |
+| **G3 default profile** | rows marking a default | **0 of 3 — 0 %** | **3 of 3 — 100 %** |
+| G4 RPC address | local-topology address claims | 13 (2 ref-pinned) | unchanged |
+| G5 migration target | `migrations: true\|false` sites | 1 enumerated / 21 free prose / 2 pinned **of 24** | unchanged, partition now stated |
+| G5b sole-migrator | `_ONLY_MIGRATOR` sites | 4 checked (5 sites) — **separate universe** | unchanged, no longer summed into G5 |
+| **G6 mid-fold** | RPC vars graded | **"measured"** — no count at all | **7 graded, 0 mid-fold @ origin/main; 1 @ `b948604`** |
+| **G7 profile membership** | membership rows | **12 of 22 — 54.5 %** | **21 of 22 — 95.5 %** |
+| F (alignment) | citations in the map | 74 resolved = 20 subject-checked + 53 range-only + 1 unattributable | unchanged — partition already closes |
+| anchor-construct | resolvable anchors | 124 graded, **ref unnamed** | 94 at a ref + **30 `worktree(fallback)`**, named |
+
+**Bugs surfaced + fixed inline (5):**
+
+1. **G3's reach was ZERO on the corpus it ships to guard** (`247b847`). `_DEFAULT_MARK` was
+   `\(default\)` — a BARE parenthesis, and the corpus writes none. All three of its rows attach the
+   evidence to the mark: `*(default — `PROFILE ?= core`)*` (CLAUDE.md:314, platform_repo.md:77) and
+   `(the Makefile default — `PROFILE ?= core`)` (service_taxonomy.md:428). `documented_default_profiles`
+   returned `[]`, so the `wrong-default` loop never ran and the `undocumented-default` arm — itself gated
+   on `marked` being non-empty — could not fire either. **G3 reported GREEN by never looking, on every
+   corpus, for as long as it has existed.** The synthetic fixtures used the bare spelling, so the whole
+   pre-existing G3 suite passed: *the fixture agreed with the regex instead of with the corpus.*
+2. **The reach LINE made the error this milestone exists to punish** (`247b847`). It read
+   `24 migration claim(s) of which 1 enumerated + 4 sole-migrator checked and 21 free prose UNREACHED`,
+   and **1 + 4 + 21 = 26**. `of which` is a partition claim and it did not close: `_ONLY_MIGRATOR` matches
+   a different line set (5 live sites, 3 of which also match the migration universe and **2 lie entirely
+   outside the denominator they were reported against**). A reader deriving *"G5 reaches 5 of 24"* got a
+   number wrong in both numerator and denominator.
+3. **The third ref-aware guard could not say which file it read** (`a2f29a2`). iter-68 made three guards
+   ref-aware because *three checkers were reading the wrong copy of the code*. Two came out of it naming
+   their provenance and refusing an unresolvable named ref. `anchor_construct_guard.read_target` returned
+   bare lines and **fell through to `target.read_text()` — the CHECKOUT — silently**, adjudicating every
+   anchor against it. A typo'd `CITE_REF`, or a clone with no git dir, and the guard graded the worktree
+   and printed OK. Two more found while testing it: `ref: str = CITE_REF` was a DEFAULT ARGUMENT (bound at
+   import) while `resolve()` reads the module global at call time — the resolving half and the reading
+   half took their ref from two different places; and the UNMEASURED refusal had to be ordered BEFORE the
+   resolver positive control, because a bad ref drives `resolved` to 0 and the control then blamed *"the
+   resolver, not the corpus"* for a ref the operator typo'd.
+4. **The cell-scope rule was built at iter-63 and never wired into G2/G4/G5/G5b** (`63af69a`).
+   `_pin_window(lines, i, col)` narrows a table row's pin scope to the CLAIM'S OWN CELL — half of
+   `D-M257x-63-1`, built for a measured reason. Only G1's prose path ever passed `col`. **Live impact 0**
+   (of the 6 pin-exempted claims, one is on a table row and its pin shares the cell) — latent, not live,
+   which is why a reading found it and no counter could.
+5. **G7 could not read 45 % of its class, and the corpus was right in all of it** (`52fb3fd`). All 10
+   misses were the parser: 6 rows state the membership and explain it after an em dash
+   (`storage — the rollback path only; …`), 2 name the service in display case (`**Storage**`) against
+   compose's `storage`. **It had to be a CUT, not a widening:** `CLAUDE.md:319` is *"next-web-app — **but
+   selecting it alone exits 1**: `next-web-app` declares `depends_on: backend`"*, and harvesting the whole
+   cell yields `{next-web-app, backend}` → `[G7 wrong-membership] … NOT STARTED ['backend']`, a fence
+   inventing a claim out of an explanation. **12/22 → 21/22, corpus GREEN** — every row that was
+   unreadable was also correct, which is exactly why the gap could sit there: nothing it hid was wrong yet.
+
+**The iter-68 `lru_cache`, pinned in both directions** (`a2f29a2`). Nothing tested it. Measured: keying
+HOLDS (the clone root is in the key); **freshness does NOT — a ref that moves in-process is not seen
+again**. That is the RIGHT behaviour and it is load-bearing rather than incidental: `read_target` and
+`resolve` re-resolve the ref *per citation*, so without the cache a fetch landing mid-run would split one
+verdict across two trees while the report named one ref. **The cache is what makes the provenance line
+true.** Documented so nobody "fixes" it into freshness; `cache_clear()` exercised as the sanctioned escape.
+
+**Tests added:** 26 across 2 files — `test_platform_predicate_guard.py` 85 → 102, `test_iter45_mechanical_fences.py` 35 → 44.
+
+**Mutation batteries: 27 inverted mutants, 27 RED** (A 6, B 8, C 5, D 4, E 4).
+
+**The battery caught FIVE weak tests of mine before it caught anything else** — the fourth pass running
+where that is the headline, and the mechanism working as designed:
+
+* the G5 cell-scope fixture used `(currently: …)`, but `_MIGRATION_ENUM` accepts `(currently|now|today: …)`
+  and `_ASSERTS_CURRENCY` matches `currently` — so an enum spelled that way asserts currency BY
+  CONSTRUCTION and can never be pin-exempted at any scope. It proved the currency rule while claiming to
+  prove the cell rule, and passed identically with the fix reverted. (Corollary kept:
+  `ref_pinned_skipped_migration` can only ever count NON-enumerated claims.)
+* G5b had no neighbouring-cell test at all.
+* `test_mid_fold_count_agrees_with_the_histogram` ran with `app_root=None`, so BOTH sides were 0 — an
+  identity, not an assertion — and a mutant pinning `mid_fold_count = 0` SURVIVED it.
+* its completed-fold twin read an INVENTED variable name, which does not model a completed fold: it just
+  relocates the mid-fold onto the new name.
+* `test_prose_still_contributes_nothing` asserted emptiness at the tokenizer, which reads by SHAPE; the
+  compose-name filter lives in the caller. It pinned a rule that does not live in that function.
+* and the anchor end-to-end test asserted only the exit code, and passed through the WRONG branch of two
+  that both exit 2.
+
+**Knowledge backfill:** none to the corpus this pass — every finding was in `rosetta-extensions` guard
+code, and the reach numbers are now emitted by the guards themselves rather than written down anywhere
+that could go stale. (That is the point: a reach figure in prose is the class of claim this milestone
+exists to distrust.)
+
+**Flakes stabilized:** none new. The `dev-stack` nested-run interference (151 OK solo vs 6 spurious
+`test_dev_public_host` failures beside `stack-core`) was re-confirmed as environmental and is unchanged.
+
+**Stop condition: continue-to-next-pass** — the reach dimension is not exhausted. G5's attribution reach
+is **1 of 24** and G1's prose class is the known clause-5 residual; and the recurrence question this pass
+raises (*which OTHER guards compute a reach counter and never print it?*) has not been swept.
