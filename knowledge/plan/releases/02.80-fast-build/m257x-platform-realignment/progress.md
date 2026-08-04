@@ -555,3 +555,24 @@ defect and would also explain why no amount of accessor work has helped.
   suite still running; solo re-run **10/10 OK**), the same mistake iter-63 recorded, repeated in the
   same session. rext tagged `fast-build-m257x-iter-67`, **verified on origin**; pin advanced.
   Gate **4 of 5**, unchanged — see iter-67/progress.md
+- iter-68 (tik, closed-fixed-partial): the routed citation class re-derived — **64, not 68**: iter-63's
+  own enumerator now reads **123 sites / 96 distinct / 22 files**, because iters 63–67 wrote ten
+  net-new citations of their own and six of them died with the row they documented (a corpus repair
+  **enlarges** its own citation class — the sibling of §5 rule 34). §7 rule 4b measured **before**
+  spending the iter: `app` origin/main advanced **56 commits to `9d00a313` v1.367.0 at 10:56Z that
+  morning**, and **25 of the 42 citations that hold at the demo's pinned `b948604` break at origin
+  HEAD — 60% in one working day**. That redirected the repair to origin HEAD, the ref the gate names,
+  and exposed the precondition nobody had seen: **three guards — G6's consumer side, assertion F,
+  every anchor into a clone — were reading whatever the clone had checked out and none of them said
+  so.** Same corpus: **GREEN at origin HEAD, 4-findings RED at the pinned ref.** All three now
+  resolve *and* read at a named ref and print it (`auto` → origin/main → HEAD; `worktree` by name; a
+  caller-named ref that does not resolve is UNMEASURED). **Release 09.00 landed while we were
+  counting: storage and messenger are BOTH folded** — prod `service_desired_count = 0` on both,
+  storage served in-process, and `app` **taking over messenger's own Redis consumer group** rather
+  than merging its handlers. The `mid-fold` token built at iter-64 now has **no instance**; it stays,
+  and the map says so. Seven of eight `* **Profile**:` bullets were wrong in a construct **no fence
+  reaches** (seventh reach limit of this milestone). `CHECK-M257x-iter63-quoting-a-retired-token`
+  closed — **the second window bug of this milestone wearing a policy's name**, one line too narrow
+  for a denial that wrapped. 6 mutants across 3 guards all caught, one after its first test **survived**
+  and had to be re-written against the call site. B2 (the non-fold citation remainder) routes forward.
+  Gate **4 of 5**, unchanged — see iter-68/progress.md

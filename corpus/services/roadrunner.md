@@ -54,7 +54,7 @@ It also runs an **Asynq** worker pool that polls Judge0 for results — **one ta
 * **Language**: Go 1.25
 * **Frameworks**: Connect-RPC, [Asynq](https://github.com/hibiken/asynq) (`v0.25.1` background tasks), `gorilla/websocket`
 * **Ports**: 10400 (HTTP — `/_meta` health only), 10401 (Connect-RPC) — same on host and inside container per `platform/docker-compose.yml` (`PORT=10400`, `RPC_PORT=10401`)
-* **Profile**: `graphql` (default) and `roadrunner`
+* **Profile**: **none — there is no `roadrunner` compose service.** Deleted by platform `d11a403`; the line that stood here named the `graphql` profile, which `0dab54d` renamed `core`, for a service that had already been removed. Historical only (corrected M257x iter-68)
 * **Execution backend**: [Judge0](https://judge0.com/) — external sandboxed API at `JUDGE0_BASE_URL`
 
 ### Key directories

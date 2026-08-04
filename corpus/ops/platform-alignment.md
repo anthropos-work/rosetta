@@ -1097,13 +1097,19 @@ platform artifacts.**
 
 **Corollary — a half-landed fold needs a state, and it is recorded on both sides or not at all.** Stated as a
 gap at iter-59 and **closed at iter-64**: the map's vocabulary now has an **eighth** token, `mid-fold`, and
-`storage` is its instance. Config sets `STORAGE_RPC_ADDR` in **no** compose file and not in `.env_example` (0
-occurrences), the service moved to `profiles: [storage-legacy]`, `repos.yml` **still clones it**, and `app`
-`b948604` v1.366.0 **still reads** it at `main.go:446`, `:524`, `:992` and in **three** `cmd/` tools — two of
-which hard-require it (`academyImport/main.go:235`, `academy-asset-upload/main.go:133`) while
-`cmd/import/main.go:50` builds a client against the empty string. That is neither `live-standalone` nor
-`merged-into-app`, and one side alone is not a claim — the config side reads as "removed", the consumer side as
-"live". Record both, cited, or record neither. (Worked example: [`storage.md`](../services/storage.md); the
+`storage` **was** its instance, at `app` `b948604` v1.366.0: config set `STORAGE_RPC_ADDR` in no compose file
+and not in `.env_example` (0 occurrences), the service had moved to `profiles: [storage-legacy]`, `repos.yml`
+still cloned it, and `app` still read it at `main.go:446`, `:524`, `:992` and in three `cmd/` tools — two of
+which hard-required it (`academyImport/main.go:235`, `academy-asset-upload/main.go:133`) while
+`cmd/import/main.go:50` built a client against the empty string. Neither `live-standalone` nor
+`merged-into-app`, and one side alone is not a claim — the config side read as "removed", the consumer side as
+"live". Record both, cited, or record neither.
+
+**The state's life was four iterations, and that is the lesson, not a footnote.** At `app` `9d00a313` v1.367.0
+— 56 commits and one working morning later — `STORAGE_RPC_ADDR` is read by `main.go` and by **none** of the
+three CLIs; both prod counts are `0`; the fold is complete on both sides and the row is `merged-into-app`
+(M257x iter-68). **No row carries `mid-fold` today.** The token stays, because the fold program is not
+finished and a state you can only name after you need it is the state you will get wrong. (Worked example: [`storage.md`](../services/storage.md); the
 state itself is fenced by `platform_alignment_guard.py` assertion C, and the variable by
 `platform_predicate_guard.py` G6, which refuses a mid-fold variable that no document cites a read site for.)
 
@@ -1154,6 +1160,34 @@ state itself is fenced by `platform_alignment_guard.py` assertion C, and the var
    **23**. The repair belongs to the **advancing iter**, for the same reason the ref rule already gives:
    *the iter that detects the move re-points, in that iter.* Deferred, it becomes a second milestone's
    problem and the citations rot in the interval.
+
+   **4c — you do not have to TAKE an advance to measure it, and you should measure it first
+   (M257x iter-68 → `D-M257x-68-1`).** `git show <ref>:<path>` reads any ref without touching a
+   checkout, so the whole delta is available before a single file moves — which matters when the clone
+   is *pinned on purpose* (a demo stack pins its build refs; changing the checkout would fight the pin
+   and the running stack). iter-68 measured an `app` advance of **56 commits landed the same morning**
+   and found that **25 of the 42 corpus citations holding at the pinned ref break at origin HEAD — 60%
+   in one working day.** Fifteen minutes of measurement redirected the entire iteration; repairing
+   against the pinned ref first would have been careful, correct-looking work that was false before it
+   was committed.
+
+   **4d — a guard that resolves a citation against a CHECKOUT has no ref, and its verdict is not a
+   measurement (M257x iter-68).** Three fences were found doing it in one iteration —
+   `platform_predicate_guard` (G6's consumer side), `platform_alignment_guard` (assertion F),
+   `anchor_construct_guard` (every anchor into a clone) — each calling `read_text()` on whatever the
+   clone happened to have checked out, and **none of them reporting which file that was**. The same
+   corpus read **GREEN at origin HEAD and 4-findings RED at the pinned build ref**; both answers look
+   like answers. The rule:
+
+   - resolve **and** read at a **named ref**, and **print the provenance on every run**;
+   - **existence is decided at the same ref the content is read at** — resolving against the checkout
+     while reading against a ref makes a file *born* in the advance read as an unresolvable path, an
+     instrument gap wearing the costume of a corpus defect;
+   - an **untracked** worktree file is in no ref and correctly leaves scope;
+   - a ref the caller **named** that does not resolve is **UNMEASURED**, never silently substituted
+     (§5 rule 7).
+
+   P1 — *state your refs* — is not satisfied by a number whose ref is a checkout.
 5. **Prove it cold.** `demo-down --purge` + `demo-up`. A warm cycle hid a four-day-old total breakage.
 
 ---

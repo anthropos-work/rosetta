@@ -11,7 +11,7 @@ It's a one-directional pipeline: PostgreSQL `public` schema → Customer.io API.
 * **Repo**: `git@github.com:anthropos-work/customerio-sync` (private)
 * **Language**: Go
 * **Local port**: 8080 (HTTP — health/metrics)
-* **Profile**: `customerio-sync` (NOT in default `graphql` profile)
+* **Profile**: `customerio-sync` and `all` — `profiles: [customerio-sync, all]` (`docker-compose.yml:154`, derived from `docker-compose.yml` @ platform `0dab54d`). Not in the default profile, which is `core`, not `graphql`: `0dab54d` renamed it
 * **Build pattern**: **unique among Anthropos services** — Docker builds it directly from the GitHub URL, the repo is not cloned locally by `make init`.
 
 ### Compose definition

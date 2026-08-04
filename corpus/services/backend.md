@@ -113,7 +113,7 @@ was bootstrapped (see prerequisite above).
 * **Language**: Go 1.26
 * **Database**: PostgreSQL `public` schema (Ent ORM + Atlas migrations)
 * **Ports**: 8082 (HTTP/GraphQL — `PORT`), 8083 (Connect-RPC — `RPC_PORT`), 8084 (meta/health — `META_PORT`). Container publishes 8081/8082/8083; 8081 is reserved/unused.
-* **Profile**: `graphql` (default) and `backend`
+* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:100`, derived from `docker-compose.yml` @ platform `0dab54d`). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
 * **Versioning**: Semantic; CHANGELOG.md is generated from conventional commits. Tags trigger production deploys.
 
 ### Key directories

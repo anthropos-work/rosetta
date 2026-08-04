@@ -194,18 +194,22 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
 - Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
 
-> **⚠️ Storage is NO LONGER in the default selection** (platform `0dab54d`). `core` starts **five**
-> containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`, `sentinel`) — and
-> `storage` moved to `profiles: [storage-legacy]`, kept startable only for rollback comparison because
-> two writers on one bucket is the failure it would cause. It is a **`mid-fold`** service: the config
-> side says removed (`STORAGE_RPC_ADDR` occurs **0** times across `docker-compose.yml`, `common.yml`
-> and `.env_example`) while the consumer side is live (`app` reads it at `main.go:446`, `:524`, `:992`
-> and in three `cmd/` tools, two of which hard-require it). Both sides are cited in the fenced map —
-> `corpus/architecture/platform-migration-status.md`, the `storage` row.
+> **⚠️ Storage and Messenger are BOTH FOLDED INTO `app` — the v9.0 program landed 2026-08-04**
+> (platform `0dab54d` / `app` `9d00a313` v1.367.0). `core` starts **five** containers — `backend`,
+> `gotenberg` and the always-on floor (`postgresql`, `redis`, `sentinel`). `storage` sits in
+> `profiles: [storage-legacy]` and `messenger` in `profiles: [messenger]`, both kept startable only as
+> rollback paths — and both dangerous to run alongside `backend`, for the same reason stated twice in
+> compose's own comments: two writers on one bucket, two consumers on one Redis group. Prod compute for
+> both is **stopped** (`storage/terraform/main.tf:38`, `messenger/terraform/main.tf:29`, each
+> `service_desired_count = 0`). `app` serves object storage in-process (`app/main.go:471`, `:472`) and
+> has **taken over messenger's own Redis consumer group** (`:1387`, `:1423`). `storage` read
+> **`mid-fold`** here for four M257x iterations; the half it was waiting on landed in one working
+> morning. All of it is cited on both sides in the fenced map —
+> `corpus/architecture/platform-migration-status.md`, the `storage` and `messenger` rows.
 
 Available in other profiles but NOT started by default:
-- Storage (`storage-legacy` profile): File/blob storage management — see the mid-fold note above
-- Messenger (`messenger` profile): Email notifications via Brevo (Sendinblue)
+- Storage (`storage-legacy` profile): File/blob storage management — **folded into `app`**; see the note above
+- Messenger (`messenger` profile): Email notifications via Brevo (Sendinblue) — **folded into `app`**; see the note above
 - CustomerIO Sync (`customerio-sync` profile): Background data sync to Customer.io. Unique build pattern — built directly from GitHub URL, not cloned locally.
 
 Production-only / deployed-only (not in local docker-compose):

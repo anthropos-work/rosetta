@@ -11,7 +11,7 @@ In the Anthropos platform it exists for one consumer: the backend service uses i
 * **Image**: `gotenberg/gotenberg:8` (pinned major version 8)
 * **Source**: Upstream project — [gotenberg/gotenberg](https://github.com/gotenberg/gotenberg)
 * **Local port**: `3200`
-* **Profile**: `graphql` (default) and `backend`
+* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:268`, derived from `docker-compose.yml` @ platform `0dab54d`). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
 * **Statelessness**: No database, no Redis, no persistence. Spin up / tear down freely.
 
 ### Compose command

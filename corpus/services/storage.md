@@ -4,29 +4,33 @@
 
 Storage is the **centralized file/blob service** for the platform.
 
-> **⚠️ Since the merges, the sole live caller is `app`.** The jobsimulation and cms domains run
+> **⚠️ MERGED INTO `app` — storage is served in-process since the v9.0 fold (2026-08-04), and there is no live RPC caller at all.** The jobsimulation and cms domains run
 > **in-process inside `backend`** (`app/internal/jobsimulation/recording/recording.go:12`,
-> `anticheat.go:34`, `app/main.go:992` `storage.NewClient(…, storagens.CMS)`); at platform `0dab54d`
-> they have **no compose containers at all** — the local husks are gone, along with the `cms` and
-> `jobsimulation` `repos.yml` entries. (Local compose only; the production **M810** rollback-path
-> teardown was not measured here.)
+> `anticheat.go:34`, `app/main.go:1048` `internalstorage.NewClient(storageManager, storagens.CMS)` @ `app`
+> `9d00a313` v1.367.0); at platform `0dab54d` they have **no compose containers at all** — the local
+> husks are gone, along with the `cms` and `jobsimulation` `repos.yml` entries. (Local compose only;
+> the production **M810** rollback-path teardown was not measured here.) Since v9.0 the object-storage
+> *manager itself* is in-process too, so that call site no longer crosses a network at all.
 >
-> **⚠️⚠️ And storage itself is now MID-FOLD — a half-landed fold, recorded here on BOTH sides
-> because one side alone is not a claim (`D-M257x-59-4`).**
+> **⚠️⚠️ And the v9.0 fold COMPLETED on 2026-08-04.** This block read MID-FOLD for four M257x
+> iterations; the half it was waiting on landed in a single working morning. Re-derived at platform
+> `0dab54d` / `app` `9d00a313` v1.367.0 / `storage` `63bffc8`, recorded on BOTH sides because one
+> side alone is not a claim (`D-M257x-59-4`).
 >
-> | side | measured at `0dab54d` / app `v1.366.0` |
+> | side | measured at platform `0dab54d` / app `9d00a313` v1.367.0 |
 > |---|---|
+> | **prod** | `storage/terraform/main.tf:38` `service_desired_count = 0` — the compute is stopped, following the cms precedent. The buckets, CloudFront distribution and media DNS record are **not** touched: same module, `prevent_destroy`, custody transfer is M903 (`:35-37`) |
 > | **config** | `STORAGE_RPC_ADDR` is set by **no** compose file and is **absent from `.env_example`** — 0 occurrences across `docker-compose.yml`, `common.yml`, `.env_example` |
-> | **compose** | the `storage` service moved to `profiles: [storage-legacy]`, so a default bring-up never starts it (`docker-compose.yml:130-133`, rationale in-comment) |
-> | **`repos.yml`** | `storage` is **still an entry** — still cloned |
-> | **consumer** | `app` **still reads it**: `app/main.go:446`, `:524`, `:992`, and **hard-requires** it in two tools — `cmd/academyImport/main.go:231` and `cmd/academy-asset-upload/main.go:129` each `return … "STORAGE_RPC_ADDR is required"` (`:235` / `:133`) |
+> | **compose** | the `storage` service moved to `profiles: [storage-legacy]` (`docker-compose.yml:134`), so a default bring-up never starts it — rationale in-comment at `:131-133` (two writers on one bucket) |
+> | **`repos.yml`** | `storage` is **still an entry** (`repos.yml:18-20`) — still cloned, and the standalone stays startable. The rollback path, exactly as `cms` and `jobsimulation` are kept |
+> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472`, consumed at `:494` and `:1048`; bucket names are constants in `app/internal/storage/service.go:22`, `:24`. `STORAGE_RPC_ADDR` is read by `main.go` and by **none** of the three `cmd/` tools |
 >
-> So on every stack we currently run green, `os.Getenv("STORAGE_RPC_ADDR")` returns the empty string
-> and a storage client is built against it — **a failure deferred to call time, not boot time** — and
-> **those two commands hard-fail outright.** This is neither `live-standalone` nor `merged-into-app`;
-> the migration map has no token for it yet. Fenced by `platform_predicate_guard.py` G6, which requires
-> exactly this two-sided record. **Messenger is next by the platform developer's own account, so this
-> row shape will be needed again.**
+> The mid-fold hazard this block used to describe — a client built against an empty address, failing
+> at call time rather than boot time, and two `cmd/` tools hard-failing outright — **is gone**, because
+> there is no longer a client to build. `platform_predicate_guard.py` G6 now derives that consumer side
+> **at a named ref** (M257x iter-68): at the demo's pinned build ref `b948604` the same guard still
+> reports a mid-fold with six read sites, and the only thing that ever distinguished the two answers
+> was which checkout you happened to be looking at.
 
 Callers push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
 
@@ -39,7 +43,7 @@ Storage is stateless and owns no database: all state lives in S3 (the private ma
 * **Framework**: Connect-RPC (via the shared `colony` library), Cobra CLI
 * **Database**: none — all state lives in S3 (or local filesystem in dev)
 * **Ports**: 8300 (HTTP health), 8301 (Connect-RPC) — `PORT=8300` and `RPC_PORT=8301` in compose, mapped 1:1 to host (CLAUDE.md mentions different defaults at the binary level, but the platform compose pins them to 8300/8301 in both directions)
-* **Profile**: `graphql` (default) and `storage`
+* **Profile**: `storage-legacy` **only** — `profiles: [storage-legacy]` (`docker-compose.yml:134`, derived from `docker-compose.yml` @ platform `0dab54d`). **Not** in the default selection. Corrected M257x iter-68: the old line named two profiles the platform does not have — there is no `graphql` profile (`0dab54d` renamed it `core`) and there was never any `storage` profile at all
 
 ### Two storage managers
 

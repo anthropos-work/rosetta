@@ -6,7 +6,24 @@ Messenger is the **centralized notification service**. It sends and schedules tr
 
 Other services don't talk to Brevo directly — they fire a Messenger RPC. Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
 
-> **Default-off in local development.** Messenger is in the `messenger` Docker profile, not the default `graphql` profile. `make up` does **not** start it. Bring it up explicitly when iterating on notification flows.
+> **⚠️ MERGED INTO `app` — the v9.0 fold landed 2026-08-04**, in the same program that folded
+> `storage`, and on the same morning. Re-derived at platform `0dab54d` / `app` `9d00a313` v1.367.0 /
+> `messenger` `a0ec933`.
+>
+> | side | measured |
+> |---|---|
+> | **prod** | `messenger/terraform/main.tf:29` `service_desired_count = 0` — the compute is stopped, the cms precedent again. Image and task definition stay declared: this is the rollback path, a one-line revert plus an apply (`:27-28`) |
+> | **consumer** | `app` imports `internal/messenger/{flow,adapters,sender}` (`app/main.go:15`, `:61`, `:62`) and runs a **second subscriber server on messenger's OWN Redis consumer group** (`:1387`, wired at `:1423` with `msgsender.NewFromEnv`). It does **not** merge messenger's handlers onto app's own subscribers — it **takes the group over**, so Redis keeps the cursor and there is no gap (`:1330-1340`). The group name is messenger's, and it is a literal on purpose: the standalone read `cmp.Or(os.Getenv("SERVICE_NAME"), "messenger")` and nothing in terraform ever set `SERVICE_NAME` for it (`:1362-1365`) |
+> | **local** | still in `repos.yml:21-23` and still defined in compose (`docker-compose.yml:156`, `messenger` profile at `:195`) — startable, as the rollback path. `0dab54d` also dropped it from the `all` profile, because running both puts **two consumers on one group** |
+>
+> **Everything below this banner describes the standalone service**, which is still the code that
+> runs when you start the profile, and is still where the templates, the Brevo client and the
+> notification rules live. Read it as the description of a rollback target, not of the default path.
+
+> **Default-off in local development.** Messenger is in the `messenger` Docker profile, not the
+> default `core` profile — `core`, not `graphql`: platform `0dab54d` **renamed** it, and there is no
+> `graphql` profile any more. `make up` does **not** start it, and since the fold `backend` is already
+> doing its work in-process.
 
 ## Architecture & Code Map
 
@@ -16,7 +33,7 @@ Other services don't talk to Brevo directly — they fire a Messenger RPC. Messe
 * **Email backend**: Brevo via `getbrevo/brevo-go v1.1.3`
 * **Templating**: `osteele/liquid v1.8.1`
 * **Ports**: `8200` (host) → `8200` (container, HTTP); `8201` (host) → `8201` (container, Connect-RPC)
-* **Profile**: `messenger` only (NOT in default `graphql`). Opt-in.
+* **Profile**: `messenger` **only** — `profiles: [messenger]` (`docker-compose.yml:195`, derived from `docker-compose.yml` @ platform `0dab54d`). Not in the default `core`, and `0dab54d` also dropped it from `all` (two consumers on one Redis group). Opt-in, and since the v9.0 fold it is a rollback path rather than the default route.
 
 ### Key directories
 

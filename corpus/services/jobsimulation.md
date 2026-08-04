@@ -69,7 +69,7 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 * **Language**: Go
 * **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the banner at :25-27
 * **Ports**: 8400 (GraphQL/HTTP), 8401 (Connect-RPC) — **as deployed by the platform**, which sets `PORT=8400` / `RPC_PORT=8401` and publishes `8400:8400` / `8401:8401` (`platform/docker-compose.yml`). Note the **repo's own defaults differ**: with those env vars unset `cmd/root.go` falls back to `8080`/`8081` (and the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. Both are correct in their own context — use 8400/8401 for anything driven through `platform`, and add the stack offset for a `dev-N`/`demo-N`.
-* **Profile**: `graphql` (default) and `jobsimulation`
+* **Profile**: **none — there is no `jobsimulation` compose service.** Deleted by platform `d11a403` with the cms-in-app fold; the line that stood here named the `graphql` profile, which `0dab54d` renamed `core`, for a service that had already been removed. Historical only (corrected M257x iter-68)
 
 ### Key directories
 
