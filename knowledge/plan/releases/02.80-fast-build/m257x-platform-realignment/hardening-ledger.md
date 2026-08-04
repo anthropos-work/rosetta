@@ -1344,3 +1344,117 @@ exists to distrust.)
 **Stop condition: continue-to-next-pass** — the reach dimension is not exhausted. G5's attribution reach
 is **1 of 24** and G1's prose class is the known clause-5 residual; and the recurrence question this pass
 raises (*which OTHER guards compute a reach counter and never print it?*) has not been swept.
+
+## Pass 17 — 2026-08-04 — incremental
+
+**Iters hardened this pass:** iter-58 … iter-68 (recurrence dimension, whole-section scope)
+**Tiks covered since prior pass:** 0 (same window as pass 16; a different instrument on it)
+
+**The dimension: RECURRENCE of pass 16's class, across all 19 `stack-core` guards.** Pass 16 found
+the same defect three times inside one guard — *a verdict sentence whose denominator is not the
+quantity the sentence is about* (G3 reading 0 of its 3 rows, G7 12 of 22, G6 saying "measured" with
+no count). Pass 15 had already swept every guard for FAIL-CLOSED behaviour; this pass swept the
+sharper property.
+
+**It recurs exactly once.** `derived_value_guard` printed `N service doc(s) measured … M unmeasured`
+and then `OK — every checkable scalar matches its source`. The reach line counts DOCS; the verdict
+is about SCALARS, and nothing counted scalars. A silent narrowing of `_DOC_GO` or `_TF_CPU` would
+drop the graded set to one comparison and print an identical run — positive control included,
+because that control guards docs rather than comparisons. Live: **5 of 29 docs measured, 6 scalars
+graded**; the verdict now states both.
+
+It was the near-miss rather than the disaster because its 24 unmeasured docs were already NAMED
+individually with a reason (`no clone of X` vs `clone present, no scalar this guard reads`). The
+other 17 guards state a denominator on the line their verdict is about and hold.
+
+**The pre-existing ratchet caught the caller I missed, and failed CLOSED** — `repair_postcondition`
+exited 2 with `derived_value_guard.postcondition_sites raised: ValueError('too many values to
+unpack')` rather than dropping a fence. iter-44's post-condition doing its job on the first change
+to touch it since.
+
+**Tests added:** 2 (`test_iter45_mechanical_fences.py` 44 → 46). **Battery F: 3 mutants, 2 RED + 1
+EXPECTED SURVIVOR.**
+
+**The expected survivor is the finding.** My `if not scalars` refusal is **unreachable by
+construction** — `measured` is only incremented under `checked_here`, which is only ever set beside
+a `scalars += 1`. My first test drove it through `main()` and passed via the *doc-level* control:
+the same two-exit-2-paths trap pass 16 hit in `anchor_construct_guard`. Rather than reshape the test
+to pretend, the branch is kept as a documented fail-closed backstop, **declared unreachable today**,
+and the test asserts the INVARIANT that makes it unreachable. A mutant removing unreachable code
+cannot be caught, and claiming otherwise is the theatre this milestone exists to punish.
+
+**Stop condition: continue-to-next-pass** — the reach/denominator dimension is now exhausted across
+the section, but dimensions 2/3/5 (edge cases, error paths, fuzzing) have not been run on the
+iter-60..68 parsers at all.
+
+## Pass 18 — 2026-08-04 — incremental
+
+**Iters hardened this pass:** iter-60 … iter-68 (the new parser surface)
+**Tiks covered since prior pass:** 0 (same window, third instrument)
+
+**The dimension: error paths + boundary fuzzing (2/3/5), untried by passes 16-17.** ~40 pathological
+cells × ~13 pathological documents against the iter-60..68 parsers — empty, delimiter-only,
+unbalanced backticks/emphasis, unbalanced and NESTED parentheses, a 5 000-character cell, emoji,
+tabs, NULs, CRLF, lowercase and emphasised headers, the dash lookalikes (‒ ― –), leading/trailing
+separators.
+
+**Zero raises, every reach difference correct.** Nothing needed changing, and that is the result:
+fencing what already holds is as much the point as breaking it. CRLF, lowercase and emphasised
+headers are asserted to FIND their row rather than merely not to crash — *"it did not crash"* is the
+weakest fuzz assertion there is and passes against a parser that returns nothing.
+
+**Two boundary facts recorded rather than fixed, because measuring said not to:**
+
+1. `_pin_window` raises `IndexError` on out-of-range `i`. Every production caller is a
+   `for i, line in enumerate(lines, 1)`, so `i` is in range by construction — defending it would
+   MASK a caller bug rather than prevent one. Contract asserted instead.
+2. **A UTF-8 BOM before a table header hides that whole table** from G1, G3 and G7 at once.
+   Measured: **0 of 112 scanned files carry a BOM, 0 open with a table row** — the shape needs both
+   coincidences. Patching an unobserved failure mode on speculation is the habit this milestone
+   distrusts. The measurement is the deliverable; the test is a TRIPWIRE that fails if BOM handling
+   ever silently changes.
+
+**Tests added:** 6 (`test_platform_predicate_guard.py` 102 → 108).
+
+**Session totals (passes 16–18):** 7 rext commits + 3 rosetta ledger commits · **34 tests added**
+across 2 files (`test_platform_predicate_guard.py` 85 → 108, `test_iter45_mechanical_fences.py`
+35 → 46) · **6 live defects fixed inline** · **30 mutants run, 29 RED + 1 declared-unreachable
+survivor**.
+
+**Seven weak tests of MINE were caught by the battery before it caught anything else** — more than
+in any prior pass, and three of them share one root cause worth naming: **asserting a rule at the
+layer that does not hold it.** `_cell_service_tokens` reads by SHAPE and the compose-name filter
+lives in its CALLER, so `everything`, a 5 000-character run of `a`, and prose all come back as
+tokens and are harmless only downstream. Three first drafts pinned emptiness at the tokenizer. The
+other four: a fixture using `(currently: …)` where the construct asserts currency by definition and
+can never be pin-exempted at any scope; a G5b case that did not exist; a mid-fold assertion whose
+two sides were both zero (an identity, not an assertion); and two tests that asserted an exit code
+where TWO paths return the same one.
+
+**Flakes stabilized:** none new. `dev-stack`'s nested-run interference re-confirmed environmental
+(151 OK solo; 6 spurious `test_dev_public_host` failures when run beside `stack-core`, whose m220
+battery spawns nested `dev-stack` runs).
+
+**Baselines re-measured, all unchanged:** `demo-stack` 7F/1048 · `stack-injection` OK 332 ·
+`stack-verify` 11F+1E/237 · `stack-core` 1F (the perishable iter-48 answer-key fixture, TOK-02
+step 4, deliberately not spent).
+
+**Knowledge backfill:** none to the corpus. Every finding was in `rosetta-extensions` guard code,
+and each reach figure is now EMITTED BY THE GUARD rather than written down somewhere that can go
+stale — which is the point: a reach number in prose is exactly the class of claim this milestone
+exists to distrust.
+
+**Stop condition: cap reached without stabilization — the 3-pass incremental cap fired.** Coverage
+delta did not fall below 2 %: pass 18 alone added 6 tests to a file that started the session at 85,
+and each of the three passes ran a DIFFERENT dimension and each found something (reach → recurrence
+→ fuzz). The dimension scan is not "found nothing new"; it is "has not run out of dimensions".
+
+**This is cadence, not test debt** — and the distinction is measurable rather than asserted. The
+window under test is 10 tiks that shipped the milestone's primary deliverable (~1 360 lines of
+net-new fence in one file, plus assertion F and a ref-awareness change across three guards); pass 15
+stabilized against a window a fraction of that size. Every defect found this session was **fixed
+inline, with an inverted mutant proving the test can fail**; nothing was routed forward, nothing was
+waived, and no gap is known-and-unclosed. What remains is that a batch this large has more than
+three dimensions worth running — G5's attribution reach is **1 of 24** and G1's prose class is the
+declared clause-5 residual, both of which are corpus-repair work with a named owner, not hardening
+deficits.
