@@ -965,6 +965,48 @@ Rules, in order of how often they actually catch something:
     ref its own window names showed **19 of 20 agree** and the 20th is a cell that names the ref it
     asserts in words. Counting a fallback is coverage; assuming it is a defect is not.
 
+36. **A universe built over CLONES must say which copy is the witness — and a derivation that
+    returns the convenient answer earns a positive control before you believe it.** Two halves of
+    one iteration (M257x iter-75), both cheap, both paid for the hard way.
+
+    **The witness half.** Resolving a bare `<name>.<ext>:N` citation needs an index of *"which files
+    exist"*, and the honest way to build one is `git ls-files` per clone — the repository's own
+    answer, immune to build output and untracked scratch. But `rosetta-extensions` is cloned
+    **twice** in this tree: the per-stack consumption copy (pinned at a tag) and the authoring copy.
+    Both directories carry the same **name**. An index keyed by `<clone-name>/<relpath>` collapses
+    them; one keyed by absolute path splits them — and iter-75 wrote one of each, so **the same
+    misunderstanding produced two different wrong answers inside one iteration**: an adjudication
+    reporting a file in *"2 places"* while printing the same path twice, and a dry run silently
+    finding 31 of 77.
+
+    > **Two clones of one repo are one witness.** Decide which copy is authoritative *before* asking
+    > whether a name is unique — and derive that from something already in the code (here,
+    > `resolve()`'s pre-existing preference for the authoring copy) rather than inventing a
+    > preference to make the numbers work.
+
+    The rule this protects is worth stating too, because it is what makes such an index safe at all:
+    **resolve only on UNIQUENESS, and count what stays unresolved.** `main.go` is 57 tracked files
+    in this platform, `main.tf` is 10; `studioManager.go` is 2 — the merged copy and the standalone
+    husk, exactly the pair a directory guess gets wrong and exactly the fold the map exists to
+    document. 26 sites stayed unresolvable and were named. **An unresolvable citation that cannot be
+    resolved without guessing is coverage, not debt.**
+
+    **The control half.** The dry run came back *77 newly resolvable, 0 findings* — and 0 was the
+    **surprising** answer, because the comparable widening one iteration earlier had turned the
+    corpus RED with 6. A 0 from a pipeline that *cannot* report a finding looks identical to a 0 from
+    a clean corpus. So the same code path was fed three known-bad inputs against a real 2,693-line
+    target (`:99999` → out-of-range, a blank line → on-blank-line, `:1` → clean) before the 0 was
+    written down.
+
+    > §5 rule 2 is usually read as a rule about *searches*. It applies to **derivations**: when a
+    > measurement returns the answer you were hoping for, run the control that would have caught the
+    > instrument being broken. It cost one command.
+
+    And the adjudication itself, which is the reason the iteration was small: the class had been
+    routed as *"92 unrepaired citations"* and adjudicated to **0 defects · 77 unreachable · 26
+    undecidable** — the **fourth** consecutive routed count in this milestone to collapse when
+    someone finally derived it (64 → 5, 23 → 1, 21 → 0, 92 → 0).
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

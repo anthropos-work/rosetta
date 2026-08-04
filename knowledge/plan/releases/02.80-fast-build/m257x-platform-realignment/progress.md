@@ -734,3 +734,37 @@ defect and would also explain why no amount of accessor work has helped.
   the ref it names**, i.e. iter-69's *a pin is a date* reappearing inside a script written the same
   day. Five corpus guards OK. rext NOT tagged (offline guard code only); pin stays
   `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-74/progress.md
+- iter-75 (tik, closed-fixed): **the routed "92 unrepaired citations" adjudicate to 0 defects — the
+  FOURTH consecutive routed count in this milestone to collapse when someone finally derived it**
+  (64 → 5, 23 → 1, 21 → 0, 92 → 0). Fated three ways against `git ls-files` over **7,265 tracked
+  basenames across 13 clones** — the repository's own answer, not a directory walk: **UNIQUE 77
+  sites / 26 basenames · MULTI 26 / 19 · ABSENT 0.** **Not one citation names a file that does not
+  exist.** It is the **ninth reach limit**: iter-73 taught a bare `<name>.<ext>:N` to *reach* the
+  resolver and did not teach the resolver to *find* it, because every route `resolve()` owns is
+  positional and an ops doc citing `` `up-injected.sh:1487` `` supplies no position at all. Landed
+  as a last-resort **unique-basename** route — `git ls-files` only, **bare citations only** (a
+  path-qualified citation has already said where the file lives; resolving it by basename would
+  override the document with a guess about its directory), and **exactly one path or nothing**.
+  Reach **177 → 254, 0 findings**; `resolved via bare-unique-basename x77` printed beside the reach
+  line, because `resolve()` returns a bare `Path` and a route that fires silently is a reach claim
+  nobody can audit. **The 0 was earned rather than assumed** — 0 was the *surprising* answer one
+  iteration after a comparable widening went RED with 6, so the same code path was fed `:99999`
+  (out-of-range), a blank line (on-blank-line) and two valid lines first. The **26 that stay
+  unresolved are the rule working**: `main.go` is **57** tracked files, `main.tf` 10, and
+  `studioManager.go` is `app/internal/cms/studio/` **plus** `cms/internal/studio/` — the merged copy
+  and the standalone husk, exactly the pair a directory guess gets wrong and exactly the fold the
+  map exists to document. **My own instrument was wrong twice in one iteration, in two directions:**
+  `rosetta-extensions` is cloned twice under this tree **with the same directory name** (the
+  per-stack copy pinned at a tag, and the authoring copy), so the adjudication script collapsed them
+  and the dry-run script split them — one reporting a file in *"2 places"* while printing the same
+  path twice, the other silently finding 31 of 77. Fixed by deciding **which copy is the witness**
+  (the authoring one — `resolve()`'s pre-existing rext fallback already preferred it) rather than by
+  de-duplicating harder; pinned as a test and as mutant M4. §5 gains **rule 36** (*a universe built
+  over CLONES must say which copy is the witness* + *a derivation that returns the convenient answer
+  earns a positive control* — §5 rule 2 applied to measurements, not just searches). **6 mutants
+  caught, no-op control SURVIVED.** `tests/test_iter45_mechanical_fences.py` **68 → 74**;
+  `stack-core` **781 / 1F** (the perishable iter-48 fixture, baseline matched by IDENTITY, +6 =
+  exactly this iter's tests). Five corpus guards OK; `CITE_REF=worktree` still discriminates.
+  **Both known-bad citation classes are now closed**, which was the stated precondition for the
+  graded read. rext NOT tagged (offline guard code only); pin stays `fast-build-m257x-iter-67`.
+  Gate **4 of 5**, unchanged — see iter-75/progress.md
