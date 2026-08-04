@@ -396,3 +396,26 @@ defect and would also explain why no amount of accessor work has helped.
   occurrences" measures **26 docs / 56 lines**; `academyImport/main.go:235` is the *return*, the `Getenv` is `:231`.
   rext tagged `fast-build-m257x-iter-60`, **verified on origin**; pin advanced. Gate **4 of 5** — see
   iter-60/progress.md
+
+- iter-61 (tik, **the fence could not see its own class**): **iter-60's GREEN over-reported — the profile
+  predicate's LARGER HALF was standing in a form the guard had no construct for.** iter-60 fenced the
+  *command* (`PROFILE=x`, `--profile x`) and *table-first-cell* forms and read GREEN; a re-survey at the same
+  ref found the **noun phrase** — *"the default `graphql` profile"* — at **34 raw sites across 17 files**.
+  **A fence whose reach is narrower than its class over-reports its own GREEN**, and invisibly, because the
+  fence is what you would check with. It also **vindicated the briefing**: *"17 files"* is exactly what the
+  noun-phrase construct yields, so `D-M257x-60-7`'s "undercount" row is **withdrawn** (its two `main.go`
+  line-number corrections stand). Two new constructs, both still constructs — the noun phrase (a backticked
+  token adjacent to the literal word `profile`) and the **table row** (`| \`CMS_RPC_ADDR\` | \`http://cms:8091\` |`,
+  the same binding with no `=`; `messenger.md` held two stale values in that shape the whole time the fence
+  was green). *"GraphQL" the API stays unrepresentable.* **13 of 35 raw hits were the guard's own**, removed
+  by two discriminators derived from the corpus's own writing: **adjacent negation** — and note the recursion,
+  *"there is no `cms` profile"* is precisely how iter-60 wrote its repairs, so an undiscriminating widening
+  **reads this milestone's own fixes as fresh defects** — and the **ref-pin** exemption G2/G4/G5 already had
+  and G1 did not, plus the bare backticked sha that carries most of the historical narrative. **RED at 2
+  findings / 22 sites / 12 files, enumerated in `iter-61/evidence/residual.md` with its regeneration command
+  and routed WHOLE** (§5 rule 19's scope-edge corollary — a subset repair pools the residual at its own
+  boundary). **RED and correct beats GREEN and narrow.** 35 tests (was 28), incl. a regression that iter-60's
+  GREEN fixture survives the widening. The routed citation class was **re-measured before being routed on**:
+  iter-58's "21 of 22" is, at app `v1.366.0`, **5 of 16 distinct `app/main.go:N` citations still landing on
+  their claimed construct**. rext tagged `fast-build-m257x-iter-61`, **verified on origin**; pin advanced.
+  Gate **4 of 5**, unchanged — see iter-61/progress.md
