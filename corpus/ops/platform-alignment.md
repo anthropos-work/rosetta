@@ -874,6 +874,45 @@ Rules, in order of how often they actually catch something:
     the read site). None of the three was careless. Re-derivation costs one command; inheriting costs a
     milestone's credibility.
 
+33. **A ref-pin is a DATE, not an exemption — and it exempts a CLAIM, never a neighbourhood.** Every
+    fence in this family skips a claim that names a ref, on the sound reading that it was true when
+    measured (TOK-04 P1). M257x iter-62 promoted the hole that creates; iter-63 measured it and found
+    it is **three mechanisms wearing one name**, of which only the third is the one people describe:
+
+    (All three instances are quoted **as they stood before iter-63's repair**; the lines have since
+    been rewritten, so they are named by their content rather than by an anchor that would now
+    resolve to the fix — rule 34's own trap, avoided rather than described.)
+
+    | mechanism | measured instance |
+    |---|---|
+    | the pin crosses a **row** boundary | `shared_libraries.md`'s colony **Version pin** row dated itself *"at platform `2adcf71`"*; the **Imported by** row directly beneath it — a different claim, about which profile starts which containers — went silent with it |
+    | the pin crosses a **cell** boundary | `service_taxonomy.md`'s CMS row: one row, two clauses. Cell 2 cited `915da06` for the supergraph count; cell 3 claimed the `cms` container still starts in the retired router's profile |
+    | the pin is cited **as evidence of currency** | `service_taxonomy.md` headed its Services table *"(**current** local docker-compose @ platform `2adcf71`)"*; `messenger.md`'s `CMS_RPC_ADDR` row wrote *"**current, not stale**"* beside its own pin |
+
+    And the inverse nobody had checked: a pin naming **the guard's own ref** exempted too, so a doc
+    could immunise a false present-tense claim by citing the very commit that refutes it.
+
+    The rule, all four parts derived from structure rather than tuned: **a pin's scope is the claim's
+    own block — a markdown CELL in a table, a wrapped sentence in prose; a pin naming the ref the
+    checker derived from exempts nothing; and a block that asserts currency (*current*, *not stale*,
+    *today*) cannot be pinned into silence, because the pin and the word are making opposite claims
+    and only one of them is what the reader acts on.** Fenced in
+    `stack-core/platform_predicate_guard.py` (`_pin_exempts` / `_pin_window`), each part watched RED
+    under its own inversion mutant. **The blast radius is small and that is the point** — the rule
+    removes the exemption exactly where the document itself insists the claim is current.
+
+34. **Line numbers move when YOU edit too — §7 rule 4 applies to a corpus repair, not just a pin
+    advance.** The corpus cites itself by `<doc>.md:N` in ~200 places. A repair that changes a file's
+    line count silently invalidates every citation into that file below the edit — the same mechanism
+    as an advancing pin, one level in, and with the same catch rate. M257x iter-63's own repairs moved
+    **9 intra-corpus citations across 6 files** (two of them in root `CLAUDE.md`), and
+    `anchor_construct_guard` caught exactly **one** of the nine: the one that happened to land on a
+    blank line. The other eight landed on content and read as correct. **Re-derive the line map from
+    `git diff -U0` and re-point in the same commit** — it is a five-line script and it is not
+    optional. Two cautions worth the sentence: the re-point is **not idempotent** (the map is computed
+    against `HEAD`, so a second run double-applies), and a citation into a line the edit *replaced*
+    needs a human, because "where did that content go" is not a question a diff answers.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

@@ -129,19 +129,19 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 > **The platform `docker-compose.yml` has NO directus service.** A local stack does not run Directus — the cms
 > domain in `backend` reaches Directus over the network via `DIRECTUS_BASE_ADDR` / `DIRECTUS_PUBLIC_BASE_ADDR`,
 > which point at the **production** instance `https://content.anthropos.work` in the stock compose.
-> **⚠️ `backend` does NOT get those vars from its compose `environment:` block** — that block (`:43-67` @
-> `2adcf71`) has no `DIRECTUS_*` at all; `backend` picks them up from the shared `env_file: .env`. The only
-> service the compose sets them on **explicitly** is the still-running standalone **`cms`** (`:164-165`), which
-> survives as messenger's `CMS_RPC_ADDR` target + the rollback path until M810. This distinction is
-> load-bearing for any tooling that re-points the address per service — see the ⚠️ under *Architecture* below.
+> **⚠️ `backend`'s compose `environment:` block sets exactly ONE of the pair.** At platform `0dab54d` it sets
+> `DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work` (`docker-compose.yml:53`) and **no
+> `DIRECTUS_BASE_ADDR`** — that one `backend` picks up from the shared `env_file: .env`. The standalone `cms`
+> service that used to carry both explicitly is **gone from compose** (`d11a403`), so `backend` is the only
+> consumer left and per-service re-point tooling has ONE target, not two — see the ⚠️ under *Architecture* below.
 > A freshly-built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
 > `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` admin login
-> and an inline `docker-compose.yml` snippet **as if it were CURRENT**, which it is not — there is no Directus
-> service in the platform compose at `2adcf71`.)
+> and an inline `docker-compose.yml` snippet **as if it were CURRENT**, which it is not — there is still no
+> Directus service in the platform compose at `0dab54d`.)
 >
 > **That retraction over-corrected, and this corrects the correction (M257x iter-48).** The twin of this
 > paragraph said *"all of that is false; that service **has never existed**"* — repaired at
-> [`service_taxonomy.md:296-303`](./service_taxonomy.md) and left standing here. The service **did** exist,
+> [`service_taxonomy.md:306-312`](./service_taxonomy.md) and left standing here. The service **did** exist,
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. And a check

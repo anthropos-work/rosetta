@@ -38,8 +38,8 @@ third-party dependency. This keeps the services consistent and small.
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
-| **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; the still-running `cms` + `jobsimulation` husk containers → **`v0.35.1`**; `sentinel` + `storage` + **`roadrunner`** → `v0.34.3` (archived `chronos` pins `v0.30.1`). Measured from each repo's `go.mod` at platform `2adcf71`. |
-| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — plus the `cms`, `jobsimulation` and **`roadrunner`** containers, which the default `graphql` profile still starts as merged-into-`app` **husks** (rollback path; teardown is M810) even though their domains now run inside `app`. Roadrunner's import is minimal but real: `roadrunner/main.go:7` imports `colony` for `NewVersionConfig` (`go.mod:7` pins `v0.34.3`) |
+| **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; `sentinel` + `storage` → `v0.34.3` (archived `chronos` pins `v0.30.1`). The third pin this row used to carry — **`v0.35.1`**, for the `cms` + `jobsimulation` husk containers — went with the containers: `d11a403` deleted both from compose and from `repos.yml`, so at platform `0dab54d` the split is **two-way, not three**. Measured from each repo's `go.mod` (the four-service reading at platform `2adcf71`). |
+| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — and **only** those four. The `cms`, `jobsimulation` and `roadrunner` containers that used to appear here are **gone from compose** at `0dab54d` (`d11a403`); there is no profile that starts them and no `graphql` profile at all. Their domains run inside `app`. The archived `roadrunner` repo's own import was minimal but real while it lasted: `roadrunner/main.go:7` imported `colony` for `NewVersionConfig` (`roadrunner/go.mod:7` pinned `v0.34.3`) |
 
 The platform framework. Each service composes its server out of colony packages:
 

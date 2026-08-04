@@ -433,3 +433,42 @@ defect and would also explain why no amount of accessor work has helped.
   exempt by the guard's own rule; `messenger.md:107-110`'s two stale RPC values were the first. Fix shape:
   a pin exempts only when its ref **is** the guard's ref. `markdown_structure_guard` clean at 112 files.
   Gate **4 of 5**, unchanged — see iter-62/progress.md
+
+- iter-63 (tik, **a ref-pin is a DATE, not an exemption**): the routed citation class **re-measured
+  before repair** — and **both** inherited figures were subset readings (`D-M257x-63-3`): iter-58's
+  *"21 of 22"* counted **raw sites** of the string `main.go:N`, pooling three different files under one
+  name; iter-61's *"5 of 16 distinct"* had the right unit but could not see the bare `:N`
+  **continuation** construct. Derived over both constructs at `app` `b948604` v1.366.0: **104 sites / 86
+  distinct citations across 22 files land in `app`, of which 18 are the app MAINLINE** — 5 held, **13
+  moved and repaired**, each with its ref written beside it; the 68-citation remainder routed WHOLE.
+  Adjudicating against artifacts (never against another doc) refuted four service docs at once
+  (`D-M257x-63-5`): `docker-compose.yml:171-183` @ `0dab54d` sets **all four** `*_RPC_ADDR` to
+  `http://backend:8083` under compose's own *"cms + jobsimulation are folded into app"* comment —
+  **M809 has landed**, while `messenger.md`/`cms.md`/`jobsimulation.md`/`dependency_map.md`/
+  `backend.md:195` asserted the two-of-four split as current, three of them emphatically (*"current,
+  not stale"*). `platform-migration-status.md:76` was right the whole time — **the fenced map was
+  right and the prose was wrong.** Then `CHECK-M257x-iter60-stale-pin-exemption`, **answered**: it is
+  **three mechanisms wearing one name** (`D-M257x-63-1`) and only the third is a policy question —
+  the pin crossed a **row** boundary (`shared_libraries.md:41-42`) and a **cell** boundary
+  (`service_taxonomy.md:98`, one row two clauses), both plain window bugs; the third is the pin cited
+  **as evidence of currency** (*"(**current** … @ platform `2adcf71`)"*). **Not an expiry — age is not
+  the variable, tense is**; not a mandatory two-sided citation. A pin's scope is the claim's own
+  block (a table **cell**); a pin naming **the guard's own ref** exempts nothing; a block asserting
+  currency cannot be pinned into silence. Blast radius measured first: 19 blocks pinned-and-current,
+  **1** carrying a checked construct. And the fence still was not enough — `D-M257x-63-2`:
+  `service_taxonomy.md`'s Services table names its profile column **fourth** and G1 required it
+  **first**, so six rows were **unreachable, not exempt** (*fifth GREEN-is-a-reach-limit of this
+  milestone*). Widened: **17 illegal sites / 2 files, zero guard-own findings** (iter-60 was 16/37 its
+  own, iter-61 13/35) → repaired to **GREEN**, incl. the Services table rewritten from the artifact
+  (ten services, default `core` selects **five**, storage moved out of the default selection) and
+  `shared_libraries.md`'s colony split corrected **three-way → two-way**. **54 tests** (was 35) with a
+  **4-mutant inversion battery, all caught**. Two protocol rules written: §5 **33** *a ref-pin is a
+  date, not an exemption* and §5 **34** *line numbers move when YOU edit too* — this iter's own repairs
+  moved **9 intra-corpus citations across 6 files** (two in root `CLAUDE.md`) and the anchor guard
+  caught **1**. Suites: `stack-core` **664 / 1F** (the perishable iter-48 fixture — baseline),
+  `dev-stack` **151 / OK** — but only when run ALONE: beside `stack-core` it reported **6**
+  `test_dev_public_host` failures that all vanish solo, because `stack-core`'s m220 battery spawns
+  nested `dev-stack` runs. And `test_test_collection_fence` went RED on this iter's own test file
+  (new classes appended *after* the `__main__` guard) — the fence caught it. rext tagged
+  `fast-build-m257x-iter-63`, **verified on origin**; pin advanced.
+  Gate **4 of 5**, unchanged — see iter-63/progress.md
