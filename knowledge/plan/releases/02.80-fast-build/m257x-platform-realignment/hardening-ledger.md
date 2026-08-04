@@ -1458,3 +1458,48 @@ waived, and no gap is known-and-unclosed. What remains is that a batch this larg
 three dimensions worth running — G5's attribution reach is **1 of 24** and G1's prose class is the
 declared clause-5 residual, both of which are corpus-repair work with a named owner, not hardening
 deficits.
+
+### Pass 18 — amendment: the flake gate found a regression I had introduced
+
+Written after the entry above, and it corrects it. The Phase-5 flake gate (3 consecutive full
+`stack-core` runs) took `stack-core` from the expected **1F to 2F**, and the extra failure was the
+**pre-existing mutation battery reporting THEATRE on one of its own mutants**:
+
+```
+FAIL: test_01_every_mutant_matches_its_DECLARED_verdict (mutant='value-no-clone-reads-as-clean')
+AssertionError: THEATRE: mutant 'value-no-clone-reads-as-clean' left the suite GREEN.
+  an unread source is not a matching source: on a fresh box with no clone this would report a
+  clean corpus it never opened
+```
+
+That mutant flips `derived_value_guard`'s doc-level control to `if measured and False:` and
+requires the suite to go RED. **Pass 17's `if not scalars: return 2` gate, added behind it as
+belt-and-braces, absorbed the mutation** — the mutated guard still exited 2, the suite stayed
+GREEN, and a mutant that had been catching a real property for three iterations stopped catching
+anything.
+
+**Defence-in-depth that blinds your own mutation battery is a net LOSS of detection.** The gate
+bought a branch nothing can reach — pass 17 had already proved `measured > 0` implies
+`scalars > 0` by construction, and said so in its own commit message — and it spent a working
+mutant. Removed (`4c301dd`), with the reasoning left in place of the code so it is not re-added.
+Pass 17's actual deliverable, the scalar DENOMINATOR in the verdict, is untouched.
+
+**Two lessons, both general:**
+
+1. **When two controls return the same exit code, adding one is never free.** This is the SECOND
+   time in this session — `anchor_construct_guard` needed its UNMEASURED refusal ordered ahead of
+   the resolver control (right code, wrong diagnosis), and this one needed removing outright. Both
+   first drafts went through the wrong branch. You must say which control fires, and prove the
+   other one still can.
+2. **Only the full-suite gate could see it.** Every targeted run was GREEN, because the battery
+   that caught it lives in a file that my change did not touch and that no per-symptom discipline
+   would have selected. This is precisely the case for running the flake gate over the WHOLE
+   section rather than the touched tests, and it is the first time in eighteen passes that the
+   gate has paid for itself with a real defect rather than a stability measurement.
+
+**Corrected session totals (passes 16–18):** 8 rext commits + 3 rosetta ledger commits ·
+**34 tests added** · **7 live defects fixed inline** (6 in the passes + this one) · **30 mutants
+run, 29 RED + 1 declared-unreachable survivor**, and **1 pre-existing mutant re-armed** after I
+disarmed it.
+
+**Flake gate:** re-run from scratch after the fix.
