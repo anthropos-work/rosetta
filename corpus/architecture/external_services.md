@@ -541,6 +541,14 @@ For full details on models, routing, voice engines, and recording architecture, 
 | **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
 | **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:770` @ `app` `b948604` v1.366.0, `coursebuilder.ModelBackendName()`) |
 
+> **`app/studio/**` is an IN-IMAGE path, and it is in no `app` commit.** Every `app/studio/…`
+> citation on this page (and elsewhere in the corpus) names Studio-Room, which CI pulls into the
+> `app` image as an `additional_repo` (app v1.360.1) — the source lives in
+> `anthropos-work/anthropos-studio-room`, not in `anthropos-work/app`. `git show <ref>:studio/…`
+> against an `app` clone returns nothing at **every** ref, so a citation-resolver that roots these
+> under `app` reads them as dead when they are merely elsewhere. Resolve them against the
+> studio-room repo; see [`corpus/services/studio-room.md`](../services/studio-room.md).
+
 ### Routing: what is actually implemented
 
 There is **no ordered EU-first fallback chain.** The corpus asserted one for several releases

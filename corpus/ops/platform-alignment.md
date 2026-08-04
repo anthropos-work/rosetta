@@ -870,9 +870,11 @@ Rules, in order of how often they actually catch something:
     orchestrator-supplied fact: one reported *"demo-1 GONE — 0 containers"* when the Docker daemon was
     merely down and all 11 were present; the next handed down *"17 files / 30 occurrences"* for a class
     that measured **26 live docs / 56 lines**, and `cmd/academyImport/main.go:235` for a `Getenv` that is
-    at `:231` (`:235` is the `is required` return — both true, different lines, and only one of them is
-    the read site). None of the three was careless. Re-derivation costs one command; inheriting costs a
-    milestone's credibility.
+    at `:231` (@ `app` `b948604` v1.366.0 — `:235` is the `is required` return; both true, different
+    lines, and only one of them is the read site. The storage fold has since deleted **both**: at `app`
+    `9d00a313` v1.367.0 that file names `STORAGE_RPC_ADDR` nowhere, which is why this clause carries a
+    ref and rule 33 is the reason it must). None of the three was careless. Re-derivation costs one
+    command; inheriting costs a milestone's credibility.
 
 33. **A ref-pin is a DATE, not an exemption — and it exempts a CLAIM, never a neighbourhood.** Every
     fence in this family skips a claim that names a ref, on the sound reading that it was true when

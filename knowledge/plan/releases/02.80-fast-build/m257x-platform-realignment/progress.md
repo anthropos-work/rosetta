@@ -576,3 +576,30 @@ defect and would also explain why no amount of accessor work has helped.
   for a denial that wrapped. 6 mutants across 3 guards all caught, one after its first test **survived**
   and had to be re-written against the call site. B2 (the non-fold citation remainder) routes forward.
   Gate **4 of 5**, unchanged — see iter-68/progress.md
+- iter-69 (tik, closed-fixed): **B2 was 5 defects, not 64.** Graded at the ref the gate names, the
+  126 (file × citation) pairs split **62 identical · 59 drifted-but-REF-PINNED · 2 unpinned-and-moved
+  · 3 mis-rooted** — and every pinned mainline citation resolves *exactly at its own pin*
+  (`backend.md:39`'s seven all do). A pass that "repaired" the 59 would have moved 59 correct claims
+  onto a ref that moves again next week. The mechanical screen was watched RED first (pin-blind
+  2→61, comparison-blind 2→0) with a **no-op control that survived** — and then **reading** found
+  what the screen structurally could not: **`shared_libraries.md:70` contributes ZERO citations to
+  every count this class has ever reported**, because it names `` `app/main.go` `` in backticks one
+  clause away with no line number for the enumerator to latch onto. **Five of its six handler line
+  numbers were wrong at every ref**, contradicting the pinned-and-correct `backend.md:39`. The
+  hidden class is **23 citations across 14 lines** (derived; 17 routed forward). Also repaired:
+  Judge0 at `wiring.go:118`→**`:123`** (unpinned, false at the gate's ref) and `ROADRUNNER_RPC_ADDR`
+  *"(`docker-compose.yml:118`)"* — **zero occurrences** in the compose at `0dab54d`; rule **32**'s
+  own worked example pinned (**rule 33 applied to rule 32's neighbour**); and `app/studio/**`
+  documented as the **in-image** path, in no `app` commit at any ref. The repair **widened the
+  fence**: `anchor_construct_guard`'s origin/main reach **43 → 49**. **G8 shipped** for the
+  `* **Profile**:` bullet — the seventh reach limit of this milestone, where iter-68 found 7 of 8
+  wrong while every fence read GREEN — as **G7 inverted** (a SERVICE, from the doc's own file stem,
+  checked against the profiles beside it; three shapes, anything else UNREACHED): **8/8 reached, 0
+  unreached, GREEN**, with **5 source mutants + 1 artifact inversion caught and a no-op control
+  surviving**, every fixture copied verbatim from the corpus. Class re-measured at close: **141
+  sites / 109 distinct** (from 135/105 — it grew by this iter's own corrections), **unpinned-moved
+  2 → 0**. And the re-measurement crashed the enumerator: it cannot sort a path carrying both `X:N`
+  and `X:N-M` at one start line — **every count this class has ever reported was correct by luck**.
+  `stack-core` **753 / 1F** (the perishable iter-48 fixture, by IDENTITY) · `stack-injection` 332 OK
+  · `dev-stack` 151 OK solo. rext NOT tagged (offline guard code only); pin stays
+  `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-69/progress.md
