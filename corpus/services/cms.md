@@ -30,10 +30,13 @@
 >   `app/terraform/migrations/20260724132049_cms_data_model.sql`, with the **same table names**. The old `cms`
 >   DB schema is **legacy — no longer authoritative**.
 > * **RPC** — `CMSService` is served on `app`'s single RPC mux. `messenger` reaches it at
->   `CMS_RPC_ADDR=`**`http://cms:8091`** locally — i.e. **still the husk** (`docker-compose.yml:256` @ platform
->   `2adcf71`); `http://backend.internal.anthropos:8081` in production. `app/main.go:1196-1202` says why: the
->   in-app edge is *"additive + DORMANT … until the **M809** re-point."* `app` itself makes **no** outbound
->   cms RPC.
+>   `CMS_RPC_ADDR=`**`http://backend:8083`** locally (`docker-compose.yml:174` @ platform `0dab54d`) —
+>   **the M809 re-point has landed**, and there is no husk container left to reach: `0dab54d`'s compose
+>   declares nine services and `cms` is not one of them. (`http://cms:8091`, still quoted around this
+>   corpus, was true at `2adcf71`.) `http://backend.internal.anthropos:8081` in production.
+>   `app`'s own source comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still calls the in-app
+>   edge *"additive + DORMANT … until the **M809** re-point"* — **that comment is stale in `app`**;
+>   grade the address against compose. `app` itself makes **no** outbound cms RPC.
 > * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph. That single commit,
 >   `graphql-wundergraph@915da06` (2026-07-29), deleted **both** `schemas/cms.graphqls` **and**
 >   `schemas/jobsimulation.graphqls`, taking the supergraph from **3 subgraphs to 1** — not 2 to 1. (The

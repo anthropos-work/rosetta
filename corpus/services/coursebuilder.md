@@ -45,7 +45,7 @@
     chapter shape + validators), `normalize.go` (widget normalization + XSS sanitization), `bedrock.go`/`model.go`/`usage.go`
     (LLM adapter + `MockClient` + cost formula), `embed.go` (`//go:embed assets/*.md` rubric), `imagegen/` (cover
     images).
-*   **LLM usage — the backend is SELECTED AT START-UP, and production is the first-party Anthropic API, not Bedrock.** `internal/coursebuilder/bedrock.go:105-114` returns an `api.anthropic.com` client with bare model ids whenever `ANTHROPIC_API_KEY` is set, reporting `ModelBackendName() == "anthropic-api"` (`:98-104`, logged at `main.go:762`); the Bedrock `eu-west-1` path via `internal/askengine/bedrock.go` is the fallback when it is not. **In production the key is required** — `terraform/variables.tf:635-638` declares it `sensitive` with no default, `ssm.tf:328-334` creates the parameter and `main.tf:555` injects it — so the shipped path is the direct API. Models:
+*   **LLM usage — the backend is SELECTED AT START-UP, and production is the first-party Anthropic API, not Bedrock.** `internal/coursebuilder/bedrock.go:105-114` returns an `api.anthropic.com` client with bare model ids whenever `ANTHROPIC_API_KEY` is set, reporting `ModelBackendName() == "anthropic-api"` (`:98-104`, logged at `main.go:770` @ `app` `b948604` v1.366.0); the Bedrock `eu-west-1` path via `internal/askengine/bedrock.go` is the fallback when it is not. **In production the key is required** — `terraform/variables.tf:635-638` declares it `sensitive` with no default, `ssm.tf:328-334` creates the parameter and `main.tf:555` injects it — so the shipped path is the direct API. Models:
     *   **Author/patch model**: Opus 4.8 (`eu.anthropic.claude-opus-4-8`, env `CB_AUTHOR_MODEL`; streaming, no
         sampling params — Opus 4.8 rejects them — at 32 K max_tokens).
     *   **Grader model**: Sonnet 4.6 (`eu.anthropic.claude-sonnet-4-6`, env `CB_GRADER_MODEL`; deliberately a
@@ -68,7 +68,8 @@
     Bedrock path is typically missing AWS creds, but **not** on missing AWS creds alone once
     `ANTHROPIC_API_KEY` is set (see the backend-selection note above). When that happens the routes stay
     unmounted deliberately, **so callers get a clean 404 instead of a half-wired endpoint** — there is no
-    half-working surface (`main.go:755-766`).
+    half-working surface (`main.go:766-779` @ `app` `b948604` v1.366.0 — the comment at `:766-769`, the
+    two `logger.Warn(… routes disabled)` arms at `:774` / `:778`).
 *   **Key routes**: `POST /coursebuilder/sessions` (+ `/sessions/mixed`, `/sessions/upload`), `GET /sessions` +
     `/sessions/:id`, **`POST /sessions/:id/messages`** (the **SSE** build/refine stream), `/sessions/:id/{queue,steer,
     cancel,publish,unpublish,duplicate,translate,cover}`, `PATCH /sessions/:id/draft`, `GET /sessions/:id/published-diff`,
@@ -95,7 +96,7 @@
 *   **Command**: `go run .` in the app repo, or the platform `make up` (Course Builder ships inside the `backend`
     container).
 *   **Key env vars**: `CB_AUTHOR_MODEL` (default `eu.anthropic.claude-opus-4-8`), `CB_GRADER_MODEL` (default
-    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), **`OPENAI_KEY`** (the cover generator reads this — `main.go:816-819`; the `COURSEBUILDER_OPENAI_IMAGE_KEY` this doc used to name was deleted at app `68c24512` and survives only in stale in-repo markdown, so setting it fixes nothing),
+    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), **`OPENAI_KEY`** (the cover generator reads this — `main.go:824-826` @ `app` `b948604` v1.366.0; the `COURSEBUILDER_OPENAI_IMAGE_KEY` this doc used to name was deleted at app `68c24512` and survives only in stale in-repo markdown, so setting it fixes nothing),
     `COURSEBUILDER_PLANNER_ENABLED` (multi-chapter kill-switch), `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`,
     `COURSEBUILDER_MAX_MONTHLY_COGS_USD` (default **500**, the primary per-org ceiling), `COURSEBUILDER_MAX_DAILY_COGS_USD`
     (default 0 = off), `AWS_REGION`, `CLERK_SECRET_KEY`. Cost/rate: session cap `DefaultSessionsPerOrgPerDay=50`

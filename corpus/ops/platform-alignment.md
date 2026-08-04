@@ -938,7 +938,8 @@ anchors verified.** Two of the *corrections* were false.
 Items #8/#10 said, at `2adcf71`, that `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` was stale and
 should read `http://backend:8083`. Origin HEAD `2adcf71` said otherwise: **only `SKILLER_RPC_ADDR` was
 re-pointed**; at `2adcf71` both `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR` still addressed the husk
-containers — deliberately, per `app/main.go:1196-1202`, *"additive + DORMANT: external callers (messenger)
+containers — deliberately, per `app/main.go:1196-1202` **@ `app` `5ba17044`** (the same comment stands at
+`:1205-1211` @ `b948604` v1.366.0, and is itself now stale — see below), *"additive + DORMANT: external callers (messenger)
 keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."* Applying the correction
 **at that ref** would have replaced two true statements with false ones.
 
@@ -954,7 +955,8 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
 `corpus/services/backend.md:175` — a corpus line asserting messenger points *all four* addresses at
-`backend:8083`. It points two. **One false corpus line, cited as authority, produced two false corrections in
+`backend:8083`. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
+premature, not permanently wrong, which is its own lesson). **One false corpus line, cited as authority, produced two false corrections in
 a hand-off designed to be applied mechanically.** An audit that reads the corpus to correct the corpus is
 circular; the citation must terminate in platform source.
 
@@ -964,14 +966,19 @@ circular; the citation must terminate in platform source.
 > when a correction turns out to be wrong, the line that misled you is itself a blocker: hunt it.
 
 Corollary, worth stating because it reads as pedantry until it costs you: **merged-in-production is not
-removed-from-compose.** `cms` and `jobsimulation` are `service_desired_count = 0` in prod, folded into `app`,
-subgraphs gone — and still start containers on every local `make up`, still answer RPC. Two service docs said
-*"not in the local compose"*; both were false. The map's word for this is `running_but_unfederated`. Use it.
+removed-from-compose** — *and the two events are separated by weeks, so the corollary is a phase, not a
+permanent state.* At `2adcf71`, `cms` and `jobsimulation` were `service_desired_count = 0` in prod, folded
+into `app`, subgraphs gone — and still started containers on every local `make up`, still answered RPC. Two
+service docs said *"not in the local compose"*; both were false **at that ref**. The map's word for that
+phase is `running_but_unfederated`. **At `0dab54d` the phase is over**: `d11a403` deleted both compose
+services and both `repos.yml` entries, so *"not in the local compose"* is now the true statement and the
+corollary's own example has expired. Keep the corollary; re-derive which phase you are in before applying it.
 
 **A correction can be INCOMPLETE rather than wrong — and that is harder to catch (M257x iter-23).** iter-22's
 hand-off said colony was *"split: `app` + `messenger` @ `v0.35.2`; `sentinel` + `storage` @ `v0.34.3`"*, which
-is true of the four services it names. It names four of **six**: the `cms` and `jobsimulation` containers the
-default profile still starts are on a **third** pin, `v0.35.1`. Applying it verbatim would have replaced one
+is true of the four services it names. It named four of **six**: at `2adcf71` the `cms` and `jobsimulation`
+containers the default selection still started were on a **third** pin, `v0.35.1` (at `0dab54d` neither
+container exists, so the set is back to four — the enumeration moved again, exactly as the rule predicts). Applying it verbatim would have replaced one
 incomplete claim about that table row with another, and the row would have read as freshly verified. **When a
 correction enumerates, re-derive the ENUMERATION, not just the values** — the question is not "are these two
 pins right?" but "is this the whole set?"

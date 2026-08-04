@@ -348,7 +348,7 @@ Session-side confirmation (`validation_criterion_results.input_format` over real
 
 You can seed a `lab_sessions` row, but you cannot make it render a **result** today:
 
-- **Client is nil.** `LabsAPIClient` is nil whenever `LABS_API_URL` is unset (`app/main.go:462-465`; the comment
+- **Client is nil.** `LabsAPIClient` is nil whenever `LABS_API_URL` is unset (`app/main.go:740-746` @ `app` `b948604` v1.366.0; the comment
   is explicit: *"labsAPI stays nil — the in-memory idGen path runs"*). Create then persists a `lab_sessions` row
   via `idGen()` (a fake 12-char hex, **no VM booted**, `status` defaults `"booting"`, no `ide_url`/`preview_url`) —
   `app/internal/labs/session/manager.go:164-219`.

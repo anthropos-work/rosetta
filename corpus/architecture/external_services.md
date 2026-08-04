@@ -200,7 +200,7 @@ graph TB
 > `cms` container: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
 > RPC server once Directus is configured, so every content read is *"a DIRECT domain call — no proto round-trip
 > … and no internal traffic to a standalone cms."* `backend` requires `DIRECTUS_BASE_ADDR` to boot at all
-> (`app/main.go:971-973` `log.Fatalf`s without it). The prose two paragraphs above already said this; the
+> (`app/main.go:980-982` `log.Fatalf`s without it — @ `app` `b948604` v1.366.0). The prose two paragraphs above already said this; the
 > diagram had not caught up.
 
 > **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
@@ -291,8 +291,9 @@ so images stay real — no blob bytes are copied locally.
 > **⚠️ This is the cms DOMAIN inside `backend`, not the `cms` container.** Since cms-in-app the
 > Directus client lives at `app/internal/cms/directus/` and runs in-process in `backend`;
 > `app/cms_reader_switch.go` swaps the content reader to the in-process cms server, and
-> `app/main.go:971-973` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`**. The
-> `cms` container still starts until platform M810 but serves none of `backend`'s content reads.
+> `app/main.go:980-982` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`** (@ `app`
+> `b948604` v1.366.0). There is **no `cms` container left to start** — platform `0dab54d`'s compose
+> declares nine services and `cms` is not one of them; every content read is `backend`'s own.
 
 The cms domain connects to Directus via:
 
@@ -538,7 +539,7 @@ For full details on models, routing, voice engines, and recording architecture, 
 | **AWS Bedrock (EU)** | `vendor = AnthropicAws` **or** `Anthropic` — both resolve to the *same* Bedrock client | Jobsimulation domain, Backend (app) | `eu.anthropic.claude-sonnet-4-6` (simulation report agent, `app/internal/jobsimulation/agent/report_agent.go:31`; ask-engine, `app/internal/askengine/bedrock.go:25`) and `eu.anthropic.claude-opus-4-8` / `eu.anthropic.claude-sonnet-4-6` (course-builder author/grader, `app/internal/coursebuilder/bedrock.go:23,29`) |
 | **Mistral (EU)** | direct client, not via the AI manager | cms domain **only** | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19`, for studio attachment → markdown |
 | **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
-| **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:756-762`, `coursebuilder.ModelBackendName()`) |
+| **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:770` @ `app` `b948604` v1.366.0, `coursebuilder.ModelBackendName()`) |
 
 ### Routing: what is actually implemented
 
@@ -576,7 +577,7 @@ config change would arm it, not because it is live):
 3. setting `ANTHROPIC_API_KEY`, which flips **Course Builder** off Bedrock onto Anthropic's
    first-party API (`coursebuilder/bedrock.go:106-113`) and supplies **Studio-Room** the credential
    its `anthropic` `TARGET SERVICE` needs — *Studio-Room was never on Bedrock*, so nothing is flipped
-   off it there (`:541` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
+   off it there (`:542` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
    **This item is live on the Course Builder half only.** Its Studio-Room half is latent for exactly the
    reason item 5 is: no shipped `configs/*.ini` selects `anthropic` either — all 30 `*_AI_*_MODEL` lines
    pin `azure`. Symmetry noted M257x iter-52, after two pre-commit readers caught the same evidence being
