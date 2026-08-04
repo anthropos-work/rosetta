@@ -6,7 +6,7 @@ Storage is the **centralized file/blob service** for the platform.
 
 > **⚠️ Since the merges, the sole live caller is `app`.** The jobsimulation and cms domains run
 > **in-process inside `backend`** (`app/internal/jobsimulation/recording/recording.go:12`,
-> `anticheat.go:34`, `app/main.go:983` `storage.NewClient(…, storagens.CMS)`); their compose containers
+> `anticheat.go:34`, `app/main.go:992` `storage.NewClient(…, storagens.CMS)`); their compose containers
 > are unfederated husks sitting off every storage path, and stay up only until platform **M810**.
 
 Callers push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.

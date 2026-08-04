@@ -1,0 +1,69 @@
+app v1.365.0 -> v1.366.0
+citations examined: 23   unchanged: 1   MOVED: 22
+
+corpus/architecture/platform-migration-status.md:70  app/main.go:573
+    v1.365.0 -> // its consumers (deps: OrgManager / skillerAIManager / embeddingManag
+    v1.366.0 -> // skillTaxonomyManager invokes it on skill creation.
+corpus/architecture/platform-migration-status.md:72  app/main.go:604
+    v1.365.0 -> // jobsim IN-PROCESS via jobsimDj (managers directly; the standalone R
+    v1.366.0 -> // jobsim-in-app (M703–M709): construct the ported jobsimulation engin
+corpus/architecture/dependency_map.md:21  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
+corpus/architecture/external_services.md:203  app/main.go:971-973
+    v1.365.0 -> var cmsDeps graph.CmsDeps
+    v1.366.0 -> // collapses reuse app's in-process handlers (orgs/skiller/jobsim) as 
+corpus/architecture/external_services.md:294  app/main.go:971-973
+    v1.365.0 -> var cmsDeps graph.CmsDeps
+    v1.366.0 -> // collapses reuse app's in-process handlers (orgs/skiller/jobsim) as 
+corpus/architecture/external_services.md:541  app/main.go:756-762
+    v1.365.0 -> // Customer Course Builder — constructed here in the root and passed d
+    v1.366.0 -> Catalog:   labsContent,
+corpus/ops/demo/content-stories-routes.md:351  app/main.go:462-465
+    v1.365.0 -> // to public-only when OrgManager is absent; the billingPremium arm of
+    v1.366.0 -> 
+corpus/ops/platform-alignment.md:877  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
+corpus/services/storage.md:9  app/main.go:992
+    v1.365.0 -> // per-webhook ClearCache `SCAN MATCH <collection>_*` would sweep the 
+    v1.366.0 -> cmsStorage := storage.NewClient(os.Getenv("STORAGE_RPC_ADDR"), storage
+corpus/services/messenger.md:107  app/main.go:1199
+    v1.365.0 -> // stub (internal/inbound not ported, OD-11).
+    v1.366.0 -> // jobsim-in-app: the in-app JobSimulationService edge — serves the ex
+corpus/services/coursebuilder.md:48  main.go:762
+    v1.365.0 -> // constructor fails (typically missing AWS creds in a bare local
+    v1.366.0 -> // model clients — Opus 4.8 streaming no-sampling for
+corpus/services/coursebuilder.md:71  main.go:755-766
+    v1.365.0 -> 
+    v1.366.0 -> Sessions:  labSessionManager,
+corpus/services/coursebuilder.md:98  main.go:816-819
+    v1.365.0 -> // `model_not_found`, which reads to the operator as "covers are
+    v1.366.0 -> // Cover generator: OpenAI images. The MODEL is env-overridable
+corpus/services/backend.md:39  main.go:1178-1218
+    v1.365.0 -> })
+    v1.366.0 -> defer cancelServerContext()
+corpus/services/backend.md:53  main.go:735-738
+    v1.365.0 -> 
+    v1.366.0 -> labsWorkspace, err := catalog.NewWorkspaceStoreFromEnv(serverContext)
+corpus/services/backend.md:190  main.go:735-738
+    v1.365.0 -> 
+    v1.366.0 -> labsWorkspace, err := catalog.NewWorkspaceStoreFromEnv(serverContext)
+corpus/services/backend.md:195  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
+corpus/services/jobsimulation.md:34  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
+corpus/services/jobsimulation.md:95  app/main.go:1195
+    v1.365.0 -> // jobsim-in-app: the in-app JobSimulationService edge — serves the ex
+    v1.366.0 -> // their base URL at cutover.
+corpus/services/jobsimulation.md:115  app/main.go:971-973
+    v1.365.0 -> var cmsDeps graph.CmsDeps
+    v1.366.0 -> // collapses reuse app's in-process handlers (orgs/skiller/jobsim) as 
+corpus/services/cms.md:15  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
+corpus/services/cms.md:32  app/main.go:1196-1202
+    v1.365.0 -> // (messenger's GetSession/GetSessionInsights + cms's GetUserSessions)
+    v1.366.0 -> mux.Handle(skillerv1connect.NewSkillerServiceHandler(
