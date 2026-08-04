@@ -192,10 +192,19 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
   - **jobsimulation domain** (`app/internal/jobsimulation/`, wired by `internal/jobsimwiring/`): **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT read from the cms domain by ID — **in-process** now, no `cms.GetSimulation` RPC hop. It holds run/session state — not content
   - **roadrunner domain**: Judge0 code execution, called directly via `JUDGE0_BASE_URL`
 - Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Storage: File/blob storage management
 - Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
 
+> **⚠️ Storage is NO LONGER in the default selection** (platform `0dab54d`). `core` starts **five**
+> containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`, `sentinel`) — and
+> `storage` moved to `profiles: [storage-legacy]`, kept startable only for rollback comparison because
+> two writers on one bucket is the failure it would cause. It is a **`mid-fold`** service: the config
+> side says removed (`STORAGE_RPC_ADDR` occurs **0** times across `docker-compose.yml`, `common.yml`
+> and `.env_example`) while the consumer side is live (`app` reads it at `main.go:446`, `:524`, `:992`
+> and in three `cmd/` tools, two of which hard-require it). Both sides are cited in the fenced map —
+> `corpus/architecture/platform-migration-status.md`, the `storage` row.
+
 Available in other profiles but NOT started by default:
+- Storage (`storage-legacy` profile): File/blob storage management — see the mid-fold note above
 - Messenger (`messenger` profile): Email notifications via Brevo (Sendinblue)
 - CustomerIO Sync (`customerio-sync` profile): Background data sync to Customer.io. Unique build pattern — built directly from GitHub URL, not cloned locally.
 
@@ -240,7 +249,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since the merges the only remaining cross-process RPC edges are backend → sentinel/storage and messenger → backend; the `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends
+- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since the merges the only remaining cross-process RPC edges are **backend → sentinel** and **messenger → backend** — and messenger's is now all four of its addresses, since `d11a403` re-pointed `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR` at `http://backend:8083` too (`docker-compose.yml:174`, `:176` @ platform `0dab54d`; **M809 has landed**). **backend → storage is mid-fold, not live**: `app` still calls it in code, but nothing sets `STORAGE_RPC_ADDR` and `storage` is not in the default selection, so on a stock stack the client is built against the empty string and fails at call time rather than at boot. The `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends
 - **Frontend/Studio → Backend**: GraphQL **straight to `backend`** at `:8082/graphql/query` — the Cosmo router was deleted at platform `2adcf71`, so there is no gateway hop and no federation
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: vendor selection implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library. **Not a fallback ladder** (`corpus/architecture/external_services.md:546`): an EU Azure client by DEFAULT, a US Azure client swapped in by the PostHog flag `flag_use_azure_us`, and direct-OpenAI as the RETRY target on HTTP 429 — three independent levers, not three ordered rungs; Anthropic always Bedrock `eu-west-1`, except Course Builder's `ANTHROPIC_API_KEY` path to `api.anthropic.com`. Cost tracking in `app/internal/aiusage`

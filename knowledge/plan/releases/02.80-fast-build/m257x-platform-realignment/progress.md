@@ -519,3 +519,18 @@ defect and would also explain why no amount of accessor work has helped.
   RED**, drop-consumer-side **1 RED**. `stack-core` **675 / 1F** (the perishable iter-48 fixture). rext
   tagged `fast-build-m257x-iter-65`, **verified on origin**; pin advanced. Gate **4 of 5**, unchanged —
   see iter-65/progress.md
+
+- iter-66 (tik, **root `CLAUDE.md`**, corpus-only): the two facts iters 63–64 measured, carried into the
+  file every agent reads first — and **neither was reachable by any fence in the family**, which is the
+  point. (1) `Storage` was listed under *"In the default local profile (`core`)"*; at `0dab54d` it
+  declares `profiles: [storage-legacy]` and `core` starts **five** containers. A reader would expect a
+  storage container on a stock `make up`, not get one, and not know why the calls fail. Replaced with the
+  two-sided **`mid-fold`** note, pointing at the fenced map row rather than restating it. (2) The
+  RPC-edge inventory said *"backend → sentinel/storage and messenger → backend"* and was wrong **in both
+  directions at once**: messenger's edge is now **all four** addresses (`d11a403`, **M809 landed**),
+  while **`backend → storage` is mid-fold, not live** — nothing sets `STORAGE_RPC_ADDR`, `storage` is not
+  started, so the client is built against the empty string and fails at **call time, not boot**. All five
+  corpus guards OK; rext untouched (no tag, pin stays `fast-build-m257x-iter-65`). New route
+  **`FENCE-M257x-iter66-tier-membership`** — *"service X is in selection Y"* has a derivable legal set
+  (`compose.select(default_profile)`) and nothing checks it; same shape as G1 but about **membership**
+  rather than the token. Gate **4 of 5**, unchanged — see iter-66/progress.md
