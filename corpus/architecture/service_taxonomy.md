@@ -309,9 +309,12 @@ See [Ant Academy service doc](../services/ant-academy.md) for the full picture.
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. *"Does not
-> exist now"* became *"has never existed"* — and the stronger form contradicted the corpus's own fenced
-> source of truth, [`platform-migration-status.md:87`](./platform-migration-status.md), which the very
-> paragraph above links.)
+> exist now"* became *"has never existed"* — and **the platform's own history refutes the stronger form**,
+> which is the only thing that could. (This passage used to appeal to
+> [`platform-migration-status.md`](./platform-migration-status.md) as *"the corpus's own fenced source of
+> truth"* on the point, by `file:line`. That map has **no Directus row at all** — it maps repos, and
+> Directus is an external service — so the anchor resolved to a row about something else entirely.
+> `CHECK-M257x-iter64-pms-87-subject`, closed M257x iter-65.)
 
 **Integration Pattern**:
 ```

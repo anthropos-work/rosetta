@@ -494,3 +494,28 @@ defect and would also explain why no amount of accessor work has helped.
   `service_taxonomy.md`'s *"CMS, Jobsimulation and Roadrunner are NOT out of local orchestration"* block
   retired — that phase closed at `d11a403`. rext tagged `fast-build-m257x-iter-64`, **verified on
   origin**; pin advanced. Gate **4 of 5**, unchanged — see iter-64/progress.md
+
+- iter-65 (tik, **a citation must name its subject**): two routed `CHECK-*` items closed, both the same
+  class — *an anchor that RESOLVES and still does not name the claim*, which
+  `anchor_construct_guard`'s own docstring calls the line the fence family does not cross.
+  `CHECK-M257x-iter60-g6-citation-subject`: G6's two-sided record was closed by `if site in all_text`,
+  a **whole-corpus substring test** any document mentioning `main.go:446` for any reason satisfied.
+  **For a known token the judgement is decidable** — the site and the variable must now co-occur in
+  the same **block** (the unit `_pin_window` established at iter-63); no claim is parsed, two tokens
+  must share a paragraph. Live corpus **GREEN**, which is the right outcome and is **not** evidence
+  the rule works — the six fixtures are (`D-M257x-65-1`). And writing one of them found a **second**
+  defect the tree could not show: `test_a_site_named_with_no_variable_anywhere` came back green where
+  RED was expected because **G6's universe excluded the consumer side** — a variable the platform
+  configures nowhere, the corpus names nowhere, and `app` READS had **no row at all**, i.e. the
+  most-undocumented case was invisible to the assertion whose job is to catch it (`D-M257x-65-2`;
+  **second time this milestone a FIXTURE surfaced a reach hole the live corpus lacked** — iter-61 was
+  the first). `CHECK-M257x-iter64-pms-87-subject`: `service_taxonomy.md`'s Directus retraction appealed
+  to `platform-migration-status.md:87` as *"the corpus's own fenced source of truth"* — **that map has
+  no Directus row at all** (it maps repos; Directus is external), so the anchor resolved, carried
+  content, passed the anchor guard, and named `anthropos-studio-room`. Re-adjudicated against the
+  platform (`git show a2a3ee6^:docker-compose.yml`, already cited in the same paragraph). **It had been
+  faithfully re-pointed TWICE by iters 63–64 as its target moved — a re-point preserves intent, it
+  cannot audit it** (`D-M257x-65-3`). 60 predicate tests (was 54); mutants: revert-to-substring **2
+  RED**, drop-consumer-side **1 RED**. `stack-core` **675 / 1F** (the perishable iter-48 fixture). rext
+  tagged `fast-build-m257x-iter-65`, **verified on origin**; pin advanced. Gate **4 of 5**, unchanged —
+  see iter-65/progress.md
