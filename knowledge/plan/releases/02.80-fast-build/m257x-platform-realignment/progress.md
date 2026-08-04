@@ -652,3 +652,24 @@ defect and would also explain why no amount of accessor work has helped.
   *stated* baseline and not a remembered one. `tests/test_iter45_mechanical_fences.py` **46 → 55**.
   Five corpus guards OK. rext NOT tagged (offline guard code only); pin stays
   `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-71/progress.md
+- iter-72 (tik, closed-fixed): **`FIX-M257x-iter58-mainline-shift` closes with a DERIVED verdict —
+  66 distinct `main.go` citations, 37 graded at a ref their own block names, 29 in ambiguous blocks,
+  and ZERO out of range or absent.** Its *"21 of 22 outstanding"* joins iter-69's *"64"* and
+  iter-70's *"23"* as a carried number that did not survive re-derivation — **four in four**.
+  Probing the guard's reach inside that class then found the **eighth and largest reach limit of
+  this milestone**, proven mechanically in both halves: `_QUALIFIED` requires a `/` or a `.md`, so a
+  bare `` `main.go:1187` `` **never reaches `resolve()` at all** — **142 distinct citations are
+  outside the guard's reach entirely**, led by **41 `docker-compose.yml:N`** and **32
+  `up-injected.sh:N`**, the two most-cited artifacts in the ops corpus. And the resolver would miss
+  them anyway: its service-doc rule maps `backend.md` → `stack-demo/backend/`, which does not exist,
+  because the compose SERVICE is `backend` while the REPO is `app`. The fix is **designed and routed
+  with both proofs** (`FENCE-M257x-iter72-bare-citation-reach`) rather than half-landed — widen the
+  regex, **derive the doc-stem→clone map from compose's `build.context`** rather than listing it,
+  and keep `AMBIGUOUS_BASENAMES`' discipline, since `main.go` exists in **seven** clones and a
+  tree-wide basename search is the over-match the guard's own docstring records as *"134 findings,
+  essentially all of them ports."* Also recorded: a **self-inflicted measurement bug** — the first
+  derivation printed *"block-pinned: 0"* against the guard's own `block-pinned x31` because the
+  script called `live.pop()` then tested `len(live) == 1` on the mutated set. **Two instruments
+  disagreeing is a finding, and the one that agrees with nothing is usually the new one.** Five
+  corpus guards OK; zero code touched in either repo, so iter-71's suite runs stand. Gate **4 of 5**,
+  unchanged — see iter-72/progress.md
