@@ -137,7 +137,7 @@ Studio-Desk connects to the platform's GraphQL endpoint for data operations — 
 // Types auto-generated via graphql-codegen
 ```
 
-**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (`docker-compose.yml:334`); was `http://localhost:5050/graphql` when the router existed locally
+**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (`docker-compose.yml:204`, @ platform `0dab54d`); was `http://localhost:5050/graphql` when the router existed locally
 
 **Type Generation**:
 ```bash

@@ -195,7 +195,7 @@ graph TB
     Directus --> ProdPG[(Prod PostgreSQL · directus schema)]
 ```
 
-> **Both frontends target `backend`, not `cms`** (`docker-compose.yml:352`/`:361` for next-web-app, `:318`/`:334`
+> **Both frontends target `backend`, not `cms`** (`docker-compose.yml:236`/`:245` for next-web-app, `:204`/`:220`
 > for studio-desk — all four are `:8082/graphql/query`). And `backend` does **not** proxy content through the
 > `cms` container: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
 > RPC server once Directus is configured, so every content read is *"a DIRECT domain call — no proto round-trip

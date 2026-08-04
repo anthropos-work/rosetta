@@ -12,7 +12,7 @@
 > **⚠️ Precision, because the declarations disagree (v2.8 M257x).** *"There is no roadrunner service in
 > production"* overstates it: `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` and has
 > not been touched since `87d8d44` (2026-06-19, before the fold), while `repos.yml:29-31` says *"legacy — folded
-> into app"* and `docker-compose.yml:281` still starts the container locally. This is the **one row where prod
+> into app"* and there is **no `roadrunner` compose service** at platform `0dab54d` to start locally. This is the **one row where prod
 > and the platform's own declaration contradict each other** — recorded, not resolved. Say *orphaned* (nothing
 > calls it), not *absent*. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >

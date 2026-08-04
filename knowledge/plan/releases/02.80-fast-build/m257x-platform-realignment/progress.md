@@ -673,3 +673,28 @@ defect and would also explain why no amount of accessor work has helped.
   disagreeing is a finding, and the one that agrees with nothing is usually the new one.** Five
   corpus guards OK; zero code touched in either repo, so iter-71's suite runs stand. Gate **4 of 5**,
   unchanged — see iter-72/progress.md
+- iter-73 (tik, closed-fixed): **`FENCE-M257x-iter72-bare-citation-reach` lands one iteration after
+  iter-72 opened it, and with it the eighth reach limit closes.** A bare `<name>.<ext>:N` now
+  reaches the resolver, and the service→repo edge is **DERIVED from `docker-compose.yml`'s own
+  `build.context`** rather than assumed to be the doc's filename — including the
+  `${APP_BUILD_CONTEXT:-../app}` form (a bare-`../repo` parser drops **the one service that
+  matters**) and excluding a non-local git-URL context (there is no clone to resolve into). The
+  third regex alternative is a **CODE-SUFFIX allow-list, never a `\w+\.\w+` wildcard** — this
+  guard's own docstring records what the wildcard costs: *"134 findings, essentially all of them
+  ports."* **Reach 124 → 177 anchors.** Dry-run first with the guard untouched (136 newly
+  resolvable / 92 still unresolvable / **12** findings) so "land and repair in one iter" was a
+  decision at the start rather than a discovery halfway. Live it went **RED with 6**, all
+  `docker-compose.yml:N` past the end of a **271-line** file — router-deletion debris — and **two
+  were false CLAIMS, not stale numbers**: *"the container still starts locally"* said of
+  **roadrunner**, which has **no compose service at all** at `0dab54d`, in `architecture_overview.md`
+  **and** in `roadrunner.md`, unnoticed by every KB-fidelity pass in this milestone because nothing
+  could resolve a bare `docker-compose.yml:281`. All six repaired. **Two battery defects, both
+  mine:** a **mutant SURVIVED** — the wildcard `[a-z]*` passed because the anti-port fixtures
+  (`:8082`, `:5050`, `localhost:3000`) have **no dot before the port** and could never have
+  discriminated, while the corpus is full of dotted hosts one colon from being read as citations;
+  and **the no-op control was not a no-op** (it split a `re.compile` call), which is worth a rule of
+  its own — **if the control fails, the battery has not run, and every "caught" beside it is
+  unearned**. Final: 5 mutants caught, control survived. `stack-core` **769 / 1F** (the perishable
+  iter-48 fixture, by IDENTITY); `CITE_REF=worktree` still discriminates. rext NOT tagged (offline
+  guard code only); pin stays `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see
+  iter-73/progress.md

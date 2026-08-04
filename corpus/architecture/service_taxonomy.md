@@ -143,7 +143,7 @@ make dev S=backend       # Stop Docker container, develop natively
 **Characteristics**:
 - **Deployment**: standalone processes — typically Vercel or local-only — **but not uniformly outside
   docker-compose**: Studio-Desk, the first Tier-2 member listed below, IS in the platform compose at
-  `docker-compose.yml:311` behind `profiles: [studio-desk, all]` (`:342`), so it starts on
+  `docker-compose.yml:197` behind `profiles: [studio-desk, all]` (`:226`), so it starts on
   `make up PROFILE=studio-desk` and not on a bare `make up`. The unqualified *"not in main
   docker-compose"* contradicted `:75` of this same file, `frontend_architecture.md:11` and
   `studio-desk.md:21`; corrected M257x iter-46
