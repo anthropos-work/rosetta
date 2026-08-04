@@ -698,3 +698,39 @@ defect and would also explain why no amount of accessor work has helped.
   iter-48 fixture, by IDENTITY); `CITE_REF=worktree` still discriminates. rext NOT tagged (offline
   guard code only); pin stays `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see
   iter-73/progress.md
+- iter-74 (tik, closed-fixed): **the ambiguous class's 12 → 39 is settled by PARTITION, not by
+  judgement — and reading it anyway found the fence defect underneath.** Splitting the bucket along
+  the one dimension iter-73's widening moved gives `bare-code 27 · md 0 · path 12`: the pre-existing
+  partition is **still 12, to the citation**, so **all** the growth is a class that could not be
+  counted at all the day before. The corpus did not move by one site. Then the class itself:
+  **21 of the 39 sat in one document**, which turned out to be a property of the *guard* —
+  `_block_of` walked to the nearest **blank line**, and a markdown table has none between its rows,
+  so a citation inside a table took the **entire table** as its window and every sha named in any
+  row chose the ref for the citations in **every** row. That contradicts **§5 rule 33**, derived in
+  iter-63 and implemented in the sibling guard ever since: *a markdown CELL in a table, a wrapped
+  sentence in prose.* **Two guards, two definitions of "block", both green, and the wrong one wrong
+  silently.** Measured instance: `external_services.md`'s **AWS Bedrock** and **Mistral** rows carry
+  no pin and were being read at `b948604` — a ref named by the **Anthropic Direct** row. Dry-run
+  first (iter-73 lesson 1): predicted `39 → 24 / 0 findings`, reproduced exactly. Then **the first
+  draft of the fix contained the defect it removes** — the row test, copied verbatim from the
+  sibling, anchors at `|`, so `storage.md`'s **blockquoted** fold table (`> | side | … |`) failed it
+  and fell back into the prose branch; admitted on a count, not a document (**75 quoted rows across
+  14 files** vs 2197 plain). Final **ambiguous 39 → 20 · block-pinned 45 · default 82 · 177 resolved
+  · 0 findings**: nothing in the corpus was wrong, and **19 citations stopped being adjudicated
+  against a file their own document never named.** The residual 20 was then adjudicated rather than
+  assumed — classified at **every** ref its own window names, **19 agree, 1 diverges**, and the 1 is
+  a cell that names in words the ref it asserts, so **no repair and no fitted rule** (§4 Trap A).
+  **5 mutants caught, no-op control SURVIVED**, every fixture derived from a document the corpus
+  actually writes. §5 gains **rule 35** (*a count that grows in the same pass that reach grows is
+  not a regression until you split it by the reach dimension* — rule 16's mirror — plus *when a rule
+  is already derived, check every implementation of it*). Two hand-off corrections recorded: the
+  routed *"92 unresolvable"* **count** reproduces (91 distinct / 103 sites) but its **head list came
+  from a different instrument** (`gen.py` is cited 11× and **never** in `file:N` form — every one is
+  a RANGE), and **88 of the 239 "unresolvable" sites are URLs, not citations**. P3 at close caught
+  the adjudication ref moving *during* the iteration — a routine `git fetch` took `app`'s
+  `origin/main` `9d00a313` → `7177374` (v1.367.0+4), silently re-pointing 82 default-adjudicated
+  citations with no diff anywhere (§5 rule 26); both ref-aware guards re-run at the new ref, both
+  GREEN, and the citation delta is **48 held / 1 moved / 0 dead** — the 1 being a claim **true at
+  the ref it names**, i.e. iter-69's *a pin is a date* reappearing inside a script written the same
+  day. Five corpus guards OK. rext NOT tagged (offline guard code only); pin stays
+  `fast-build-m257x-iter-67`. Gate **4 of 5**, unchanged — see iter-74/progress.md

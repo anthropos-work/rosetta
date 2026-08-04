@@ -915,6 +915,56 @@ Rules, in order of how often they actually catch something:
     against `HEAD`, so a second run double-applies), and a citation into a line the edit *replaced*
     needs a human, because "where did that content go" is not a question a diff answers.
 
+35. **A count that grows in the same pass that REACH grows is not a regression until you SPLIT it by
+    the reach dimension — and rule 16 has a mirror image.** Rule 16 says an unread metric is
+    indistinguishable from an unmoved one. The mirror: **an unread metric that becomes read looks
+    exactly like a metric that got worse.**
+
+    M257x iter-74. iter-73 widened a citation resolver's reach (124 → 177 anchors) and the
+    `ambiguous` bucket went **12 → 39** in the same run. Routed as *"grew — is this a corpus-writing
+    habit worth changing, or a fence limitation?"*, which is a real question and the wrong first one.
+    The first one is decidable and costs one derivation: partition the class by **the dimension reach
+    moved along** — here, which regex alternative matched the citation.
+
+    | ref source | newly-reachable partition (`bare-code`) | pre-existing partition (`path`) |
+    |---|---|---|
+    | ambiguous | **27** | **12 — unchanged, to the citation** |
+
+    All of the growth sat inside the partition that **could not be counted at all** the day before.
+    The corpus had not moved by one site. A class that grows *entirely inside the newly-reached
+    partition* is the instrument improving; a class that grows *inside the old partition* is the
+    corpus moving — **and those need opposite responses**, which is why the split comes before any
+    repair. Two of the last three routed backlogs in this milestone were routed by pattern-match on a
+    count and collapsed on adjudication (64 → 5, 23 → 1).
+
+    **The corollary that made the same iteration worth twice its size: when the split says "the
+    instrument", read the class anyway.** The 39 were not all legitimate. **21 of them sat in one
+    document**, which turned out to be a property of the *fence*, not of the document: the window it
+    called "the block" walked to the nearest **blank line**, and a markdown table has no blank lines
+    between its rows — so a citation inside a table took **the entire table** as its window, and every
+    sha named in any row chose the ref for the citations in **every** row. Measured instance:
+    `external_services.md`'s provider table pins a ref in the **Anthropic Direct** row, and the
+    citations in the **AWS Bedrock** and **Mistral** rows — three different providers — were being read
+    at it.
+
+    That is rule 33's own *"the pin crosses a ROW boundary"* mechanism, and rule 33 had **already
+    ruled on it** (*a markdown CELL in a table, a wrapped sentence in prose*) and was **already
+    implemented** — in the sibling guard. So the last part of the rule, and the cheapest of the three:
+
+    > **When a rule is already derived, check every implementation of it, not the one you are
+    > editing.** Two guards holding two definitions of the same construct is not a disagreement
+    > anyone will notice: each is internally consistent, each is green, and the one that is wrong is
+    > wrong *silently*. `grep` for the predicate's name across the whole tooling section before
+    > assuming the rule is in force.
+
+    Two smaller cautions from the same repair, both cheap and both earned the hard way. **The first
+    draft of the fix contained the defect it removes**: the row test was copied verbatim from the
+    sibling and anchors at `|`, so a **blockquoted** table (`> | side | … |`, 75 rows across 14 files
+    in this corpus) failed it and fell straight back into the prose branch. And **an ambiguity is
+    only worth repairing if it can change an answer** — classifying each residual citation at *every*
+    ref its own window names showed **19 of 20 agree** and the 20th is a cell that names the ref it
+    asserts in words. Counting a fallback is coverage; assuming it is a defect is not.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
