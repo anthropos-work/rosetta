@@ -806,3 +806,227 @@ Hardening that surface against a stale ref would repeat the mistake this tok exi
 iter-55 (ref baseline) → `/developer-kit:harden-mstone-iters` → iter-56.** That pass also owns the **rext
 `stack-core` suite that was not run to completion two iterations ago** — those baselines stand unmeasured
 and belong to a harden, not to a tik.
+
+---
+
+## TOK-05: stop repairing claims; fence the predicates under them — 2026-08-04
+
+**Tok type:** triggered — by a **direct user directive**, not by the 3-no-prog streak. iters 56, 57 and 58
+all closed `closed-fixed` and each moved a clause; the streak clause was checked before this was written and
+does not apply. Same precedent as TOK-04, which was also fired by something other than the streak.
+Session-terminating.
+
+**Prior strategy:** [`TOK-04: pin the target, or stop calling it a measurement`](#tok-04-pin-the-target-or-stop-calling-it-a-measurement--2026-08-03) — *meter the flow, not the stock; state your refs;
+freeze your instruments.* **TOK-04 worked, and nothing in it is being discarded.** Under it the milestone
+went **1 of 5 → 4 of 5** in four iterations (iter-55 ref baseline, iter-56 clauses 1+2, iter-57 clause 3,
+iter-58 the pin advance proven cold). P1–P4 are kept whole.
+
+### Why a revision now — the user handed us a map of the territory, and it re-scopes the work
+
+The platform developer's PR shows the fold as a **program with a known shape**: skiller, cms, graphql,
+jobsim and skillpath are **done**; **storage and messenger are next, and not yet done.** That single fact
+re-scopes clause 5, because it says which of our residual is *stale* (repairable now, permanently) and which
+is *in flight* (repairing it today buys a claim that expires on the developer's next merge).
+
+Alongside it, rosetta PR #14 was fetched read-only as `origin/pr-14` and reconciled: **92 claims already
+absorbed · 30 superseded · 5 contradictions standing · 0 refuted · ZERO new information. DO NOT MERGE** — it
+would re-introduce three refuted things (the 60K/18K taxonomy figures, `internal/copilot` deleted at app
+`889ae776`, a 4-subgraph Cosmo count). **Its value is negative space.** The live defects are where PR #14
+and our corpus **agree**, and those are invisible to any method that diffs two documents against each other.
+
+### Why TOK-04's own method has a ceiling it cannot cross
+
+TOK-04 changed the accounting and the ref discipline. It did not change **the unit of repair**, which has
+been *the claim* since TOK-03 and *the file* before that. Three measurements taken since say the unit is
+wrong:
+
+| measured | reading |
+|---|---|
+| single-pass recall of a 7-seat reading | **43–48%** (iter-50's paired same-tree experiment; Chapman `N̂` ≈ 23 and a floor) |
+| a vetted, schema-safe pin advance | moved **22 of 23** `main.go:N` citations; the fence caught **1** — **4.5%** |
+| one working day of platform commits | **81 fresh drift sites across 21 files**, larger than the 46-item union ten readings had been draining |
+
+**A claim-by-claim repair pass cannot outrun any of those.** But look at what the three residuals actually
+are. The 81 sites share **one** false predicate (*three services are live-local husks*). The 17 files / 30
+occurrences naming a `graphql` profile share **one** (*a `graphql` profile exists*). The 21 moved citations
+share **one** (*this line number names this construct*). **Three predicates, not 119 claims** — and each of
+the three has a legal set that is **derivable from a platform artifact we already parse.**
+
+That is the whole revision. TOK-01 built instruments, TOK-02 fenced a mechanizable prose class, TOK-03
+attacked coverage, TOK-04 pinned the target and metered the flow. **TOK-05 changes the unit of repair from
+the claim to the predicate**, which is the first term none of the four touched.
+
+### The observation that makes it work — the platform's config IS its documentation of record
+
+Measured, not asserted. The platform's **configuration files** are edited in the same commit as the change
+and carry the rationale inline:
+
+- `repos.yml`'s header: *"`app` is the ONLY repo with migrations to run… they own no local schema."*
+- `docker-compose.yml:130-133`, on the storage service: *"v9.0: NOT in the default profiles any more — app
+  serves storage in-process, and running both means two writers on one bucket. Kept startable for rollback
+  comparison."*
+
+The platform's **narrative** documentation lags and is partly unmeasured — app@v1.366.0's own
+`knowledge/*.md` asserts "60K+ skills" with no measurement, and **the repo contains no job-role count
+anywhere**, so "18K roles" has zero upstream provenance in the very repo we would be deferring to.
+
+**Rule that follows, and it is the corollary to §5 rule 19:** adjudicate against **platform artifacts**,
+never against another document — ours or theirs. Two documents that agree are not two witnesses.
+
+### Revised strategy — five decisions, each recorded and each fenceable
+
+Full records in `iter-59/decisions.md`. Summarised:
+
+**`D-M257x-59-1` — clause 5's residual is scoped by PREDICATE, not by count.** A repair unit is now *"every
+site in the tree asserting predicate P"*, adjudicated against the platform artifact that defines P's legal
+set, and closed by a fence that makes the predicate underivable-when-false. §5 rule 19 said *repair by
+claim, not by file*; this extends it one level: **repair by predicate, not by claim.** It does **not** touch
+the reading instrument — the union-of-two discipline, the blind second reading, and the pre-commit double
+reads all stay, and clause 5 is still met only by a reading that returns **zero**.
+**`FIX-M257x-iter53-union-set` (46 vs 35) is a PENDING USER DECISION and is NOT resolved here.** What can be
+said: predicate-scoping **subsumes** the question rather than answering it. A predicate-scoped repair covers
+every site sharing the predicate *whether or not any reading named it* — which is precisely the ≈43–48%
+recall problem the union was invented to work around. So the union count stops being the **scoping** input
+and becomes a **validation** input: after the predicate sweep, the union's members must all be covered, and
+any that are not name a predicate we have not yet found. Whether that set is 46 or 35 changes the
+validation, not the work.
+
+**`D-M257x-59-2` — the fence widening is the next build, and it is a NEW sibling guard, not a widening of
+`platform_alignment_guard.py`.** A deliberate departure from the reconciliation's recommendation, with a
+measured reason: that guard declares `FENCE_KIND = "standalone"` and its own docstring scopes it to *"a
+map↔platform property"*; assertion F derives its clone roots from `repos_yml_path` precisely so citations
+and membership are checked against the **same** reference. Re-targeting it at the whole corpus would break
+the property that makes it trustworthy. Its `compose_blocks()` parser — already written, already tested — is
+reused as an importable primitive, so this is an extension of the **code** and not of the **guard's
+subject**. §8 rule 1's derived registry means a new `*_guard.py` self-registers.
+
+Inputs: `repos.yml` + `docker-compose.yml` (**with its `include:` resolved**) + `Makefile`. Six assertions,
+each **derived and run in both directions** (a doc-promised value with no artifact backing is a **false
+promise**; an artifact value with no doc row is **undiscoverable**) — the `demo_knob_guard.py` precedent,
+which already does exactly this and is green in the suite.
+
+Denominators it must reproduce, **all re-derived at this open** (`platform 0dab54d`):
+
+| # | assertion | derived denominator |
+|---|---|---|
+| G1 | every documented profile token selects something beyond the always-on floor | **10** services · **8** legal profiles · floor **3** (`postgresql redis sentinel`) · `core` selects **5** |
+| G2 | any "N repos cloned" claim | **6** |
+| G3 | any default-bring-up container claim | **5** (= `select(core)`) |
+| G4 | any cited `*_RPC_ADDR` | **4**, all `http://backend:8083` |
+| G5 | any named migration target | **1** repo (`app`) |
+| G6 | half-fold split (see `D-M257x-59-4`) | compose-sets vs app-reads, per env var |
+
+**Grade on "does it still SELECT something", never on "does it still parse"** — that is the dominant new
+failure mode and G1 exists for it alone. `PROFILE=graphql`, `PROFILE=cms` and `PROFILE=storage` all exit 0;
+**measured at this open they each start 3 containers, not 0** — Postgres up, Redis up, sentinel up, `docker
+ps` non-empty, and the application absent. The briefing said "starts nothing"; the truth is worse, because
+"nothing" would at least be unambiguous.
+
+**`D-M257x-59-3` — §7 rule 4 gains a second half: a pin advance is not vetted until its CITATION delta is
+measured.** iter-58 is the case study: the advance was vetted for 0 migrations / 0 destructive DDL / 0 new
+hard-required config, all correct, and it still moved **22 of 23** `main.go:N` citations with a **4.5%**
+fence catch rate. **Schema-safety and citation-safety are unrelated properties and rule 4 only ever measured
+the first.** The new half: before taking an advance, re-resolve every corpus citation whose path lands in
+the advancing repo at the new ref, and record moved/dead/held. It is bounded and cheap — the whole set is
+**23**. Repair belongs to the **advancing iter**, as P3's *"the iter that detects the move re-points, in
+that iter"* already says for refs. `FIX-M257x-iter58-mainline-shift` (**21 of 22** outstanding) is the
+retrofit case.
+
+**`D-M257x-59-4` — a HALF-LANDED fold gets a state of its own, and it is recorded on both sides or not at
+all.** The map has two states per row (prod / fresh local stack) and a 7-token vocabulary with **no token
+for mid-fold**, so the storage split is currently recorded **nowhere**. Measured at this open:
+
+| side | state |
+|---|---|
+| compose | `storage` moved to `profiles: [storage-legacy]` — **not** in `core`, so a default bring-up never starts it; rationale in-comment at `docker-compose.yml:130-133` |
+| compose env | **`STORAGE_RPC_ADDR` is set nowhere** — absent from `docker-compose.yml` and from `.env_example` |
+| `repos.yml` | `storage` **still present** — still cloned |
+| app `v1.366.0` | **still reads it**: `main.go:446`, `:524`, `:992`; and **hard-requires** it in two tools — `cmd/academyImport/main.go:235` and `cmd/academy-asset-upload/main.go:133` both `return … "STORAGE_RPC_ADDR is required"` |
+
+So on every stack we currently run green, `os.Getenv("STORAGE_RPC_ADDR")` returns the empty string and a
+storage client is constructed against it — a failure deferred to call time, not boot time. That is neither
+`live-standalone` nor `merged-into-app`. **The fix: an 8th state token (`mid-fold`) that assertion C accepts
+only when the row carries a TWO-SIDED citation** — the config side and the consumer side, each resolving.
+G6 fences the pair. **Messenger is next by the developer's own account, so this row shape will be needed
+again before it is finished being written** — which is the argument for building the state rather than
+prose-ing the storage case.
+
+**`D-M257x-59-5` — ordering: fence first, then citations, then the map's new state, then read.** Recorded in
+full below under *Next-tik direction*.
+
+### What TOK-05 keeps
+
+- **Everything TOK-04 built.** P1 (refs in every measurement), P2 (instruments as committed files), P3 (the
+  ref re-checked at close, re-pointed by the detecting iter), P4 (**derive, else fence, else declare**) are
+  unchanged and are the machinery all five decisions above run on. P4 in particular is the *reason* the
+  predicate unit works: a predicate with a derivable legal set is a P4 row-one candidate.
+- **Union-of-two readings**, the blind second reading, and **pre-commit double-reads** — the last of which
+  TOK-04 upgraded from *recommended* to **load-bearing** on same-day evidence, and which stay load-bearing.
+- **Smaller edits: deletion > minimal scoping edit > rewrite**, with added-words counted per repaired claim.
+- **Adjudicate against platform artifacts, never against another doc** — reinforced, now with the PR #14
+  result as its proof.
+- **Run an ancestry check before attributing a defect to M257x.** 2 of 5 verified findings in the
+  reconciliation were inherited `origin/main` errors, not ours; `git log -L` on the line plus
+  `git merge-base --is-ancestor` settles it, and the milestone should not be paying for `main`'s debts.
+- **Cadence against commit rate, not doc PRs** — 4 of the last month's 5 structural changes have **no
+  upstream doc PR at all**, so watching for doc PRs is watching the wrong signal.
+
+### What this revision explicitly does NOT do
+
+- **It does not re-cut clause 5, narrow it, or read it met any other way.** The user has ruled **three**
+  times: met only by a reading that returns **zero**. Predicate-scoping changes how the residual is
+  *repaired*, never how it is *graded*.
+- **It does not weaken the audit instrument.** Not one seat, rule or blindness requirement is relaxed.
+- **It does not defer the residual** to a future milestone, and does not propose closing at 4 of 5.
+- **It does not resolve `FIX-M257x-iter53-union-set`** — pending user decision, stated as such.
+- **It does not merge or cherry-pick `origin/pr-14`.** Read-only ref; the verdict stands at DO NOT MERGE.
+- **It does not edit the platform repo.** Zero platform edits, as the whole release requires.
+
+**Strategy class:** `more-granular` — and precisely inverted from what that label usually means late in a
+milestone. The four prior toks each attacked a **larger** term (instrument → prose class → coverage →
+target stability). TOK-05 goes *underneath* the claim to the predicate, which is a smaller and more specific
+object, and gets **broader** coverage as a result: one derived legal set closes 30 occurrences across 17
+files that no reading has ever named in one pass. Granularity in the unit, breadth in the reach.
+
+**Distance-to-gate context:** **4 of 5**, at platform `0dab54d` / app `v1.366.0` / rext
+`fast-build-m257x-iter-58` — all pins coherent, both trees clean, `stack-core` at its **1F/610** baseline
+(the 1 being the perishable iter-48 fixture). Clauses 1–4 hold; clause 4 remains under test and tracked the
+storage removal with **zero human action**, which is the strongest available evidence for the derive-first
+ordering this tok doubles down on. **Clause 5 is the only open one** and its **net** metric — (repaired) −
+(induced) − (newly falsified by platform movement) — last read **−72**. The honest late-milestone
+characterization: the per-pass return under a claim-unit is not small, it is **negative**, and the three
+predicate classes named above are the first residual in this milestone whose legal sets are all derivable
+today.
+
+**Cross-refs to prior TOKs:** **TOK-01** (*instrument first, then follow*) — its derived lists are why
+clause 4 tracked a live platform removal unaided; untouched and vindicated again this iteration.
+**TOK-02** (*fence the prose the way the anchors are fenced*) — TOK-05 is its thesis applied at the right
+granularity; TOK-02 fenced prose *claims*, TOK-05 fences the *predicates* claims are instances of, which is
+why the 17-file `graphql` class is one build rather than 30 edits. **TOK-03** (*repair the union, shrink the
+estimator, smaller edits*) — all three moves kept; its **premise** stays refuted (a fixed residual more
+readings can drain) and TOK-05 adds the reason: a reading can only name *instances*, never the *predicate*.
+**TOK-04** (*pin the target*) — kept whole; TOK-05 is the next term, not a replacement. TOK-04 made the
+numbers real; TOK-05 changes what the numbers are counting.
+
+**Next-tik direction** — `D-M257x-59-5`, in dependency order:
+
+1. **iter-60 = build the sibling guard (`D-M257x-59-2`) and let G1 close the `graphql`-profile class.**
+   First because it is the cheapest win available, its six denominators were measured **today**, and it
+   converts three predicate classes from prose into derivation. Watch every assertion **RED before trusting
+   it** (§8 rule 5 — collect the mutant before running it), and mutation-verify the fixtures too (rule 2).
+   **Pre-registered, therefore refutable:** G1 goes RED naming `graphql` across **17 files / 30
+   occurrences**, `cms` and `storage` as well; after repair it is GREEN and the reverse direction names any
+   of the 8 legal profiles the corpus documents nowhere.
+2. **iter-61 = land §7's citation-safety half (`D-M257x-59-3`) and spend it on the 21 outstanding
+   `main.go:N` sites.** The rule and its first application in one iter, so the rule is proven by use rather
+   than by assertion.
+3. **iter-62 = the map's `mid-fold` state + the storage row (`D-M257x-59-4`), with G6 fencing the split.**
+   Before messenger folds, not after.
+4. **Then `/developer-kit:harden-mstone-iters`** — see the recommendation below; **not due yet.**
+5. **Then the next paired reading** — the first ever taken against a corpus whose three largest predicate
+   classes are fenced rather than prose. Only then is a zero reading arithmetically reachable.
+
+**Harden recommendation (the orchestrator spawns it, not this iteration):** the counter **restarted at
+iter-58** after pass 15 closed `STABILIZED`, so it stands at **1 tik against a threshold of 10 — NOT due.**
+When it comes due it owns the new sibling guard's assertions, which are exactly the AST/call-site shape the
+three standing `HARDEN-CAP-ACCEPTED` entries said the residue needs.
