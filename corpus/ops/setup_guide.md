@@ -483,7 +483,7 @@ After the first startup, apply database schemas:
 ```bash
 make migrate
 ```
-This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation — skillpath is decommissioned into `app`, "skillpath-in-app" M502→M507, so its migrations folded into `app`'s `public` schema).
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: **`app` alone**). `cms`, `jobsimulation`, `roadrunner`, `skillpath`, `skiller` and the rest are not merely `migrations: false` — platform `d11a403` (2026-08-03) **removed their `repos.yml` entries outright**, so they are no longer cloned and own no schema. Every application table lives in `app`'s `public` schema. Fenced by `platform_predicate_guard` G5 against `repos.yml` (corrected M257x iter-77).
 
 *Verification*: Commands should complete without errors.
 

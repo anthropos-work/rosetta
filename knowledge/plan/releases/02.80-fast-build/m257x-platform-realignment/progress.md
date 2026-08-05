@@ -803,3 +803,27 @@ defect and would also explain why no amount of accessor work has helped.
   seventy-five iterations of a milestone whose entire subject is this fold. One denominator (8 vs 9
   vs 10 compose services) is left **explicitly unsettled** rather than resolved by assertion. Gate
   **4 of 5**, unchanged — see iter-76/progress.md
+- iter-77 (tik, closed-fixed): **the reach hole is closed at its cause, and the cause was not the
+  twenty-one.** The briefing's design question — *can free prose be fenced, or should the corpus be
+  restated?* — is answered **neither** (`D-M257x-77-1`), on measurements: three candidate prose
+  fences reach 71% precision / 60% recall / a rejected third, and restating would have reshaped the
+  corpus to fit a broken instrument. The hypothesis in `overview.md` was **confirmed live by
+  counterfactual**: the guard's repo vocabulary was derived from what *currently exists*, so a repo
+  left the vocabulary at the same commit it left `repos.yml` — `setup_guide.md:486` enumerated
+  *"app, cms, jobsimulation"*, the resolver dropped the removed names, compared `{'app'}=={'app'}`
+  and **passed a false claim**. *G5's effective reach was 0 of 24, not 1.* Vocabulary is now
+  HISTORICAL (14 ever · 6 now · 8 removed, from the artifact's own 9 commits, re-derived
+  independently), and **G9** is net-new reach into a construct no assertion could see — 19
+  `repos.yml:N` citations enumerated, each read **at the ref its own block names and only if that
+  ref resolves in the platform clone**. `FIX-M257x-iter76-read-union` adjudicated **before** repair:
+  4 candidate defects → **3** (`jobsimulation.md:12` is a measurement at `2adcf71`, where lines
+  17-19 *are* its block) — the **fifth** routed count in this milestone to shrink on adjudication.
+  All 3 repaired **by predicate**, plus `setup_guide.md:486`; platform `d11a403` is derived as the
+  commit that deleted both entries. A widening of `_pin_exempts` was built, measured (26 blocks, 1
+  verdict changed) and **NOT shipped** — read rather than class-matched, that verdict is a false
+  positive; reverted and pinned by 4 tests. The guard then went **RED on this iter's own repair**
+  and taught `D-M257x-77-4`: a narrowing discriminator checked *before* the verdict cost a true
+  claim and dropped graded 4→2; checked *after*, it spends no recall. §5 gains rules **37–39**
+  (historical vocabulary · discriminator order · *committing is not pushing*). rext `main` pushed —
+  13 commits had existed on one disk. 5 corpus guards GREEN, 140 guard tests, section suites at
+  baseline. Gate **4 of 5**, unchanged — see iter-77/progress.md

@@ -221,9 +221,10 @@ Make sure `.env` has the LiveKit + AWS credentials and that Postgres/Redis are r
 
 ```bash
 cd platform
-make migrate   # NOT `S=jobsimulation`. `repos.yml:17-19` sets `migrations: false`, so the
-               # migrating set is `app` ALONE. Forcing S=jobsimulation runs the frozen repo's
-               # atlas env and re-materialises the dead `jobsimulation` schema.
+make migrate   # NOT `S=jobsimulation`. `jobsimulation` has NO `repos.yml` entry at all since
+               # platform `d11a403` (2026-08-03) removed it, so the migrating set is `app`
+               # ALONE. Forcing S=jobsimulation runs the frozen repo's atlas env and
+               # re-materialises the dead `jobsimulation` schema.
 ```
 
 ## Related Documentation

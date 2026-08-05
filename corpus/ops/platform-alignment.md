@@ -1007,6 +1007,52 @@ Rules, in order of how often they actually catch something:
     undecidable** — the **fourth** consecutive routed count in this milestone to collapse when
     someone finally derived it (64 → 5, 23 → 1, 21 → 0, 92 → 0).
 
+37. **A vocabulary derived from CURRENT state is blind to removals — and removals are the drift.**
+    M257x iter-77. `platform_predicate_guard`'s repo vocabulary was `set(repos) | set(compose.services)`,
+    derived entirely from what exists **now**. So a repo left the vocabulary at the same commit it
+    left `repos.yml`, and every corpus claim naming it became unreadable **at exactly the moment it
+    became false** — the worst possible instant for an instrument to stop looking.
+
+    Live, not theoretical: `setup_guide.md:486` enumerated the `migrations: true` repos as
+    *"(currently: app, cms, jobsimulation …)"*; the name-resolver dropped `cms` and `jobsimulation`
+    as unknown tokens, compared `{'app'} == {'app'}` and **passed a false claim.** The one migration
+    claim of 24 the fence could reach was the one it read wrong: *effective reach 0, reported as 1.*
+
+    > **Where the artifact is under version control, derive the vocabulary from its HISTORY.**
+    > Here: every `- name:` ever written in `repos.yml`, across all 9 commits that touched it — **14
+    > ever, 6 now, 8 removed.** A clone too shallow to answer must report `UNMEASURED` in its reach
+    > line and say so; it must never degrade silently to the current set while implying coverage.
+
+    Generalises past repos: the identical shape hides a deleted compose service, a retired profile
+    token, a dropped env var. **Any fence keyed on a name list is only as historical as that list.**
+
+38. **A discriminator that NARROWS a fence is evaluated after the verdict, never before it.**
+    M257x iter-77, measured on the guard's own corpus. G9's ambiguous-subject rule (the citing block
+    names a repo other than the document's own subject) is correct and necessary. Placed **before**
+    grading it cost `storage.md:25` — a true, gradeable citation whose sentence merely mentions two
+    other repos in passing — and the graded count fell **4 → 2**. Placed **after**, it can only fire
+    on a citation that was already about to be reported, so it converts would-be false positives
+    into declared UNREACHED and **spends no recall at all.**
+
+    > The loss is invisible where you would look for it: a claim removed from the denominator does
+    > not appear as a missed finding, it appears as *"nothing to check."* Same rule, two positions,
+    > opposite instruments — and only the reach line can tell them apart.
+
+39. **Committing is not pushing** — the sibling of rung zero, and it fails one step earlier.
+    Rung zero (`verification.md`) says *tagging is not publishing*: a stack clones
+    `rosetta-extensions` from **origin** at a pinned tag, so a tag living only in the local
+    authoring copy is unreachable to it, and M236 lost an entire iteration to exactly that.
+
+    M257x iter-77 opened on the same failure one step up the chain: `main` held **13 commits on a
+    single disk** — 8 hardening passes and 5 fences, ~1,400 lines of guard work. Nothing a stack
+    consumed was at risk, and **that is why it survived thirteen commits**: the FATAL pin guard
+    checks what a stack *pulls*, and nothing checks what the author has not *pushed*. A pin verified
+    on origin is entirely silent about the branch it was cut from.
+
+    > **Push before you build on it, and verify with `git ls-remote`** — the same one-command proof
+    > rung zero already demands of a tag. `git log --oneline origin/main..main` is the check; a
+    > non-empty answer at the end of a session is a single point of failure, not a to-do.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

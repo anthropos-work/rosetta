@@ -11,8 +11,10 @@
 >
 > **⚠️ Precision, because the declarations disagree (v2.8 M257x).** *"There is no roadrunner service in
 > production"* overstates it: `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` and has
-> not been touched since `87d8d44` (2026-06-19, before the fold), while `repos.yml:29-31` says *"legacy — folded
-> into app"* and there is **no `roadrunner` compose service** at platform `0dab54d` to start locally. This is the **one row where prod
+> not been touched since `87d8d44` (2026-06-19, before the fold), while the platform has removed it from its own
+> clone set: `roadrunner` had a `repos.yml` entry reading *"legacy — folded into app"* as late as `2adcf71`
+> (`repos.yml:29-31` **at that ref**), and platform `d11a403` (2026-08-03) **deleted the entry outright**. At
+> `0dab54d` there is neither a `repos.yml` entry nor a `roadrunner` compose service to start locally. This is the **one row where prod
 > and the platform's own declaration contradict each other** — recorded, not resolved. Say *orphaned* (nothing
 > calls it), not *absent*. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
@@ -26,9 +28,12 @@
 > the 9 repos — the count dropped when platform `2adcf71` deleted the router entry)**
 >
 > **`jobsimulation` was previously listed above as also *removed* from both files; it is not (corrected
-> M257x iter-46).** Its GitHub repo IS archived (2026-07-31), but it remains in `repos.yml:17` **and** in
-> `docker-compose.yml:83` with `profiles: [graphql, jobsimulation, all]` — so its container **starts on a
-> bare `make up`**. That is the same orphaned-but-still-orchestrated shape as roadrunner itself, which is
+> M257x iter-46, and **superseded by the platform at iter-77**).** Its GitHub repo IS archived (2026-07-31), and
+> as late as `2adcf71` it did remain in both files — `jobsimulation`'s entry at `repos.yml:17-19` and
+> its service at `docker-compose.yml:83`, with
+> `profiles: [graphql, jobsimulation, all]`, **at that ref** — so its container then still started on a bare
+> `make up`. Platform `d11a403` (2026-08-03) removed **both**: at `0dab54d` there is no `jobsimulation`
+> `repos.yml` entry and no `jobsimulation` compose service, so nothing of it starts. That is the same orphaned-but-still-orchestrated shape as roadrunner itself, which is
 > why listing it as removed contradicted `:26` of this very blockquote, plus
 > `../architecture/architecture_overview.md:188` and `README.md:20-21`.
 >
