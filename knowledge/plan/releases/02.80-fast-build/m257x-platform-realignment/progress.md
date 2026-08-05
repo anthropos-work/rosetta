@@ -873,3 +873,55 @@ defect and would also explain why no amount of accessor work has helped.
   which had silently opted out of all three by resolving refs instead of calling `_pin_exempts`.
   157 guard tests, 5 corpus guards GREEN, stack-core 1F/819. Gate **4 of 5**, unchanged —
   see iter-79/progress.md
+- iter-80 (tik, measurement-shaped, + **harden pass 19**): **the seventh routed count is the first
+  that did NOT collapse — and clause 5's instrument was never the fence.** The run opened on a
+  framing question: if *free prose is not fenceable* and *the corpus should not be restated* both
+  stand, then 20 of 23 migration claims are permanently outside the fence family's reach, and clause
+  5 is either measured by something else or the milestone needs a TOK. **It is measured by something
+  else, and this milestone has conflated the two before.** Clause 3's instrument is
+  `platform_predicate_guard` + `platform_alignment_guard` (**MET**, 5 corpus guards GREEN); clause
+  5's is the **graded READ** — 14 blind seats over the 40 files of `corpus/services/**` +
+  `corpus/architecture/**`, frozen at iter-41's briefing and stored as
+  `instrument/briefing-iter76-AS-RUN.md`. G5's printed reach (**1 enumerated + 22 free-prose
+  UNREACHED + 1 ref-pinned of 24**) is **not clause 5's denominator and never was**: the fence stops
+  a repaired claim from regressing, the READ measures the gate. Both prior conclusions stand and
+  neither closes clause 5 off. **The measurement:** `FIX-M257x-iter76-read-union` adjudicated in
+  full — **152 booked → 140 UPHELD / 12 REJECTED / 0 UNSETTLED, 92.1 %**, four parallel
+  adjudicators each re-deriving from the clones rather than from any prior verdict. The six counts
+  before it collapsed (**64→5, 23→1, 21→0, 92→0, 4→3, 145→3**), which is precisely why iter-76
+  routed its 77/75 instead of repairing it and made *"adjudicate before repairing"* binding; the
+  prior was *"it will collapse"* and **it did not**. That prior was well-earned and it now has a
+  counter-example — the one that decides the gate. iter-76's own hedge (the *"past the end of a
+  271-line file"* class making ~150 *"an upper bound, not a work item"*) is now measured: that
+  systematic FP class is **4 of the 12 rejections, not most of the 152**. The other rejection
+  mechanisms are new and worth carrying: a **pin in a subordinate clause**, **ref-relative truth read
+  as self-contradiction** (two statements 58 lines apart, both true, at `9d00a313` and `b948604` —
+  adjacency is not co-reference), and an **emphatic scalar scoped by its own argument**. **The path
+  to clause 5 is now concrete and unblocked for the first time:** the 140 dedupe to **11 predicates**
+  (all four adjudicators converged independently; P1 — *"the cms/jobsimulation/roadrunner containers
+  still start"* — is ~47 findings across 6+ files), and all three binding conditions on the repair
+  are discharged (adjudication done here; reach hole closed by iters 77–79; repair-by-predicate is
+  what the 11 enable). **Repair the 11, then re-read. Not a TOK** — and the three-run instrument
+  stretch was *on* the critical path, being the milestone's own booked precondition, while
+  continuing it would not be. **Harden pass 19 RUN** (deferred three times, not a fourth), scope
+  iter-69…79, closing `CHECK-M257x-iter79-three-valued-discriminators`: swept every
+  subprocess-derived discriminator in `stack-core`; **most were already three-valued and said so** —
+  iters 77–79 taught the module the rule and it mostly learned it — but **`_reads_at_ref` had not**,
+  publishing two outcomes where `git grep` has three, so an unreadable object store reported *"the
+  consumer side reads no `*_RPC_ADDR`"* with `app_consumer_side == "measured"`: the `|| echo 0`
+  signature M257 opened on, one level down, inside the guard built to end it, **in the branch
+  adjacent to the comment that states the rule** — the fifth *"author violated the rule while
+  writing it."* Reachability **proven not argued**, and the upstream guard provably does not cover
+  it: `rev-parse --verify` answers from the **commit** object (so it correctly catches a shallow
+  clone) while `git grep` needs the **tree**, so a corrupt/unreadable tree object passes one and
+  fails the other with rc 128 — built and reproduced. **3 mutants, 3 kills, 3 distinct signatures**,
+  collected before running, including the rc-1 **control** that stops the fix from becoming *"treat
+  every non-zero rc as unmeasurable"* and a provenance-silencing mutant (pass 18's *"a reporting path
+  with no mutant is a docstring"*). **157 → 160 tests.** Also raised, and it is not a documentation
+  defect: `storage.md:55,:154,:181` promise local private storage is sandboxed to `/tmp` while
+  `docker-compose.yml:82` sets `STORAGE_S3_BUCKET=production-storage2024…` on **`backend`**, read
+  straight into `NewManager` — **local private writes land in a production bucket**
+  (`DEF-M257x-iter80-storage-prod-bucket`, high, escalated; not actioned, the platform half is a
+  platform-repo question). 160 predicate tests, 5 corpus guards GREEN, stack-core's only non-green
+  the known perishable iter-48 fixture; pin stays `fast-build-m257x-iter-67`. Gate **4 of 5**,
+  unchanged — see iter-80/progress.md

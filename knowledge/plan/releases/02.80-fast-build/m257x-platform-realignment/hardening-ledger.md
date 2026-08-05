@@ -1503,3 +1503,76 @@ run, 29 RED + 1 declared-unreachable survivor**, and **1 pre-existing mutant re-
 disarmed it.
 
 **Flake gate:** re-run from scratch after the fix.
+
+## Pass 19 — 2026-08-05 — incremental
+
+**Iters hardened this pass:** iter-69 … iter-79 (11 tiks — the guard-assertion window: G9, G10, the
+`ref_resolves_in` / `pin_dates_a_platform_claim` helper, and iter-79's `can_resolve_refs`)
+**Tiks covered since prior pass:** 11 (pass 18 closed at iter-68)
+**Deferred:** no. This pass had been deferred three consecutive runs; it ran.
+
+**The dimension: the routed `CHECK-M257x-iter79-three-valued-discriminators`.** iter-79 closed a
+three-valued hole in `pin_dates_a_platform_claim` and generalised the rule from its own defect —
+***every derived discriminator has three outcomes: yes, no, and cannot-tell*** — then routed the
+sweep for siblings to a harden pass rather than widening in place. This is that sweep.
+
+**Swept surface.** Every subprocess-derived discriminator in the `stack-core` guard family
+(`grep -rn returncode --include='*.py'`, 7 guards + `buildbench`, tests excluded). Most were already
+three-valued and said so in their own prose — `repos_yml_history` returns `(set(), "UNMEASURED")`,
+`app_rpc_reads` returns `None` for an absent clone with *"None is not zero"* in the docstring,
+`compose_counts_at` returns `None`, `_reads_at_ref`'s neighbour at `:762` explicitly reasons about
+rc 1. That is the pass's main finding and it is a good one: **iters 77–79 taught this module the
+rule, and the module mostly learned it.**
+
+**One sibling had not.** `_reads_at_ref` — the function whose own comment reasons about rc 1 —
+published **two** outcomes where `git grep` has three:
+
+```
+if r.returncode not in (0, 1):        # 1 == no match, which is a real answer
+    return out                        # <-- the SAME empty dict as rc 1
+```
+
+So a clone whose object store cannot be read reported **"the consumer side reads no `*_RPC_ADDR`"**
+under a confident `origin/main@<sha>` provenance. `res.reach["app_consumer_side"]` read `measured`.
+That is the `|| echo 0` signature M257 opened on, one level down, in the guard built to end it —
+and it is *the same author, the same window, the same rule, missed in the adjacent branch of the
+function that states the rule*. The **fifth** occurrence this milestone of *"the author of a newly
+written rule violated it while writing it."*
+
+**Reachability was PROVEN, not argued — and the existing upstream guard does not cover it.**
+Pass 18's own lesson (*"when two controls return the same exit code, adding one is never free"*)
+makes this the load-bearing question, so it was answered by construction before any code changed:
+
+| condition | `rev-parse --verify` (what `app_ref_sha` runs) | `git grep <sha>` | covered? |
+|---|---|---|---|
+| shallow clone, sha absent | **fails** → `unresolvable:` | — | **already covered** |
+| unreadable / corrupt tree object | **succeeds** | **rc 128** *"unable to read tree"* | **NOT covered** |
+
+`rev-parse` answers from the **commit** object; `git grep` needs the **tree**. Reproduced with a
+built repo + `chmod 000` on the loose tree object: sha resolves, grep returns 128, guard returned
+`{}`. Same shape for a partial clone whose promisor is unreachable.
+
+**Fixed** so the three outcomes are three values: rc 1 → `{}` (a real answer), rc ≥ 2 → `None`,
+propagated by `app_rpc_reads` as provenance `unreadable:<ref>@<sha>`. Deliberately **not** a
+fall-through to the next AUTO candidate — answering a question about `origin/main` with a reading of
+`HEAD` is §5 rule 7.
+
+**3 mutants, 3 kills, 3 distinct signatures**, collected before running (§8 rule 5):
+
+| mutant | signature |
+|---|---|
+| restore the pre-fix two-valued collapse | `'unmeasured' != 'measured'` — *the defect itself, named* |
+| over-correct: every non-zero rc → cannot-tell | `{} != None` — caught by the **control** test, which exists so the fix is not "treat rc 1 as unmeasurable" |
+| verdict right, provenance silent about **why** | `False is not true : <sha>@<sha>` — pass 18's *"a reporting path with no mutant is a docstring"*, applied |
+
+**+3 tests** (157 → **160** in `test_platform_predicate_guard.py`), including the rc-1 control, which
+is the one that keeps the fix honest: without it, a change making the guard unmeasurable whenever
+the fold *completed* would pass identically.
+
+**Flake gate:** full `stack-core` run before and after; the pre-existing `1F`
+(`test_claim_twin_guard_iter48_answer_key`, the known perishable iter-48 fixture) reproduces
+unchanged and is the only non-green.
+
+**Routed-forward queue:** RF-2, RF-3, RF-7…RF-14 unchanged — none is in this pass's scope
+(all Playthrough/seeder surface; this window was guard code).
+`CHECK-M257x-iter79-three-valued-discriminators` is **CLOSED** by this pass.
