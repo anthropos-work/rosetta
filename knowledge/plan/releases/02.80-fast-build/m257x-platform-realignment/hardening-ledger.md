@@ -1678,3 +1678,68 @@ unearned-GREEN paths not yet closed: `repair_reach_guard` exits 0 printing *"eve
 reached"* over an all-ungraded ledger; `unreadable_repo_claim_guard`'s "PREMISE LIFTED" is an exit 0 the
 family reads as GREEN; and `guard_family --allow-not-run` prints *"OK — every member of the census was
 run and returned green"* immediately after printing that N were not run.
+
+## Pass 21 — 2026-08-05 — incremental
+
+**Iters hardened this pass:** iter-80 … iter-94 (same window; the dimension is different)
+**Tiks covered since prior pass:** 0 (second pass of the same session)
+
+**The dimension: the family-wide anti-vacuity sweep.** iters 91–94 gave three guards a floor **one at a
+time**, each as a reaction to a specific symptom. The sweep nobody had run is the one that asks the same
+question of all seventeen. Three more paths where a guard publishes a verdict over a universe it never
+examined — and the family records GREEN.
+
+**1. `repair_reach_guard` printed *"every booked finding was reached or dispositioned"* over a graded set
+of ZERO.** Controls 1 and 2 guard the INPUTS (empty ledger, empty diff). Nothing guarded the OUTPUT of
+classification: `graded` is `TOUCHED + WAIVED + UNREACHED`, and `NO_ANCHOR` (the `**Anchor:**` bullet
+would not parse) and `OUT_OF_TREE` are in **neither** `graded` nor `UNREACHED`. A ledger of 152 findings
+whose anchor-bullet shape drifted classifies 152× `NO_ANCHOR`, the reach line is suppressed by
+`if graded:`, `bad` is empty — and the guard exits 0 saying all 152 were reached. The parser is
+demonstrably fallible: the shipped fixture already yields 4 no-anchor + 1 out-of-tree. **The same hole
+swallows a shrinking denominator** — 151 no-anchor + 1 touched prints `reach 1/1 = 100.0%` — a hazard this
+module's own tests *name in prose* (*"a silently shrinking denominator is how a reach number flatters
+itself"*) and never assert.
+
+**2. `repair_reach_guard`: `git ls-tree` failing silently DISABLED the out-of-tree classification.**
+`if rc == 0: tree_files = …`, else left `None`, and `None` means *do not restrict* downstream. The
+`_reads_at_ref` shape pass 19 fixed, one guard over, in the same module family. Now fatal, quoting git's
+own stderr. Not constructible from a bad ref — the diff control refuses first, correctly — so the test
+injects at the single call site.
+
+**3. `unreadable_repo_claim_guard`: "PREMISE LIFTED" was an exit 0 the family read as GREEN.** Measured
+through the real `guard_family.run_one` with a clones root containing `infrastructure`: **rc=0,
+verdict=GREEN** — a guard that scanned zero sites counting toward the family's green total. Now exit 2 in
+the family's own vocabulary, which also makes the tripwire loud: the day `infrastructure` joins a clone
+set the family goes UNMEASURED until somebody measures those declarations and retires the fence, which is
+what the guard's own class docstring says should happen. The existing test pinned the 0; it now pins both
+halves with the measurement in its docstring. **Also:** its anti-vacuity floor counted a different
+universe from its findings (`README.md` in the findings scan, absent from the denominator), so a
+construct living only in `README.md` produced a real finding **and** `total == 0`, and the floor fired
+first — exit 2 over a violation the guard was holding.
+
+**4. `guard_family`'s summary sentence contradicted the line above it.** With `--allow-not-run` it printed
+`N guard(s) NOT RUN and accepted` and then, unconditionally, **`OK — every member of the census was run
+and returned green.`** The second is false whenever the first prints, and the second is the one that gets
+quoted forward — this milestone has quoted a family green forward more than once. `--allow-not-run` is
+documented to RECORD the gap, never hide it; the summary hid it in the same breath the line above
+disclosed it.
+
+**A survived mutant, and it changed the design.** A dedicated *"the tree listing was empty"* refusal could
+not be killed: with an empty `tree_files`, `classify` marks every anchor out-of-tree, the graded set
+empties, and control 3 refuses anyway — naming `out-of-tree=<n>` while it does. **Pass 18's lesson applied
+rather than re-learned:** two controls on one exit code buy an unreachable branch and spend a working
+mutant. The branch was removed, the reasoning left in its place, and the test now pins the OUTCOME and
+names its enforcer. This is the second consecutive session in which that rule has changed a decision.
+
+**Tests added:** +12 (`test_repair_reach_guard.py` 16 → 21, `test_unreadable_repo_claim_guard.py` 10 → 13,
+`test_guard_family.py` 31 → 33).
+**Mutants:** 8 run, 7 killed + 1 survivor that was correctly resolved by deleting the redundant control.
+**Bugs surfaced + fixed inline:** 4, all in `83637c6`.
+**Instrument end-to-end after the changes:** `14 GREEN · 0 RED · 0 could-not-check · 3 not-run` over 17
+members, corpus `5a1646718`, platform `0c91421df` (origin/main in sync, fetched 92m ago), and the summary
+line now reads *"OK with gaps — 14 of 17 … This is NOT a whole-family green."*
+
+**Stop condition:** continue-to-next-pass — the UNMEASURED path `platform_alignment_guard` gained at
+iter-91 still has no end-to-end `main() == 2` test, `guard_family`'s `fetch_age_min` provenance field is
+unpinned, and the family's CANNOT-CHECK detection is a content sniff over merged stdout+stderr that has
+never been tested against a guard which echoes corpus prose.
