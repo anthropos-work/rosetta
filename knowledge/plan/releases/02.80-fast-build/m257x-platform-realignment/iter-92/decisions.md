@@ -64,6 +64,32 @@ sides*, which is a different and more honest epistemic position than the corpus 
 neither is asserted. This is the deferred-by-rule boundary the brief names, respected rather than argued
 past.
 
+## `D-M257x-92-5` — the class was FIVE documents deep, and it took two guard-driven rounds to reach the bottom
+
+`D-M257x-92-2` named the class and the iter commit then **committed it, twice, in the act of fixing it.**
+`repair_leak_guard` fired on that commit:
+
+| round | guard verdict | sites left standing |
+|---|---|---|
+| the iter commit | **RED** | `dependency_map.md:31`, `cms.md:74` |
+| the first repair | **RED** | `external_services.md:175`, `storage.md:139` |
+| the second repair | **GREEN** | — |
+
+So the single claim *"`cms`'s module is still the declared rollback path"* had **six** homes —
+`backend.md`, `CLAUDE.md`, `dependency_map.md`, `cms.md`, `external_services.md`, `storage.md` — and
+**only the fenced map carried the hedge.** The count is now measured rather than asserted, and it is the
+sharpest possible evidence for the class: the iter that *named* "fencing a document does not fence its
+paraphrases" could not itself finish the repair in one pass, and needed the guard twice to find the floor.
+
+Two lessons, both cheap and both earned here rather than reasoned:
+
+1. **Run `repair_leak_guard` at the commit, then run it AGAIN after the repair.** Its scope is the diff, so
+   a repair commit introduces a *new* set of candidate shingles and can surface sites the first run could
+   not see. One green run is not the fixpoint; two consecutive greens are. (§8's *run the fence at the
+   COMMIT* said when to run it, not how many times.)
+2. **A claim's restatement count is not guessable.** The estimate at the point of naming the class was
+   "backend.md and CLAUDE.md". It was six.
+
 ## `D-M257x-92-4` — iter-91's new fence caught its own author within the hour
 
 The map edit above introduced a citation reading `` `main.tf:39` `` instead of `` `cms/terraform/main.tf:39` ``.

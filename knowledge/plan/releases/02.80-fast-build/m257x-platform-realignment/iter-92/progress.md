@@ -60,6 +60,26 @@ platform_alignment_guard  CANNOT-CHECK  rc=2
 the map would have shipped a dead citation under a green fence. First live catch of the third verdict, and
 a positive control that arrived for free: proven discriminating on real prose, by nobody's construction.
 
+## The class was SIX documents deep, and the guard found the floor in two rounds
+
+`repair_leak_guard` fired on the iter commit itself — the commit that had just claimed to fix this class:
+
+| round | verdict | sites left standing |
+|---|---|---|
+| the iter commit | **RED** | `dependency_map.md:31`, `cms.md:74` |
+| the first repair | **RED** | `external_services.md:175`, `storage.md:139` |
+| the second repair | **GREEN** (and green again over the whole 3-commit range) | — |
+
+The single claim had **six** homes — `backend.md`, `CLAUDE.md`, `dependency_map.md`, `cms.md`,
+`external_services.md`, `storage.md` — and **only the fenced map carried the hedge.** The estimate when the
+class was named was "two files." It was six. **A claim's restatement count is not guessable**, and the iter
+that named the class could not finish it in one pass.
+
+**Method note earned here:** `repair_leak_guard`'s scope is the *diff*, so a repair commit introduces new
+candidate shingles and can surface sites the previous run could not see. **One green run is not the
+fixpoint; two consecutive greens are.** §8's *run the fence at the COMMIT* says when to run it, not how
+many times.
+
 ## Close — 2026-08-05
 
 **Outcome:** the M810 sweep was measured as already complete and NOT re-run; the two real residual defects

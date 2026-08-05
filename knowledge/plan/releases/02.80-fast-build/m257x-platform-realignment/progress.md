@@ -1319,5 +1319,11 @@ defect and would also explain why no amount of accessor work has helped.
   own author within the hour**: the map edit first went in citing `` `main.tf:39` `` instead of
   `` `cms/terraform/main.tf:39` `` → `platform_alignment_guard CANNOT-CHECK rc=2`. **Before iter-91 that
   would have printed as unresolvable and exited 0 GREEN**, shipping a dead citation under a green fence —
-  the first live catch of the third verdict, and a positive control nobody had to construct. Gate **4 of
-  5**, unchanged — see iter-92/progress.md
+  the first live catch of the third verdict, and a positive control nobody had to construct. **And the class
+  was SIX documents deep:** `repair_leak_guard` went RED on the iter commit itself (the commit that had just
+  claimed to fix it), naming 2 more sites; RED again on the first repair, naming 2 more; GREEN on the second.
+  The single claim lived in `backend.md`, `CLAUDE.md`, `dependency_map.md`, `cms.md`, `external_services.md`
+  and `storage.md`, and **only the fenced map carried the hedge** — the estimate when the class was named was
+  "two files". **A claim's restatement count is not guessable**, and the guard's scope is the DIFF, so a
+  repair commit surfaces sites the previous run could not see: **one green run is not the fixpoint, two
+  consecutive greens are.** Gate **4 of 5**, unchanged — see iter-92/progress.md
