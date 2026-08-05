@@ -136,7 +136,7 @@ storage sync <source> <dest> [--dry-run]      # bulk migrate
 
 * **Upstream consumers**: **`app` only** — the jobsimulation domain (recordings, simulation documents),
   the cms domain (content assets, media) and app itself (user files, profile images) all call from
-  inside the `backend` binary. There are no `jobsimulation`/`cms` containers left to call anything — `d11a403` deleted both compose services and both `repos.yml` entries. In prod their fates now differ: `cms`'s ECS module survives as the rollback path (teardown still **M810**), while `jobsimulation`'s ECS service is already destroyed (`6092c6d2` — M810 landed for that row).
+  inside the `backend` binary. There are no `jobsimulation`/`cms` containers left to call anything — `d11a403` deleted both compose services and both `repos.yml` entries. In prod their fates now differ: `jobsimulation`'s ECS service is already destroyed (`6092c6d2` — M810 landed for that row), while `cms`'s ECS module survives **in cms's own repo** at `service_desired_count = 0` — but its prod state is **UNMEASURABLE** (`6efa1d5` deleted cms's build workflow saying the ECR *"is decommissioned (M810)"*, and the deletion itself lands in `infrastructure`, never in a clone set).
 * **Downstream**: AWS S3 (production), CloudFront (public bucket), `colony` shared library, `proto` for RPC contracts
 * **No outbound RPC** to other platform services — storage is a leaf
 

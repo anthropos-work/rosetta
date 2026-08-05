@@ -172,7 +172,7 @@ containers. Three are profile-less and so in *every* selection — `postgresql` 
 `common.yml`) and `sentinel` — and two are the actual `core` members, `backend` (`docker-compose.yml:110`)
 and `gotenberg` (`:183`). **There is no `cms`, `jobsimulation` or `roadrunner` container to start** (deleted by `d11a403`, with their `repos.yml` entries), **and no `storage`,
 `messenger` or `customerio-sync` one either** (deleted by `838d907`, which also dropped `storage` + `messenger` from `repos.yml`). What survives
-is a *production* terraform module — **and not the same one for each**: `cms`'s is still the declared rollback path at `service_desired_count = 0` (`cms/terraform/main.tf:39`, teardown still **M810**), while **jobsimulation's ECS service is already destroyed** (`6092c6d2` deleted the `module "jobsimulation"` block — M810 landed for that row) — plus a frozen repo on disk. Neither is a container:
+is a *production* terraform module — **and not the same one for each**: `cms`'s is still declared **in its own repo** at `service_desired_count = 0` (`cms/terraform/main.tf:39`) — though `6efa1d5` (2026-08-04) deleted cms's build-production workflow saying *"the cms ECR repository is decommissioned (M810)"*, so the two measured facts point opposite ways and the prod-side state is **UNMEASURABLE** (the deletion lands in `infrastructure`, never in a clone set) — while **jobsimulation's ECS service is already destroyed** (`6092c6d2` deleted the `module "jobsimulation"` block — M810 landed for that row) — plus a frozen repo on disk. Neither is a container:
 
 ```mermaid
 graph TB
