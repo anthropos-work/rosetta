@@ -69,13 +69,19 @@
 > * **Caching** — the Directus item cache still lives in its own Redis DB, `REDIS_CMS_CACHE_INDEX` (5).
 > * **Studio** — the Python `anthropos-studio-room` project is now pulled into the **`app`** image via the CI
 >   `additional_repo` mechanism (app v1.360.1), the same way `cms` used to do it.
-> * **Infrastructure** — the **rollback path is intact and takes no traffic**: `cms/terraform/main.tf:39`
->   still reads `service_desired_count = 0` in an otherwise-whole 191-line module, so the image and task
->   definition stay declared and a revert is a one-line change plus an apply. **This is the one M810 row
->   that has not moved** — jobsimulation's ECS service was destroyed outright at `6092c6d2`, and generalising
->   that to `cms` is exactly the mistake [`platform-migration-status.md`](../architecture/platform-migration-status.md)
->   fences. Whether `infrastructure/terraform/production/services.tf` still declares `module.cms_euwest1` is
->   **not visible to this corpus** — the `infrastructure` repo has never been in the clone set.
+> * **Infrastructure** — **this repo's own module block has not moved**, and that is all that can be said
+>   from here: `cms/terraform/main.tf:39` still reads `service_desired_count = 0` in an otherwise-whole
+>   191-line module, so the image and task definition stay declared *in this repo* and a revert of *this
+>   file* is a one-line change plus an apply. Jobsimulation's ECS service was destroyed outright at
+>   `6092c6d2`, and generalising that to `cms` is exactly the mistake
+>   [`platform-migration-status.md`](../architecture/platform-migration-status.md) fences.
+>   **⚠️ Do NOT extend "the module block has not moved" to "the rollback path is intact".** `6efa1d5`
+>   (merged `f38c0c4`, 2026-08-04) deleted this repo's build-production workflow under the subject *"the cms
+>   ECR repository is decommissioned (M810)"*, because it *"would try to push an image into a registry that
+>   no longer exists"* — so the two measured facts in this repo point opposite ways. Whether
+>   `infrastructure/terraform/production/services.tf` still declares `module.cms_euwest1` is **not visible to
+>   this corpus** — the `infrastructure` repo has never been in the clone set — and it is now not visible
+>   *with evidence on both sides*, which is the honest state: report both, assert neither.
 > * **Repo** — the `cms` git repo still exists but is **frozen/legacy**; make changes in `app`.
 >
 > For current documentation of this domain, see [Backend (`app`)](./backend.md).
