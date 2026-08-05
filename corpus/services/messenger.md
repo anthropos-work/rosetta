@@ -74,11 +74,11 @@ Messages carry user info, template ID, and template params; the body is rendered
 
 ### What triggers Messenger?
 
-Most messenger sends are reactive — driven by **Redis Streams** events from other services (`jobsimulation`, `cms`, `backend`). The corresponding flow handlers in `internal/flow/` decide whether a stream event should produce an email, what template to use, and whether to apply staleness guards (e.g., for job-sim completions it drops the email if the session ended >2h ago, or has no end time and started >12h ago — `internal/flow/jobsimulations.go:140-151`). See `internal/flow/jobsimulations.go` for examples.
+Most messenger sends are reactive — driven by **Redis Streams** events on the `jobsimulation`, `cms` and `backend` streams. The stream *names* outlived the services: since the merges they are published from inside `app` (e.g. the `CMS_STREAM` publisher at `app/main.go:1095`, and the whole subscriber stream binding at `:1478-1484` @ `app` `9d00a313` v1.367.0), so there is no separate producer service in compose behind any of them. The corresponding flow handlers in `internal/flow/` decide whether a stream event should produce an email, what template to use, and whether to apply staleness guards (e.g., for job-sim completions it drops the email if the session ended >2h ago, or has no end time and started >12h ago — `internal/flow/jobsimulations.go:140-151`). See `internal/flow/jobsimulations.go` for examples.
 
 ## Dependencies
 
-* **RPC clients**: messenger calls out to `cms`, `backend` (users + organizations), `skiller` (a surface now **served by `backend`** — the skiller service was merged into app, July 2026; `SKILLER_RPC_ADDR` points at backend), and `jobsimulation`. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
+* **RPC clients**: messenger still constructs four Connect-RPC clients — CMS, backend users + organizations, skiller, and jobsimulation — but at platform `0dab54d` **all four addresses resolve to the one `backend` mux** (`http://backend:8083`, `docker-compose.yml:173`, `:174`, `:176`, `:183`, under compose's own comment at `:171-172`). The `cms` and `jobsimulation` services those clients were named for no longer exist in compose; their surfaces are registered on `app`'s RPC server. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
 * **Downstream**:
   * **Brevo API** — outbound email delivery (`BREVO_KEY`)
   * **PostgreSQL** — read-only `public` schema access for org / whitelabel lookups
@@ -98,7 +98,7 @@ cd platform
 docker compose --profile core --profile messenger up --build -d
 ```
 
-Messenger depends on `backend`, `cms`, `jobsimulation` at startup (compose `depends_on`), so bringing it up implicitly brings the rest of the stack. (skillpath was removed from this `depends_on` list when it merged into `app`.)
+At platform `0dab54d` messenger's `depends_on` is **redis, postgresql and `backend`** (`docker-compose.yml:186-192`), so bringing it up implicitly brings the rest of the stack. The `cms` and `jobsimulation` entries went with the services themselves at `d11a403`; `skillpath` had already gone when it merged into `app`.
 
 ### Run natively
 

@@ -9,10 +9,13 @@ roles* below, which this line used to contradict.) · **Measured by:** the
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
-> **This is a pointer.** The full, self-contained documentation now lives **in the clerkenstein repo's own
-> knowledge base** (added in M2b): start at `stack-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
+> **This is a pointer.** The full, self-contained documentation now lives **in the `clerkenstein/` section's
+> own knowledge base** (added in M2b): start at
+> `.agentspace/rosetta-extensions/clerkenstein/knowledge/kb-index.md` — the **authoring copy**, per *One
+> monorepo, two clone roles* below; a stack's pinned-tag clone carries the same tree at
+> `stack-demo/rosetta-extensions/clerkenstein/…`. This page
 > keeps only the platform-side orientation + the cross-links a rosetta reader needs — it deliberately does
-> **not** duplicate the repo's KB.
+> **not** duplicate that KB.
 
 > **One monorepo, two clone roles.** `rosetta-extensions` is ONE private monorepo with sections
 > (`clerkenstein`, `demo-stack`, `stack-injection`, `stack-core`, `stack-seeding`, `alignment`). It is
@@ -74,7 +77,7 @@ capabilities** — dependency-gated, so frequently *unmeasured*; see the ⚠ box
 surface (7/7 genes, `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against
 a real `colony`, pinned at **`v0.34.3`**, and satisfies its contract; added after **M3** showed *behavioural*
 alignment ≠ *deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
-The DNAs + mirror + goldens + runners live in the clerkenstein repo; the `/align-dna` + `/align-run`
+The DNAs + mirror + goldens + runners live in the `clerkenstein/` section; the `/align-dna` + `/align-run`
 skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc live in rosetta, while the
 `alignctl` harness is the `rosetta-extensions/alignment/` section (a sibling of `clerkenstein/`).
 
@@ -88,7 +91,8 @@ skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc 
 
 ## Repo structure (library-named, since M2b)
 
-The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b-D2):
+The `clerkenstein/` section is organised **one dir per mocked dependency** (M2b reorg, decision M2b-D2) —
+every dir below is a subdir of `rosetta-extensions/clerkenstein/`, not a repo root:
 
 | Dir | Mocks | What it is |
 |---|---|---|
@@ -339,7 +343,7 @@ The **live cross-machine acceptance** is **M215**. The full remote-access recipe
 [`../ops/demo/tailscale-serve.md`](../ops/demo/tailscale-serve.md); bring-up mechanics:
 [`recipe-browser-login.md §B`](../ops/demo/recipe-browser-login.md).
 
-## Read next (in the clerkenstein repo)
+## Read next (in the `clerkenstein/` section)
 
 - **`knowledge/kb-index.md`** — the KB entry point (scope, architecture, alignment, injection, coverage).
 - **`knowledge/scope.md`** — what it is/isn't + the disarmed-by-design properties.

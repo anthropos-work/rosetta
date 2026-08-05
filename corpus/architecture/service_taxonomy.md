@@ -49,16 +49,18 @@ graph TB
 - **Language**: Go
 - **Deployment**: Docker Compose with Makefile automation (local) / AWS ECS (production)
 - **Communication**: HTTP/RPC + Redis Streams
-- **Database**: PostgreSQL — **one schema, `public`, owned by `app`**, which is the only repo with migrations (`repos.yml:10-13`). `sentinel` keeps its own `sentinel` schema (`docker-compose.yml:18`, `search_path=sentinel`) **despite `migrations: false`** — the Trap-A case; the `cms`, `jobsimulation` and `skillpath` schemas are legacy husks
+- **Database**: PostgreSQL — **one schema, `public`, owned by `app`**, which is the only repo with migrations (`repos.yml:11-14`). `sentinel` keeps its own `sentinel` schema (`docker-compose.yml:18`, `search_path=sentinel`) **despite `migrations: false`** (`repos.yml:15-17`) — the Trap-A case; the `cms`, `jobsimulation` and `skillpath` schemas are legacy husks
 - **Source**: Private GitHub repositories
 
-**Services**, derived from the local docker-compose at platform `0dab54d` — **compose declares ten
-services, the default profile is `core`, and `core` starts five**: `backend`, `gotenberg` and the
-three always-on base services. **There is no `graphql` profile, and no cms / jobsimulation /
-roadrunner service of any kind.** (For four releases this table named the retired router token as the
-default selection and counted six Go services plus Gotenberg, three of them unfederated husks — long
-after that stopped being true. It was dated `@ 2adcf71`, and the date is what made it look checked.
-M257x iter-63.)
+**Services**, derived from the local docker-compose at platform `0dab54d` — **`docker-compose.yml`
+declares eight services (ten in the effective topology, once `include: common.yml` adds the
+`postgresql`/`redis` floor), the default profile is `core`, and `core` starts five**: `backend`,
+`gotenberg` and the three always-on base services. **There is no `graphql` profile, and no cms /
+jobsimulation / roadrunner service of any kind.** (For four releases this table named the retired
+router token as the default selection and counted six Go services plus Gotenberg, three of them
+unfederated husks — long after that stopped being true. It was dated `@ 2adcf71`, and the date is what
+made it look checked. M257x iter-63; the eight-declared/ten-effective split corrected in the M257x
+platform re-alignment pass, to match [`external_services.md:296`](./external_services.md).)
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
@@ -124,7 +126,7 @@ Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:80
 # Clone all repos and start all backend services
 cd platform
 make init              # Clone all repos (first time only)
-make up                # Build from local code and start (graphql profile)
+make up                # Build from local code and start (core profile — Makefile:10 PROFILE ?= core)
 make up PROFILE=backend  # Start a specific profile
 make dev S=backend       # Stop Docker container, develop natively
 ```
@@ -145,7 +147,7 @@ make dev S=backend       # Stop Docker container, develop natively
   docker-compose**: Studio-Desk, the first Tier-2 member listed below, IS in the platform compose at
   `docker-compose.yml:197` behind `profiles: [studio-desk, all]` (`:226`), so it starts on
   `make up PROFILE=studio-desk` and not on a bare `make up`. The unqualified *"not in main
-  docker-compose"* contradicted `:75` of this same file, `frontend_architecture.md:11` and
+  docker-compose"* contradicted `:79` of this same file (the Studio-Desk row), `frontend_architecture.md:11` and
   `studio-desk.md:21`; corrected M257x iter-46
 - **Purpose**: Content creation, AI-powered generation, and internal learning
 - **Users**: Internal content creators, designers, and Anthropos employees
@@ -339,7 +341,8 @@ baked against `backend`.)
 > `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30**. **There is no `:5050` on
 > a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
 > describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
-> and in the archived repo; **do not follow it as a local-development instruction.** Consistent with :61 above.
+> and in the archived repo; **do not follow it as a local-development instruction.** Consistent with `:58-59` above
+> (*"There is no `graphql` profile"*).
 > Fenced source of truth: [`platform-migration-status.md`](./platform-migration-status.md).
 
 | Property | Value |
@@ -388,12 +391,12 @@ The platform uses a **Makefile** as the single entry point. All service repos ar
 ```bash
 cd platform
 make init              # Clone all repos (first time)
-make up                # Start all backend services (graphql profile)
+make up                # Start the core selection: backend + gotenberg + the postgresql/redis/sentinel floor
 ```
 
 ### Full Platform (Backend + Frontend + Studio)
 ```bash
-# Terminal 1: All backend services
+# Terminal 1: the backend tier (core profile — backend + gotenberg + the floor)
 cd platform
 make up
 
@@ -452,5 +455,5 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in the **`app`** image, orchestrated from `app/internal/cms/studio/` (it was `cms/studio/` before cms-in-app) | Local directories |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
-| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026), Skillpath (merged into app, M502→M507) | Go | Removed from local orchestration | GitHub repos still exist |
+| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026), Skillpath (merged into app, M502→M507), **CMS, Jobsimulation and Roadrunner** (merged into app; their compose services and `repos.yml` entries deleted by `d11a403`) | Go | Removed from local orchestration | GitHub repos still exist |
 | **External** | Clerk, Directus, Cosmo Router (**prod only** — see the banner at the top of this file), AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

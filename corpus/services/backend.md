@@ -205,7 +205,7 @@ internal/
 ### Downstream dependencies
 
 * **Sentinel** — authz on every request
-* **Storage** — file uploads
+* **Object storage** — **in-process since the v9.0 fold** (2026-08-04), not a service hop: `app` constructs the private and public managers itself (`internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472` @ `app` `9d00a313` v1.367.0) and threads them to each consumer. `STORAGE_RPC_ADDR` has **0 read sites** at that ref — its 3 remaining occurrences are comments, one of which (`main.go:451`) says *"STORAGE_RPC_ADDR is gone"*. See [Storage](./storage.md)
 * **Directus** (`content.anthropos.work`) — the external content edge read by the in-process cms domain
 * **Judge0** — sandboxed code execution, called directly (`JUDGE0_BASE_URL`) since roadrunner merged in
 * **LiveKit / AWS Chime** — simulation voice + recording, for the in-process jobsim engine
@@ -225,7 +225,7 @@ internal/
 
 ```bash
 cd platform
-make up                # default graphql profile — recommended
+make up                # the default core profile (Makefile:10 PROFILE ?= core) — recommended
 # or just backend:
 make up PROFILE=backend # also starts postgresql, redis, sentinel, gotenberg
 ```
@@ -265,7 +265,7 @@ go test ./internal/askengine/...
 ## Related Documentation
 
 * [AI Architecture](../architecture/ai_architecture.md) — Bedrock routing, cost tracking
-* [CMS](./cms.md), [Jobsimulation](./jobsimulation.md) — downstream services
+* [CMS](./cms.md), [Jobsimulation](./jobsimulation.md) — the merged domains, now inside `app` (no compose service at platform `0dab54d`)
 * [Skiller](./skiller.md) — the former standalone skills-taxonomy service, merged into app (July 2026)
 * [Skillpath](./skillpath.md) — the former standalone skill-path runtime engine, merged into app ("skillpath-in-app", M502→M507)
 * [Gotenberg](./gotenberg.md) — PDF conversion sidecar

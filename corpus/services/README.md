@@ -17,8 +17,10 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 > unlike cms (`:39` = 0) and jobsimulation (`:40` = 0). It is the one row where prod and the platform's own
 > `repos.yml` contradict each other. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
-> And **three of the four** (cms, jobsimulation, roadrunner) still start CONTAINERS locally in the default
-> then-default profile as unfederated husks. At platform `0dab54d` they are **gone from compose and from `repos.yml`** as well.
+> And **none of them starts a container any more.** cms, jobsimulation and roadrunner did run locally as
+> unfederated husks, but platform **`d11a403`** (2026-08-03) deleted all three from `docker-compose.yml`
+> **and** from `repos.yml`. At `0dab54d` compose declares **8** services (10 effective, with `common.yml`'s
+> `postgresql` + `redis`) and `repos.yml` carries **6** entries — none of them these three.
 > Read [`backend.md`](backend.md) for the current shape.
 
 ## Core backend services (Tier 1 — Go)
@@ -30,7 +32,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; teardown **M810** |
 | [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
-| [`roadrunner.md`](roadrunner.md) | Roadrunner — **orphaned** (not "merged and undeployed") | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL` — but prod terraform still reads `= 1` and the container still starts locally |
+| [`roadrunner.md`](roadrunner.md) | Roadrunner — **orphaned** (not "merged and undeployed") | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL` — but prod terraform still reads `= 1` (`roadrunner/terraform/main.tf:19`), even though `d11a403` removed its local container **and** its `repos.yml` entry |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
 | [`messenger.md`](messenger.md) | Messenger | Centralized transactional email via Brevo + Liquid templates. Opt-in `messenger` profile; other services fire an RPC rather than calling Brevo |
 | [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync | One-directional background pipeline, Postgres `public` → Customer.io, for marketing automation. Opt-in profile; built from a GitHub URL, not cloned |
@@ -66,7 +68,7 @@ These describe services that no longer run. They stay because many docs still li
 | Doc | Fate |
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
-| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph. Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
+| [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph. Skill-path *content* still lives in the cms domain **inside `app`**. Heavily inbound-linked — treat as a redirect |
 | [`chronos.md`](chronos.md) | **Decommissioned** — removed from compose + `repos.yml` (platform `045857c`). **The GitHub repo is NOT archived** (last push 2026-04-23) — the corpus called it archived; the org disagrees. Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 

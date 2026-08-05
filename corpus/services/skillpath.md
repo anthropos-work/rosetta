@@ -42,7 +42,7 @@
 >   `backend` subgraph** (`app/internal/web/backend/graphql/graph/schemas/skillpath_sessions.graphqls`). The fold
 >   landed dormant at **M505**; the router owner-swap that routes `SkillPathSession` to `app` was the atomic
 >   **M506** cutover.
-> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath — skiller and the router have since left too) and from
+> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath; **6** @ `0dab54d`, after `d11a403` dropped the cms / jobsimulation / roadrunner entries too) and from
 >   docker-compose (no skillpath service); the standalone service + its terraform module were decommissioned at
 >   **M507**. Only residual env plumbing remains (e.g. the `SKILLPATH_STREAM=skillpath` Redis-stream name).
 > * **Repo** — the `skillpath` git repo still exists but is **legacy/decommissioned**, no longer deployed or
@@ -54,7 +54,7 @@
 
 * **Content-vs-runtime split (unchanged).** "Skillpath" the engine ≠ skill-path *content*. The content it runs
   against — chapters → steps, curators, the job-simulation steps, skills-to-verify, versioning — is owned by
-  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app (that env var still exists, but it addresses the husk for messenger's pre-M809 path).
+  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app (the env var still exists on `messenger`, but `d11a403` re-pointed it at **`backend`** — `docker-compose.yml:174` @ platform `0dab54d` reads `CMS_RPC_ADDR=http://backend:8083`. **M809 has landed**; there is no cms process left to address).
   This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).
 
 * **Session model.** The engine owns a hierarchical session: `SkillPathSession → ChapterSession → StepSession`,
@@ -80,8 +80,11 @@
   > It told seeders that the scoreboard reads an `app`-side mirror **`public.local_skill_path_session`** with
   > an Ent schema of its own, and that "the mirror row must be co-written." **Both mirrors were DROPPED** —
   > `DROP TABLE "local_skill_path_sessions"` at
-  > `app/terraform/migrations/20260729133514.sql:63` (and `local_jobsimulation_sessions` at `:62`), the last
-  > migration in the repo — and no `local_skill_path_session.go` Ent schema exists. A seeder following the old
+  > `app/terraform/migrations/20260729133514.sql:63` (and `local_jobsimulation_sessions` at `:62`)
+  > — and no `local_skill_path_session.go` Ent schema exists. (This note used to call that the **last**
+  > migration in the repo; it is not — **three** post-date it at `app` `9d00a313`: `20260731131307.sql`,
+  > `20260731154527_academy_chapter_progress_completed_at.sql`,
+  > `20260803143844_ai_readiness_recommendation_path.sql`. Corrected M257x.) A seeder following the old
   > text would write to a table that is not there. **Seeding the runtime `skill_path_sessions` row is now both
   > necessary and sufficient for this scoreboard.** The generalized manager-view MIRROR trap described in
   > `content-stories-routes.md` no longer applies to skill-paths.

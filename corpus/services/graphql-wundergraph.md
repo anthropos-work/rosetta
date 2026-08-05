@@ -165,7 +165,9 @@ configs still contain these rows and a reader will find them there.
 
 * **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile. **In production** they
   hit the router; **locally they hit `backend` directly** at `:8082/graphql/query`
-  (`docker-compose.yml:334,352`), because the router service no longer exists in compose.
+  (`docker-compose.yml:220` studio-desk's `VITE_GRAPHQL_ENDPOINT`, `:236` next-web-app's
+  `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` build arg — @ platform `0dab54d`; the same two constructs sat at
+  `:334,352` @ `2adcf71`), because the router service no longer exists in compose.
 * **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, `jobsimulation` and `cms`.
 * ~~**Compose `depends_on`**~~ — moot: there is no compose service. Historically `backend`, `jobsimulation`, `cms`, **`storage`** (note `storage` was **not** a GraphQL subgraph but was in the startup-order list).
 * **CI/prod**: GitHub Releases on **`anthropos-work/app` only** (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`. `ci/update-subgraph.sh:9` carries **exactly one** `gh release download`, `-R anthropos-work/app`; the `jobsimulation` and `cms` downloads were **deleted at `915da06`** when those subgraphs folded into `backend`. (This bullet claimed all three until M257x iter-49 — the two bullets above it already carried their historical fence; this one did not.)
@@ -174,9 +176,14 @@ configs still contain these rows and a reader will find them there.
 
 ### Run in Docker — **no longer possible; there is no service to start**
 
-`make up` starts the `graphql` **profile**, which since `2adcf71` contains no router. `make logs S=graphql`
-has nothing to tail and `http://localhost:5050` refuses the connection. If you are following an older
-runbook that says otherwise, the runbook predates 2026-07-31.
+`make up` starts the **default** profile, and neither the current default nor the old one contains a router:
+`2adcf71` deleted the service while `Makefile:10` still read `PROFILE ?= graphql`, and `0dab54d`
+(*"rename graphql -> core"*) then renamed the profile itself — `Makefile:10` now reads `PROFILE ?= core`.
+**⚠️ At `0dab54d` the `graphql` token appears in no `profiles:` key at all**, so asking for it does not
+error: compose **exits 0** and starts only the always-on floor (`postgresql`, `redis`, `sentinel`) — a
+silent no-op that looks like a live stack. Tailing a `graphql` service likewise has nothing to tail, and
+`http://localhost:5050` refuses the connection. If you are following an older runbook that says otherwise,
+the runbook predates 2026-07-31.
 
 ### Smoke-test the endpoint — against `backend`
 

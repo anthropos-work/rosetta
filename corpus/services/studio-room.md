@@ -32,7 +32,7 @@ Studio-Room does not run as its own deployment. Since **cms-in-app v8.0** it is 
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | Python 3.x, asyncio |
-| **Deployment** | Embedded in the **`app` (backend)** container since cms-in-app — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the cms Asynq worker on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
+| **Deployment** | Embedded in the **`app` (backend)** container since cms-in-app — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the **cms domain's** Asynq worker *inside `app`* on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
 | **AI Providers** | OpenAI, Azure OpenAI, Anthropic |
 | **Repository** | `anthropos-studio-room`, pulled into the **`app`** image by CI (was cloned into the cms repo at `cms/studio/` before cms-in-app) |
 
@@ -387,8 +387,9 @@ python gen.py --media simulation --blueprint technical.json --branch stable
 
 Orchestration is performed by the **CMS Go code**, not by studio-room itself. studio-room makes no GraphQL or Directus calls. Its outbound calls are to the **AI providers** — `services/ai.py` instantiates OpenAI / AzureOpenAI / Anthropic clients (`:1-2, 383, 530, 664`) — plus the skills taxonomy service (`api.anthropos.work`) via `services/taxonomy.py`.
 
-#### With CMS Service
-The CMS service drives the full lifecycle:
+#### With the cms domain
+The **cms domain inside `app`** (`app/internal/cms/studio/`) drives the full lifecycle — there has been no
+standalone `cms` service since cms-in-app, and no `cms` compose service at all since platform `d11a403`:
 1. Receives a GraphQL mutation requesting generation
 2. Enqueues an Asynq task and fetches the input documents
 3. Invokes `gen.py` as a subprocess (output written to `workspace/published/`)
@@ -469,5 +470,5 @@ single generation. Re-running work is avoided by **resume**, not caching: the ch
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
 - [Studio-Desk](./studio-desk.md) - Design tool that creates blueprints
-- [CMS Service](./cms.md) - Content storage integration
+- [CMS](./cms.md) — the content domain (inside `app`) that orchestrates this pipeline
 - [External Services](../architecture/external_services.md) - AI provider details

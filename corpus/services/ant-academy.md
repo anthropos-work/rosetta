@@ -88,9 +88,7 @@ graph LR
     end
 
     subgraph Core["Core Backend (Tier 1, Docker)"]
-        App[app]
-        CMS[cms]
-        Jobsim[jobsimulation]
+        App["app (backend)<br/>cms + jobsimulation are in-process<br/>domains, not containers"]
     end
 
     Academy --> Clerk
@@ -193,8 +191,11 @@ chapter title + body.
 
 ### The demo-config is applied at bring-up and must survive the demo LIFECYCLE — the durability fix (v2.6 M245)
 
-The academy's entire demo-config — the four bring-up patches (`academy-fs-published-fallback` + `-public` + `-chapter-body`
-+ `ant-academy-dev-origins`) applied to the **ephemeral clone**, plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
+The academy's entire demo-config — the **five** bring-up patches applied to the **ephemeral clone**
+(`academy-fs-published-fallback` · `academy-fs-published-public` · `academy-fs-published-chapter-body` ·
+`ant-academy-dev-origins` · `ant-academy-back-to-cockpit` — the set `demo-stack/ant-academy.sh` wires at
+`:56`, `:66`, `:75`, `:84`, `:90` and reverts on `--stop`; the M249 Back-to-Cockpit one was missing from this
+count until M257x), plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
 + the **minted** Clerkenstein publishable key + `ACADEMY_DEMO_FS_PUBLISHED=1` in the launch env) — is written and applied by
 `demo-stack/ant-academy.sh` at bring-up. But that config lives **in-process and in-clone**, and a **fresh `/demo-up` was the
 only path that reliably established it**: `ant-academy.sh`'s old "already running" branch **early-exited doing nothing** when it

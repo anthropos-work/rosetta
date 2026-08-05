@@ -134,8 +134,10 @@ framework and an engine is a small executable, the **runner**:
 > `value` is the capability's normalized return (any JSON, or `null` on error); `error_class` is a
 > stable short string naming the error kind (or `null` on success).
 
-Each engine ships exactly one runner. The toy's is `examples/toy/cmd/toyrun`; **Clerkenstein ships
-its own** in its own repo. That's the whole integration surface.
+Each engine ships exactly one runner *per surface*. The toy's is `examples/toy/cmd/toyrun`; **Clerkenstein
+ships its own** in the `clerkenstein/` **section of the `rosetta-extensions` monorepo** — not a repo of its
+own (`clerkenstein/alignment/cmd/{clerkrun,jsfapirun,expressrun,deployrun,multirun}`). That's the whole
+integration surface.
 
 ## Record / replay (golden capture)
 
@@ -190,7 +192,7 @@ The check is now real, and it **binds**:
 | **What declares it** | A DNA may carry a `consumed_surface`: a list of `{endpoint, consumer, capability \| covered_by}` — the endpoints a **real consumer actually calls**, and who calls each one. |
 | **What enforces it** | `DNA.Validate()` **rejects** a consumed endpoint that names no capability (or names one that doesn't exist). `alignctl run` calls `Validate` **before it scores anything**, so such a DNA cannot be scored at all — the missing-gene state is *unrepresentable*, not merely undetected. |
 | **How you run it** | `alignctl dna coverage --dna PATH` → exit **0** every declared endpoint has a gene · exit **2** an endpoint is uncovered **or the DNA declares no surface at all**. `gate.sh` runs it on every gate, **before** the score — but with **`--if-declared`** (see the row below), which changes what the *gate* enforces. |
-| **What the GATE actually enforces** (`--if-declared`) | ⚠ **Not the same as the bare command — do not conflate them.** `gate.sh:61` calls `alignctl dna coverage --dna … --if-declared`. That flag downgrades **exactly one** case — *"this DNA declares no `consumed_surface` at all"* — from **exit 2** to a **loud warning, exit 0**. A DNA that **does** declare a surface and leaves an endpoint **uncovered** still **fails the gate, exit 2, before a single gene is scored.** So: **a declared hole is fenced; an undeclared surface is only warned about.** The flag exists because a deployment/injection DNA has no HTTP surface to declare, and a hard stop there would be noise. |
+| **What the GATE actually enforces** (`--if-declared`) | ⚠ **Not the same as the bare command — do not conflate them.** `gate.sh:69` calls `alignctl dna coverage --dna "$base/$dna" --if-declared` (its rationale is the comment block at `:58-68`; `:61` — where this used to point — is inside that comment). That flag downgrades **exactly one** case — *"this DNA declares no `consumed_surface` at all"* — from **exit 2** to a **loud warning, exit 0**. A DNA that **does** declare a surface and leaves an endpoint **uncovered** still **fails the gate, exit 2, before a single gene is scored.** So: **a declared hole is fenced; an undeclared surface is only warned about.** The flag exists because a deployment/injection DNA has no HTTP surface to declare, and a hard stop there would be noise. |
 | **The escape hatch** | `covered_by` names a capability on **another** surface's DNA (e.g. `clerk-express-1:ClerkClientBAPI/get-organization`). It is **not** machine-verified — but it must be *written down*, which is the whole difference from the silence that hid the bug. |
 
 **And what it does NOT guarantee — stated plainly, because over-claiming this is what caused the bug:**
@@ -313,7 +315,8 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
 - **M1 (Clerkenstein backend mirror)** runs the loop: `/align-dna` authors the **Clerk DNA**
   (`clerk@2.6.0` genome), then the build drives `/align-run`'s score up to its **exit gate** (100%
   critical / ≥95% overall) by closing diverging genes. The Clerk DNA, goldens, alignment tests, mirror,
-  and runner all live in the **`clerkenstein` repo**, not here.
+  and runner all live in the **`clerkenstein/` section of the `rosetta-extensions` monorepo** — *not* a
+  repo of its own, and not here.
 - **M1b (Clerk drift detection)** reuses the framework wholesale: on a Clerk version bump, `alignctl
   dna diff` shows what changed and `alignctl run` re-scores the existing mirror against the new
   source — turning a silent break into a flagged, mechanical update.
@@ -322,7 +325,7 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   `go.mod`, `README.md`), and these scripts are Clerkenstein's, defaulting to `RUNNER_PKG=./cmd/clerkrun` and
   `DNA=dna/clerk-2.6.0.json`; they locate the sibling harness's `alignctl` via `ALIGN_DIR` (default
   `../../alignment`). The bump runbook + exit-code contract are in the
-  repo's own [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
+  section's own [`clerkenstein/knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
   [Clerkenstein](../services/clerkenstein.md)).
   > ⚠ **These scripts are run by hand, not by CI (corrected in M218; the correction itself corrected at the
   > M218 close).** This page originally described "a weekly CI workflow in the clerkenstein repo" and said
@@ -345,7 +348,7 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   DNA — `clerk-js-5` (the FAPI/browser surface) — with its own runner (`jsfapirun`) and goldens, scored
   by the same `alignctl` to the same gate (100%/100%, 9 genes). Same machinery, a new surface; the
   parameterized `gate.sh` gates it alongside the Go DNA (**by hand — there is no CI**; see the M1b note). See
-  [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
+  [Clerkenstein](../services/clerkenstein.md) (and the section's `clerkenstein/knowledge/architecture.md` for the
   browser↔backend coherence chain).
 - **M2c (`@clerk/express` backend session verification)** exercises the framework a **third** time, on the
   Node backend surface: a *third* DNA — `clerk-express-1` (**5 capabilities / 13 genes**) — with its own runner (`expressrun`)
@@ -510,7 +513,7 @@ corpus plus dev-env skills.
 
 ```
 rosetta-extensions/alignment/        (section of the extensions monorepo)
-  cmd/alignctl            run | capture | dna list|diff|validate
+  cmd/alignctl            run | capture | dna list|diff|validate|coverage   (`dna.go:20-26`)
   internal/dna            DNA model, load, validate, weight derivation
   internal/outcome        Outcome type + outcomes/golden IO
   internal/compare        the 4 operators + weighted score (divergence detection)

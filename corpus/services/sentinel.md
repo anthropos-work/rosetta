@@ -2,7 +2,7 @@
 
 ## Role & Responsibility
 
-Sentinel is the **centralized authorization service** of the platform. Its **only** live caller is **`app`** — including the jobsimulation and cms authz call sites it absorbed in-process — which reaches it over Connect-RPC to check permissions before executing operations. (The `cms` and `jobsimulation` husk containers still start and still receive `AUTHORIZATION_ADDRESS=http://sentinel:8087` at `docker-compose.yml:99,160`, but they sit off every request path.) **`messenger` is not a caller** — its compose block sets no `AUTHORIZATION_ADDRESS` and declares no `depends_on: sentinel`, and its Go source imports no authorization client at all; [`clerk-integration.md`](./clerk-integration.md) says the same ("storage, messenger — no auth"). It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+Sentinel is the **centralized authorization service** of the platform. Its **only** live caller is **`app`** — including the jobsimulation and cms authz call sites it absorbed in-process — which reaches it over Connect-RPC to check permissions before executing operations. (There are no `cms` or `jobsimulation` containers left to receive the address: platform `d11a403` deleted both compose services along with `roadrunner`, so at `0dab54d` `AUTHORIZATION_ADDRESS` is set in exactly **one** block — backend's, `docker-compose.yml:48`.) **`messenger` is not a caller** — its compose block sets no `AUTHORIZATION_ADDRESS` and declares no `depends_on: sentinel`, and its Go source imports no authorization client at all; [`clerk-integration.md`](./clerk-integration.md) says the same ("storage, messenger — no auth"). It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
 
 Sentinel does **not** handle authentication — that's Clerk's job. It also does not validate JWTs (the shared `authn` library does that in each consuming service). Sentinel only answers *"is this subject allowed to perform this action on this object?"*.
 
@@ -82,11 +82,11 @@ terraform/                      AWS ECS (base_internal_service module)
 | `OrgGetOrganizationFeatureCredits` / `OrgSetOrganizationFeatureCredits` | Manage org feature credit budgets |
 | `Reload` | Hot-reload policies from DB |
 
-Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **three** compose blocks — `docker-compose.yml:45` (**backend**), `:99` (jobsimulation husk), `:160` (cms husk) — of which only `backend` is on a request path. No other service sets it: `storage`, `messenger`, `roadrunner`, `customerio-sync`, `gotenberg`, `studio-desk` and `next-web-app` all have no such env and no sentinel dependency.
+Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **one** compose block at platform `0dab54d` — **backend**'s, `docker-compose.yml:48` (measured: 1 occurrence across `docker-compose.yml`, `common.yml` and `.env_example`). No other declared service sets it: `storage`, `messenger`, `customerio-sync`, `gotenberg`, `studio-desk` and `next-web-app` all have no such env and no sentinel dependency. The two blocks that used to carry it — the `jobsimulation` and `cms` services, plus `roadrunner` — were deleted from compose entirely at `d11a403`, so there is nothing off-path left to hold the address either.
 
 ## Dependencies
 
-* **Upstream consumers**: **`app` only** — the sole service that gates requests through Sentinel (the `cms` and `jobsimulation` husk containers still receive the address but sit off every request path; `messenger`, `storage` and `roadrunner` never call it)
+* **Upstream consumers**: **`app` only** — the sole service that gates requests through Sentinel, and the only compose block that is given its address (`docker-compose.yml:48`). `messenger` and `storage` never call it; the `cms`, `jobsimulation` and `roadrunner` services no longer exist in compose at all (deleted at `d11a403`)
 * **Downstream**: PostgreSQL (`sentinel` schema, table `casbin_rules`)
 * **No outbound RPC** to other platform services
 

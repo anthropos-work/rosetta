@@ -39,7 +39,7 @@ third-party dependency. This keeps the services consistent and small.
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
 | **Version pin** | **Split — there is no single pin.** `app` + `messenger` → **`v0.35.2`**; `sentinel` + `storage` → `v0.34.3` (archived `chronos` pins `v0.30.1`). The third pin this row used to carry — **`v0.35.1`**, for the `cms` + `jobsimulation` husk containers — went with the containers: `d11a403` deleted both from compose and from `repos.yml`, so at platform `0dab54d` the split is **two-way, not three**. Measured from each repo's `go.mod` (the four-service reading at platform `2adcf71`). |
-| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — and **only** those four. The `cms`, `jobsimulation` and `roadrunner` containers that used to appear here are **gone from compose** at `0dab54d` (`d11a403`); there is no profile that starts them and no `graphql` profile at all. Their domains run inside `app`. The archived `roadrunner` repo's own import was minimal but real while it lasted: `roadrunner/main.go:7` imported `colony` for `NewVersionConfig` (`roadrunner/go.mod:7` pinned `v0.34.3`) |
+| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger — and **only** those four. The `cms`, `jobsimulation` and `roadrunner` containers that used to appear here are **gone from compose** at `0dab54d` (`d11a403`); there is no profile that starts them and no `graphql` profile at all. Their domains run inside `app`, and the three repos are **frozen legacy** — still on GitHub as the pre-merge reference, but with no compose service, no `repos.yml` entry and nothing that starts them, so they are not importers of anything a stack runs. The `roadrunner` repo's own import was minimal but real while it lasted: `roadrunner/main.go:7` imports `colony` for `NewVersionConfig` (`roadrunner/go.mod:7` pins `v0.34.3`) |
 
 The platform framework. Each service composes its server out of colony packages:
 
@@ -66,7 +66,7 @@ colony does **not** actually enforce GraphQL rate limiting today.
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/proto` |
 | **Language** | Go (`go 1.25.0`); tooling: `buf` (CI pins `v1.57.0`), protoc-gen-go, protoc-gen-connect-go, goverter |
-| **Version pin** | one pin per repo, and the skew is **live and wider than the merge suggests**: app/messenger `v1.210.0`, cms `v1.207.0`, jobsimulation `v1.205.0`, sentinel `v1.200.0`, storage/roadrunner `v1.196.0`. The husk repos **still carry their own `go.mod`** — `repos.yml:14-19` still clones them and `docker-compose.yml:83,144` still builds them |
+| **Version pin** | one pin per repo: app/messenger `v1.210.0`, sentinel `v1.200.0`, storage `v1.196.0` — **those four are the whole of the live skew** at platform `0dab54d`, because they are the only Go repos `repos.yml` still clones. The frozen repos keep their own `go.mod` and therefore their own pins (cms `v1.207.0` @ `ca50c817`, jobsimulation `v1.205.0` @ `462343b0`, roadrunner `v1.196.0` @ `87d8d44`), but **nothing clones or builds them any more**: `d11a403` deleted all three `repos.yml` entries *and* their compose services in one commit, so those pins compile nowhere. Reading them as part of the platform's skew was the error this row used to make |
 | **Imported by** | every live Go service that does RPC (app, sentinel, storage, messenger). The cms / jobsimulation / **skiller** RPC surfaces are served in-process by `app`; **skillpath and roadrunner were REMOVED, not re-hosted** — `app/main.go` registers six Connect handlers @ `app` `b948604` v1.366.0 — five unconditionally (Users `app/main.go:1187`, Organizations `app/main.go:1188`, Skiller `app/main.go:1196`, JobSimulation `app/main.go:1204`, LabSession `app/main.go:1228`) plus `CMSService` **only when a cms RPC server was built** (`app/main.go:1212-1214`, `if cmsRPCServer != nil`) — and neither `SkillPathSessionService` nor a RoadRunner service is among them |
 
 The **single source of truth for RPC contracts**. Two layers:
@@ -101,8 +101,8 @@ e.g. `storage/internal/migration` imports `go/simulator/storage/v1` as `legacySt
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/ai` |
 | **Language** | Go (`go 1.25.0`) |
-| **Version pin** | **`v1.40.2`** across consumers (`app`, and the `cms` / `jobsimulation` husks, all agree) |
-| **Imported by** | app — i.e. every folded domain — **and, as their own direct `go.mod` requires, the still-running `cms` and `jobsimulation` husk containers** (`cms/go.mod:9`, `jobsimulation/go.mod:11`, both `v1.40.2`). Go services only — **not** Studio-Desk, which is TypeScript, and **not** roadrunner, whose only shared-lib requires are colony + proto |
+| **Version pin** | **`v1.40.2`** across every repo that requires it — `app`, and the frozen `cms` / `jobsimulation` repos — all agree |
+| **Imported by** | **`app` alone among the services a stack runs** — i.e. every folded domain. The frozen `cms` and `jobsimulation` repos still require it directly in their own `go.mod` (`cms/go.mod:9`, `jobsimulation/go.mod:11`, both `v1.40.2`), but at platform `0dab54d` neither has a compose service or a `repos.yml` entry, so nothing builds or starts them — a `go.mod` require in a repo nothing compiles is not a live import. Go services only — **not** Studio-Desk, which is TypeScript, and **not** roadrunner, whose only shared-lib requires are colony + proto |
 
 A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 `ChatCompletionStream`, `Response`, `CreateEmbeddings`, `CreateSpeech`, `OCRProcess`,
@@ -122,7 +122,7 @@ A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 >    the `ai_usage` Postgres table, fed by an `Event_AiUsage` published over Redis Streams.
 > 2. **The `ai` library does NOT select a provider.** It only exposes per-provider
 >    constructors. (And what the consumers do is not an EU-first fallback *ladder* either —
->    `external_services.md:546` retracts that chain.) Vendor selection lives in each consumer's own
+>    `external_services.md:555` retracts that chain.) Vendor selection lives in each consumer's own
 >    `internal/ai/ai.go` wrapper: an EU Azure client by default, a US Azure client gated
 >    by the PostHog flag `flag_use_azure_us`, and an Azure→direct-OpenAI fallback on
 >    HTTP 429. Anthropic is always Bedrock in `eu-west-1`.
@@ -142,7 +142,7 @@ the response (parse accordingly). Retry policy: 10 attempts, exponential backoff
 |:---------|:------|
 | **Module (standalone)** | `github.com/anthropos-work/authn` — **legacy** (tag `v1.7.0`) |
 | **Live form** | `github.com/anthropos-work/colony/authn` (absorbed into colony) |
-| **Imported by** | via colony: app — **and the cms and jobsimulation husk repos still import `colony/authn` directly** (6 and 8 files at `cms ca50c817` / `jobsimulation 462343b0`). Only the skillpath usage is fully folded in |
+| **Imported by** | via colony: app — the only service a stack runs that reaches it. **The frozen `cms` and `jobsimulation` repos still import `colony/authn` directly** (6 and 8 `.go` files at `cms ca50c817` / `jobsimulation 462343b0`), but neither has had a compose service or a `repos.yml` entry since `d11a403`, so those imports compile in no image a stack builds. Only the skillpath usage is fully folded in |
 
 Provider-agnostic authentication: verifies bearer tokens (Clerk JWTs in practice) and
 injects a typed `User`/`Organization` into request context for `net/http`, Echo, and
@@ -178,7 +178,7 @@ GraphQL servers.
 | **Module** | `github.com/anthropos-work/taxonomy` (README title: **"nodeid"**) |
 | **Language** | Go (`go 1.21.0`), **zero external dependencies** (stdlib only) |
 | **Version pin** | `v1.2.0` |
-| **Imported by** | directly: app, messenger — **and the still-running `cms` + `jobsimulation` husk containers**, which require it directly in their own `go.mod` (`cms/go.mod:13`, `jobsimulation/go.mod:15`, both `v1.2.0`, neither marked `// indirect`); indirectly (`// indirect`): storage, sentinel. **6 of the 7 live Go service repos** (app, sentinel, storage, messenger, cms, jobsimulation, roadrunner) — the sole exception is `roadrunner`, which requires only colony + proto. (The skillpath usage is folded into app.) |
+| **Imported by** | **All four Go repos a stack still clones and builds** at platform `0dab54d` — directly: app, messenger; indirectly (`// indirect`): storage, sentinel. The frozen `cms` and `jobsimulation` repos also require it directly in their own `go.mod` (`cms/go.mod:13`, `jobsimulation/go.mod:15`, both `v1.2.0`, neither marked `// indirect`) — but `d11a403` deleted their compose services and their `repos.yml` entries, so nothing builds them; they are frozen legacy, not running containers. Counted over **every** Go service repo the platform has ever cloned, that is **6 of 7** (app, sentinel, storage, messenger, cms, jobsimulation, roadrunner) — the sole exception is `roadrunner`, which requires only colony + proto. (The skillpath usage is folded into app.) |
 
 > ### ⚠️ Major correction: taxonomy is a LIBRARY, not data
 > Multiple corpus docs called this "Skills taxonomy data (60K skills, 18K roles)". That

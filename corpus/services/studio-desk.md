@@ -18,7 +18,7 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | TypeScript, Vite, Express.js (vanilla TS frontend, no framework) |
-| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (`make up PROFILE=studio-desk`; ports 9000/9100. It `depends_on` **`backend` + `cms`** — `docker-compose.yml:337-341` @ platform `2adcf71`; **not** `graphql`, which is no longer a compose service — and is built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`) |
+| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (ports 9000/9100). It `depends_on` **`backend` alone** — `docker-compose.yml:223-225` @ platform `0dab54d`, with `profiles: [studio-desk, all]` at `:226`. It *also* listed **`cms`** (`:337-341` @ `2adcf71`) until that container was deleted from compose at `d11a403`; there is no `cms` service to depend on now, and it never depended on `graphql`, which is likewise no longer a compose service. Built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`. **⚠️ Asking for `studio-desk` as the only profile exits 1** — the profile selects `studio-desk` but *not* the `backend` it depends on, so compose rejects the whole project (`service "studio-desk" depends on undefined service "backend": invalid compose project`). Use `PROFILE=all`, which selects both. |
 | **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Authentication** | Clerk |
 | **Repository** | Local `studio-desk/` (sibling repo cloned by `make init`) |
@@ -35,7 +35,7 @@ Studio-Desk is a **full-stack TypeScript application** with:
 
 2. **Backend**: Express.js API server
    - Clerk middleware for route protection
-   - GraphQL integration with CMS service
+   - GraphQL integration with the **cms domain** (in-process inside `backend`, `app/internal/cms` — there is no `cms` service)
    - Multi-provider AI integration (Azure OpenAI / OpenAI / Anthropic) for Studio Copilot
    - File upload handling
 
@@ -46,7 +46,7 @@ graph LR
     Backend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is prod-only]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
-    GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>NOT the cms husk container"]
+    GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>there is NO cms container"]
     CMS --> Directus[(Directus CMS)]
 ```
 
@@ -162,7 +162,7 @@ Studio-Desk works with these primary entities (stored via CMS → Directus):
 - npm v7+
 - Clerk account (for authentication)
 - Access to the platform GraphQL endpoint (`backend` on `:8082`; the router no longer runs locally)
-- Access to CMS service
+- Access to the **cms domain** — served by that same `backend`, not a separate service
 
 #### Environment Configuration
 
@@ -430,6 +430,6 @@ already 303s non-admin seats to the web app first. Detail + the measured table:
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
 - [Studio-Room](./studio-room.md) - AI generation pipeline
-- [CMS Service](./cms.md) - Data storage backend
+- [CMS](./cms.md) - the content layer, merged into `backend` as `app/internal/cms`
 - [External Services](../architecture/external_services.md) - Clerk and Directus details
 - [demopatch-spec §8](../ops/demo/demopatch-spec.md) - the studio-desk source patches (additive-UI injection)

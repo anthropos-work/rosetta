@@ -44,8 +44,11 @@
         catalogs, `public.` prefixes, `SET`, multi-statements), `WrapQuery` (defends four documented bypass vectors),
         `BuildCTEs` (shadows each referenced table with an org-scoped CTE via `OrgStrategy` Direct/Indirect/Global;
         `$1`=orgID, `$2`=callerUserID for self-scoped tables like `profile_histories`).
-    *   `registry.go` — the `TableRegistry` allowlist (~60 `TableDef`s across `public`, `jobsimulation.*`,
-        `directus.*`, and deprecated `skiller.*`/`skillpath.*` transition aliases that resolve to `public`).
+    *   `registry.go` — the `TableRegistry` allowlist: **60** `TableDef`s, **57** with `Schema: "public"` and
+        **3** with `Schema: "directus"`. `directus` is the only second *physical* schema — the dotted
+        `jobsimulation.*` names join the deprecated `skiller.*`/`skillpath.*` as **transition aliases that
+        RESOLVE TO the `public` tables** (`registry.go:183-195`; `jobsimulation` stays in `rewriteSchemas`
+        until M710). A dotted name here is not evidence that the schema is physically present.
     *   `executor.go` — `Engine.Execute` (the read-only per-query executor; `MaxInlineRows=200`, `MaxCellLength=400`)
         + `crossValidate`.
     *   `prompt.go` — `BuildSystemPrompt` (embeds `rules.md`; flips product framing Workforce↔Hiring; orders blocks

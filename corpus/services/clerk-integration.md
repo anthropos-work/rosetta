@@ -48,7 +48,7 @@ MFA / TOTP / passkeys · OAuth / social / SAML / Enterprise SSO (mobile is email
 ## How It Works (Deep Dive)
 
 ### 1. Authentication — the `authn` library
-All Go services authenticate through the shared **`authn`** library (now shipped inside **colony** as `colony/authn`; see [Shared Libraries → authn](../architecture/shared_libraries.md#authn)). Its Clerk provider:
+Every Go service that authenticates a user does so through the shared **`authn`** library (now shipped inside **colony** as `colony/authn`; see [Shared Libraries → authn](../architecture/shared_libraries.md#authn)). Since the merges that is **`app` alone**: of the four Go repos still in `repos.yml` @ platform `0dab54d` (app, sentinel, storage, messenger), only `app` imports `colony/authn` — measured, 129 files in `app` vs **0** in each of the other three, consistent with the tables at §3 and § *Dependent Repos* below. Its Clerk provider:
 - Verifies the session JWT against Clerk's **JWKS** (`clerk-sdk-go/v2` `jwt.Verify` + `jwks.Client`, 1-minute leeway), then `jwt.Decode`s the claims.
 - The HTTP/Echo middleware returns **401** on an invalid/missing token and otherwise injects the authenticated `User` into request context. That's authentication/route-protection — no role check.
 
@@ -70,7 +70,7 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 | Layer | Clerk's role here | Decision maker |
 |-------|-------------------|----------------|
 | `colony/authn` | verify JWT, surface claims | — (authentication only) |
-| **Backend `app`** + jobsimulation, cms | authenticate; supply `org_id` for tenant scoping | **[Sentinel](./sentinel.md)** via Connect-RPC (`OrgCheckUserPermission`, `CheckFeature`, …). `AuthRole()` has **zero** call sites on the allow/deny path. |
+| **Backend `app`** (incl. the folded jobsimulation + cms domains) | authenticate; supply `org_id` for tenant scoping | **[Sentinel](./sentinel.md)** via Connect-RPC (`OrgCheckUserPermission`, `CheckFeature`, …). `AuthRole()` has **zero** call sites on the allow/deny path. |
 | **Sentinel** | not used at all (no Clerk/authn import) | Sentinel's own Casbin policy store |
 | storage, messenger | — | no auth |
 | **next-web-app / studio-desk / ant-academy** | authenticate **and** authorize | **local app code** reading Clerk `org:admin` / membership |
@@ -88,9 +88,9 @@ Clerk ships a **separate package per framework** (Go, Next.js, Express, browser-
 
 | Repo / app | Installed Clerk package(s) | What it's for |
 |------------|----------------------------|---------------|
-| **colony** (`/authn`) — imported by every Go service | `clerk-sdk-go/v2` | Verifies the session JWT (JWKS) + reads claims. The shared auth core for all Go services. |
-| **app** (backend) | `clerk-sdk-go/v2`, `svix-webhooks/go` | Authn (via colony) + org/membership/invitation Backend-API writes + svix-verified webhook sync → Postgres + Sentinel. |
-| **jobsimulation, cms** | *(none direct — via `colony/authn`)* | Authenticate only; authorization → Sentinel. |
+| **colony** (`/authn`) — the shared auth core; among the live Go services, imported by **`app` only** | `clerk-sdk-go/v2` | Verifies the session JWT (JWKS) + reads claims. sentinel / storage / messenger import it **0** times. |
+| **app** (backend) | `clerk-sdk-go/v2`, `svix-webhooks/go` | Authn (via colony) + org/membership/invitation Backend-API writes + svix-verified webhook sync → Postgres + Sentinel. Also carries the folded jobsimulation + cms domains, which authenticate through the same middleware. |
+| **jobsimulation, cms** — *frozen legacy repos* (no compose service, no `repos.yml` entry since `d11a403`) | *(none direct — was via `colony/authn`)* | Historical: authenticate only; authorization → Sentinel. Nothing starts them. |
 | **storage, messenger** | — | No Clerk / no auth. |
 | **sentinel** | — | Does **not** use Clerk; pure Casbin authorization. |
 | **next-web-app** — `apps/web`, `apps/hiring`, `apps/integration` | `@clerk/nextjs` (+ `@clerk/localizations`) | Next.js App Router auth: `clerkMiddleware` route protection, `useAuth().getToken()` bearer, org/role gating (see deep-dive). |

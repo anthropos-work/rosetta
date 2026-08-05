@@ -9,24 +9,30 @@ This document provides a high-level overview of the Anthropos platform architect
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
+*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what a normal `make up` selects — starts **five containers**: `backend` and `gotenberg`, plus the always-on floor (`postgresql`, `redis`, `sentinel`), which declare no `profiles:` key and are therefore in every selection. Two of the five are Go services of ours: `backend` and `sentinel`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — a graph of **≥42,790 skills** across **≥22,470 job roles** (the measured *public* subset; see [Shared Libraries → the "60K / 18K" figures](./shared_libraries.md#taxonomy-figures)), vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
     *   **Sentinel**: Security and access control (the bouncer)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0`. The husk container is **gone from compose** at platform `0dab54d` — no `jobsimulation` service, no entry in `repos.yml`. Production's `module.jobsimulation_euwest1` rollback path is a separate question, not measured here.)
-    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
-    *   **Storage**: File/blob storage
-    *   **Roadrunner**: **orphaned husk** — the container still starts, but nothing calls it;
-        `backend` reaches Judge0 directly (`app/internal/jobsimwiring/wiring.go:118`)
     *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
 
-    Off by default (opt-in via Docker profile): **Messenger** (Brevo email), **CustomerIO Sync**.
+    **Domains inside Backend/App, not services.** At platform `0dab54d` none of the three has a compose
+    service, a container, a port or a `repos.yml` entry — `d11a403` (2026-08-03) deleted all three from
+    both files in one commit:
+    *   **Jobsimulation**: runs realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; the repo is ARCHIVED (2026-07-31) and prod desired_count is `0` (`jobsimulation/terraform/main.tf:40`). Production's `module.jobsimulation_euwest1` rollback path survives until **M810**.)
+    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
+    *   **Roadrunner**: Judge0 code execution — `backend` reaches Judge0 directly
+        (`app/internal/jobsimwiring/wiring.go:118` @ `app` `b948604`), so there is no hop and nothing left to start
+
+    Off by default (opt-in via Docker profile): **Storage** — `profiles: [storage-legacy]`
+    (`docker-compose.yml:134`); `app` serves object storage in-process, and compose's own comment
+    (`:131-133`) keeps the standalone service startable **only as a rollback comparison** — **Messenger**
+    (Brevo email), **CustomerIO Sync**.
     Archived (removed from local orchestration): Chronos, Intelligence.
     Production-only: **db-backup** (scheduled PostgreSQL backups).
 *   **Studio Services**: Specialized tools for content creation:
     *   **Studio-Desk**: Web app where creators design job simulations
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the `app` (backend) image** since cms-in-app — it rode in the cms container before that, and was never a standalone deployment.
-*   **Standalone Internal Apps**: Independent products that reuse platform identity (Clerk) but do not depend on the backend services:
-    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel.
+*   **Standalone Internal Apps**: Separately deployed products that reuse platform identity (Clerk) — **but not independent of the backend**:
+    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel. Its course catalog is **DB-authoritative**, read from the platform academy subgraph over GraphQL, so it degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
 *   **Frontend**: Next.js **16** applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
@@ -46,7 +52,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
 - **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ^16.2.7` across all four apps)
-- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; `cms`/`jobsimulation`/`skillpath` are legacy husks (see the Database Separation section below)
+- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router — **prod only**; local dev talks to
   `backend` directly), gRPC/Connect-RPC (internal), Protocol Buffers
@@ -57,7 +63,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `core` profile):
-1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage + Gotenberg (third-party PDF service) — **plus the three unfederated husks the default profile still starts**: `jobsimulation` (`docker-compose.yml:83`), `cms` (`:144`) and `roadrunner` (`:281`). Messenger when opted in. Dockerized. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only. So a bare `make up` gives you **six Go services**, not three.
+1. **Core Backend Services**: Backend/App (the monolith) and Sentinel, plus Gotenberg (third-party PDF service). Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage` is not among them either** — it moved to `profiles: [storage-legacy]` (`docker-compose.yml:134`) and a bare `make up` no longer selects it; Messenger and CustomerIO Sync when opted in. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only. So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
 
    Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and **cms**
@@ -90,8 +96,8 @@ graph TD
     subgraph Core["⚙️ Core Backend Services (Go)"]
         Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)"]
         Sentinel[Sentinel]
-        Storage[Storage]
-        Messenger[Messenger]
+        Storage["Storage<br/>storage-legacy profile — OFF by default<br/>(app serves object storage in-process)"]
+        Messenger[Messenger<br/>messenger profile — OFF by default]
         Gotenberg[Gotenberg<br/>PDF conversion]
     end
 
@@ -122,7 +128,7 @@ graph TD
     %% Core service dependencies
     Gateway --> Sentinel
     Gateway --> Gotenberg
-    Gateway --> Storage
+    Gateway -.->|rollback path only — not in the core selection| Storage
     Gateway --> Directus
     Messenger --> Gateway
 
@@ -142,17 +148,23 @@ graph TD
 
 #### Core Backend Services (Tier 1)
 
-Default local development set (started by `make up`, profile `graphql`):
+Default local development set (started by `make up` — profile `core`, `Makefile:10` `PROFILE ?= core`).
+Five containers; the last three declare no `profiles:` key and are therefore in **every** selection:
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026) | [→](../services/backend.md) |
-| **CMS** *(now a domain in `app`)* | Go + embedded Python (studio-room) | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
-| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
-| **Jobsimulation** *(now a domain in `app`)* | Go | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from the cms domain by ID | [→](../services/jobsimulation.md) |
-| **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
-| **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
+| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026), plus the **cms**, **jobsimulation** and **roadrunner** domains | [→](../services/backend.md) |
 | **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
+| **Sentinel** *(always on)* | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
+| **PostgreSQL** *(always on)* | Third-party image | Data store (custom image with `pgvector`) | — |
+| **Redis** *(always on)* | Third-party image | Cache, pub/sub, job queues | — |
+
+> **What used to be in this table and no longer is.** **CMS**, **Jobsimulation** and **Roadrunner** each had a
+> row here as a container; platform `d11a403` deleted all three compose services — they are **domains inside
+> `app`** now, with no service, port or `repos.yml` entry (docs: [cms](../services/cms.md),
+> [jobsimulation](../services/jobsimulation.md), [roadrunner](../services/roadrunner.md)). **Storage** had a row
+> too; it moved to `profiles: [storage-legacy]` (`docker-compose.yml:134`) and is listed below with the other
+> opt-in services.
 
 > [!IMPORTANT]
 > **Content vs. runtime state — a split-ownership model that SURVIVED the merge.** The platform separates the **content layer** (the cms domain, which wraps Directus) from the **runtime/session engines**. Since cms-in-app all of them live in the same process, but the ownership split is unchanged — the boundary is now a package boundary, not a network one:
@@ -165,6 +177,7 @@ Available but off by default (opt-in via Docker profile):
 
 | Service Name | Profile | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
+| **Storage** | `storage-legacy` | File/Blob storage management — **a rollback path only**; `app` serves object storage in-process, and compose's own comment (`docker-compose.yml:131-133`) warns that running both puts two writers on one bucket | [→](../services/storage.md) |
 | **Messenger** | `messenger` | Email notifications via Brevo (Sendinblue) | [→](../services/messenger.md) |
 | **CustomerIO Sync** | `customerio-sync` | Background data sync to Customer.io | [→](../services/customerio-sync.md) |
 
@@ -174,20 +187,26 @@ Production-only (deployed but not in local docker-compose):
 | :--- | :--- | :--- | :--- |
 | **db-backup** | Go | Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner | [→](../services/db-backup.md) |
 
-Archived / merged — **but three of these still start locally** (repos still exist):
+Archived / merged — **and since platform `d11a403` every one of them is out of local orchestration** (repo dirs
+may still exist on disk):
 
-> **⚠️ This table and the *Default local development set* table above overlap by design, and the overlap is
-> the point.** CMS, Jobsimulation and Roadrunner appear in **both**: they are merged into `app` (no
-> subgraph, prod desired_count `0`) **and**, until platform `2adcf71`, still started by the default profile as unfederated
-> husks. Only Chronos, Intelligence, Skiller and Skillpath are genuinely out of local orchestration.
+> **⚠️ This table and the *Default local development set* table above used to overlap by design, and that
+> overlap has now closed.** CMS, Jobsimulation and Roadrunner appeared in **both**: merged into `app` (no
+> subgraph, prod ECS module kept as the rollback path) **and**, until platform **`d11a403`** (2026-08-03,
+> *"chore(compose): drop roadrunner, prune dead env, repoint messenger"*), still started by the then-default
+> profile as unfederated husks. `d11a403` deleted all three compose services **and** all three `repos.yml`
+> entries in one commit — so at `0dab54d` none of them starts. (That commit's own message says roadrunner's
+> *"repos.yml entry was already gone"*; its diff deletes `- name: cms`, `- name: jobsimulation` **and**
+> `- name: roadrunner`. The diff is the fact.) Keep the *merged ≠ gone from compose* distinction in mind
+> anyway: it is a **phase**, and the next fold will pass through it too.
 
 | Service Name | Status | Documentation |
 | :--- | :--- | :--- |
 | **Chronos** | Removed via platform commit `045857c` | [→](../services/chronos.md) |
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
-| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:83`, default profile) as an unfederated husk; teardown **M810** | [→](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); ECS module kept as the rollback path. **Container still starts locally** (`docker-compose.yml:144`, default profile) and still answers `messenger`'s `CMS_RPC_ADDR` until **M809**; teardown **M810** | [→](../services/cms.md) |
+| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path. **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, so at `0dab54d` there is nothing to start; prod teardown is **M810** | [→](../services/jobsimulation.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); ECS module kept as the rollback path. **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, and re-pointed `messenger`'s `CMS_RPC_ADDR` at `http://backend:8083` (`docker-compose.yml:174`) — **M809 has landed**; prod teardown is **M810** | [→](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. **Gone locally, orphaned in prod:** at platform `0dab54d` there is **no `roadrunner` compose service at all** (deleted by `d11a403`; 8 services remain) while prod terraform still reads `= 1` | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 
@@ -243,9 +262,9 @@ Archived / merged — **but three of these still start locally** (repos still ex
 *   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in and deleted the `jobsimulation` entry in the same commit (**3 → 1**; the jobsimulation *subgraph* outlived the jobsim-in-app service merge). Nothing is aggregated any more
 *   **AI Providers**: the default clients are EU-resident, and **there is no ordered EU-first fallback
     ladder** — the chain *"Azure OpenAI EU → Azure OpenAI US → direct OpenAI"* was retracted at
-    [`external_services.md:546`](./external_services.md) and is corrected here (M257x iter-46). Inside the
+    [`external_services.md:555`](./external_services.md) and is corrected here (M257x iter-46). Inside the
     AI manager there are two US paths — a **feature flag** and a **429 retry target**, not fallback rungs —
-    but **that is not the whole set**: [`external_services.md:570`](./external_services.md) enumerates
+    but **that is not the whole set**: [`external_services.md:577-582`](./external_services.md) enumerates
     **four live** ways a request leaves the EU, of which the two outside the manager are `ANTHROPIC_API_KEY`
     and **an authored sequence with `ai_vendor` unset** — the latter reaching direct US OpenAI
     *unconditionally, on the first attempt, with no flag and no 429*. A fifth arm, **Studio-Room's own
@@ -281,13 +300,22 @@ User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)
 
 ```
 Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
-  → Connect-RPC to sentinel, storage
-  → Judge0 directly via JUDGE0_BASE_URL   (roadrunner is folded into app — no RPC hop)
+  → Connect-RPC to sentinel   (the only cross-process RPC edge out of backend on a core stack)
+  → object storage in-process   (no storage container, no STORAGE_RPC_ADDR)
+  → cms / jobsimulation / roadrunner domains in-process   (no containers, no hops)
+  → Judge0 directly via JUDGE0_BASE_URL
   → Redis Streams for async events
 ```
 
 > `roadrunner` is **not** a gRPC hop from `backend` in either column — it was folded in with jobsim-in-app and
-> `backend` calls Judge0 directly. See [`roadrunner.md`](../services/roadrunner.md) and
+> `backend` calls Judge0 directly. **Nor is `storage` one locally.** Platform **`0dab54d`** ("storage-in-app,
+> v9.0") deleted `STORAGE_RPC_ADDR` from `backend`'s env, dropped `storage` from `backend`'s `depends_on`
+> — the replacement comment reads *"storage removed at v9.0: served in-process by this container now"*
+> (`docker-compose.yml:93`) — and moved the service to `profiles: [storage-legacy]` (`:134`). The app side
+> closed at **`app` `9d00a313`** (v1.367.0): `STORAGE_RPC_ADDR` has **zero reads** there, and `main.go:451`
+> says *"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone."* (At the older `b948604`
+> v1.366.0 it is still read — `internal/jobsimwiring/wiring.go:115` — so **state the ref you mean**.) See
+> [`roadrunner.md`](../services/roadrunner.md), [`storage.md`](../services/storage.md) and
 > [`platform-migration-status.md`](./platform-migration-status.md).
 
 ### Multi-Tenancy

@@ -8,10 +8,18 @@
 > (`jobsimulation/terraform/main.tf:40` `service_desired_count = 0`), and its subgraph is gone from the
 > supergraph.
 >
-> **⚠️ But locally the husk still starts.** `docker-compose.yml:83` @ platform `2adcf71` still defines a
-> `jobsimulation` service **in the default `graphql` profile**, and `repos.yml:17-19` still lists the repo
-> (marked `migrations: false # legacy`) — even though the **GitHub repo was archived 2026-07-31**. State:
-> `running_but_unfederated`; container teardown is **M810**. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+> **✅ The husk is GONE locally too (measured at platform `0dab54d`).** There is no `jobsimulation` compose
+> service, no `jobsimulation` entry in `repos.yml` (6 entries: app, sentinel, storage, messenger,
+> next-web-app, studio-desk) and no `jobsimulation` profile. Platform **`d11a403`** (2026-08-03) deleted
+> both in one commit — its `repos.yml` diff removes `- name: cms`, `- name: jobsimulation` **and**
+> `- name: roadrunner`.
+> *This banner used to read "**but locally the husk still starts**", and it was right at `2adcf71`:
+> `docker-compose.yml:83` @ that ref defined a `jobsimulation` service with
+> `profiles: [graphql, jobsimulation, all]` (`:140`), `graphql` was the default (`Makefile:10`
+> `PROFILE ?= graphql` **at that ref**), and `repos.yml:17-19` @ `2adcf71` still listed the repo (marked
+> `migrations: false # legacy`).* The **GitHub repo was archived 2026-07-31**. State: **frozen legacy repo,
+> no local container, no clone entry**; what **M810** tears down is the *production* rollback path
+> (`module.jobsimulation_euwest1`), not a local husk. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
 > [skillpath-in-app](./skillpath.md) merges.
@@ -66,11 +74,11 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 
 ## Architecture & Code Map
 
-* **Codebase**: `jobsimulation` (Local directory; repo `git@github.com:anthropos-work/jobsimulation`)
+* **Codebase**: `jobsimulation` — repo `git@github.com:anthropos-work/jobsimulation` (archived 2026-07-31). **Not cloned by `make init`**: no `repos.yml` entry since `d11a403`. Clone it by hand to read the pre-merge source; the live code is `app/internal/jobsimulation/`
 * **Language**: Go
-* **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the banner at :25-27
-* **Ports**: 8400 (GraphQL/HTTP), 8401 (Connect-RPC) — **as deployed by the platform**, which sets `PORT=8400` / `RPC_PORT=8401` and publishes `8400:8400` / `8401:8401` (`platform/docker-compose.yml`). Note the **repo's own defaults differ**: with those env vars unset `cmd/root.go` falls back to `8080`/`8081` (and the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. Both are correct in their own context — use 8400/8401 for anything driven through `platform`, and add the stack offset for a `dev-N`/`demo-N`.
-* **Profile**: **none — there is no `jobsimulation` compose service.** Deleted by platform `d11a403` with the cms-in-app fold; the line that stood here named the `graphql` profile, which `0dab54d` renamed `core`, for a service that had already been removed. Historical only (corrected M257x iter-68)
+* **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the **Data** bullet, :31-38 above
+* **Ports**: **8080 (GraphQL/HTTP), 8081 (Connect-RPC) — the binary's own defaults**, and now the only ones there are: `cmd/root.go:77` `cmp.Or(os.Getenv("PORT"), "8080")` / `:78` `cmp.Or(os.Getenv("RPC_PORT"), "8081")` (the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. The **8400 / 8401** pair quoted all over this corpus was **compose-supplied by a service that no longer exists**: `docker-compose.yml` set `PORT=8400` (`:113`) / `RPC_PORT=8401` (`:119`) and published `8400:8400` / `8401:8401` (`:93-94`) — **at `2adcf71`**. At `0dab54d` there is no `jobsimulation` service, so nothing sets those values and nothing is published; **8400/8401 are historical, not an address you can reach**, with or without a `dev-N`/`demo-N` offset. The engine's live HTTP/GraphQL surface is `backend`'s.
+* **Profile**: **none — there is no `jobsimulation` compose service.** Deleted by platform `d11a403` (2026-08-03), the compose clean-up that followed the fold; the line that stood here named the `graphql` profile, which `0dab54d` renamed `core`, for a service that had already been removed. Historical only (corrected M257x iter-68)
 
 ### Key directories
 
@@ -96,7 +104,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
-* **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR`, which at platform `0dab54d` reads **`http://backend:8083`**, like all four values compose sets. **M809 has landed** and there is no husk container left to resolve to. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1204` @ `app` `b948604` v1.366.0).
+* **RPC**: `internal/rpcsrv` — reached **in-process** by Backend (incl. the in-process skill-path engine), and over the wire by **`messenger` alone**, the only service left that reads `JOBSIMULATION_RPC_ADDR`. At platform `0dab54d` that value is **`http://backend:8083`**, like all four addresses compose sets — and compose sets them only on `messenger`; `d11a403` dropped `JOBSIMULATION_RPC_ADDR` from `backend` outright, having verified zero reads in `app`. **M809 has landed** and there is no husk container left to resolve to. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1204` @ `app` `b948604` v1.366.0).
   > **This line used to say the opposite, emphatically — keep the note (M257x iter-60).** Until `2adcf71` it read *"That address is **CURRENT, not stale text**"*, and it was **right at that ref**: only `SKILLER_RPC_ADDR` had been re-pointed then. A refutation is a measurement and expires exactly like the claim it refuted — and anti-repair wording is the kind that survives readings, because it looks already-adjudicated. See [`platform-alignment.md`](../ops/platform-alignment.md) §5 rule 31.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
@@ -114,10 +122,14 @@ internal/
 > [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md); the write side is
 > [`../ops/demo/session-clone-spec.md`](../ops/demo/session-clone-spec.md).
 
-### Direct dependencies (from compose `depends_on` + env)
+### Direct dependencies
+
+> These are the edges the engine has, **not** a reading of a compose block: at `0dab54d` there is no
+> `jobsimulation` service and therefore no `depends_on` list to quote. They are satisfied in-process inside
+> `backend` (or, for the two remaining cross-process hops, by `backend`'s own compose entry).
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities. **Neither the in-app engine nor the husk holds a `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own** — but the *hop* depends on which you mean: the **in-app** engine calls the cms domain **in-process** (same binary, no RPC hop), and since M809 there is no husk container on either end — compose's `CMS_RPC_ADDR` reads `http://backend:8083` (measured at platform `0dab54d`).** **The M23 content cutover does NOT ride on the `cms` husk.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
+* **CMS** — simulation definitions, content, studio entities. **The engine holds no `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own**; it calls the cms domain **in-process** (same binary, no RPC hop). There is no husk container on either end of that edge any more — compose's `CMS_RPC_ADDR`, which only `messenger` reads, is `http://backend:8083` (measured at platform `0dab54d`). **The M23 content cutover does NOT ride on a `cms` container.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
 * **Sentinel** — authz
 * **Storage** — file uploads, recordings
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
@@ -143,9 +155,15 @@ Redis Streams consumption is handled by the colony pubsub `SubscriberServer` wir
 
 ## Startup contract — read this before diagnosing a crash (M217)
 
+> **Scope (v2.8 M257x).** The cobra contract below describes the **frozen `jobsimulation` binary**, which no
+> compose file starts any more — you will only hit it running the legacy repo by hand. **The
+> `$HOME/.aws/credentials` landmine two sections down did NOT retire with it**: the fold carried the bind
+> over to **`backend`**, where it is live at `0dab54d`. Read that part as a `backend` bug.
+
 **The cobra ROOT command's `RunE` *is* the server.** There is **no `serve` and no `run` subcommand.**
 
-- The image is `ENTRYPOINT ["./application"]` with **no CMD**; docker-compose passes **no `command:`**.
+- The image is `ENTRYPOINT ["./application"]` with **no CMD**; when compose still declared the service it
+  passed **no `command:`** either.
 - Running the binary with **zero arguments is correct** — that starts the server.
 - The optional subcommands are `aggregate`, `clone-session`, `test-command`, `validate`. **None of them starts
   the service.**
@@ -162,21 +180,26 @@ cobra print `Error: …` **followed by the full usage/help block**, then exit 1.
 **That usage block is a symptom of a failed init, not of a wrong command.** It was misread as "the container
 needs a subcommand" for an entire release cycle, and the proposed fix would have broken the service.
 
-**Always read the FIRST line of `docker logs`, never the help block:**
+**Always read the FIRST line of `docker logs`, never the help block** — from the container that actually runs
+the engine, which since the fold is `backend` (there is no `…-jobsimulation-1` container to inspect):
 
 ```bash
-docker logs demo-<N>-jobsimulation-1 2>&1 | head -3
+docker logs demo-<N>-backend-1 2>&1 | head -3
 # Error: can't init AI: can't load AWS config: failed to load shared config file, ...
 ```
 
-### The `$HOME/.aws/credentials` landmine (why it died in every demo)
+### The `$HOME/.aws/credentials` landmine (why it died in every demo) — now a `backend` bug
 
-`docker-compose.yml` binds `$HOME/.aws/credentials:/root/.aws/credentials:ro` — the **only** AWS bind in the
-file. **When the host path does not exist, Docker auto-creates it as an empty DIRECTORY.** The container then
-sees a *directory* where a file belongs, and `aws-sdk-go-v2`'s `config.LoadDefaultConfig()` **opens it
-successfully** (opening a directory succeeds!) before failing `EISDIR` on the read — so it is *not* skipped as
-an unreadable file. That error propagates out of `ai.NewAIManager` → the root `RunE` → cobra's usage block →
-`exit 1`.
+**The bind survived the fold and moved onto `backend`.** `docker-compose.yml:91` binds
+`$HOME/.aws/credentials:/root/.aws/credentials:ro` — the **only** AWS bind in the file — under `backend`'s
+`volumes:` (`:90`), and compose's own comment says why (`:88-89`: *"jobsim-in-app's Chime/LiveKit recording
+managers use the AWS SDK default credential chain — the mount the standalone jobsimulation container had."*).
+Measured at platform `0dab54d`. **When the host path does not exist, Docker auto-creates it as an empty
+DIRECTORY.** The container then sees a *directory* where a file belongs, and `aws-sdk-go-v2`'s
+`config.LoadDefaultConfig()` **opens it successfully** (opening a directory succeeds!) before failing `EISDIR`
+on the read — so it is *not* skipped as an unreadable file. In the standalone binary that error propagated out
+of `ai.NewAIManager` → the root `RunE` → cobra's usage block → `exit 1`; **the failure mode is inherited, only
+the container name changed.**
 
 **With the path simply absent, `LoadDefaultConfig` returns `nil`.** The mount is the bug.
 
@@ -189,10 +212,14 @@ an unreadable file. That error propagates out of `ai.NewAIManager` → the root 
 > ⚠️ **A bare `volumes: []` does NOT remove it** — compose *merges* volume sequences and the inherited bind
 > survives. Only the `!reset` / `!override` tags remove it. Verified against the compose binary.
 
-**Downstream while it is dead:** the AI-Simulations surface is gone; its GraphQL subgraph errors; the
-`pt-aisim-chat-launch` playthrough cannot pass; no session-completed events reach the Redis stream, so the
-skill-path engine (now in `app`) never sees completions. And it is the service behind the nameless *"1 check(s) FAILED"* the
-bring-up's autoverify used to report.
+**Downstream when the mount kills it — and the blast radius GREW with the fold.** It no longer costs you one
+surface: `backend` is the only *application* container the `core` profile starts (`sentinel` is authz-only),
+so the whole platform goes with it. The AI-Simulations surface is gone and so is every other one;
+`:8082/graphql/query` is unreachable rather than "the jobsimulation subgraph erroring" — there is no
+jobsimulation subgraph, the supergraph is `backend` alone; the `pt-aisim-chat-launch` playthrough cannot pass;
+no session-completed events reach the Redis stream, so the in-process skill-path engine never sees
+completions. It is also what used to sit behind the nameless *"1 check(s) FAILED"* the bring-up's autoverify
+reported — a symptom that would now present as a wholesale failure instead.
 
 ## Local Development
 
@@ -207,13 +234,24 @@ make up                           # the `core` profile — `backend` (app) runs 
 
 ### Run natively
 
+**To work on the live engine, you run `app`, not this repo:**
+
 ```bash
 cd platform
-make dev S=jobsimulation          # stops the docker container
-cd ../jobsimulation
+make dev S=backend                # stops the backend container
+cd ../app
+go run .                          # the jobsim engine runs inside this process
+```
+
+**To run the frozen pre-merge binary** (reading the old source, reproducing old behaviour) — note there is no
+`make dev S=jobsimulation` step any more: it would stop nothing and exit 0, and `make init` no longer clones
+the repo (no `repos.yml` entry since `d11a403`), so clone it by hand.
+
+```bash
+cd jobsimulation
 make setup                        # installs ent, atlas, gqlgen, goverter
 make gen                          # regenerates Ent + Goverter + gqlgen
-go run .
+go run .                          # binds :8080 / :8081 — the binary's own defaults, nothing supplies 8400/8401
 ```
 
 Make sure `.env` has the LiveKit + AWS credentials and that Postgres/Redis are reachable on `localhost`.

@@ -8,7 +8,8 @@
 ## Role & Responsibility
 
 * **Primary Goal**: The main user-facing frontend — a pnpm + Turborepo monorepo of
-  Next.js apps that consume the federated GraphQL gateway and authenticate with Clerk.
+  Next.js apps that consume the platform's single GraphQL endpoint (locally **`backend` directly**, since
+  platform `2adcf71` deleted the Cosmo router) and authenticate with Clerk.
 * **Key Functions**:
   * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`). The hiring **org-type** (`is_hiring`) re-skins `apps/web` and exposes the recruiter **candidate-comparison read-model** — see [`hiring.md`](hiring.md).
   * Talk to the backend **only** through the GraphQL endpoint — **`:8082/graphql/query` on `backend` directly** since platform `2adcf71` deleted the router from local dev (it was `:5050/graphql` on the Cosmo Router) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through **`backend`'s GraphQL endpoint → the cms domain inside `app` → Directus** (it was gateway → CMS subgraph → Directus before the folds; the supergraph has been **one** subgraph since `915da06`, and the local router is gone since `2adcf71`), so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
@@ -78,9 +79,15 @@ pnpm check                       # tsc --noEmit + eslint --fix across the worksp
 
 ```bash
 cd platform
-make up PROFILE=frontend         # builds Dockerfile.dev (web app only), serves :3000
-# or: make up-frontend           # next-web-app together with the graphql backend stack
+make up-frontend                 # builds Dockerfile.dev (web app only), serves :3000
+                                 # Makefile:119-120 → --profile core --profile frontend
 ```
+
+> ⚠️ **`make up PROFILE=frontend` on its own EXITS 1 — it builds nothing.** `next-web-app` declares
+> `depends_on: backend` (`docker-compose.yml:250-252`) and `backend` is `profiles: [core, backend, all]`
+> (`:100`), which the `frontend` profile does not select — so compose rejects the whole project with
+> *"service `next-web-app` depends on undefined service `backend`: invalid compose project."* Use
+> `make up-frontend` (which adds `core`), or `make up PROFILE=all`.
 
 `Dockerfile.dev` (Node 24 alpine) builds **only** `@anthropos/web-app`
 (`pnpm turbo build --filter=@anthropos/web-app`). Hiring / integration / maintenance /
@@ -121,6 +128,6 @@ pnpm test            # turbo test → jest in apps/web and apps/hiring
 ## Related Documentation
 
 * [Frontend Architecture](../architecture/frontend_architecture.md) — monorepo deep dive, packages, codegen, recent UX work
-* [GraphQL Gateway](./graphql-wundergraph.md) — the federated endpoint this app consumes
+* [GraphQL Gateway](./graphql-wundergraph.md) — the federated gateway (**prod-only** since `2adcf71`); locally this app consumes `backend`'s own `:8082/graphql/query`
 * [External Services → Clerk](../architecture/external_services.md#clerk-authentication-service)
 * [Service Taxonomy](../architecture/service_taxonomy.md) · [Dependency Map](../architecture/dependency_map.md)

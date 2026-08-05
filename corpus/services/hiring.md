@@ -15,6 +15,8 @@
 > actually feeds the score. Read § *The comparison read-model* before seeding anything hiring-shaped.
 
 > **⚠️ RE-GROUNDED — v2.8 M257x iter-23, against platform origin `2adcf71` / `app` @ `5ba17044`.**
+> *(The platform-side citations below were re-anchored again to platform `0dab54d` in the M257x sweep —
+> `d11a403` had removed the cms / jobsimulation / roadrunner compose services and `repos.yml` entries.)*
 > **This doc named a table the platform has since DROPPED — which is the worst possible version of the warning
 > directly above.** The score source was `public.local_jobsimulation_sessions`, a `Float32` MIRROR. `app`
 > migration `20260729133514.sql:58-62` — *"5. Drop the mirrors."* — **re-points the *referencing* rows** (the
@@ -29,8 +31,11 @@
 >    is gone." `20260722104506.sql:79` is `DROP TABLE "sessions"` executed under `search_path=public`, so what
 >    it dropped is **`public.sessions`**, replaced by `public.job_simulation_sessions` (`:2`). **No `app`
 >    migration touches the `jobsimulation` schema at all**, and **in production** that schema **survives,
->    frozen, until M710** — while **no local dev/demo stack creates it at all** (`platform/repos.yml:17-19`
->    `migrations: false`; qualified M257x iter-52) — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
+>    frozen, until M710** — while **no local dev/demo stack creates it at all** (at platform `0dab54d`
+>    `platform/repos.yml` carries **6** entries and `jobsimulation` is **not one of them** — `d11a403`
+>    deleted it; `app` at `repos.yml:11-14` is the only `migrations: true` entry. Qualified M257x iter-52,
+>    re-anchored in the M257x sweep: the old `repos.yml:17-19` citation now lands on sentinel/storage)
+>    — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
 >    and [`dependency_map.md:78`](../architecture/dependency_map.md) already said. `app/atlas.hcl:8` pins
 >    `search_path=public`, and the only `CREATE SCHEMA` in the entire migration set is `auth`.
 >    (This bullet read *"`jobsimulation.sessions` was dropped"* from iter-23 until M257x iter-49.)
@@ -47,9 +52,10 @@ value: *"line up every candidate who took this hiring simulation, ranked by scor
 **dockerized `apps/web`** (`/enterprise/activity-dashboard`), renders **from seedable data alone**, and **survives
 the `is_hiring` flip** — so the demo can show it **without a platform edit** (M222 D1, the release go/no-go).
 
-There is **no `hiring` microservice**. The feature is a composition: an org-type flag on `app`, the existing
-`jobsimulation` runtime, an `app`-side read-model (`IntelligenceManager`), the federated GraphQL, and an `apps/web`
-surface gated client-side on a Clerk org flag.
+There is **no `hiring` microservice**. The feature is a composition: an org-type flag on `app`, the
+jobsimulation runtime (**itself now a domain inside `app`**, `app/internal/jobsimulation/` — no container
+since `d11a403`), an `app`-side read-model (`IntelligenceManager`), the single `backend` GraphQL subgraph,
+and an `apps/web` surface gated client-side on a Clerk org flag.
 
 ## The org-type gate — `is_hiring` is a DUAL-WRITE
 
@@ -163,7 +169,9 @@ schema, read directly by the resolver.
 > **production** it survives frozen until M710. (`askengine/registry.go:192` is cited for the M710 horizon
 > only: it is an LLM-facing name-alias map whose `jobsimulation.*` names **resolve to the public tables** —
 > it is not evidence that the schema is physically present. On a **local dev/demo stack it is not**:
-> `repos.yml:17-19` `migrations: false`. Qualified M257x iter-52.) So what is gone is the **mirror half** of the old
+> `jobsimulation` has had **no `repos.yml` entry at all** since `d11a403` (6 entries @ platform `0dab54d`),
+> and `app` (`repos.yml:11-14`) is the only repo with migrations to run. Qualified M257x iter-52,
+> re-anchored in the M257x sweep.) So what is gone is the **mirror half** of the old
 > pair, not both halves; there is one row per (candidate × attempt) now, in `public`. Corrected M257x iter-49.
 
 **The read-path, traced end-to-end (FE → GraphQL → resolver → Ent → table):**
@@ -288,7 +296,7 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 
 ## Interface
 
-- **GraphQL** (federated, `apps/web`): `insightsJobSimulationByMemberships` (`packages/graphql/src/query/insights.ts`)
+- **GraphQL** (the single `backend` subgraph, read by `apps/web`): `insightsJobSimulationByMemberships` (`packages/graphql/src/query/insights.ts`)
   → `app` subgraph resolver `resolver_queries.go` → `IntelligenceManager.InsightsJobSimulationByMemberships`
   (`app/internal/organization/intelligence.go`). Gated on the `OrgFeatureInsights` Casbin permission.
 - **The `Session!` field** resolves from the **same** subgraph and the **same** row — there is only one subgraph
@@ -308,8 +316,9 @@ To make a hiring org's comparison scoreboard render on a demo/dev stack: seed an
 sim) — **one** `public.job_simulation_sessions` row (the score lives on it; the old co-written
 `jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** is no longer written — the
 `public.local_jobsimulation_sessions` **mirror** was dropped at `20260729133514.sql:58-62`, and **on a
-dev/demo stack there is no `jobsimulation` schema at all** — `platform/repos.yml:17-19` sets
-`migrations: false`, and app's only `CREATE SCHEMA` is `auth`, so `to_regclass('jobsimulation.sessions')`
+dev/demo stack there is no `jobsimulation` schema at all** — `platform/repos.yml` @ `0dab54d` has **no
+`jobsimulation` entry** (6 entries; `d11a403` deleted it), and app's only `CREATE SCHEMA` is `auth`
+(`20230817154747_supabase_baseline.sql:2`), so `to_regclass('jobsimulation.sessions')`
 is NULL. Do not seed into it. This passage **previously said** `jobsimulation.sessions` *"still exists,
 frozen and unwritten, until M710"* unqualified — **refuted** for local stacks at M257x iter-52), plus the
 `OrgFeatureInsights` Casbin grant. Pick 5 real `SIMULATION_TYPE_HIRING` sims from the captured

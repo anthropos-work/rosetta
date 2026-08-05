@@ -167,17 +167,17 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 
 In the **default local posture**, Directus is **not** part of the local stack — `backend` (which hosts the cms
 domain since cms-in-app) reaches the **production** Directus over the network. The default `core` profile is
-**not** just Postgres + `backend`: it starts **nine** containers — `postgresql` + `redis` (from the included
-`common.yml`, profile-less so they always start) and seven application services, `sentinel` · `backend` ·
-`jobsimulation` · `cms` · `storage` · `roadrunner` · `gotenberg`. The `jobsimulation` and `cms` containers are
-**merged-into-`app` husks kept live as the rollback path** (teardown is M810) — merged in production is not the
-same claim as removed from compose:
+**not** just Postgres + `backend` — but it is far smaller than this page long claimed: it starts **five**
+containers. Three are profile-less and so in *every* selection — `postgresql` + `redis` (from the included
+`common.yml`) and `sentinel` — and two are the actual `core` members, `backend` (`docker-compose.yml:100`)
+and `gotenberg` (`:268`). **There is no `cms`, `jobsimulation` or `roadrunner` container to start**: platform
+`d11a403` deleted all three compose services outright, and their `repos.yml` entries with them. What survives
+is the *production* rollback module (teardown is M810) and a frozen repo on disk — neither is a container:
 
 ```mermaid
 graph TB
     subgraph Docker[Docker Compose (local stack)]
         Backend[backend :8082 — hosts the cms domain in-process]
-        CMSHusk[cms :8090-8091 — merged-into-app husk, rollback path]
         Postgres[(PostgreSQL)]
     end
 
@@ -191,13 +191,13 @@ graph TB
     Frontend -->|:8082/graphql/query| Backend
     StudioDesk -->|:8082/graphql/query| Backend
     Backend -->|DIRECTUS_BASE_ADDR from env_file| Directus
-    CMSHusk -.->|DIRECTUS_BASE_ADDR from compose| Directus
     Directus --> ProdPG[(Prod PostgreSQL · directus schema)]
 ```
 
-> **Both frontends target `backend`, not `cms`** (`docker-compose.yml:236`/`:245` for next-web-app, `:204`/`:220`
-> for studio-desk — all four are `:8082/graphql/query`). And `backend` does **not** proxy content through the
-> `cms` container: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
+> **Both frontends target `backend`** (`docker-compose.yml:236`/`:245` for next-web-app, `:204`/`:220`
+> for studio-desk — all four are `:8082/graphql/query`); there is no `cms` service left for them to target
+> even if they wanted one. And `backend` does **not** proxy content through a standalone `cms`
+> process: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
 > RPC server once Directus is configured, so every content read is *"a DIRECT domain call — no proto round-trip
 > … and no internal traffic to a standalone cms."* `backend` requires `DIRECTUS_BASE_ADDR` to boot at all
 > (`app/main.go:980-982` `log.Fatalf`s without it — @ `app` `b948604` v1.366.0). The prose two paragraphs above already said this; the
@@ -288,7 +288,7 @@ so images stay real — no blob bytes are copied locally.
 
 ### cms-domain Directus integration
 
-> **⚠️ This is the cms DOMAIN inside `backend`, not the `cms` container.** Since cms-in-app the
+> **⚠️ This is the cms DOMAIN inside `backend`, not the retired `cms` container.** Since cms-in-app the
 > Directus client lives at `app/internal/cms/directus/` and runs in-process in `backend`;
 > `app/cms_reader_switch.go` swaps the content reader to the in-process cms server, and
 > `app/main.go:980-982` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`** (@ `app`
@@ -406,7 +406,7 @@ graph TB
 
 ### Service Dependencies — **HISTORICAL**
 
-> Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more (the name survives only as a **profile** label) and no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
+> Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more, **and no `graphql` profile either** — the token appears in no `profiles:` key at `0dab54d`, so asking for it exits 0 and silently starts only the three profile-less services (`postgresql`, `redis`, `sentinel`), which is worse than an error. There is likewise no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
 
 From `docker-compose.yml` *before the drop*, the gateway `depends_on`:
 - backend
@@ -586,7 +586,7 @@ config change would arm it, not because it is live):
 3. setting `ANTHROPIC_API_KEY`, which flips **Course Builder** off Bedrock onto Anthropic's
    first-party API (`coursebuilder/bedrock.go:106-113`) and supplies **Studio-Room** the credential
    its `anthropic` `TARGET SERVICE` needs — *Studio-Room was never on Bedrock*, so nothing is flipped
-   off it there (`:542` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
+   off it there (`:543` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
    **This item is live on the Course Builder half only.** Its Studio-Room half is latent for exactly the
    reason item 5 is: no shipped `configs/*.ini` selects `anthropic` either — all 30 `*_AI_*_MODEL` lines
    pin `azure`. Symmetry noted M257x iter-52, after two pre-commit readers caught the same evidence being
@@ -720,12 +720,12 @@ AWS Chime SDK captures the full simulation session (camera, screensharing, micro
 ### Required Services (via Docker)
 ```bash
 cd platform
-docker compose up -d backend  # NOT `graphql` (deleted at `2adcf71`) and NOT `cms` (that container is an
-                              # unfederated HUSK that serves no subgraph). The Directus reader is the cms
-                              # DOMAIN inside `backend` (`app/internal/cms/directus/`).
+docker compose up -d backend  # There is nothing to add here: the `graphql` service was deleted at
+                              # `2adcf71` and the `cms` service at `d11a403`. The Directus reader is the
+                              # cms DOMAIN inside `backend` (`app/internal/cms/directus/`).
                               # Directus is NOT a local service — it is read live from prod.
 ```
-> The platform compose has no `directus` service to start; `cms` points `DIRECTUS_BASE_ADDR` at
+> The platform compose has no `directus` service to start; `backend` points `DIRECTUS_BASE_ADDR` at
 > `content.anthropos.work`. To run content locally instead, use the v1.5 "prop room" tooling
 > ([`directus-local.md`](../ops/directus-local.md)), not `docker compose up directus`.
 
@@ -737,7 +737,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
 NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql
 # NB the var is WUNDERGRAPH, not GRAPHQL — `NEXT_PUBLIC_GRAPHQL_ENDPOINT` does not exist in
-# next-web-app. Set on the image at docker-compose.yml:352 (build arg) and :361 (runtime env).
+# next-web-app. Set on the image at docker-compose.yml:236 (build arg) and :245 (runtime env).
 ```
 
 **For Studio-Desk**:
@@ -747,7 +747,7 @@ CLERK_SECRET_KEY=sk_test_xxxxx
 VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql on the router
 ```
 
-**For CMS Service**:
+**For the cms domain (set on `backend`, which hosts it)**:
 ```bash
 DIRECTUS_BASE_ADDR=https://content.anthropos.work
 DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
@@ -796,8 +796,8 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 - **`backend`** reads Directus **live from prod** (the fetch is `app/internal/cms/directus/` running inside the
   `backend` container since cms-in-app); there is no local `directus` container to `ps`. Check the address
   `backend` resolves: `DIRECTUS_BASE_ADDR` must be `https://content.anthropos.work` and reachable from the box.
-- `docker compose logs backend` (not `directus`, and not `cms` — that container is a merged husk that no longer
-  serves `backend`'s content reads) surfaces the content-fetch errors.
+- `docker compose logs backend` (not `directus`, and not `cms` — neither is a compose service any more; the
+  `cms` one was deleted at `d11a403`) surfaces the content-fetch errors.
 
 **"Cannot connect to Directus"** (when running the local tooling, `--local-content` / demo):
 ```bash
@@ -818,8 +818,9 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 # There is no `graphql` service since platform `2adcf71` — check the endpoint's real host:
 docker compose ps backend
 
-# Check dependent services are up
-docker compose ps backend cms jobsimulation storage
+# Check backend's own dependencies are up (docker-compose.yml:92-99 — redis, postgresql, sentinel;
+# `cms`, `jobsimulation` and `storage` are NOT among them and would name nothing startable)
+docker compose ps postgresql redis sentinel
 ```
 
 **Schema outdated**:
@@ -828,7 +829,7 @@ docker compose ps backend cms jobsimulation storage
 # The schema is served by backend itself; restart it:
 docker compose restart backend
 ```
-> Consistent with :512 above, where the same correction is already recorded.
+> Consistent with :522 above, where the same correction is already recorded.
 
 ---
 

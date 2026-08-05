@@ -198,7 +198,7 @@ reads **exactly one table**, and decodes its `report` JSONB:
 
 | `report` key | → renders | Notes |
 |---|---|---|
-| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (5 tiles) | ids `avg_adoption` / `avg_transformation` / `avg_originality` / `avg_depth` / `avg_ownership` (Adoption / Transformation / Originality / Depth·Creation / Critical ownership), each a **0-100 cohort average** (the M219 ids `avg_frequency` / `avg_breadth` / `avg_context_fit` were retired in the post-M246 platform rename — see part 5 at `:533`). `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all of them is why the tile row did not render at all**, rather than rendering empty. |
+| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (5 tiles) | ids `avg_adoption` / `avg_transformation` / `avg_originality` / `avg_depth` / `avg_ownership` (Adoption / Transformation / Originality / Depth·Creation / Critical ownership), each a **0-100 cohort average** (the M219 ids `avg_frequency` / `avg_breadth` / `avg_context_fit` were retired in the post-M246 platform rename — see *part 5* of § *The FILLED-ness contract* below). `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all of them is why the tile row did not render at all**, rather than rendering empty. |
 | `narrative.patterns[]` | **Strengths** | `evidence[0]` **IS** the rendered verbatim quote; `source_session_id` is what `resolveSessionAuthors` joins (`sessions → memberships`) to hydrate the quote's **author name + job role**. |
 | `narrative.unexpected[]` | **Unexpected angles** | **NO chart fallback exists** — the narrative is the only way this column can *ever* render. |
 | `narrative.insights[]` where `category` contains **`"risk"`** | **What holds them back** | The category string is **load-bearing**: `holdsBackFromInsights` filters on it. Get it wrong and the column silently empties again. |
@@ -210,8 +210,14 @@ reads **exactly one table**, and decodes its `report` JSONB:
 - every `source_session_id` / `session_ids` entry is a **REAL seeded Step-3 session id**, so quote attribution
   resolves to a **real seeded member** through the platform's own join — never a fabricated id, never a quote
   from nobody;
-- the four usage KPIs are **DERIVED from the org's own seeded Step-3 session scores** (the same raw numbers the
-  frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented;
+- the **five** usage KPIs — `avg_adoption` · `avg_depth` · `avg_ownership` · `avg_transformation` ·
+  `avg_originality`, the set `aiReadinessUsageKPIs` returns at
+  `stack-seeding/seeders/ai_readiness_interview_report.go:181-185`, whose own comment at `:145` reads *"All
+  five are always emitted here"* — are **DERIVED from the org's own seeded Step-3 session scores** (the same
+  raw numbers the frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented.
+  (This bullet said *"four"* until M257x; it is the same five ids the `catalog_kpis[]` row above enumerates
+  and the same five *part 5* of § *The FILLED-ness contract* re-derives. The rext source's own prose at
+  `:137` and `:139` still says *"four"* — stale on that side too, and out of this corpus's edit scope.);
 - `session_count` is the true number of seeded interviews;
 - an org with **zero** seeded Step-3 interviews writes **no row** (nothing to aggregate — honest degradation).
 

@@ -51,8 +51,11 @@
         indistinguishable from "no such row") + a **tier gate** (`PremiumChecker`/`SubscriptionPremiumChecker`).
     *   `academy.EmbeddingsManager` (`embeddings.go`) — materializes + serves path embeddings; feeds
         `internal/aireadiness/suggested_path.go`.
-    *   `academy.AssetUploader` (`asset.go`) — uploads path cover images + intro audio to storage (S3 via
-        `STORAGE_RPC_ADDR`).
+    *   `academy.AssetUploader` (`asset.go`) — uploads path cover images + intro audio to the **public S3
+        bucket**. Since the **storage-in-app v9.0 cutover** (`app` `9d00a313` = v1.367.0) that is an
+        **in-process** public storage manager, not an RPC hop: `app/main.go:471-472` constructs the two
+        managers from `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`, and `STORAGE_RPC_ADDR` is gone from
+        the Go source (3 remaining occurrences at that ref, **all comments**, zero reads).
 *   **Ent tables** (`internal/data/ent/schema/`, `public` schema):
     *   **Per-user (UserMixin, owner-only)** — ⚠️ **these are Ent LABELS; the TABLE names are plural** (Ent
         pluralizes, so `SELECT … FROM academy_certificate` errors with *relation does not exist*):
@@ -97,15 +100,18 @@
     *   **Upstream (consumers)**: the [`ant-academy` frontend](./ant-academy.md) (over GraphQL/WunderGraph); the app's
         own [Ask/"Talk to Data"](./askengine.md) feed (reads `academy_*` directly); [Course Builder](./coursebuilder.md)
         (publishes generated courses into the catalog via `ContentManager` upserts).
-    *   **Downstream**: the **storage** service (`STORAGE_RPC_ADDR`, asset upload → S3/CloudFront); the shared **`ai`**
+    *   **Downstream**: **S3 → CloudFront** for asset upload — **in-process** since storage-in-app v9.0, *not*
+        the standalone storage service (that RPC edge no longer exists); the shared **`ai`**
         library (embeddings); `internal/organization` (`OrgManager` for tenancy).
 
 ## Local Development
 
 ### 1. Running Standalone
 *   **Prerequisites**: runs **as part of `app`** — no standalone academy process. Uses the shared platform Postgres
-    (`public` schema). Env: `SUPABASE_DB_CONN` (the DSN the cmd tools use), `STORAGE_RPC_ADDR` (asset upload),
-    `ACADEMY_CONTENT_API_TOKEN` (the write API).
+    (`public` schema). Env: `SUPABASE_DB_CONN` (the DSN the cmd tools use), **`STORAGE_S3_PUBLIC_BUCKET`** +
+    AWS credentials for asset upload (**not** `STORAGE_RPC_ADDR` — `cmd/academyImport/main.go:239-243`
+    @ `app` `9d00a313`: *"the standalone storage service is gone … it therefore needs the BUCKET, not an RPC
+    address"*, and it hard-errors on an empty bucket at `:244-246`), `ACADEMY_CONTENT_API_TOKEN` (the write API).
 *   **cmd binaries**:
     *   `cmd/academy-seed` — local dev/test seeder. Seeds chapter-progress + last-activity **through the Manager**
         (so writes go through the same monotonic-merge + self-only privacy paths, idempotent by construction). Flags:

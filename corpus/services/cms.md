@@ -79,10 +79,10 @@ This last point was the first structural shift: **studio-room is not a standalon
 
 ## Architecture & Code Map
 
-* **Codebase**: `cms` (Local directory; repo `git@github.com:anthropos-work/cms.git`)
+* **Codebase**: `cms` — repo `git@github.com:anthropos-work/cms.git`. **Not cloned by `make init`**: no `repos.yml` entry since `d11a403`. Clone it by hand to read the pre-merge source; the live code is `app/internal/cms/`
 * **Language**: Go 1.26 (primary — `cms/go.mod:3` `go 1.26.4`) + Python 3.11 (studio-room)
 * **Database**: ~~PostgreSQL `cms` schema~~ — **`public`, via `app`'s Ent**. The `cms` schema is a legacy husk since cms-in-app v8.0; the similarity + Studio tables moved to `public`
-* **Ports**: 8090 (GraphQL/HTTP), 8091 (Connect-RPC)
+* **Ports**: **8080 (GraphQL/HTTP), 8081 (Connect-RPC) — the binary's own defaults**, and now the only ones there are: `cms/cmd/root.go:77` `cmp.Or(os.Getenv("PORT"), "8080")` / `:78` `cmp.Or(os.Getenv("RPC_PORT"), "8081")`. The **8090 / 8091** pair quoted throughout this corpus was **compose-supplied by a service that no longer exists**: `docker-compose.yml` set `PORT=8090` (`:169`) / `RPC_PORT=8091` (`:173`) and published `8090:8090` / `8091:8091` (`:154-155`) — **at `2adcf71`**. At `0dab54d` there is no `cms` service, so nothing sets them and nothing is published; **8090/8091 are historical, not an address you can reach.** The domain's live surface is `backend`'s (`:8082/graphql/query`, RPC on `:8083`)
 * **Docker image**: Two-stage build — Go binary built in `golang:1.26-bookworm` (`cms/Dockerfile:2`), copied into a `python:3.11-slim` final stage (`:23`) along with `cms/studio/` and its `pip install -r studio/requirements.txt`. The Go binary is the entrypoint; it shells out to Python when a generation task fires.
 
 ### Key directories
@@ -95,7 +95,7 @@ internal/
     *.resolvers.go         Hand-written resolvers
     model/models_gen.go    Auto-generated (DO NOT EDIT)
   directus/                Directus client + collection queries
-  rpcsrv/                  Connect-RPC server (port 8091)
+  rpcsrv/                  Connect-RPC server (binds RPC_PORT — see § Ports; 8091 was compose-supplied)
   auth/                    Authn middleware
   event/                   Watermill event handling
   worker/                  Background workers (Redis Streams consumers)
@@ -113,7 +113,12 @@ studio/                    Python AI generation pipeline (cloned via `make init-
   configs/                 Per-environment AI model slots (`{env}_config.ini`)
   services/                Provider wrappers (ai.py, …)
   knowledge/, tools/       Pipeline knowledge + helper tooling
-  requirements.txt         openai, anthropic, mistralai, rich, pyyaml, python-docx, requests, jinja2, pytest, pytest-asyncio (see studio/requirements.txt)
+  requirements.txt         openai, anthropic, rich, pyyaml, requests, jinja2, mistralai, pytest,
+                           pytest-asyncio — the file verbatim, 9 packages. **`python-docx` is NOT among
+                           them** and never was: it was listed here until v2.8 M257x, and neither
+                           `cms/studio/requirements.txt` nor the in-image `app/studio/requirements.txt`
+                           contains it. (The only `.docx` in the tree is a filename in an authoring
+                           guideline and an asset-example README — no dependency.)
 terraform/                 IaC
 ```
 
@@ -161,7 +166,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
 * **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **since M809, reaches it inside `backend`**: compose sets `CMS_RPC_ADDR=http://backend:8083` locally (measured at platform `0dab54d`), `http://backend.internal.anthropos:8081` in production.
-* **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Cosmo Router now composes `backend` alone.
+* **Federation**: **there is none left to speak of.** The cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Then platform `2adcf71` (2026-07-31, PR #23 *"drop the WunderGraph router"*) **deleted the Cosmo/WunderGraph router itself** — service, `repos.yml` entry and clone. So this line's old ending, *"Cosmo Router now composes `backend` alone"*, names a component that no longer exists: **nothing composes anything.** GraphQL is served **directly by `backend`** at `:8082/graphql/query` — note the path moved with it (`/graphql` → `/graphql/query`), so a host-only re-point 404s rather than errors.
 
 ### Upstream consumers
 * Next Web App (GraphQL)
@@ -174,7 +179,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ### Downstream dependencies
 * Directus (content storage)
 * PostgreSQL (Ent ORM, **`public` schema** — the cms tables were re-created there at cms-in-app v8.0; the
-  legacy `cms` schema is non-authoritative. Consistent with :27 above)
+  legacy `cms` schema is non-authoritative. Consistent with the **Data** bullet, :28-31 above)
 * Redis (cache, Watermill streams)
 * AI providers (Anthropic, OpenAI, Mistral — used by `cms/studio/` Python pipeline)
 
@@ -184,7 +189,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 > **⚠️ HISTORICAL — `cd cms; make init-studio` is NOT the onboarding path any more.** Since cms-in-app v8.0
 > the studio-room pipeline is pulled into the **`app`** image by CI via the `additional_repo` mechanism (app
-> v1.360.1) — see :37 in the banner at the top of this doc. Work on this domain in **`app`**, not in the
+> v1.360.1) — see the **Studio** bullet, :52-53 in the banner at the top of this doc. Work on this domain in **`app`**, not in the
 > frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
 
 The Python studio submodule had to be cloned **before** any docker build, otherwise `make up` failed with `"/studio": not found`:
@@ -214,10 +219,13 @@ cd ../app
 go run .                 # the cms domain runs inside this process
 ```
 
-For Python pipeline development:
+For Python pipeline development — **in `app/studio/`, not `cms/studio/`.** `cms` has no `repos.yml` entry, so
+`make init` does not clone it; the pipeline that actually ships rides in the `app` image (`additional_repo`,
+app v1.360.1) and the two `requirements.txt` are byte-identical. The `cms/studio/` path below is the
+historical one.
 
 ```bash
-cd cms/studio
+cd app/studio          # was: cms/studio
 pip install -r requirements.txt
 # the repo's own entry point (studio/CLAUDE.md:12-14)
 python gen.py --media simulation --prompt "..." --evaluation_skills "skill1, skill2" --branch stable
@@ -237,7 +245,9 @@ python gen.py --media simulation --blueprint <file>.json
 
 ### Sync the studio submodule
 
-When `anthropos-studio-room` upstream changes:
+**HISTORICAL — this is no longer how the shipped pipeline is refreshed.** Since cms-in-app v8.0 CI pulls
+`anthropos-studio-room` into the **`app`** image via `additional_repo`; there is no manual sync step, and the
+`cms` repo is not cloned by `make init`. Kept because the frozen repo still carries the target:
 
 ```bash
 cd cms

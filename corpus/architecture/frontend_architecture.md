@@ -8,7 +8,7 @@ This document outlines the architecture of the Anthropos **main customer-facing 
 > - **[Studio-Desk](../services/studio-desk.md)** — Vite + Express, simulation design tool
 > - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo, internal learning portal for `@anthropos.work` employees
 >
-> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:311`). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. `repos.yml` @ `2adcf71` holds exactly **9** entries, and ant-academy is not one of them. The rest of this document is about `next-web-app` specifically.
+> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:226`, `profiles: [studio-desk, all]` — the fact survived platform `d11a403`; only the line number moved). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. `repos.yml` @ `2adcf71` holds exactly **9** entries, and ant-academy is not one of them. The rest of this document is about `next-web-app` specifically.
 
 ## Monorepo Structure
 
@@ -36,7 +36,7 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:8080/graphql` in prod — `:5050` was only ever the deleted LOCAL compose host mapping, never a production port; env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, ~15 sites hitting `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:362`): invitations (`invite/[token]/page.tsx`), assignment-builder (`useAssignmentBuilder.ts`), Stripe (`useStripe.tsx`), CSV bulk import, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
+The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:8080/graphql` in prod — `:5050` was only ever the deleted LOCAL compose host mapping, never a production port; env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, ~15 sites hitting `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:246` runtime env, `:237` build arg): invitations (`invite/[token]/page.tsx`), assignment-builder (`useAssignmentBuilder.ts`), Stripe (`useStripe.tsx`), CSV bulk import, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
