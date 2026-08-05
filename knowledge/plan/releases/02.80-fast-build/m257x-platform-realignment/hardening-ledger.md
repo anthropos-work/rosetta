@@ -1576,3 +1576,105 @@ unchanged and is the only non-green.
 **Routed-forward queue:** RF-2, RF-3, RF-7…RF-14 unchanged — none is in this pass's scope
 (all Playthrough/seeder surface; this window was guard code).
 `CHECK-M257x-iter79-three-valued-discriminators` is **CLOSED** by this pass.
+
+## Pass 20 — 2026-08-05 — incremental
+
+**Iters hardened this pass:** iter-80 … iter-94 (15 tiks — the guard-family + demopatch window)
+**Tiks covered since prior pass:** 15 (pass 19 closed at iter-80)
+**Scope note:** this is the LAST pass permitted to touch the measuring instrument. The milestone's
+open clause 5 is met only by a KB-fidelity reading of zero, the protocol forbids repair inside a
+measuring pass, and the previous run declined to take the reading precisely because it had rewritten
+the guards four times in the same run. So the plan is: harden the instrument here, freeze it, and let
+the NEXT run take the reading as its whole job. **No clause-5 reading was taken in this pass.**
+
+### The dimension: anti-vacuity, applied to the instrument itself
+
+Three anti-vacuity defects were fixed in iters 91–94 (a control that could never fire; a guard passing
+over zero corpus docs). The generalisation nobody had run is the obvious one: **the guards were audited
+for vacuity; the guards' own TESTS were not.**
+
+**The family runner's one load-bearing property was covered by nothing.** `guard_family.py` exists
+because *"all six corpus guards exit 0"* was a statement about a list somebody remembered. Its single
+value is that a guard which says it checked NOTHING must not read as GREEN. The test named for that
+property was:
+
+```python
+for out in ("repair-leak: CANNOT RUN — no candidate shingles", ...):
+    self.assertTrue("CANNOT RUN" in out or "Nothing was checked" in out)
+```
+
+Two string literals declared three lines above, asserted to contain substrings of themselves. It never
+imported the behaviour and never called `run_one`. **Measured:** blinding the branch to `if False:`
+left all 22 tests in the file GREEN.
+
+Fourth occurrence of the pattern in this window, and the first one *inside the runner built to refuse
+it*. Replaced with a real subprocess probe through the real `run_one`, plus the negative control (a
+guard that really checked something stays GREEN — otherwise "grade every exit 0 as CANNOT-CHECK" would
+pass) and the end-to-end half (a CANNOT-CHECK member takes the FAMILY out of green — a separate code
+path from the member verdict).
+
+### Two live defects fixed inline
+
+**1. `--verify-remote` was a silent no-op without `--platform`** (`guard_family.py`). Its only subject
+sat inside `if platform:`, so a run that ASKED for the freshness check and supplied no `--platform`
+made no network call, said nothing about it, and could exit 0 — a transcript indistinguishable from a
+genuinely remote-verified green. That flag is **the remedy this milestone shipped for the reported
+stale-clone reading**, and `grep -rn 'verify.remote' tests/` returned nothing: the remedy was
+unexercised and half of it did nothing. Now UNMEASURED (exit 2) — the module's own doctrine (`ab107b1`)
+turned on the module. This is the regression test for the reported class the prior run could not
+reproduce: the class was real, and its remedy was untested.
+
+**2. demopatch's post-condition rollback abandoned the discipline it exists to enforce** — closes
+`CHECK-M257x-iter91-g5xg7-journal-on-postcondition-failure` **by fault injection**, the one interacting
+guard pair iter-91's grid left routed (G7 can only fail on a short write, which the harness could not
+produce; the source-mutant vehicle the journal-blinding control already uses reaches it).
+
+`cmd_apply`'s forward write is atomic and verified — tmp + fsync + `os.replace` + read-back — and its
+comment says why (the apply_patch B12 lesson about half-written source). The rollback that runs when
+that read-back **fails** was a bare truncating `open(target,"w")`: no fsync, no read-back, no
+verification — and `_journal_drop` ran unconditionally on the next line. Under the one condition that
+causes a G7 failure, the rollback is written the same way and is just as likely to be short, and the
+tool then destroys the only exact copy of the pre-image it holds. `_revert_inner` already had the right
+ordering forty lines below (restore → verify → drop). Fixed by extracting `_write_atomic` so both
+writes share one implementation, and verifying before dropping; the journal is KEPT when the rollback
+did not stand, because that is exactly when it is the recovery.
+
+**A second G7 finding, pinned rather than fixed:** after a G7-refused apply that rolled back cleanly, a
+later `revert` exits 1 — the journal is correctly gone, so the baseline path sees a target that is
+neither `pre_sha256` nor `post_sha256`. Clone is clean, nothing harmed; what is lost is that
+`demopatch.log` cannot distinguish *"never applied"* from *"failed to come off"*. That is
+`CHECK-M257x-iter90-revert-idempotency`, and it is **deliberately not re-pinned** — a sha re-pin goes
+stale on the next `make pull`. The test pins current behaviour and names what to flip.
+
+### The mutation battery caught a defect in its own author's new test
+
+Mutant M6 (*"stop printing the corpus sha"*) **survived**. Cause: two git repos built by one helper in
+the same second are byte-identical commits — same tree, author, message, timestamp — and therefore share
+a sha, so `assertIn(corpus_head, out)` was being satisfied by the **platform** reference line. The new
+provenance test was passing while asserting nothing. Fixture now tags each repo distinctly and asserts
+against the corpus LINE. **Recorded in `_repo`'s docstring**: the same defect class as the pass's own
+subject, committed by the person fixing it, within the hour. This is the third time this milestone that
+the author of a newly written rule violated it while writing it — and the first time a mutation battery,
+rather than a reviewer, is what caught it.
+
+**Coverage delta on touched files:** `test_guard_family.py` 22 → 31 tests; `test_demopatch.py` 60 → 62.
+**Tests added:** iter-86/91 → `stack-core/tests/test_guard_family.py`: +9 (3 anti-vacuity incl. negative
+control + end-to-end, 2 provenance, 4 verify-remote). iter-90/91 → `demo-stack/tests/test_demopatch.py`:
++2 (G5×G7 fault injection).
+**Mutants:** 11 run, 11 killed after the M6 fixture repair (10 on `guard_family`, 1 re-mutating the
+demopatch fix). Signatures distinct.
+**Bugs surfaced + fixed inline:** 2 (`--verify-remote` no-op `f310cb7`; demopatch rollback `53264e4`).
+**Flakes stabilized:** none surfaced.
+**Knowledge backfill:** deferred to the pass that closes the session (the protocol doc §8 anti-vacuity
+rule wants the whole session's findings, not this pass's alone).
+
+**Routed-forward queue:** `CHECK-M257x-iter91-g5xg7-journal-on-postcondition-failure` **CLOSED** (fault
+injection). `CHECK-M257x-iter90-revert-idempotency` pinned, still open, deliberately not re-pinned.
+`CHECK-M257x-iter90-realmanifest-baseline` untouched by design. `CHECK-M257x-iter93-general-hedge-fence`
+and `CHECK-M257x-iter91-claim-twin-answer-key-stale` not in this pass's dimension.
+
+**Stop condition:** continue-to-next-pass — a full-family anti-vacuity scan surfaced three further
+unearned-GREEN paths not yet closed: `repair_reach_guard` exits 0 printing *"every booked finding was
+reached"* over an all-ungraded ledger; `unreadable_repo_claim_guard`'s "PREMISE LIFTED" is an exit 0 the
+family reads as GREEN; and `guard_family --allow-not-run` prints *"OK — every member of the census was
+run and returned green"* immediately after printing that N were not run.
