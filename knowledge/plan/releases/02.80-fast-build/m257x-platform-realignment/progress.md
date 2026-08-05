@@ -1177,3 +1177,42 @@ defect and would also explain why no amount of accessor work has helped.
   passages across 11 files. Landed as Fate 1 rather than routed, because the map had already been corrected
   and half-repairing is worse than not repairing. Carve-out held: `storage.md`'s three claims verbatim, the
   production-bucket escalation untouched. Gate **4 of 5**, unchanged — see iter-87/progress.md
+- iter-88 (tik): **the class iter-87 named is real, and its second instance was a LIVE defect in the demo
+  bring-up path.** iter-87 had only ever run `stack-core`; four rext sections read platform artifacts and
+  had never been re-run at the advanced ref (§5 rule 8 — iter-04 found a test RED since iter-02 because
+  only the new tests were run). Running them found: **the `$HOME/.aws/credentials` mitigation was keyed on
+  `name == "jobsimulation"`.** That bind, unmounted on a fresh Linux box, is auto-created by Docker as an
+  empty DIRECTORY, the AWS SDK opens it and fails `EISDIR`, and the container prints its whole cobra usage
+  block and exits 1 — the symptom misread for a release cycle as a missing `serve` subcommand. `d11a403`
+  deleted the service and **`838d907` moved the identical bind onto `backend`**, so **the hazard migrated
+  to the stack's most important container and the mitigation did not follow.** Its tripwire said nothing:
+  it looks the service up, misses, and calls `skipTest("jobsimulation not in the compose")` — a skip reads
+  exactly like a pass. Its sibling **passed** while asserting *"exactly 1 `$HOME` bind (jobsimulation's AWS
+  creds)"* — count right, claim false (§5 rule 17). **Repaired by derivation** (`D-M257x-88-1`):
+  `services_with_only_home_binds()` over the **raw** compose text (after `docker compose config` expands
+  them, the AWS bind and the stack's own postgres data dir are both just paths under `$HOME` — the intent
+  survives only unexpanded), **ALL** volumes rather than ANY (so a service mixing a home bind with one it
+  needs is excluded, not blanket-cleared — the caution the original comment asked for, now enforced), and
+  **fail-closed on an empty derivation**. Returns exactly `{backend}` at `0c91421`. **Second instance
+  (`D-M257x-88-2`): the demopatch anchor check has been SKIPPING since M254** — it restated its target path
+  beside the manifest that declares it, M254 re-pointed the manifest into `internal/aireadiness/`, the copy
+  did not follow, `isfile` failed, skip. So *"the app manifests were NEVER validated against a real clone"*
+  — the thing that class exists to prevent — quietly became true again for four releases. Path now derived
+  from the manifest; the skip split so **clone-present-but-path-absent FAILS**. Re-run: the anchor
+  **resolves** (M254 was right, just unverified) and `stack-injection` went **2 skips → 0**. **Third
+  (`D-M257x-88-3`): a test asserted the generator's source still contained `if name == "jobsimulation":`**
+  — it would have failed anyone who tried to remove the dead literal. Re-pointed at the property, with an
+  explicit `assertNotIn` on the old key. **§5 rule 43** generalises all three: key a mitigation on the
+  PROPERTY that made the service special, never its name — the property outlives the fold, the name is what
+  the platform keeps deleting; and **nothing in this family fences the test suites**, which is why they are
+  where stale platform constants survive longest. The full sweep of the un-run sections came in at **41 files, 34 OK, 5 FAILED, 1 ERROR, 2 skips**, and
+  **the residual is enumerated rather than summarised** — this iter's own finding is that unexercised
+  checks go quiet. **Nothing in it is repaired here** (the tripwire fired on the third line): 3 are
+  `pre_sha256` mismatches against live clones, which may be the **self-healing freshness gate working**
+  rather than a defect — `demopatch-spec.md` says *the anchor is the contract; the whole-file sha is only
+  a baseline* — so they are routed with an explicit **adjudicate-before-re-pinning** instruction; 1 is a
+  **G5 self-revert failure** (`next-web-back-to-cockpit`), the most serious of the set; 4 look
+  live-stack-dependent; 2 are unnamed skips. And the honest framing on all of them: `next-web-app` is 41
+  commits behind and was **fetched** this run, so by **§5 rule 41** the *vantage* changed — "these have
+  not been graded at origin HEAD before" is a different claim from "these broke", and establishing which
+  is the first job of the iter that takes them. Gate **4 of 5**, unchanged — see iter-88/progress.md

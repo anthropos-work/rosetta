@@ -1180,6 +1180,43 @@ Rules, in order of how often they actually catch something:
     own ordering, and always print the cardinality** — a single finding shown without a count reads
     as the whole verdict.
 
+43. **A mitigation keyed on a service NAME dies when the service does — and its tripwire dies with it,
+    skipping rather than failing.** The pairing is what makes this expensive: the fix and the check that
+    guards the fix share the same stale key, so they fail together, in the quietest available direction.
+
+    M257x iter-88. `docker-compose.yml` binds `$HOME/.aws/credentials` into a container; on a fresh Linux
+    box that path does not exist, **Docker auto-creates it as an empty DIRECTORY**, and the AWS SDK opens
+    it (opening a directory succeeds) then fails `EISDIR`. The container prints its full cobra usage block
+    and exits 1 — a symptom misread for an entire release cycle as a missing `serve` subcommand. M217
+    fixed it correctly, in the generated override, with `if name == "jobsimulation":`.
+
+    Then `d11a403` deleted the `jobsimulation` service and `838d907` moved the identical bind onto
+    **`backend`**. The hazard migrated to the stack's most important container; the mitigation stayed
+    pointed at a name that no longer resolved. And the tripwire written to catch exactly this looked the
+    service up first, did not find it, and called `skipTest("jobsimulation not in the compose")` —
+    a skip, which reads exactly like a pass (rule 8). Its sibling *passed* while asserting *"exactly 1
+    `$HOME` bind (jobsimulation's AWS creds)"*: the count right, the claim inside it false (rule 17).
+
+    Two more instances of the same shape surfaced in the same sweep, which is what makes it a rule rather
+    than an anecdote: an anti-vacuity assert reading `len(repos) >= 5` (the platform went to **4**, so a
+    guard against vacuity failed for the one reason it must not be sensitive to), and a demopatch anchor
+    check that restated its target path beside the manifest that declares it — the manifest was
+    re-pointed at M254, the restated copy was not, and the check **skipped for four releases**, which is
+    the precise failure its own docstring said it existed to prevent.
+
+    > **Rule.** Key a mitigation on the PROPERTY that made the service special — here *carries a `$HOME`
+    > bind* — never on its name. The property outlives the fold; the name is exactly what the platform has
+    > been deleting for three releases. And **a check that looks its subject up must FAIL when the subject
+    > is absent but its world is present**: "no clone on this box" is a real skip, "the clone is here and
+    > the thing is not in it" is the drift.
+
+    **The suite is not fenced, and that is where these live.** Every fence in this family watches the
+    corpus or the platform; nothing watches the *tests*, so a hand-maintained platform constant inside a
+    test suite is the least-observed place in the system. Two of the three instances above sit in test
+    files, and one of them — an assertion that the generator's source still contained the dead literal —
+    would have **failed anyone who tried to remove the defect**. When you sweep for stale platform
+    constants, sweep the checks too, and read the skip count before the pass count.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
