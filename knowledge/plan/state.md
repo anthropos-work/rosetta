@@ -3,7 +3,7 @@ active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fa
 active_branch: "release/02.80-fast-build"
 active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 94 iters + 19 harden passes closed (branch m257x/platform-realignment). Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP on the new Mac (D-v28-15 machine move DONE; odysseus retired, billion demo-only). **Gate 4 of 5.** Clauses 1 (3 cold green cycles), 2 (Playthroughs), 3 (the fenced migration map) and 4 (zero rext writes to schemas the platform no longer creates — REXT_TRANSITIONAL_SCHEMAS is EMPTY and machine-checked) all HOLD. **Clause 5 (KB-fidelity) is the only open one**, and the user has ruled three times that it is met ONLY by a reading that returns zero — it is not re-cut, reinterpreted or argued. Active strategy **TOK-05** (stop repairing claims; fence the predicates under them). The guard family is **17 members** (iter-93 added `unreadable_repo_claim_guard`), run by `rext stack-core/guard_family.py`, which exits 2 on not-run rather than laundering it as green — and which since iter-91 **prints the reference (corpus sha, platform sha, origin/main, fetch age) with every verdict** and refuses `exit 2` UNMEASURED against a platform clone with no `origin/main`. **A guard now has THREE verdicts, not two** (pass / fail / UNMEASURED): iter-91 found `platform_alignment_guard` silently falling back to the WORKTREE when a ref would not resolve and grading `unresolvable` as nothing, and iter-94 found `story_org_count_guard` passing over ZERO corpus docs behind a control that could never fire. **Three anti-vacuity defects landed in one session** — the generalised rule is in `platform-alignment.md` §8: write the anti-vacuity control against the guard's SUBJECT, not its inputs. **Run 58 (iters 90–94) repaired the instrument, not the corpus** — no reading was taken, deliberately: the instrument was under repair for four consecutive iters and a measuring pass may not contain one. **iter-90 repaired the demopatch APPLY/REVERT asymmetry** (the user's option (b) — apply journals the observed pre-state, revert restores exactly it), proven live on the real drifted clone, and landed a **6-test conjunction battery** with a permanent mutation control. The finding that outlives it: **G2 and G5 cannot both hold once the base is allowed to move, and every test asserted them SEPARATELY** — a specification with seven guards needs one test per interacting PAIR, not one per guard. Also standing, from the same iter: `platform_alignment_guard` silently falls back to the **worktree** when a ref will not resolve and grades `unresolvable` as nothing at all — the three-valued discriminator failure (yes / no / **cannot-tell**) with cannot-tell laundered as no. Fix routed to iter-91. **iter-87 absorbed the THIRD platform move**: `838d907` / `0c91421` (2026-08-05) deleted the storage, messenger AND customerio-sync compose services outright and removed storage+messenger from `repos.yml` — caught unaided by `platform_alignment_guard` assertion B, 2 for 2, hours after it landed; the derived migration/schema sets tracked it with zero human action. **RE-SCOPE TRIGGER — read this before quoting it:** it stands at **occurrence 3, and is NOT currently firing**. It ALREADY FIRED once, at **iter-53** (`D-M257x-53-6`, occurrence 2 of 2); it was escalated, and its own prescribed remedy — a pinning-and-tracking POLICY — was built as **TOK-04** (P1 state your refs · P2 instruments as committed files · P3 re-check the ref at close, and the detecting iter re-points it). Occurrence 3 (2026-08-05) is separated from occurrence 2 (2026-08-03) by **33 clean iters**, so \"two CONSECUTIVE invalidated attempts\" is false on its own words. **This field said \"occurrence 1 of 2\" for 73 iters after the trigger had already fired, and fed that wrong number into a run brief** — which is why the history is spelled out here rather than as a count."
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15; odysseus retired, billion demo-only). **Gate 4 of 5.** Clauses 1–4 HOLD. **Clause 5 (KB-fidelity) is the only open one** and the user has ruled FOUR times it is met ONLY by a reading returning zero — never re-cut, reinterpreted or argued. Active strategy **TOK-05** (stop repairing claims; fence the predicates under them). **TWO INSTRUMENTS, AND CONFLATING THEM HAS COST THIS MILESTONE REPEATEDLY (iter-80, again at runs 54–58):** clause 3's is the GUARD FAMILY; clause 5's is the graded READ. Repairing the guards is not progress on clause 5. Guard family = **17 members** via `rext stack-core/guard_family.py`, measured **14 GREEN · 0 RED · 3 input-gated** (the 3 need `--range`/`--ledger`); it exits 2 on not-run rather than laundering it green, prints the reference (corpus+platform sha, origin/main, fetch age) with every verdict, and a guard has **THREE verdicts, not two** (pass/fail/UNMEASURED). **Three anti-vacuity defects landed in one session** (iters 91–94) — generalised rule in `platform-alignment.md` §8: **write the anti-vacuity control against the guard's SUBJECT, not its inputs.** From iter-90's demopatch work, the finding that outlives it: **G2 and G5 cannot both hold once the base is allowed to move, and every test asserted them SEPARATELY** — a spec with seven guards needs one test per interacting PAIR. **iter-87 absorbed the THIRD platform move** (`838d907`/`0c91421`, 2026-08-05: storage+messenger+customerio-sync compose services deleted, storage+messenger out of `repos.yml`), caught unaided by `platform_alignment_guard` assertion B hours after it landed. **RE-SCOPE TRIGGER — read before quoting:** it stands at **occurrence 3 and is NOT firing**. It already FIRED at iter-53 (`D-M257x-53-6`); the remedy — a pinning/tracking POLICY — was built as **TOK-04** (P1 state your refs · P2 instruments as committed files · P3 re-check the ref at close). Occurrence 3 is **33 clean iters** after occurrence 2, so 'two CONSECUTIVE invalidated attempts' is false on its own words. This field said 'occurrence 1 of 2' for 73 iters after the trigger had fired and fed that wrong number into a run brief — hence the history is spelled out, not counted."
 last_updated: "2026-08-05"
 ---
 
@@ -27,28 +27,19 @@ last_updated: "2026-08-05"
 
 ## Active milestone
 
-**M257x — platform re-alignment** (`iterative`, not started). **The team is migrating the microservices back
-into `app` toward a monolithic design, and nobody on our side knows how far it has got.** Find out, write it
-down where it cannot rot, and make **both** repos work against the platform as it is.
-
-Not speculative — **M257 hit the wall**: its iters found the demo **could not have been built cold on any
-machine for four days**, and the gate's own health check was reading a **dropped table** behind a `|| echo 0`
-that turned the error into `0`. Platform `repos.yml` @ origin `236771f10` now says cms/jobsimulation/roadrunner
-**own no local schema**, while rext still writes **~15 `jobsimulation.*` tables**. Our own
-`stack-dev/platform/repos.yml` still lists **skillpath**, decommissioned in v2.7.
-
+**M257x — platform re-alignment** (`iterative`, **IN PROGRESS**). Find how far the microservices→`app`
+consolidation has got, write it where it cannot rot, and make **both** repos work against the platform as it is.
 **Third occurrence of one class** (v2.1 skiller · v2.7 skillpath · now jobsimulation), each re-derived from
 scratch — so `corpus/ops/platform-alignment.md` is a deliverable, not a formality.
 
-**M257 — first-light build: PAUSED** behind it. Banked and not to be redone: odysseus provisioned (rc=0,
-16/16, Go present off PATH), both gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed,
-mirror fence parameterised by host. Still owed: the odysseus baseline, and `INVESTIGATE-M257-load1-48` —
-peak `load1` **48.7** vs HEADROOM clause 1's limit of **6**.
-
+**M257 — first-light build: PAUSED** behind it. Banked, not to be redone: odysseus provisioned (rc=0, 16/16),
+both gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed, mirror fence parameterised by
+host. Still owed: the odysseus baseline, and `INVESTIGATE-M257-load1-48` — peak `load1` **48.7** vs HEADROOM
+clause 1's limit of **6**.
 
 ## Phase
 
-Between milestones. M256 is closed and merged; nothing is half-written.
+M257x iter loop. Gate **4 of 5**; clause 5 open. See the `phase:` field above for the live detail.
 
 ## v2.8 shape
 
