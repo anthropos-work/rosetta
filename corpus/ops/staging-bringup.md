@@ -367,7 +367,9 @@ cd ~/platform
 docker compose --profile all up --build -d
 ```
 
-Wait 5-15 min for all 14 services to report healthy:
+Wait 5-15 min for all services to report healthy. At platform `0dab54d` `--profile all` selects
+**8** of the 10 declared services (it no longer includes `messenger` or `storage` — running both
+alongside `app` would put two consumers on one Redis group and two writers on one bucket):
 
 ```bash
 docker compose ps --format "table {{.Service}}\t{{.Status}}"

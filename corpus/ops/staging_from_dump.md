@@ -320,7 +320,9 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see ~14 services running (was ~15 before `skillpath` was decommissioned into `app`). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
+You should see **8** services running at platform `0dab54d` — `--profile all` selects 8 of the 10
+declared (the count was ~14 before the cms/jobsimulation/roadrunner fold and the `graphql` deletion;
+corrected M257x iter-78). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
 
 ---
 

@@ -827,3 +827,27 @@ defect and would also explain why no amount of accessor work has helped.
   (historical vocabulary · discriminator order · *committing is not pushing*). rext `main` pushed —
   13 commits had existed on one disk. 5 corpus guards GREEN, 140 guard tests, section suites at
   baseline. Gate **4 of 5**, unchanged — see iter-77/progress.md
+- iter-78 (tik, closed-fixed): **the milestone's one explicitly-unsettled denominator is settled —
+  and 8 vs 9 vs 10 was never three opinions about one number.** Derived across every ref the corpus
+  cites: **8** is `docker-compose.yml` alone, **10** the effective topology once `include:
+  common.yml` adds the always-on floor, and **9 is a count of nothing** — the history runs
+  12 → 12 → 11 → 8 → 8 and never passes through it. Three documents asserted the nine. Six sites
+  repaired so each states *which set it counts* (the unstated qualifier was the real defect),
+  including `platform_repo.md:59`, which still listed a `graphql` service deleted two folds earlier,
+  and the staging pair counting **14** running containers where `--profile all` now selects **8**
+  (`messenger` and `storage` dropped from `all` — two consumers on one Redis group, two writers on
+  one bucket). `platform-alignment.md:194`'s **14** adjudicated **correct**: a dated measurement,
+  and at `b56d731` the effective count was 12 + 2. **G10** fences the predicate — and it asserts
+  the **PAIR, never a value**, because both 8 and 10 name real sets and the corpus contains one
+  correct document of each, so a fence picking a side would go RED on a correct doc and repair it
+  into a different truth. The obvious construct was **measured at 44% precision** (this corpus
+  counts the floor, the application services, *"the last two subgraph services"* and plain narrative
+  with the same words) and **replaced, not thresholded** (§4 Trap A): scoped to a declaration verb
+  with a compose subject in the same **block** it reaches 4 sites at **100%**. Number-words are in
+  the pattern (all three false sites write *"nine"*; a digits-only rule reads none of them) and the
+  block window recovered 2 of 4 that a line window missed — **the third window bug of this
+  milestone**. iter-77's ref rule paid immediately: `external_services.md:296` claims *"platform
+  `0dab54d`'s compose declares nine services"* while its leftmost pin is `b948604`, an **app** sha —
+  **second confirmed instance** of a foreign sha laundering a platform claim.
+  `CHECK-M257x-iter76-compose-service-count` **CLOSED**. 149 guard tests, 5 corpus guards GREEN.
+  Gate **4 of 5**, unchanged — see iter-78/progress.md

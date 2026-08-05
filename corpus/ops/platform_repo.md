@@ -56,9 +56,11 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **11 app services**: `graphql`, `sentinel`, `backend`,
-`storage`, `customerio-sync`, `messenger`, `studio-desk`, `next-web-app` — plus the
-third-party `gotenberg` image and the two base services from `common.yml`.
+`docker-compose.yml` defines **8 services** at platform `0dab54d`: `sentinel`, `backend`,
+`storage`, `customerio-sync`, `messenger`, `studio-desk`, `next-web-app` and the third-party
+`gotenberg` image — **10 in the effective topology**, once `include: common.yml` adds the two
+always-on base services (`postgresql`, `redis`). The `graphql` service was **deleted** at platform
+`2adcf71`; corrected M257x iter-78, and fenced by `platform_predicate_guard` G10.
 
 > **Five services were folded into `backend`.** `skiller`, `skillpath`, `roadrunner`,
 > `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app v8.0) all run in-process inside

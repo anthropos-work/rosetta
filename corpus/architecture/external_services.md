@@ -293,7 +293,8 @@ so images stay real — no blob bytes are copied locally.
 > `app/cms_reader_switch.go` swaps the content reader to the in-process cms server, and
 > `app/main.go:980-982` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`** (@ `app`
 > `b948604` v1.366.0). There is **no `cms` container left to start** — platform `0dab54d`'s compose
-> declares nine services and `cms` is not one of them; every content read is `backend`'s own.
+> declares **eight** services — ten in the effective topology, once `include: common.yml` adds the
+> `postgresql`/`redis` floor — and `cms` is not one of them; every content read is `backend`'s own.
 
 The cms domain connects to Directus via:
 

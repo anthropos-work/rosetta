@@ -32,7 +32,8 @@
 >   `JOBSIMULATION_RPC_ADDR=`**`http://backend:8083`** locally (`docker-compose.yml:176` @ platform
 >   `0dab54d`); `http://backend.internal.anthropos:8081` in production.
 >   **The local re-point onto `app` — M809 — HAS landed**, and there is no husk container left to reach:
->   `0dab54d`'s compose declares nine services and `jobsimulation` is not one of them.
+>   `0dab54d`'s compose declares **eight** services — ten effective, once `include: common.yml` adds
+>   the `postgresql`/`redis` floor — and `jobsimulation` is not one of them.
 >   (`http://jobsimulation:8401` was true at `2adcf71`.) The in-app edge is registered at
 >   `app/main.go:1204` (@ `b948604` v1.366.0). `app` itself makes
 >   **no** outbound jobsim RPC — those are in-process calls now.

@@ -32,7 +32,8 @@
 > * **RPC** — `CMSService` is served on `app`'s single RPC mux. `messenger` reaches it at
 >   `CMS_RPC_ADDR=`**`http://backend:8083`** locally (`docker-compose.yml:174` @ platform `0dab54d`) —
 >   **the M809 re-point has landed**, and there is no husk container left to reach: `0dab54d`'s compose
->   declares nine services and `cms` is not one of them. (`http://cms:8091`, still quoted around this
+>   declares **eight** services — ten in the effective topology, once `include: common.yml` adds the
+>   `postgresql`/`redis` floor — and `cms` is not one of them. (`http://cms:8091`, still quoted around this
 >   corpus, was true at `2adcf71`.) `http://backend.internal.anthropos:8081` in production.
 >   `app`'s own source comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still calls the in-app
 >   edge *"additive + DORMANT … until the **M809** re-point"* — **that comment is stale in `app`**;
