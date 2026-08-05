@@ -1743,3 +1743,104 @@ line now reads *"OK with gaps — 14 of 17 … This is NOT a whole-family green.
 iter-91 still has no end-to-end `main() == 2` test, `guard_family`'s `fetch_age_min` provenance field is
 unpinned, and the family's CANNOT-CHECK detection is a content sniff over merged stdout+stderr that has
 never been tested against a guard which echoes corpus prose.
+
+## Pass 22 — 2026-08-05 — incremental
+
+**Iters hardened this pass:** iter-80 … iter-94 (same window; third and last dimension)
+**Tiks covered since prior pass:** 0 (third pass of the same session; the incremental cap is 3)
+
+**The dimension: the code iter-91 added, which is the newest in the window and the least exercised.**
+Both defects live in the paths that gave the guards their third verdict.
+
+**1. `ALIGNMENT_ALLOW_UNMEASURED=1` hid exactly what it promised to record.** The refusal offers the
+variable as accepting the gap *"which RECORDS it rather than hiding it."* Measured with it set, against a
+platform root that is not a git repo:
+
+```
+platform_alignment_guard: assertion F resolved 3 citation(s) — … 0 unresolvable
+platform_alignment_guard: OK — map.md and repos.yml agree in both directions.
+```
+
+Nothing on either stream said that **3 citations had been read from the WORKTREE because no ref
+resolved**. The always-printed reach line reported `unresolvable` and never the worktree-fallback count,
+so on the accepted path there was no trace at all: a clean, unqualified green, reachable by one
+environment variable, on the guard the exit gate leans on hardest. **That is the precise substitution the
+refusal block exists to prevent, restored by its own escape hatch.** Fixed in three parts — the worktree
+count joins the reach line on every run; an accepted gap is announced on the same stream as the refusals;
+and the verdict becomes `OK WITH AN ACCEPTED GAP … this is NOT a whole-map green`.
+
+Separately: **the UNMEASURED verdict itself had no end-to-end test.** Every test for it stopped at
+`cited_text`; `main()`'s grading step (`no_ref_clones` → `blind` → `return 2`) was exercised by nothing. It
+needed no fixture construction — a platform root that is not a git repo **is** the condition, so the
+synthetic battery's existing fixture reaches it. Three tests now cover exit 2, the accepted path, and the
+unqualified-OK control.
+
+**2. `guard_family`'s CANNOT-CHECK sniff could DOWNGRADE a real RED.** It ran first and unconditionally
+over merged stdout+stderr, so a guard that exited 1 while **echoing a corpus line** containing the phrase
+was graded CANNOT-CHECK — which drops it from `red` and turns the family's report from `RED — <guard>` into
+`could not check`, so the findings vanish from the one view that claims to summarise the family. Two guards
+in this census echo corpus lines verbatim and both phrases occur in this repository's own prose. Scoped to
+`rc == 0`, the only case it was ever for: a guard that exits non-zero has already said it is not green, and
+its exit code is a better witness than a substring of its output.
+
+**3. `fetch_age_min`** — the third provenance field — was still unpinned and could be deleted green. Both
+directions now covered: reported when a `FETCH_HEAD` exists, and **absent rather than invented** when it
+does not.
+
+**Tests added:** +7 (`test_platform_alignment_guard.py` 42 → 45, `test_guard_family.py` 33 → 36).
+**Mutants:** 8 run, 8 killed.
+**Bugs surfaced + fixed inline:** 3, all in `6130bfd`.
+
+**Knowledge backfill:** `corpus/ops/platform-alignment.md` §8 gains *"Then audit the guards' TESTS the same
+way — that is where the next three were"* (`8ef3906`), generalising iter-94's rule: **the thing that
+reports is not the thing that measured.** Names the three shapes (a flag or hatch that silently does
+nothing; a verdict over a graded set of zero; a summary sentence contradicting the line above it) and the
+two operational corollaries (an accepted gap is still a gap, and grade on the exit code rather than a
+substring wherever the code exists).
+
+### Flake gate — 3 consecutive full `stack-core` runs on the settled tree
+
+| run | tests | failures |
+|---|---|---|
+| 1 | 910 | 1 — `test_claim_twin_guard_iter48_answer_key` |
+| 2 | 910 | 1 — same |
+| 3 | 910 | 1 — same |
+
+Plus two earlier full runs at intermediate commits (894/1F, 904/1F) and a full `demo-stack` run:
+**1058 tests, 6 failures — exactly the attributed set** (3 need a live container; 3 are stale live-clone
+baselines across two independent patch vehicles). **Both known pre-existing failure sets reproduce
+unchanged.** The one change in the set during this session was the collection fence going RED, which was a
+real defect in iter-94 and is fixed (`7f64003`).
+
+**Session totals (passes 20–22):** 5 rext commits + 4 rosetta commits · **+27 tests** across 5 files ·
+**10 live defects fixed inline** · **26 mutants run, 25 killed + 1 survivor that correctly deleted a
+redundant control**.
+
+**Stop condition:** cap reached without stabilization — the 3-pass incremental cap fired, and the third
+pass still surfaced three defects, so the dimension scan did not come up empty. That is the honest reading
+and it is **not** a request for a fourth pass: **this was the last pass permitted to touch the measuring
+instrument** (the next run takes the clause-5 reading and the protocol requires the instrument untouched
+during it). The remainder is therefore **routed forward, disclosed, not silently dropped**:
+
+- `platform_predicate_guard` records `app_consumer_side=unmeasured`, `repo_vocabulary_history=UNMEASURED`
+  and `guard_platform_ref=UNRESOLVED` in its reach line and still returns 0 — the sibling of the fix
+  iter-91 applied to `platform_alignment_guard`, left unapplied. **Not live on this box** (measured: the
+  app consumer side reads `measured @ origin/main@2035f9a`), and grading it is a design decision about
+  whether partial blindness should block the family, so it is routed rather than taken unilaterally.
+- **Waivers are not reported and staleness is not detected.** `repair_leak_guard.py` says in its own words
+  *"It can only ever make the fence quieter, so it is reported"* and `repair_leak_waivers.json` says
+  *"every one is reported on each run"* — neither is true of the code; a leak waiver swallows a finding
+  with zero trace. Neither waiver file has stale-entry detection, and `repair_reach_waivers.json`'s six
+  entries are keyed to one specific ledger.
+- **A crash is rendered as RED with its traceback itemised as findings.** `story_org_count_guard`,
+  `platform_predicate_guard` and `unreadable_repo_claim_guard` each `read_text()` an input with no
+  `is_file()` check, so a missing input is an uncaught exception (exit 1), and `headline()` then counts the
+  indented traceback lines as a finding count.
+- `demo_knob_guard` has no vacuity control at all.
+- demopatch: a corrupt or truncated journal at revert falls back to the sha baseline **silently** — apply
+  warns about a missing entry, revert never does — and an `OSError` inside the G7 failure path escapes
+  untyped past `main`'s `except PatchError`, leaving a stale journal entry.
+
+**The instrument as frozen**, run end-to-end after every change in this session:
+`14 GREEN · 0 RED · 0 could-not-check · 3 not-run` over 17 members, corpus `8ef3906`, platform `0c91421df`
+(origin/main in sync), summary line `OK with gaps — 14 of 17 … This is NOT a whole-family green.`
