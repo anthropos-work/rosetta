@@ -1349,3 +1349,23 @@ defect and would also explain why no amount of accessor work has helped.
   printed `OK (skipped=1)`. **A check that skips reads exactly like a check that passes, including when it
   is the check on the guard that exists to say so** — ninth consecutive iteration in which the author of a
   rule broke it while writing the thing the rule governs. Gate **4 of 5**, unchanged — see iter-93/progress.md
+- iter-94 (tik): **the guard family was reporting a green one of its own members had not earned.** iter-91's
+  mutation run had shown the family against an empty tree reporting `2 GREEN · 2 RED · 9 could-not-check` —
+  nine members correctly said *COULD NOT RUN — no corpus/*, two said GREEN. **This matters because the
+  family's green is the evidence this milestone quotes**, so an unearned member contaminates every reading
+  taken with it, including the clause-5 one still owed. Adjudicated **separately**, because a shared symptom
+  is not a shared cause: `union_apply_guard` is **correct by design** (its subject IS rext's demopatch
+  manifests; making it honour `--repo-root` would break it in the rext-only checkouts the family is consumed
+  from per-stack) — **not changed, and that negative half is recorded, not silently skipped.**
+  `story_org_count_guard` was a **real defect**: its `scan_roots()` returns the corpus **plus rext's own two
+  directories**, and the guard *lives* in rext, so `if not roots: return 2` was **dead code that could never
+  fire** — a run whose rosetta half was missing scanned only rext, found nothing to contradict, and printed
+  *"and every doc agrees"* at `rc=0`. **"Every doc agrees" over ZERO corpus docs is vacuously true.** Fixed
+  with a positive control on **the corpus half specifically** plus the cardinality: empty tree
+  `rc=0 OK` → **`rc=2 CANNOT RUN — Nothing was checked; this is not GREEN`**; real tree → `OK — all **116**
+  scanned doc(s) agree`. Both directions tested. **And the pattern is now the finding: three anti-vacuity
+  defects in one session** (iter-91 graded total but not partial blindness; iter-93's own live-corpus test
+  silently SKIPPED on a hardcoded `parents[3]`; iter-94's control could never fire) — three guards, three
+  authors' assumptions, **one substitution: the control asked whether the guard had INPUTS when what
+  mattered was whether it had reached its SUBJECT.** Generalised into the protocol doc §8. Gate **4 of 5**,
+  unchanged — see iter-94/progress.md

@@ -1827,6 +1827,35 @@ asserts against a recording fake `Conn` that accepts any table name — *a fake 
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
 only check that knows what the migration path actually produced.
 
+### Write the anti-vacuity control against the guard's SUBJECT, not its inputs (M257x iter-94)
+
+§5 rule 8 says *a check that SKIPS reads exactly like a check that PASSES*. Everyone in this milestone has
+read it. It was still violated **three times in one session, by three different guards**:
+
+| iter | guard | the control that failed |
+|---|---|---|
+| 91 | `platform_alignment_guard` | graded **total** resolver failure (`subject_checked == 0`) but not **partial** blindness |
+| 93 | `unreadable_repo_claim_guard`'s own live-corpus test | **silently skipped** on a hardcoded `parents[3]` |
+| 94 | `story_org_count_guard` | its emptiness control **could never fire** |
+
+The last is the clearest. Its `scan_roots()` returns the corpus **plus rext's own two directories** — and
+the guard lives in rext, so those always exist. `if not roots: return 2` was therefore dead code, and a run
+whose rosetta half was missing scanned only rext, found nothing to contradict, and printed *"and every doc
+agrees"* with `rc=0`. **"Every doc agrees" over zero docs is vacuously true.**
+
+All three are the **same substitution**: the control asked whether the guard had *inputs* — roots existed, a
+file was found, *some* citations resolved — when what mattered was whether it had reached its **subject**.
+
+> **Rule.** An anti-vacuity control must assert against the thing the guard makes claims about, not against
+> whatever it happened to load. Ask *"did I look at the thing I am about to make a claim about?"* — and
+> **print the count**, because a vacuous scan and a real one otherwise produce the identical sentence
+> (`OK — all 116 scanned doc(s) agree` vs `OK — … every doc agrees`).
+
+Corollary, from the same iter: **a shared symptom is not a shared cause.** Both `story_org_count_guard` and
+`union_apply_guard` returned GREEN against a corpus-less tree; only one was a defect. `union_apply_guard`'s
+subject IS rext's manifest set, so it is correct by design, and "fixing" it to honour `--repo-root` would
+have broken it in the rext-only checkouts the family is consumed from per-stack.
+
 ### Fencing a document does not fence its PARAPHRASES (M257x iter-92 / iter-93)
 
 The fenced map's `cms` row said, in its own voice:
