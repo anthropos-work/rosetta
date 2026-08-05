@@ -1216,3 +1216,25 @@ defect and would also explain why no amount of accessor work has helped.
   commits behind and was **fetched** this run, so by **§5 rule 41** the *vantage* changed — "these have
   not been graded at origin HEAD before" is a different claim from "these broke", and establishing which
   is the first job of the iter that takes them. Gate **4 of 5**, unchanged — see iter-88/progress.md
+- iter-89 (tik): **the four demo-stack failures iter-88 routed are ONE structural defect, and the joining
+  experiment was `git status`.** `stack-demo/next-web-app` is dirty: the `next-web-back-to-cockpit`
+  demo-patch is **left applied**, and a patched file cannot match a pristine `pre_sha256` — so the three
+  sha mismatches were **downstream of the un-reverted patch**, not a separate class (§5 rule 28 again:
+  three true facts do not make a cause). The revert refuses **correctly** (*"neither pre nor post — manual
+  drift; refusing to guess"*, G2 doing its job); four shas explain why. The clone's **pristine** file
+  (`48b6dd07`) is **not** the manifest's `pre` (`0c2c2ed2`) — `next-web-app` is 41 commits behind and the
+  baseline predates that drift. So **apply** resolved its ANCHOR and self-healed onto the drifted base (by
+  design — *"the anchor is the contract; the whole-file sha is only a baseline"*), producing a file whose
+  whole-file sha is **necessarily** neither recorded value, and **revert**, which compares whole-file
+  shas, refuses. **The asymmetry is the defect: APPLY is anchor-based and self-heals across base drift;
+  REVERT is whole-file-sha-based and cannot — so on any clone whose base has drifted, which is the NORMAL
+  state, the patch applies and will not come off, and the clone is left dirty.** That contradicts the
+  mechanism's headline promise in its own spec's words (*"the clone is left git-clean"*): **G2 and G5 are
+  in tension, structurally, and no test asserted their CONJUNCTION — each was verified alone.** Nothing
+  repaired: the fix is a design choice on code that rewrites platform source inside a build (four options
+  costed in `iter-89/decisions.md`; **(b) journal the observed pre-state at apply** is the reading offered,
+  not taken), and the dirty clones are uncommitted state only the user may decide on. **Re-pinning the
+  baseline was available and REFUSED** — it would have made one file match and hidden the asymmetry, which
+  is exactly what iter-88's routing instruction and the spec both forbid. Clones left exactly as found so
+  the defect reproduces without being re-created. `EXIT_REASON: user-blocker`. Gate **4 of 5**, unchanged —
+  see iter-89/progress.md
