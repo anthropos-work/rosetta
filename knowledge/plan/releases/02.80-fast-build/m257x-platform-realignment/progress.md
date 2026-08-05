@@ -1295,3 +1295,29 @@ defect and would also explain why no amount of accessor work has helped.
   is stale because the platform moved**. Folded into iter-92's M810 sweep. Guard family **15 GREEN · 0 RED ·
   0 could-not-check**, every clone fetched, `platform @ 0c91421df, in sync`. Gate **4 of 5**, unchanged —
   see iter-91/progress.md
+- iter-92 (tik): **the M810 sweep was already done — and the one real defect was a FENCED claim restated
+  UNFENCED, and stronger.** The brief's *"~14 passages across 11 files treat it as one future event"* was
+  re-measured at HEAD before acting: **15 files / 40 occurrences, and the great majority already correct**
+  (`corpus/README.md:16`, `CLAUDE.md:189`, `backend.md:36`, `cms.md:9`, `services/README.md:17`,
+  `jobsimulation.md` 5 of 5, both fenced map rows). **A task description is a claim too**; re-running the
+  sweep would have re-landed landed work, which is exactly what Step 0 exists to prevent. What the
+  re-survey found instead is better. **(1)** The fenced map says of cms *"whether that rollback declaration
+  still stands is **not something this map can see**"* — while `backend.md:36` and `CLAUDE.md:241` both
+  asserted flatly that `module.cms_euwest1` **is still declared**. **Fencing a document does not fence its
+  paraphrases**, and the unfenced copies had drifted UPWARD in confidence — a hedge that survives only where
+  a guard reads it is worse than no hedge, because it implies the system checked. A real limit on the
+  TOK-02/TOK-05 method, recorded as one. **(2)** cms **has** moved, opposite to what the corpus recorded:
+  `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted** the build-production workflow — *"the cms ECR
+  repository is decommissioned (M810)"* — because it *"would try to push an image into a registry that no
+  longer exists."* So the repo holds **two measured facts pointing opposite ways** (a module block still
+  declared at `cms/terraform/main.tf:39`; a CI commit saying the registry is gone), while the destruction
+  itself lands in `infrastructure/services.tf`, **in no clone set we have**. Now reported as UNMEASURABLE
+  *with contrary evidence on both sides* — a better epistemic position than the corpus had, and the
+  deferred-by-rule boundary respected rather than argued past. Ground truth re-measured per service:
+  jobsimulation's module block is **deleted** (`6092c6d2`, service+task-def+ECR destroyed; the file survives
+  only to own the LiveKit/Chime buckets), cms's is **declared at 0**. **And iter-91's new fence caught its
+  own author within the hour**: the map edit first went in citing `` `main.tf:39` `` instead of
+  `` `cms/terraform/main.tf:39` `` → `platform_alignment_guard CANNOT-CHECK rc=2`. **Before iter-91 that
+  would have printed as unresolvable and exited 0 GREEN**, shipping a dead citation under a green fence —
+  the first live catch of the third verdict, and a positive control nobody had to construct. Gate **4 of
+  5**, unchanged — see iter-92/progress.md

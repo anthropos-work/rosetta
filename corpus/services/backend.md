@@ -33,9 +33,21 @@
 > * **`app` owns the `skiller`, `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both
 >   producer and consumer are in-process. Merge new handlers onto the existing subscriber with
 >   `.AddHandler(...)`; a second `AddSubscriber` for the same stream silently overwrites the first.
-> * **The M810 prod teardown is UNEVEN — do not state the two together.** `cms` has not moved:
->   `module.cms_euwest1` is still declared as the rollback path and takes no traffic
->   (`cms/terraform/main.tf:39` `service_desired_count = 0`). **`jobsimulation`'s ECS service is already
+> * **The M810 prod teardown is UNEVEN — do not state the two together.** `cms`'s **terraform module block
+>   has not moved**: it is still declared and takes no traffic (`cms/terraform/main.tf:39`
+>   `service_desired_count = 0`, re-measured at `f38c0c4`). **But `cms` HAS taken an M810 step since, and
+>   it cuts against the older reading:** `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted**
+>   `.github/workflows/build-production.yml` with the subject *"the cms ECR repository is decommissioned
+>   (M810)"*, and its body states that M810 *"deletes `module "cms_euwest1"` from the platform's
+>   `services.tf`, which destroys the ECS service and the production-cms ECR repository"* — the workflow
+>   went because it *"would try to push an image into a registry that no longer exists."*
+>   **Whether that infrastructure-side deletion has actually been applied is NOT MEASURABLE from any clone
+>   set we have** — `infrastructure` has never been in one. So do not assert either way: what is measured is
+>   a `cms`-repo commit asserting the destruction, and a `cms`-repo terraform block that still declares the
+>   module. The fenced map states this limit explicitly and is authoritative
+>   ([`platform-migration-status.md`](../architecture/platform-migration-status.md), the `cms` row). This
+>   bullet previously read *"`module.cms_euwest1` is still declared as the rollback path"* as a flat fact,
+>   which the map already said it could not see. **`jobsimulation`'s ECS service is already
 >   destroyed** — `6092c6d2` deleted the `module "jobsimulation"` block with its task definition and ECR
 >   repository (`jobsimulation/terraform/main.tf:15-22`); the module file survives only to own the
 >   LiveKit/Chime recording buckets `backend` reads by literal name, the `/production/jobsimulation/*` SSM

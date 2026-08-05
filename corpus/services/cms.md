@@ -6,8 +6,17 @@
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
 > separate service **in production**. Its subgraph is gone from the supergraph, and its ECS service is
 > **scaled to zero, not deleted** — `cms/terraform/main.tf:39` `service_desired_count = 0` — and this is
-> the **one M810 row that has not moved**: do not read jobsimulation's teardown onto it (`6092c6d2`
-> destroyed that module's service block outright). It was the **fourth** engine consolidated into `app`, after
+> the one M810 row whose **terraform module block** has not moved: do not read jobsimulation's teardown
+> onto it (`6092c6d2` destroyed that module's service block outright).
+> **⚠️ But cms HAS taken an M810 step since, and the corpus's "it has not moved" was becoming stale:**
+> `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted** `.github/workflows/build-production.yml` under the
+> subject *"the cms ECR repository is decommissioned (M810)"*, its body stating that M810 *"deletes
+> `module "cms_euwest1"` from the platform's `services.tf`, which destroys the ECS service and the
+> production-cms ECR repository"* — the workflow went because it *"would try to push an image into a
+> registry that no longer exists."* **So the two measured facts in this repo point opposite ways** (a
+> module block that still declares the service; a CI commit asserting the registry is already gone), and
+> the deletion itself lands in `infrastructure`, **which has never been in any clone set we have.**
+> **Do not assert either way** — see the scope note below, and the fenced map, which states the same limit. It was the **fourth** engine consolidated into `app`, after
 > [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md) — **not the
 > last.** The v9.0 program (2026-08-04) then folded [`storage`](./storage.md),
 > [`messenger`](./messenger.md) and [`customerio-sync`](./customerio-sync.md), and platform `838d907`
