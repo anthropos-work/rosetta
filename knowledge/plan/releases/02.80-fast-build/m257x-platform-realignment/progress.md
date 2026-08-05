@@ -1238,3 +1238,32 @@ defect and would also explain why no amount of accessor work has helped.
   is exactly what iter-88's routing instruction and the spec both forbid. Clones left exactly as found so
   the defect reproduces without being re-created. `EXIT_REASON: user-blocker`. Gate **4 of 5**, unchanged —
   see iter-89/progress.md
+- iter-90 (tik): **the demopatch asymmetry is repaired, and the CONJUNCTION is now what is tested.** The
+  user's decision — **(b) journal the observed pre-state at apply; revert restores exactly it** — was
+  re-derived and UPHELD, with one correction to its rationale: (b) does not *reconcile* G2 and G5, it
+  **deletes the term they disagreed about** (revert's dependence on a recorded baseline that apply had
+  already stopped consulting at M217). That distinction predicts why option (a) would have failed too. The
+  reproduction was captured first, live, in two commands — `status` → `patched`, `revert` → *"neither pre
+  nor post"* — on all three shipped next-web manifests, and the residue diff was independently re-derived as
+  **exactly** the three demo-patches and no human work. Ordered as mandated: the **6-test conjunction
+  battery** was written and shown **RED (4 of 5, negative control correctly green)** BEFORE the fix, and the
+  dirty clones were not spent until it existed. The fix journals the observed pre-image in the **workspace
+  root** (never in a clone), consumes it on revert, and removes the directory when it empties; **no journal
+  ⇒ no guessing**, so an un-journalled drift still refuses — revert became *exact*, not *blind*. Proven
+  **live on the real drifted clone**: apply→apply→LIFO revert→`git status` empty, and the chain's recomputed
+  post `ebab9e7e…` is **exactly** the sha the failing tests reported when dirty, closing iter-89's diagnosis.
+  The two dirty files were then cleaned via `--force-pristine`, and the limitation is **recorded, not
+  hidden** — journalling cannot retroactively revert patches applied before it existed, so `apply` now WARNs
+  when it meets that state. A first cut put the mutation control behind an env flag *inside* `demopatch`;
+  it was removed — **a production code path that exists only for its own test is a backdoor** — and the
+  control now rebuilds the tool with the journal blinded, test-side. **A double-revert test that failed
+  against the fix was WITHDRAWN after measurement, not satisfied by bending the design**: `up-injected.sh:741`
+  reverts once per `RETURN` trap, so it encoded a requirement that does not exist; it was replaced by the
+  **chain** pair, which is on the shipped path and which no single-invocation test can see. Wider suite:
+  **1054 tests, 6 failures, 0 of them mine** (3 need a live container; 3 are stale live-clone baselines
+  across **two independent patch vehicles** — a systemic class, widened into one CHECK). The user's
+  guard-fetch correction was applied: every `stack-demo` clone fetched, **nothing moved**, family reads
+  **13 GREEN · 0 RED** before and after — so the reported 3 RED did **not** reproduce here, but **the class
+  is real and worse**: `platform_alignment_guard` falls back to the **worktree** when a ref is missing and
+  never says so (`auto` → GREEN/0-unresolvable vs `worktree` → **RED/8 findings**), and `unresolvable` is
+  **printed but never graded**. Gate **4 of 5**, unchanged — see iter-90/progress.md

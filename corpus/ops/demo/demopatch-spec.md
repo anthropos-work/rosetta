@@ -49,7 +49,7 @@ unnamed until this spec.
 | **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target is a no-op, exit 0. **"Already patched" is G2's COHERENCE probe** — *the whole replacement present **and** the anchor gone* — **not a post-sha match.** <br>⚠️ *This row used to read "post-sha **and** marker", i.e. exactly the whole-file-sha check that §6 spends a section explaining ROTS. It contradicted G2 in the same table. Corrected at the M219 close; the two rows now describe one mechanism.* |
-| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 23 today; was a hardcoded 3). See §2.1.** |
+| **G5 — journalled self-revert** *(rewritten M257x iter-90)* | **`apply` records the OBSERVED pre-image; `revert` restores exactly it.** Revert consults that journal FIRST and, for a patch this tool applied, needs no baseline at all — which is what makes it exact on a **drifted** base, the normal state of a persistent clone. The journal lives in the **workspace root** (never inside a clone), is consumed on success, and its directory is removed once it empties. **No journal ⇒ no guessing:** a target with no entry falls through to `pre_sha256`/`post_sha256` and is still refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation) and is the one-time recovery for clones patched before the journal existed. <br>⚠️ *This row used to read "swaps `replacement → anchor` and re-asserts `sha256 == pre_sha256`" — a **whole-file-sha** gate, while G2 one row up had already moved to the **anchor**. The two rows contradicted each other, and the contradiction was live: on any drifted clone the patch applied and would not come off. See §6's FIXED block.* <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 23 today; was a hardcoded 3). See §2.1.** |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
 | **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
@@ -183,13 +183,40 @@ Back-to-Cockpit item). A test fences the hiring-side chain apply-order and the f
 > [`build-budget.md`](build-budget.md)) is stated as *"apply the union once, build both in parallel, revert
 > once LIFO"* — and it was about to inherit a "LIFO" that had no referent in the code.
 
-> **A related sharp edge, worth knowing before you rely on revert.** G5 (self-revert) compares the file
-> against the manifest's **recorded** `post_sha256`, while apply may have written a **recomputed** post when
-> the self-healing freshness gate fired (§ *the anchor is the contract; the whole-file sha is only a
-> baseline*). So **whenever the freshness gate fires, the paired revert refuses** — and the `RETURN` traps
-> redirect it to `/dev/null`, so it refuses silently. The clone is then left dirty rather than git-clean.
-> It is not currently harmful (the ephemeral clone is force-checked-out on the next bring-up), but it means
-> **"the trap left it clean" is an assumption, not a guarantee** — verify with `git status` if it matters.
+> **~~A related sharp edge, worth knowing before you rely on revert.~~ FIXED at M257x iter-90 — and the
+> paragraph that stood here was wrong about the one thing that mattered.** It described the defect
+> accurately: G5 compared the file against the manifest's **recorded** `post_sha256` while apply wrote a
+> **recomputed** post whenever the self-healing freshness gate fired, so the paired revert refused, silently,
+> into the `RETURN` traps' `/dev/null`. Then it concluded *"it is not currently harmful."*
+>
+> **It was harmful, and it was live.** M257x iter-88 routed four separate demo-stack failures as up to three
+> classes; iter-89 collapsed all four to this one cause with a one-minute probe — `git status` on
+> `stack-demo/next-web-app`, which had been left dirty by exactly this refusal. Three shipped manifests
+> reported `status: patched` and `revert: neither pre nor post` **in the same breath**. The reasoning that
+> made it look benign — *the ephemeral clone is force-checked-out on the next bring-up* — is true of the
+> `app` build-scratch clone and **false of the persistent `next-web` clone this paragraph was about.**
+>
+> **The fix (`demopatch`, M257x iter-90): apply JOURNALS the observed pre-image; revert restores exactly it.**
+> Revert no longer consults a recorded baseline at all for patches this tool applied, so it is exact on a
+> drifted base — which is the normal state of a persistent, pulled clone. The journal lives in the
+> **workspace root** (never inside a clone, which would defeat the promise it exists to keep), is **consumed
+> on a successful revert**, and its directory is removed once it empties. **No journal means no guessing:** a
+> target that drifted with no apply behind it still falls through to the baseline comparison and still
+> refuses, so revert never became a blind restorer.
+>
+> **Known limitation, stated rather than hidden.** A patch applied *before* the journal existed has no entry
+> and cannot be journal-reverted; those clones need the one-time `revert --force-pristine`. `apply`'s
+> idempotent no-op now **WARNs** when it finds an already-patched target with no journal entry, naming that
+> consequence, so the condition is self-describing at the moment it is created instead of costing two
+> iterations to rediscover.
+>
+> **The finding that outlives the fix, and the reason it is recorded here rather than in a changelog:**
+> **G2 (refuse on drift) and G5 (always self-revert) cannot both hold once the base is allowed to move** —
+> and the base is always allowed to move. Every test asserted them **separately**, and each passed; the suite
+> was green while the mechanism was broken. **A specification with seven guards needs at least one test per
+> PAIR that can interact, not one test per guard.** Those pairs now live in
+> `demo-stack/tests/test_demopatch.py::TestGuardConjunctions`, with a mutation control that rebuilds
+> `demopatch` with the journal blinded and asserts the battery goes RED again with the original signature.
 
 ### The `app` patches are never reverted — and that is correct
 

@@ -1827,6 +1827,55 @@ asserts against a recording fake `Conn` that accepts any table name — *a fake 
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
 only check that knows what the migration path actually produced.
 
+### Guards must be tested in PAIRS — a green suite proves each guard, not the specification (M257x iter-90)
+
+Every rule above hardens **one** fence. This one is about what a set of fences can hide from a suite that
+tests each of them correctly.
+
+`demopatch` ships **seven** guards, and its suite tested all seven. It was 52-for-52 green while the
+mechanism was broken in the most basic way it could be: **the patch applied and would not come off.**
+
+The two guards involved were each individually right.
+
+- **G2** (drift-refuse) was rewritten at M217 so that *the anchor is the contract; the whole-file sha is only
+  a baseline* — apply **self-heals** onto a drifted base. Deliberate, and load-bearing: the strict whole-file
+  gate is what silently refused two `app` perf patches for four releases and shipped a 76-second members grid.
+- **G5** (self-revert) still compared **whole-file shas** against the manifest's recorded baseline.
+
+A self-healed apply produces a file whose sha is **necessarily** neither `pre_sha256` nor `post_sha256`. So
+on any clone whose base had moved — the normal state of a persistent, `make pull`ed clone — revert refused
+and the clone was left dirty, contradicting the spec's own headline promise (*"the clone is left git-clean"*).
+
+**G2 and G5 cannot both hold once the base is allowed to move, and the base is always allowed to move.** No
+test said so, because every test asserted them **separately**:
+
+| test | what it covers | what it never does |
+|---|---|---|
+| `…g2_drifted_sha_with_an_INTACT_anchor_SELF_HEALS` | apply onto a drifted base | **revert** |
+| `…g5_revert_on_drifted_refuses_without_force` | revert a drifted target | one that was ever **applied** |
+
+Neither is wrong. Their **conjunction** is where the specification lived, and nothing evaluated it.
+
+> **Rule.** A specification with *n* guards needs at least one test per **PAIR that can interact**, not one
+> test per guard. Enumerate the pairs deliberately; a pair with no test is an unstated claim that the two
+> guards are independent — and independence is the thing that fails.
+
+Three riders, each paid for in the same iter:
+
+1. **The interaction can be between INVOCATIONS, not just between guards.** The sharpest pair here is the
+   *chain*: two patches on one `urls.ts`, applied studio→pubweb and reverted pubweb→studio. No single-call
+   test can see it, whatever it asserts.
+2. **A documented defect can be documented as benign and still be live.** This exact asymmetry was already
+   written down in `demopatch-spec.md` — and closed with *"it is not currently harmful."* The reasoning was
+   true of the `app` build-scratch clone (force-checked-out every bring-up) and false of the persistent
+   `next-web` clone the paragraph was about. It then cost M257x iters 88 and 89 in full. **A
+   known-and-dismissed finding deserves the same re-derivation as a new one: the dismissal is a claim too.**
+3. **When a conjunction test fails, check whether it encodes a real requirement before changing the code to
+   satisfy it.** iter-90's first double-revert test failed against the fix; the premise was checked against
+   `up-injected.sh:741` (one revert per `RETURN` trap, then `trap - RETURN`) and found false. It was replaced
+   by the chain pair rather than satisfied by bending the design. **A design bent to satisfy a wrong test is
+   worse than either.**
+
 ### A TEARDOWN is a write path too — and a stale override poisons it before the bring-up (M257x iter-55)
 
 Every rule above is about detecting drift on the way **in**. The way **out** was never examined, and it
