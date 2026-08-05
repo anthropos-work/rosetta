@@ -925,3 +925,44 @@ defect and would also explain why no amount of accessor work has helped.
   platform-repo question). 160 predicate tests, 5 corpus guards GREEN, stack-core's only non-green
   the known perishable iter-48 fixture; pin stays `fast-build-m257x-iter-67`. Gate **4 of 5**,
   unchanged — see iter-80/progress.md
+
+- iter-82 (tik, measurement-shaped): **the re-read — clause 5 is NOT met, and the repair is
+  incomplete.** The frozen instrument was re-run against the repaired corpus: 14 blind seats, two
+  readings of one hand, all reports on disk under `iter-82/raw/`. **`N₁₅ = 29`, `N₁₆ = 30`;
+  union 41 distinct anchors** — against **77 / 75 → 140 upheld** before the repair. Clause 5 is
+  graded only by a reading that returns **zero**, so the **gate stays 4 of 5** and 140 → 41 is a
+  *booked* union against an *unadjudicated* one, not 99 fixes. **The instrument was proven frozen,
+  not asserted so:** briefing byte-identical (sha256 `3858ec53…`, one commit ever touched it), same
+  40 files, same 7×2 seats, all **12** ground-truth clone shas re-derived and matched — and the
+  partition **method** was re-executed at `012edd2` where it **reproduced iter-76's hand exactly**
+  (40 files / 9,544 lines; all six seat totals and file lists identical). iter-81's +410/−251 moved
+  line counts, so the fixed method deals a different hand over the same file set (now 9,712 lines) —
+  the consequence iter-76 recorded at #11/#12, kept rather than engineered away. **Five of six
+  pre-registered predictions graded, two falsified.** P5 — *"the 11 repaired predicates contribute
+  zero"* — is **FALSIFIED and is the headline, as pre-registered**:
+  `graphql-wundergraph.md:13` still says the `graphql` *"profile name survives in compose and is now
+  simply the default profile"*, while at `0dab54d` the token appears in **no** `profiles:` key (the
+  eight are core/backend/all/storage-legacy/customerio-sync/messenger/studio-desk/frontend) and the
+  default is `core` — **both halves false**, inside **P4**, booked by **both** readings
+  independently. P6 is also falsified, and in the useful direction: the held carve-out
+  `storage.md:55,:154,:181` (`DEF-M257x-iter80-storage-prod-bucket`, escalated) was booked by
+  **neither** reading — **it accounts for zero of the 41** and cannot explain any part of a non-zero
+  N. **Recall remains the dominant term** — the two readings share only **15** of 41 anchors (≈51–55
+  %), the same <60 % that has held across every paired measurement here, which is why a zero was
+  never the honest expectation: repairing the union of two readings cannot repair what neither saw.
+  Largest class in the 41 is the **stale cross-repo line anchor** (corpus → rext / `app`), led by
+  `ai-readiness.md`'s rext anchors drifted a consistent **+4**, booked by two seats in both readings
+  — which **measures `CHECK-M257x-iter77-cross-repo-pin`**, previously flagged unmeasured. One
+  finding adjudicated in-run because three seats raised it and it decides the v9.0 fold's central
+  fact: the `service_desired_count = 1` reading is a **FALSE POSITIVE** — `storage 63bffc8:…:38` = 0
+  and `messenger a0ec933:…:29` = 0, exact at the refs the corpus names, the clones merely being
+  older; **third occurrence of `CHECK-M257x-iter76-seat-ref-discipline`.** Two side-settlements:
+  the **`stack-core` count is 822**, agreed by two independent methods (the runner's own
+  `Ran 822 tests` from inside `stack-core/tests/`, and an AST enumeration of test methods — 822
+  across 32 files), with the 1 known perishable iter-48 fixture the only non-green; and the
+  `repos.yml :17-19` item is **narration, not documentation** — the corpus is clean at every
+  `repos.yml:NN` citation and the three surviving `:17-19` mentions are each pinned to the older
+  `2adcf71` where they are true. **Found while closing: iter-81 left NO iteration record at all** —
+  empty `raw/`, no overview/progress/decisions, zero mentions in this file; the 11 predicates exist
+  as a written list only inside its commit message. **No repair landed in this iter, by
+  instruction** — see iter-82/progress.md
