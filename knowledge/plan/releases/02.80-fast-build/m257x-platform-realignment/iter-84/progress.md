@@ -12,14 +12,18 @@ adjudication-before-repair stays binding (iter-80).
 92.1 % on the pre-repair union). And the eleven discharge verdicts, re-derived by membership: **5 stand,
 4 refuted, 1 unsettled, 2 folded into the adjudication.**
 
-But the finding that reframes the gate is neither of those:
+And a third finding, **corrected after a peer review** (`D-M257x-84-6`) — it was first written as a
+"reach limit" on the instrument, which was wrong:
 
-> **A predicate's membership spans the whole published tree — 112 `.md` files. The gate's instrument
-> reads 40 of them. Of P4's live members, exactly ONE is inside those 40.**
+> **Clause 5's declared scope is `corpus/services/**` + `corpus/architecture/**` = 40 files, and the
+> instrument reads 40 of 40 — COMPLETE. But of P4's live members, exactly ONE is inside those 40; the
+> other ≥16 are in `corpus/ops/**`, `CLAUDE.md` and `.claude/skills/**`.**
 
-`corpus/ops/**` alone is **46 files — larger than the entire instrument set** — and it is where the
-runnable commands and flag tables live. This is a **reach** limit, independent of the ~50 % **recall**
-limit iter-83 measured, and the two compound.
+That is a **scope observation and a corpus-quality finding — not a defect in the instrument.** Clause 5 is
+narrower than the corpus *by its own wording*; the whole corpus is **90** `.md`
+(`git ls-files -- 'corpus/*.md'`), of which `corpus/ops/**` is **46**. Wanting broader coverage would be a
+re-cut of clause 5, which is **not on the table**. The real limiter on what a zero establishes is the
+~50 % per-pass **recall** iter-83 measured — a within-scope property.
 
 ---
 
@@ -100,7 +104,8 @@ from the **read's** 40-file partition.
 **§5 rule 19 says the partition that is correct for reading is wrong for repairing.** iter-81 was
 partitioned by the reading's file set anyway. That is the fourth mechanism, and it is one iter-83 could
 not see from the diff alone: iter-83 measured *reach against the ledger* (74.1 %); this measures *reach
-against the predicate*, and for P4 **the ledger itself only ever covered 1 of ≥17 members.**
+against the predicate*, and for P4 **the ledger itself only ever covered 1 of ≥17 members** — because the
+other 16 sit outside clause 5's declared scope, which no seat was ever asked to read or repair.
 
 ### 🔴 A live tooling defect, not a documentation defect
 
@@ -141,9 +146,10 @@ guards passed clean.**
 ## Close — 2026-08-05
 
 **Outcome:** iter-82's union adjudicated **40/43 upheld (93.0 %)** with a **per-anchor** ledger; the
-eleven discharges re-derived by membership (**5 stand, 4 refuted, 1 unsettled, 2 deferred**); and the
-gate's instrument measured to read **40 of 112** published files, so a paired zero speaks for a third of
-the tree. One live rext defect found. **No repair landed, by design.**
+eleven discharges re-derived by membership (**5 stand, 4 refuted, 1 unsettled, 2 deferred**); and clause
+5's instrument measured at **40 of 40 of its declared scope — complete**, with **≥16** live P4 members
+sitting *outside* that scope (a corpus-quality finding, **not** an instrument defect — corrected after
+peer review, `D-M257x-84-6`). One live rext defect found. **No repair landed, by design.**
 
 **Type:** tik
 **Status:** closed-fixed — all three declared lines landed
@@ -160,7 +166,7 @@ the tree. One live rext defect found. **No repair landed, by design.**
 `FIX-M257x-iter84-dev-stack-default-profile` (**high**) ·
 `FIX-M257x-iter83-leak-guard-3-sites` (2 of 3 confirmed) ·
 `CHECK-M257x-iter84-rule33-currency-amendment` · `CHECK-M257x-iter84-ground-truth-needs-origin-sha` ·
-`CHECK-M257x-iter84-instrument-reach-40-of-112` (**for the user — it bears on what a zero means**) ·
+`CHECK-M257x-iter84-defects-outside-clause5-scope` (corpus quality; **NOT** a clause-5 re-cut) ·
 `CHECK-M257x-iter83-standalone-is-the-forgettable-class`
 
 **Lessons:** (1) adjudicate-before-repair earned itself again — `ai_architecture.md:225` is **correct**

@@ -35,7 +35,7 @@ cd cms && make init-studio && cd ..   # CMS studio submodule
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"
-make up                   # build from local code + start (graphql profile) — count re-derived per run, not 11
+make up                   # build from local code + start (core profile — the default) — count re-derived per run, not 11
 make migrate              # apply migrations (app, cms, jobsimulation, skillpath)
 
 # Start / restart an already-built stack:

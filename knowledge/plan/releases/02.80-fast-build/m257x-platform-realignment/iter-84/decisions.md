@@ -21,27 +21,28 @@ files, with ungraded candidates on the `corpus/ops/**` surface (`verification.md
 the defect this milestone exists to end, and it would have been the easy call — P1 was the dominant
 predicate and declaring it discharged would have read as progress.
 
-## D-M257x-84-3 — the instrument reads 40 of 112 published files, and this is a REACH limit, not recall
+## D-M257x-84-3 — clause 5's instrument reads 40 of 40; the corpus is larger BY THE CLAUSE'S OWN WORDING
 
-| surface | `.md` |
-|---|---|
-| the read's file set | **40** |
-| `corpus/ops/**` alone | **46** |
-| whole published tree | **112** |
+> **This decision was rewritten after a peer review — see `D-M257x-84-6`.** It first read *"the instrument
+> reads 40 of 112 published files, and this is a REACH limit"*. That was wrong.
 
-**Of P4's live members, exactly one is inside the 40.** The read did not narrowly miss the other sixteen
-— it cannot see them. This is **independent of** the ~50 % per-pass recall iter-83 measured, and the two
-compound: a paired zero says two readings found nothing *in roughly a third of the tree*.
+**Clause 5's declared scope is `corpus/services/**` + `corpus/architecture/**`.** Measured:
+`git ls-files -- 'corpus/services/*' 'corpus/architecture/*'` → **40**, of which **0** are non-`.md`; the
+instrument's `corpus/architecture/*.md` + `corpus/services/*.md` glob is **exactly co-extensive** with the
+declared `**` globs (`find … -mindepth 2 -name '*.md'` → 0). **The instrument reads 40 of 40 — complete.**
 
-It also explains iter-81 better than iter-83 could from the diff alone. iter-81 inherited its partition
-from the **read's** 40-file partition, so no seat owned `corpus/ops/**` or `.claude/skills/**` — where
-most of P4 lives. **§5 rule 19 says the partition correct for reading is wrong for repairing**, and it
-was used for repairing anyway. iter-83 measured *reach against the ledger* (74.1 %); this measures *reach
-against the predicate*, where for P4 the ledger only ever covered **1 of ≥17**.
+The corpus as a whole is **90** `.md` (`git ls-files -- 'corpus/*.md'`), of which `corpus/ops/**` is **46**.
+That gap is a **SCOPE OBSERVATION**, not a reach defect: clause 5 is narrower than the corpus *because the
+clause says so*. Wanting broader coverage would be a **re-cut of clause 5 — not on the table.**
 
-**Surfaced to the user, not decided here.** It bears directly on what a zero from this instrument would
-establish, and clause 5's grading rule is the user's — **not re-cut, not reinterpreted**. Routed
-`CHECK-M257x-iter84-instrument-reach-40-of-112`.
+**What survives, and it is still worth having:** live defects exist **outside** clause 5's scope. Of P4's
+live members, **one** is inside the declared 40 and **≥16** are in `corpus/ops/**`, `CLAUDE.md` and
+`.claude/skills/**`. That is a statement about **corpus quality**, not about the instrument — and it is
+where the runnable commands live (`CLAUDE.md:285` was one). It also explains iter-81: the repair inherited
+the **read's** 40-file partition, so no seat owned those surfaces (**§5 rule 19**).
+
+**The limiter on what a zero establishes is the ~50 % per-pass RECALL** (iter-83), a within-scope property.
+Correctly named, the file count is not a limiter at all.
 
 ## D-M257x-84-4 — the seat-ref rule is STATED WRONG, which is why it has failed five times
 
@@ -77,6 +78,33 @@ disposition**.
 reading could have caught this — both seats booked the right *pair* and the wrong *half* — and only an
 adjudicator re-deriving from source could separate them. It is also the third independent confirmation
 of `D-M257x-84-3`: the real defect is in `corpus/ops/**`, outside the instrument's reach.
+
+## D-M257x-84-6 — I measured the instrument against a scope clause 5 never claimed, and a peer caught it
+
+**Recorded, not quietly fixed** — the second time in this run (`D-M257x-83-9` was the first), and the same
+class both times: **a number stated without the command that produces it.**
+
+I wrote that the instrument *"reads 40 of 112 published files"* and classified the difference as a **reach
+limitation** that weakens what a zero establishes. Two defects in one sentence:
+
+1. **`112` was never defined.** It is reproducible — `find corpus .claude/skills -name '*.md'` (110) plus
+   `CLAUDE.md` and `README.md` — but an undefined denominator in a gate-critical claim is exactly the
+   disease this milestone treats. (`git ls-files -- '*.md' | grep -v '^knowledge/plan/'` gives **113**, the
+   same set plus `CHANGELOG.md`; the corpus alone is **90**, not 112.)
+2. **The classification was wrong, in the direction that matters.** Clause 5's declared scope is 40 files
+   and the instrument reads **40 of 40**. Measuring it against the whole tree and reporting a shortfall is
+   an **implicit re-cut of clause 5** — the one thing the user has ruled out three times. It is a **scope
+   observation**, and it must not be written in a form that reads as an argument for widening.
+
+**Corrected in `membership.md`, `progress.md`, `D-M257x-84-3` and the milestone ledger**, each denominator
+now carrying its command. The substantive finding is unchanged and is restated in its honest form: **live
+defects exist outside clause 5's scope**, which is a corpus-quality fact and an explanation of iter-81's
+partition, not a deficiency of the gate's instrument.
+
+**Why it is worth a decision entry.** I had just written §5 rule 40 about checks that report a state
+without measuring it, and `D-M257x-83-9` about hand-counted scalars — and then stated a denominator I had
+not defined and drew a gate-relevant conclusion from it. The rule does not get easier to follow because
+you wrote it.
 
 ## Unchanged routes
 

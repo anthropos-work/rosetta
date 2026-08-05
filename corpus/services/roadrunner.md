@@ -110,7 +110,7 @@ internal/
 
 Every submission enqueues exactly one poll task on the `roadrunner:default` queue (MaxRetry 3) from `runner.CreateSubmission`; the worker (10 concurrent, `internal/worker/worker.go`) runs `HandleSubmissionResultTask`, which polls Judge0 up to 15 times at 1s intervals, then publishes a `RoadrunnerSubmissionCompleted` event. The RPC handlers call the runner directly and never invoke the Asynq client; there are no HTTP handlers.
 
-On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub; jobsimulation consumes it as the async signal that execution finished.
+On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the whole repo contains one `roadrunner` mention (`internal/runner/runner.go:3`, a parenthetical), with no handler and no event reference; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with `:117` below (*"Upstream consumers: none (orphaned)"*).
 
 ## Dependencies
 

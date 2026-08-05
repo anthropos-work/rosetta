@@ -1018,14 +1018,21 @@ defect and would also explain why no amount of accessor work has helped.
   members in the published tree + 7 in rext source vs "~10 discharged"; P9 1; P11 ≥3), P1 recorded
   UNSETTLED** (clean inside the 40 files, ungraded candidates on the ops surface — *an unswept surface
   reported as clean is the defect this milestone exists to end*), P7/P8 folded into the adjudication.
-  **THE FINDING THAT REFRAMES THE GATE:** a predicate's membership spans the whole published tree —
-  **112 `.md` files — and the instrument reads 40**; `corpus/ops/**` alone is **46, larger than the
-  entire instrument set**, and it is where the runnable commands live. **Of P4's live members exactly
-  ONE is inside the 40.** That is a **REACH** limit, independent of iter-83's ~50 % **RECALL** limit, and
-  they compound: a paired zero speaks for about a third of the tree. It also explains iter-81 better than
-  the diff could — the repair inherited its partition from the **read's** 40-file partition, so no seat
-  owned `corpus/ops/**`; **§5 rule 19 says the partition correct for reading is wrong for repairing.**
-  Surfaced to the user (`CHECK-M257x-iter84-instrument-reach-40-of-112`); **clause 5 NOT re-cut.**
+  **A THIRD FINDING, CORRECTED AFTER PEER REVIEW (`D-M257x-84-6`) — it was first written as a
+  "reach limit" on the instrument, and that was wrong:** clause 5's declared scope is
+  `corpus/services/**` + `corpus/architecture/**` = **40 files** (0 of them non-`.md`), and **the
+  instrument reads 40 of 40 — COMPLETE.** What is true is that **of P4's live members exactly ONE is
+  inside those 40**; the other **≥16** are in `corpus/ops/**` (46 `.md`), `CLAUDE.md` and
+  `.claude/skills/**`. That is a **SCOPE OBSERVATION and a corpus-quality finding — not an instrument
+  defect**: clause 5 is narrower than the corpus (**90** `.md`, `git ls-files -- 'corpus/*.md'`) *by the
+  clause's own wording*, and wanting more coverage would be a **re-cut of clause 5, which is NOT on the
+  table**. The original framing measured the instrument against a scope the clause never claimed and
+  reported a shortfall — an implicit re-cut, caught by a peer before it left the milestone; the
+  undefined "112" is now stated with its command. **The real limiter on what a zero establishes is the
+  ~50 % per-pass RECALL (iter-83), a within-scope property.** The finding still explains iter-81: the
+  repair inherited the **read's** 40-file partition, so no seat owned the surfaces where most of P4
+  lives — **§5 rule 19, the partition correct for reading is wrong for repairing.** Routed
+  `CHECK-M257x-iter84-defects-outside-clause5-scope`.
   **All 3 rejections are one mechanism — `CHECK-M257x-iter76-seat-ref-discipline` at its 4th and 5th
   occurrences, and the declared escalation condition FIRED.** The diagnosis is that the rule is **stated
   wrong**: *"grade at the ref"* is silent on a sentence asserting **currency**, so seats apply it
@@ -1044,3 +1051,38 @@ defect and would also explain why no amount of accessor work has helped.
   `platform-alignment.md:1305`, the latter being **the protocol doc contradicting the rule it teaches**.
   **§5 rule 32 fired twice in one run:** adjudicator B's own summary undercounted its own verdicts
   (9 vs 10). **No repair landed, by design.** Gate **4 of 5**, unchanged — see iter-84/progress.md
+- iter-85 (tik): **the first repair since iter-81, and the first ever GRADED by a post-condition —
+  reach 11/11 = 100 %** (iter-81: 74.1 %), measured by `repair_reach_guard` against this iter's own
+  **declared input ledger** (`iter-85/ledger/`). Pre-registered *"0 unreached or it does not close
+  `closed-fixed`"* — **0 unreached**. **Scope declared NARROW at open and that is the iter-83 lesson
+  applied to itself:** Q2's 7 + the 2 confirmed leak sites + the rext defect; Q1/Q3/Q4/Q5 (29 upheld)
+  routed to iter-86 with the ledger as their work list, because *a repair I cannot finish reproduces
+  iter-81 exactly*. **Q2 — 7 present-tense claims about DELETED facts, restated or dropped, NOT ONE
+  re-anchored** (§4 Trap A): `graphql-wundergraph.md:13` (**the run's centre** — the profile is gone,
+  `PROFILE ?= core`, asking for the token exits 0) · `cms.md:8` (fourth, **not last** — v9.0 folded
+  storage+messenger after it) · `backend.md:218` (**four of five** streams; nothing publishes to
+  `skiller`) · `roadrunner.md:113` (**nothing** consumes the event) · `services/README.md:37` +
+  `messenger.md:7` (**`MESSENGER_RPC_ADDR` exists in no repo and `git log -S` returns 0 commits ever**
+  — repaired at **both** sites, §5 rule 19) · `architecture_overview.md:295`/`:311` (prod RPC list, and
+  the retraction that scoped itself *"locally"* and thereby **affirmed** a dead prod edge) ·
+  `alignment_testing.md:360` (**rc=3 since M219**, not rc=2 — it was telling readers to read a 2 as a
+  missing Node module). Leak sites: `CLAUDE.md:285`'s runnable `make up # (graphql profile)` and
+  `platform-alignment.md:1305`'s *"read by `main.go`"* → **read by nothing**. **🔴 The live rext defect
+  FIXED — `dev-stack:186`/`:414` held the literal `profile="graphql"`, so a bare `/dev-up N` ran
+  `docker compose --profile graphql` and brought up the floor with the application absent.** Fixed **by
+  DERIVATION** (not by substituting `core`): both entry points now resolve via
+  `platform_topology.default_profile()` and **import the same `FALLBACK_PROFILE` constant** rather than
+  restating it. **The first cut was WRONG and the suite caught it** — a fatal derivation broke 13
+  `test_dev_public_host` tests and took the M220 battery's **baseline** with it (*"the UNMUTATED subject
+  fails its own suite"*); a stricter contract than the codebase's own is still a regression, and the
+  correct shape already existed one file over. Proven three ways (real clone → `core`; synthetic dir →
+  fallback **without dying**; no python3 → **dies loud**, because an *empty* profile selects only the
+  floor). **`repair_leak_guard` — the guard iter-81 skipped — went RED on MY OWN repair**, naming §5
+  rule 40 quoting the false sentence verbatim as its worked example; **waived with a written reason**
+  (reported every run, never silent), not paraphrased. **A peer review caught a defect in iter-84's
+  framing and it is corrected in place (`D-M257x-84-6`):** *"the instrument reads 40 of 112"* measured
+  clause 5's instrument against a scope **the clause never claimed** and reported a shortfall — an
+  implicit re-cut. **Clause 5's declared scope is 40 files and the instrument reads 40 of 40 —
+  COMPLETE**; the ≥16 P4 members outside it are a **corpus-quality** finding, not an instrument defect,
+  and every denominator now carries its command. `stack-core` **843**, only the known perishable
+  fixture. Gate **4 of 5**, unchanged — see iter-85/progress.md

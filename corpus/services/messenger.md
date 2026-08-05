@@ -4,7 +4,15 @@
 
 Messenger is the **centralized notification service**. It sends and schedules transactional emails on behalf of every other service, using **Brevo** (formerly Sendinblue) as the delivery backend and **Liquid** templating for the bodies.
 
-Other services don't talk to Brevo directly — they fire a Messenger RPC. Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
+Other services don't talk to Brevo directly — they **publish Redis Stream events that Messenger consumes** (`messenger/internal/flow/flow.go:70-95` adds a subscriber on the `backend` stream with 20 handlers). Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
+
+> **⚠️ Nobody "fires a Messenger RPC", and nobody ever did.** Messenger *exposes* a `MessengerService`
+> Connect-RPC surface, but **no service in the platform constructs a client for it**: `MESSENGER_RPC_ADDR`
+> occurs in **no** repo, and `git log -S MESSENGER_RPC` over the platform's entire history returns **0**
+> commits (positive control: `-S SKILLER_RPC` returns 3). The RPC traffic runs the other way — messenger
+> calls **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`;
+> `docker-compose.yml:173`, `:174`, `:176`, `:183`). Corrected M257x iter-85; the same sentence stood in
+> [`README.md`](README.md) and was repaired in the same pass.
 
 > **⚠️ MERGED INTO `app` — the v9.0 fold landed 2026-08-04**, in the same program that folded
 > `storage`, and on the same morning. Re-derived at platform `0dab54d` / `app` `9d00a313` v1.367.0 /

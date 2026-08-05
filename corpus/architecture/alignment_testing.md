@@ -357,13 +357,20 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   `clerk-webhook/` uses with `svix`) rather than a reimplementation — so the score measures whether the real
   SDK accepts Clerkenstein's tokens. It added an **additive RS256/JWKS** path beside the existing HS256
   seams (no migration; M1/M2 gates untouched).
-  > ⚠ **This surface is DEPENDENCY-GATED, and today it is frequently UNMEASURED (corrected in M218).** The
-  > runner needs `@clerk/express` `node_modules` to build. Without them it exits **rc=2 and produces NO
-  > score** — and *nothing in the tooling treats that as a failure*. So on a box that lacks the Node modules,
-  > this gate silently contributes **nothing**, while summaries went on reporting "all five surfaces at
-  > 100%". **An absent score is not a passing score.** The M218 harden pass could re-measure only **4 of the
-  > 5** surfaces for this reason (reproduced identically at the pre-pass baseline ⇒ pre-existing, not a
-  > regression). Routed forward as `TEST-M219-expressrun-dep-gate`: a missing dependency must **fail loud**.
+  > ⚠ **This surface is DEPENDENCY-GATED, and it USED to be silently UNMEASURED. `TEST-M219-expressrun-dep-gate`
+  > is RESOLVED — the behaviour below is historical.** The runner needs `@clerk/express` `node_modules` to
+  > build. Without them it once exited **rc=2 — indistinguishable from a regression** — and *nothing in the
+  > tooling treated that as a failure*, so on a box lacking the Node modules the gate silently contributed
+  > **nothing** while summaries reported "all five surfaces at 100%". The M218 harden pass could re-measure
+  > only **4 of the 5** surfaces for this reason (reproduced identically at the pre-pass baseline ⇒
+  > pre-existing, not a regression).
+  >
+  > **Fixed at M219, and the fix was to make the two outcomes different numbers.** `alignment/cmd/alignctl/run.go:133-136`
+  > declares `ExitRegressed = 2` and **`ExitUnmeasurable = 3`**; `unmeasurable()` (`:139-153`) returns **rc=3**
+  > and prints a boxed banner — *"UNMEASURABLE — the runner could not execute. THIS IS NOT A PASSING SCORE …
+  > Do NOT record this run as a pass."* **An absent score is not a passing score**, and it no longer wears a
+  > regression's exit code. (Corrected M257x iter-85: this passage described the pre-M219 behaviour in the
+  > present tense, and told a reader to read a `2` as a missing Node module.)
 
 - **Deployment / injection (`clerk-deploy-1`, added after M3)** measures a *different kind* of fidelity — see
   the next section. Its runner (`deployrun`) drives the **real platform consumer** (colony) the way `expressrun`

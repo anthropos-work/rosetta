@@ -10,28 +10,48 @@ Ground truth re-derived at this open: `platform 0dab54df`, `app b948604f`,
 
 ---
 
-## THE HEADLINE, AND IT IS ABOUT THE INSTRUMENT, NOT ABOUT P4
+## THE HEADLINE — a SCOPE OBSERVATION, and it is NOT a defect in the instrument
 
-**A predicate's membership spans the whole published tree. The gate's instrument reads 40 files of it.**
+> **⚠️ CORRECTED after first writing (`D-M257x-84-6`).** This section first said the instrument *"reads
+> 40 of 112 published files"* and called the difference a **reach limitation**. **That framing was wrong,
+> and wrong in the direction that matters:** it measured the instrument against a scope clause 5 never
+> claimed, then reported it as a shortfall — which is an implicit re-cut of clause 5. Caught by a peer
+> review before it left the milestone. The corrected statement is below; every denominator now carries
+> the command that produces it.
 
-| surface | `.md` files |
-|---|---|
-| **the read's file set** — `corpus/architecture/*.md` + `corpus/services/*.md` | **40** |
-| `corpus/ops/**` alone | **46** |
-| whole published tree (`corpus/**` + `.claude/skills/**` + `CLAUDE.md` + `README.md`) | **112** |
+**Clause 5's declared scope is `corpus/services/**` + `corpus/architecture/**`. The instrument reads
+40 of 40. It is COMPLETE within its declared scope.**
 
-`corpus/ops/**` **on its own is larger than the entire instrument set**, and it is where the operational
-instructions live — the runnable commands, the flag tables, the bring-up guides. A false predicate does
-not respect that boundary (§5 rule 19's corollary: *a claim leaks to the edge of the previous repair's
-scope and stops there*), and neither does the damage: a wrong profile token in `corpus/ops/` is a command
-someone runs.
+| set | command | n |
+|---|---|---|
+| clause 5's declared scope | `git ls-files -- 'corpus/services/*' 'corpus/architecture/*'` | **40** — and **100 % `.md`**: the same pipe with `grep -vc '\.md$'` returns **0**, so "40 files" and "40 `.md`" are one set |
+| the instrument's file set | `ls corpus/architecture/*.md corpus/services/*.md` | **40** — and `find … -mindepth 2 -name '*.md'` returns **0**, so the top-level glob is exactly co-extensive with the declared `**` globs |
+| whole corpus | `git ls-files -- 'corpus/*.md'` | **90** (git pathspecs are fnmatch **without** `FNM_PATHNAME`, so this recurses; a shell `corpus/**/*.md` yields 89 by missing `corpus/README.md`) |
+| `corpus/ops/**` alone | `find corpus/ops -name '*.md'` | **46** |
+| the tree I first called "published" | `find corpus .claude/skills -name '*.md'` (110) **+ `CLAUDE.md` + `README.md`** | **112** — reproducible, but it was never stated, which was the defect. `git ls-files -- '*.md' \| grep -v '^knowledge/plan/'` gives **113**, the same set plus `CHANGELOG.md` |
 
-**Measured on P4: of its live surviving members in the published tree, exactly ONE is inside the
-instrument's 40 files.** That is `graphql-wundergraph.md:13` — the one iter-82 found. The read did not
-narrowly miss the rest; **it cannot see them.**
+**The classification, stated plainly: this is a SCOPE OBSERVATION, not a reach defect.** Clause 5's scope
+is narrower than the corpus **by the clause's own wording**. The instrument covers it completely. Wanting
+broader coverage than the clause declares would be a **re-cut of clause 5, which is not on the table** —
+the user has ruled three times.
 
-> This is a **reach** limitation, and it is independent of the ~50 % **recall** limitation iter-83
-> measured. They compound. A paired zero says two readings found nothing *in 40 of 112 files*.
+### What survives the correction, and it is still the useful finding
+
+**Live defects exist OUTSIDE clause 5's scope.** Measured on P4: of its live surviving members, exactly
+**one** (`graphql-wundergraph.md:13`) is inside the declared 40; the other **≥16** are in `corpus/ops/**`,
+`CLAUDE.md` and `.claude/skills/**`. That is a true and actionable statement about **corpus quality**, and
+it is *not* a statement about the instrument being deficient.
+
+It matters for two reasons that have nothing to do with clause 5's grading:
+
+1. `corpus/ops/**` is where the **runnable commands and flag tables** live. A wrong profile token there is
+   a command someone runs — and `CLAUDE.md:285` was exactly that.
+2. It explains **iter-81's repair**: the repair inherited its partition from the *read's* 40-file
+   partition, so no seat owned the surfaces where most of P4 lives. **§5 rule 19 — the partition that is
+   correct for reading is wrong for repairing.**
+
+> **The real limiter on what a zero establishes is the ~50 % per-pass RECALL that iter-83 measured**
+> — a within-scope property. Once correctly named, the file-count denominator is not a limiter at all.
 
 ---
 

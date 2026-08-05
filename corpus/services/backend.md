@@ -215,7 +215,7 @@ internal/
 
 ### Redis Streams
 
-* app is **both producer and consumer** of all five application streams: `backend`, `skiller`, `skillpath`, `jobsimulation`, `cms`, plus the `AI`/`ai_usage` usage stream
+* app is **both producer and consumer** of **four** of the five application streams — `backend`, `skillpath`, `jobsimulation`, `cms` — plus the `AI`/`ai_usage` usage stream. **`skiller` is the exception: `app` only SUBSCRIBES to it and nothing publishes to it.** Enumerated over every publisher constructor in `app` @ `b948604f`, the topics are `backend` (`main.go:287`), `SKILLPATH_STREAM` (`:637`), `CMS_STREAM` (`:1039`), `AI_USAGE_STREAM` and `JOBSIMULATION_STREAM` (`internal/jobsimwiring/wiring.go:127`, `:180`); `SKILLER_STREAM` occurs once in Go, at `main.go:1276`, and it is an `AddSubscriber` call. The producer was the standalone skiller service, which is decommissioned — the fact was **deleted, not moved**
 * The one external producer left is **Directus**, whose webhooks feed the `cms` stream
 * Each stream has exactly **one** subscriber with multiple handlers merged via `.AddHandler(...)` — colony keys by stream name, so a second `AddSubscriber` for the same stream silently overwrites the first
 

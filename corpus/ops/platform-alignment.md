@@ -1302,8 +1302,11 @@ which hard-required it (`academyImport/main.go:235`, `academy-asset-upload/main.
 "live". Record both, cited, or record neither.
 
 **The state's life was four iterations, and that is the lesson, not a footnote.** At `app` `9d00a313` v1.367.0
-— 56 commits and one working morning later — `STORAGE_RPC_ADDR` is read by `main.go` and by **none** of the
-three CLIs; both prod counts are `0`; the fold is complete on both sides and the row is `merged-into-app`
+— 56 commits and one working morning later — `STORAGE_RPC_ADDR` is read by **nothing**: a Go grep at that
+ref returns **3 hits, every one a comment**, and `main.go:451` says so in words. (At the older `b948604` it
+is read by `main.go` **and** all three CLIs — 7 env lookups. "Read by `main.go` but by none of the CLIs"
+was a middle state that never existed; corrected M257x iter-85.) Both prod counts are `0`; the fold is
+complete on both sides and the row is `merged-into-app`
 (M257x iter-68). **No row carries `mid-fold` today.** The token stays, because the fold program is not
 finished and a state you can only name after you need it is the state you will get wrong. (Worked example: [`storage.md`](../services/storage.md); the
 state itself is fenced by `platform_alignment_guard.py` assertion C, and the variable by

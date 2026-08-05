@@ -282,7 +282,7 @@ The `platform` repository provides a Makefile as the single entry point for all 
 # First-time setup
 cd stack-dev/platform
 make init              # Clone all repos defined in repos.yml
-make up                # Build from local code and start (graphql profile)
+make up                # Build from local code and start (core profile — the default)
 make migrate           # Apply all database migrations
 
 # Daily development

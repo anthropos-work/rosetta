@@ -10,8 +10,11 @@
 >
 > Platform `b56d731` + `360efd4` (merged **`2adcf71`**, 2026-07-31) dropped the router from
 > `docker-compose.yml` **and** `repos.yml` and re-pointed local dev at `backend`. **There is no `:5050` on a
-> local stack.** The `graphql` *profile name* survives in compose and is now simply the default profile —
-> it no longer names a router service.
+> local stack.** **The `graphql` profile is gone too:** `0dab54d` (*"rename graphql -> core"*) renamed it,
+> so `Makefile:10` reads `PROFILE ?= core` and the token appears in **no `profiles:` key at all** — the
+> eight that exist are `core`, `backend`, `all`, `storage-legacy`, `customerio-sync`, `messenger`,
+> `studio-desk`, `frontend`. Asking for `graphql` therefore **exits 0** and starts only the always-on
+> floor (`postgresql`, `redis`, `sentinel`), which is worse than an error.
 >
 > The supergraph is **ONE** subgraph: `915da06` (2026-07-29) folded the cms subgraph into `backend`
 > (cms-in-app v8.0) and deleted the `jobsimulation` entry in the **same commit** — a **3 → 1** step,

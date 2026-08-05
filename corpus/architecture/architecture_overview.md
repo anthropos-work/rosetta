@@ -292,7 +292,7 @@ A typical API request follows this path:
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)
   → backend (the sole subgraph)
-    → Connect-RPC to internal services (sentinel, storage)
+    → Connect-RPC to internal services (sentinel)
     → Redis Streams for async events
 ```
 
@@ -308,7 +308,12 @@ Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
 ```
 
 > `roadrunner` is **not** a gRPC hop from `backend` in either column — it was folded in with jobsim-in-app and
-> `backend` calls Judge0 directly. **Nor is `storage` one locally.** Platform **`0dab54d`** ("storage-in-app,
+> `backend` calls Judge0 directly. **Nor is `storage` one in EITHER column** — the production diagram above no
+longer lists it, because the edge is dead there too: `storage/terraform/main.tf:38` reads
+`service_desired_count = 0` at `63bffc8`, and `STORAGE_RPC_ADDR` has **zero** reads anywhere in `app`
+(3 hits repo-wide at `9d00a313`, every one a comment). The earlier wording scoped this retraction to
+*"locally"*, which left the prod edge affirmatively standing (corrected M257x iter-85). Platform
+**`0dab54d`** ("storage-in-app,
 > v9.0") deleted `STORAGE_RPC_ADDR` from `backend`'s env, dropped `storage` from `backend`'s `depends_on`
 > — the replacement comment reads *"storage removed at v9.0: served in-process by this container now"*
 > (`docker-compose.yml:93`) — and moved the service to `profiles: [storage-legacy]` (`:134`). The app side

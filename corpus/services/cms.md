@@ -5,8 +5,12 @@
 > As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
 > separate service **in production** (`cms/terraform/main.tf:39` `service_desired_count = 0`), and its
-> subgraph is gone from the supergraph. It is the fourth and last engine consolidated into `app`, after
-> [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md).
+> subgraph is gone from the supergraph. It was the **fourth** engine consolidated into `app`, after
+> [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md) — **not the
+> last.** The v9.0 program (2026-08-04) then folded [`storage`](./storage.md) and
+> [`messenger`](./messenger.md), each recorded in compose's own comments at `0dab54d`
+> (`docker-compose.yml:131-133`, `:193-195`). See the fenced map,
+> [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > **✅ The husk is GONE locally, and M809 has landed (measured at platform `0dab54d`).**
 > There is no `cms` compose service, no `cms` entry in `repos.yml` (6 entries: app, sentinel, storage,

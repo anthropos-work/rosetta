@@ -71,7 +71,7 @@ before/after each step, request confirmation before installs or destructive ops,
    or `roadrunner` subgraph). **GraphQL is `backend` itself on `localhost:8082/graphql/query`** — the Cosmo
    router was deleted from compose at platform `2adcf71` (2026-07-31); nothing listens on `:5050`.
    Then **start native processes in tmux** (required —
-   these are not in the `graphql` Docker profile and must outlive the Claude session):
+   these are not in the default Docker profile — `core` at `0dab54d` — and must outlive the Claude session):
    ```bash
    # next-web-app (always native — required)
    tmux has-session -t anthropos-web 2>/dev/null || \
@@ -144,7 +144,7 @@ surface at all** since M5; the guard is what found it.)
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--profile P` | `graphql` | compose profile |
+| `--profile P` | **derived from the platform clone** (`core` at `0dab54d`) | compose profile. The default is no longer a literal: `dev-stack` reads `backend`'s own `profiles:` list and **dies loud** if it cannot (M257x iter-85 — the literal was `graphql`, and asking for a retired token exits 0 and starts only the always-on floor) |
 | `--no-setdress` | off (set-dress is **on**) | bare bring-up of `dev-N` — no snapshot, no seed |
 | `--no-snapshot` | off (snapshot is **on**) | seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs) |
 | `--local-content` | **off** (dev reads content live from prod) | EXECUTE a per-stack Directus so content is self-contained (v1.5 M22/M23) |
@@ -172,9 +172,10 @@ not, so it stays local until you say otherwise.
   naming the exact fix command. A half-satisfied public path is never shipped.
 - **Pass nothing and NOTHING happens** — no `tailscale` process, no cert mint, no serve config, no new files.
   This is fenced by a tripwire stub, not asserted in prose (`dev-stack/tests/test_dev_public_host.py`).
-- It fronts only the ports **your profile actually publishes** (default `graphql` ⇒ the backend API + Cosmo
-  GraphQL), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the next
-  bring-up.
+- It fronts only the ports **your profile actually publishes** (default `core` ⇒ the backend API on `:8082`,
+  which is where GraphQL is served now — platform `2adcf71` deleted the Cosmo router, so there is no `:5050`
+  to front), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the
+  next bring-up.
 - ⚠️ **Transport, not authentication.** This puts the stack behind the tailnet's TLS + authenticated device
   mesh. It does **not** add auth. Read [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3** and
   the runbook [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md) before using it.
