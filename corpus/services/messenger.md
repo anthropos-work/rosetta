@@ -1,47 +1,61 @@
 # Messenger Service
 
+> ## ⚠️ Merged into `app` — no longer a standalone service
+>
+> Platform **`838d907`** (merged **`0c91421`**, 2026-08-05) **deleted the compose service outright** and
+> removed `messenger` from `repos.yml`. There is nothing to start locally and no `messenger` profile to
+> opt into; the domain runs in-process inside `backend`, gated by **`MESSENGER_ENABLED`**, which is unset
+> — and therefore **off** — on a developer machine. **The measured two-sided detail is in the fuller
+> banner below**; this one exists so a reader who opens the file learns it before the first paragraph.
+
 ## Role & Responsibility
 
-Messenger is the **centralized notification service**. It sends and schedules transactional emails on behalf of every other service, using **Brevo** (formerly Sendinblue) as the delivery backend and **Liquid** templating for the bodies.
+Messenger is the platform's **centralized notification subsystem** — a standalone service until the v9.0
+fold, a domain inside `backend` since. It sends and schedules transactional emails, using **Brevo**
+(formerly Sendinblue) as the delivery backend and **Liquid** templating for the bodies.
 
-Other services don't talk to Brevo directly — they **publish Redis Stream events that Messenger consumes** (`messenger/internal/flow/flow.go:70-95` adds a subscriber on the `backend` stream with 20 handlers). Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
+Callers don't talk to Brevo directly — they **publish Redis Stream events that the messenger flow consumes** (`messenger/internal/flow/flow.go:70-95` adds a subscriber on the `backend` stream with 20 handlers; `app` runs that same subscriber now, on messenger's own consumer group). Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
 
-> **⚠️ Nobody "fires a Messenger RPC", and nobody ever did.** Messenger *exposes* a `MessengerService`
-> Connect-RPC surface, but **no service in the platform constructs a client for it**: `MESSENGER_RPC_ADDR`
+> **⚠️ Nobody "fires a Messenger RPC", and nobody ever did.** The standalone *exposed* a `MessengerService`
+> Connect-RPC surface, but **no service in the platform ever constructed a client for it**: `MESSENGER_RPC_ADDR`
 > occurs in **no** repo, and `git log -S MESSENGER_RPC` over the platform's entire history returns **0**
-> commits (positive control: `-S SKILLER_RPC` returns 3). The RPC traffic runs the other way — messenger
-> calls **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`;
-> `docker-compose.yml:173`, `:174`, `:176`, `:183`). Corrected M257x iter-85; the same sentence stood in
-> [`README.md`](README.md) and was repaired in the same pass.
+> commits (positive control: `-S SKILLER_RPC` returns 3). The RPC traffic ran the other way — messenger
+> called **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`).
+> **Compose set those four on the `messenger` service block and nowhere else**, so deleting the block
+> deleted them: since `838d907` **no compose file sets any `*_RPC_ADDR` at all**, and there is no
+> messenger process left to hold a client. Corrected M257x iter-85, re-derived at iter-87; the same
+> sentence stood in [`README.md`](README.md) and was repaired in the same pass.
 
 > **⚠️ MERGED INTO `app` — the v9.0 fold landed 2026-08-04**, in the same program that folded
-> `storage`, and on the same morning. Re-derived at platform `0dab54d` / `app` `9d00a313` v1.367.0 /
-> `messenger` `a0ec933`.
+> `storage`, and on the same morning; the container went the next day, with storage's and
+> customerio-sync's, at platform `838d907` (merged `0c91421`, 2026-08-05, *"drop the storage,
+> messenger and customerio-sync containers"*). Re-derived at `app` `9d00a313` v1.367.0 /
+> `messenger` `e9421c6`.
 >
 > | side | measured |
 > |---|---|
 > | **prod** | `messenger/terraform/main.tf:29` `service_desired_count = 0` — the compute is stopped, the cms precedent again. Image and task definition stay declared: this is the rollback path, a one-line revert plus an apply (`:27-28`) |
-> | **consumer** | `app` imports `internal/messenger/{flow,adapters,sender}` (`app/main.go:15`, `:61`, `:62`) and runs a **second subscriber server on messenger's OWN Redis consumer group** (`:1387`, wired at `:1423` with `msgsender.NewFromEnv`). It does **not** merge messenger's handlers onto app's own subscribers — it **takes the group over**, so Redis keeps the cursor and there is no gap (`:1330-1340`). The group name is messenger's, and it is a literal on purpose: the standalone read `cmp.Or(os.Getenv("SERVICE_NAME"), "messenger")` and nothing in terraform ever set `SERVICE_NAME` for it (`:1362-1365`) |
-> | **local** | still in `repos.yml:21-23` and still defined in compose (`docker-compose.yml:156`, `messenger` profile at `:195`) — startable, as the rollback path. `0dab54d` also dropped it from the `all` profile, because running both puts **two consumers on one group** |
+> | **consumer** | `app` imports `internal/messenger/{flow,adapters,sender}` (`app/main.go:15`, `:62`, `:63` @ `app` origin/main) and runs a **second subscriber server on messenger's OWN Redis consumer group** (`:1450`, wired at `:1471`, sender at `:1473` via `msgsender.NewFromEnv`). It does **not** merge messenger's handlers onto app's own subscribers — it **takes the group over**, so Redis keeps the cursor and there is no gap. The group name is messenger's, and it is a literal on purpose: the standalone read `cmp.Or(os.Getenv("SERVICE_NAME"), "messenger")` and nothing in terraform ever set `SERVICE_NAME` for it (`:1416-1421`). **Every anchor in this row moved between `9d00a313` and origin/main without the code moving** — re-derived M257x iter-87 |
+> | **local** | **nothing left.** No compose service, no `repos.yml` entry, so `make init` does not clone it. `838d907` deleted both; the rollback path is production-side only. (At `0dab54d` it was still `repos.yml:21-23` and a compose block behind an opt-in profile — that release also dropped it from `all`, because running it beside `backend` puts **two consumers on one Redis group**. That hazard is now unreachable rather than merely discouraged.) |
 >
-> **Everything below this banner describes the standalone service**, which is still the code that
-> runs when you start the profile, and is still where the templates, the Brevo client and the
-> notification rules live. Read it as the description of a rollback target, not of the default path.
+> **Everything below this banner describes the standalone service** — the frozen repo where the
+> templates, the Brevo client and the notification rules still live, and the source `app` ported.
+> Read it as the description of a rollback target, not of anything a local stack can start.
 
-> **Default-off in local development.** Messenger is in the `messenger` Docker profile, not the
-> default `core` profile — `core`, not `graphql`: platform `0dab54d` **renamed** it, and there is no
-> `graphql` profile any more. `make up` does **not** start it, and since the fold `backend` is already
-> doing its work in-process.
+> **You cannot run it locally at all.** There is no messenger container and no `messenger` profile —
+> both were deleted at `838d907`. `make up` never started it even before that (it was opt-in), and
+> since the v9.0 fold `backend` does its work in-process, gated by `MESSENGER_ENABLED`
+> (`app/env_guards.go:61`), which defaults to **off** on a developer machine.
 
 ## Architecture & Code Map
 
-* **Codebase**: `messenger` (local) — repo `git@github.com:anthropos-work/messenger`
+* **Codebase**: `messenger` — repo `git@github.com:anthropos-work/messenger`. **Not cloned by `make init`**: `838d907` removed the `repos.yml` entry with the container. Clone it by hand to read the pre-merge source; the live code is `app/internal/messenger/`
 * **Language**: Go 1.25
 * **Framework**: Connect-RPC
 * **Email backend**: Brevo via `getbrevo/brevo-go v1.1.3`
 * **Templating**: `osteele/liquid v1.8.1`
-* **Ports**: `8200` (host) → `8200` (container, HTTP); `8201` (host) → `8201` (container, Connect-RPC)
-* **Profile**: `messenger` **only** — `profiles: [messenger]` (`docker-compose.yml:195`, derived from `docker-compose.yml` @ platform `0dab54d`). Not in the default `core`, and `0dab54d` also dropped it from `all` (two consumers on one Redis group). Opt-in, and since the v9.0 fold it is a rollback path rather than the default route.
+* **Ports**: `8200` (HTTP) and `8201` (Connect-RPC) were published 1:1 by the compose block until `838d907` deleted it; **nothing publishes them on a stack now**. The binary's own defaults are 8080/8081 (`cmd/root.go:63`, `:64`)
+* **Profile**: **none — there is no `messenger` compose service.** Platform `838d907` (merged `0c91421`, 2026-08-05) deleted the service block outright, and the `messenger` profile is gone with it. It was opt-in for its whole life; `0dab54d` had already dropped it from `all`, because running it beside `backend` puts two consumers on one Redis group.
 
 ### Key directories
 
@@ -86,7 +100,7 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
 
 ## Dependencies
 
-* **RPC clients**: messenger still constructs four Connect-RPC clients — CMS, backend users + organizations, skiller, and jobsimulation — but at platform `0dab54d` **all four addresses resolve to the one `backend` mux** (`http://backend:8083`, `docker-compose.yml:173`, `:174`, `:176`, `:183`, under compose's own comment at `:171-172`). The `cms` and `jobsimulation` services those clients were named for no longer exist in compose; their surfaces are registered on `app`'s RPC server. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
+* **RPC clients**: the binary still constructs four Connect-RPC clients — CMS, backend users + organizations, skiller, and jobsimulation (`cmd/root.go:118-142`) — each reading its address from the environment. At `0dab54d` compose supplied all four, and all four resolved to the one `backend` mux (`http://backend:8083`); `838d907` deleted the service block, and with it **every `*_RPC_ADDR` compose ever set** — there are now zero across `docker-compose.yml`, `common.yml` and `.env_example`. So on a stack today those clients are neither constructed nor addressed: the process does not run. The `cms` and `jobsimulation` services they were named for went earlier, at `d11a403`; their surfaces are registered on `app`'s RPC server. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:72-87`), not via a direct Skillpath RPC.
 * **Downstream**:
   * **Brevo API** — outbound email delivery (`BREVO_KEY`)
   * **PostgreSQL** — read-only `public` schema access for org / whitelabel lookups
@@ -96,46 +110,62 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
 
 ## Local Development
 
-### Run in Docker (opt-in)
+### Run in Docker — **not possible; there is no service to start**
 
-```bash
-cd platform
-# NB: `make up PROFILE=messenger` alone EXITS 1 — messenger declares `depends_on: backend`,
-# which the `messenger` profile does not select, so compose rejects the project as invalid.
-# Bring it up alongside the default stack instead:
-docker compose --profile core --profile messenger up --build -d
-```
+`838d907` (merged `0c91421`, 2026-08-05) deleted the compose block, so no selection of profiles brings
+a messenger container up. Asking for the retired token does not error either: compose **exits 0** and
+starts only the always-on floor (`postgresql`, `redis`, `sentinel`), which looks like a live stack.
 
-At platform `0dab54d` messenger's `depends_on` is **redis, postgresql and `backend`** (`docker-compose.yml:186-192`), so bringing it up implicitly brings the rest of the stack. The `cms` and `jobsimulation` entries went with the services themselves at `d11a403`; `skillpath` had already gone when it merged into `app`.
+For the record, this is what it used to take, and why it was two flags rather than one: at `0dab54d`,
+selecting the opt-in profile **alone** exited 1 — the block declared `depends_on: backend`, which that
+selection did not include, so compose
+rejected the project as invalid — you had to add the default profile alongside it. The `cms` and
+`jobsimulation` `depends_on` entries had gone with those services at `d11a403`; `skillpath`'s went
+when it merged into `app`.
+
+**To exercise the mail path today you enable it inside `backend`**: set `MESSENGER_ENABLED=true` in
+`platform/.env` (compose deliberately sets no value for it — pinning one there would override `.env`;
+see the comment on the `backend` block, `docker-compose.yml:84-92`). Know what that does: `app`
+attaches to messenger's **live** Redis consumer group, and a non-empty `BREVO_KEY` sends real mail.
 
 ### Run natively
 
 ```bash
-cd platform
-make dev S=messenger
-cd ../messenger
+cd messenger
 go run main.go
 ```
 
-For local development, set `BREVO_KEY=""` to route through the **console sender** (`internal/messenger/console/`) instead of hitting Brevo — emails print to stdout.
+The old first step — `cd platform && make dev S=messenger`, which stopped the container so the native
+process could take its port — is moot: there is no container, and the repo is not a sibling clone any
+more (`make init` does not fetch it), so `cd messenger` assumes you cloned it by hand.
+
+Set `BREVO_KEY=""` to route through the **console sender** (`internal/messenger/console/`) instead of
+hitting Brevo — emails print to stdout. (That fallback is standalone-only: `app` did **not** port it —
+`app/main.go:295` `log.Fatalf`s if `MESSENGER_ENABLED` is on with an empty key.)
 
 ## Environment Variables
 
-| Variable | Value (compose) | Description |
+> **Nothing injects these any more.** The middle column is what the `messenger` compose block set,
+> read at `0dab54d` — the last ref that had one. `838d907` deleted the block, so **every value below
+> is now unset** unless you supply it yourself, and the four `*_RPC_ADDR` rows in particular are set
+> by **no compose file at all**: they were the only four in the platform, and they went with the
+> service.
+
+| Variable | Value in the deleted compose block | Description |
 |----------|---------|-------------|
 | `PORT` | `8200` | HTTP port |
 | `RPC_PORT` | `8201` | Connect-RPC port |
 | `BREVO_KEY` | (empty) | Brevo API key. Empty → console sender. **MUST be empty for prod-dump staging.** |
 | `REDIS_ADDR` | `redis:6379` | Redis address |
 | `REDIS_STREAMS_INDEX` | `4` | Redis DB index for streams |
-| `REDIS_WORKER_INDEX` | `0` | Set in docker-compose (=0) but NOT read by the code — there is no worker pool / separate worker Redis index; only `REDIS_STREAMS_INDEX` is consumed (`cmd/root.go:107`). |
-| `BACKEND_USERS_RPC_ADDR` | `http://backend:8083` | Backend RPC for user lookups |
-| `CMS_RPC_ADDR` | `http://backend:8083` | CMS RPC — **re-pointed at `backend`** (`docker-compose.yml:174` @ platform `0dab54d`). **M809 has landed**; there is no `cms` container left to address. The earlier `http://cms:8091` was true at `2adcf71` only. `app`'s own comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still says *"additive + DORMANT … until the M809 re-point"* and is **stale in `app`** — grade the address against compose |
-| `JOBSIMULATION_RPC_ADDR` | `http://backend:8083` | Jobsimulation RPC — **re-pointed at `backend`** (`docker-compose.yml:176` @ platform `0dab54d`), like all four values compose sets. The earlier `http://jobsimulation:8401` was true at `2adcf71` only; the husk container is gone |
-| `SKILLER_RPC_ADDR` | `http://backend:8083` | Skiller RPC surface — served by `backend` since the skiller→app merge |
-| ~~`SKILLPATH_RPC_ADDR`~~ | *(removed)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:828`, in `getSkillPath`). |
+| `REDIS_WORKER_INDEX` | `0` | Was set in docker-compose (=0) but NOT read by the code — there is no worker pool / separate worker Redis index; only `REDIS_STREAMS_INDEX` is consumed (`cmd/root.go:107`). |
+| `BACKEND_USERS_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Backend RPC for user lookups |
+| `CMS_RPC_ADDR` | *(unset — was `http://backend:8083`)* | CMS RPC. M809 re-pointed it off the standalone `cms` onto the `backend` mux at `d11a403`; `838d907` then removed the variable altogether. The earlier `http://cms:8091` was true at `2adcf71` only. `app`'s own comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still says *"additive + DORMANT … until the M809 re-point"* and is **stale in `app`** |
+| `JOBSIMULATION_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Jobsimulation RPC, same history as the row above. The earlier `http://jobsimulation:8401` was true at `2adcf71` only; the husk container went at `d11a403` |
+| `SKILLER_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Skiller RPC surface — served by `backend` since the skiller→app merge, and reached in-process now that no consumer runs outside it |
+| ~~`SKILLPATH_RPC_ADDR`~~ | *(removed earlier)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains, on `backend`. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:828`, in `getSkillPath`). |
 
-> Values shown are what docker-compose injects. The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).
+> The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).
 
 ## Testing
 

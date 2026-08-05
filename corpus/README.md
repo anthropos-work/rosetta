@@ -4,14 +4,17 @@ This directory contains all Project Rosetta documentation. For the full project 
 
 > ## ⚠️ The backend is a monolith
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app
-> v8.0, app **v1.360.0**) are all **folded into `app`** and served in-process by the single
-> `backend` service. The GraphQL federation composes **one** subgraph, and every application
-> table lives in the **`public`** Postgres schema.
+> **Eight** services — `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app),
+> `cms` (cms-in-app v8.0, app **v1.360.0**) and, since the v9.0 "support-in-app" program,
+> `storage`, `messenger` and `customerio-sync` — are all **folded into `app`** and served
+> in-process by the single `backend` service. Platform `838d907` (merged `0c91421`, 2026-08-05)
+> deleted the last three compose services, so `docker-compose.yml` declares **5** services and
+> `repos.yml` **4** entries. The GraphQL federation composes **one** subgraph, and every
+> application table lives in the **`public`** Postgres schema.
 >
 > Their service docs are kept for domain knowledge and carry a merge banner. Start from
-> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown for
-> jobsimulation and cms is tracked as **M810**; skillpath's is **M507**.
+> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown is tracked as **M810** and is **uneven**: **landed for jobsimulation** (`6092c6d2` deleted the ECS service and the ECR repository), **not moved for cms** — see the fenced per-service statement in [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md).
+> skillpath's teardown is **M507**.
 
 ## Directory Structure
 

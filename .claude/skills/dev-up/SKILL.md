@@ -55,7 +55,9 @@ before/after each step, request confirmation before installs or destructive ops,
    init-studio`) → `platform/.env` configured → services up (`make up` — **re-derive the container count from `make ps`**;
    the long-quoted "11" predates the merges. Gone from compose at origin `2adcf71`: `skiller` (July 2026,
    taxonomy tables merged into `app`'s `public` schema), `skillpath` (M502→M507) and the `graphql`
-   Cosmo router. `cms`/`jobsimulation`/`roadrunner` still start as **husks** until platform M810) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   Cosmo router. `cms`/`jobsimulation`/`roadrunner` do **not** start either — platform `d11a403` (2026-08-03)
+   deleted all three compose services *and* their `repos.yml` entries, and that, not M810, is what removed
+   them) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps

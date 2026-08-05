@@ -1133,3 +1133,47 @@ defect and would also explain why no amount of accessor work has helped.
   my own input) and 2 anchor-drift inside iter-84's adjudication. **The fence graded the ledger, not the
   repair** — the first time it has said something about its own input, and the reason iter-85's 100 % is
   the weaker reading. Guard family **16/16 GREEN**. Gate **4 of 5**, unchanged — see iter-86/progress.md
+- iter-87 (tik): **the platform moved a third time and the fence caught it unaided — the first entry in
+  §1's fold table found by an instrument rather than by a breakage.** `838d907` (merged `0c91421`,
+  2026-08-05) **deleted the `storage`, `messenger` and `customerio-sync` compose services outright** — not
+  to a rollback profile, out of the file — and removed storage+messenger from `repos.yml`. Our clone was 2
+  behind; advanced to origin HEAD in the iter that detected it (TOK-04 P3). Ground truth re-derived with a
+  **control** (a detached worktree at the old ref): `platform_alignment_guard` assertion B gives **0**
+  findings at `0dab54d` and **2** at `0c91421`, naming both departures in its own voice — the delta is the
+  event, not accumulated debt. **The derived layer did better still: it needed no repair at all.** §2's
+  time bomb was forecast to fire on *"the day they leave the clone set"* (13 write targets, 42P01, at
+  once). This was that day, and the migration pairs (`app:public`) and CREATE SCHEMA set (`extensions
+  sentinel public`) are **identical at both refs and identical correctly**, zero human action — third
+  consecutive platform change absorbed unaided, and the bomb is retired rather than defused.
+  **The hand-off's opening reading was refuted, and the refutation is the iter's best finding:** *"13
+  GREEN · 0 RED"* is not reproducible — measured at the **identical** checkout after a `git fetch`, **10
+  GREEN · 3 RED**. The citation guards read `origin/main` by iter-68's `CITE_REF=auto` ladder, so **the
+  FETCH arms them, not the checkout**, and a citation fence pointed at an unfetched clone reads GREEN
+  (**§5 rule 41**). That is what makes the clone-advance rule derivable rather than preferential:
+  **fetch all; advance only what a derived set reads** (`D-M257x-87-1`) — and it **dissolves the deferral
+  the hand-off anticipated**, because `app` at **93** commits behind (not iter-86's stale 60) carrying
+  **65** citations was already being graded at origin HEAD and surfaced as **2** RED anchors, not a wave.
+  **38 findings across SIX predicates repaired** by five disjoint packets, tree-wide by predicate and never
+  by file: 3 dead profile tokens (28 sites), 3 no-such-service rows, the repo/service counts, **9
+  unset-address claims** (the messenger block was the only thing setting all four `*_RPC_ADDR`, so
+  `backend → sentinel` is now the ONLY cross-process edge), and 34 drifted citations → **13 GREEN · 0 RED ·
+  3 not-run**. Three substantive state corrections, not re-anchoring: **`customerio-sync` moved
+  `live-standalone` → `merged-into-app`** (a third service no plan doc had named); **`storage`'s prod ECS
+  block is DELETED, not scaled to zero**, so the paired *"each `= 0`"* sentence was half false and was
+  split; and **iter-86's own repair was among the falsified** — it had just written the `storage-legacy` /
+  `messenger` profiles it is now false to claim, §5 rule 33 arriving as a live event rather than doctrine.
+  **The re-scope trigger graded explicitly and NOT fired** (`D-M257x-87-2`), against a count the hand-off
+  had wrong: `state.md` said *"occurrence 1 of 2"* while the milestone's own record shows it **already
+  fired at iter-53** (`D-M257x-53-6`) and its prescribed remedy — a pinning-and-tracking policy — was built
+  as TOK-04. Occurrence 3 is separated from occurrence 2 by **33 iters with no platform commit at all**, so
+  *"two CONSECUTIVE"* is false on its own words; and the remedy performed on this very event. `state.md`
+  repaired after **73 iters** of drift — an orchestration file is a claim like any other and nothing fences
+  it. **Two instrument defects fixed:** rule 41 above, and the family runner reporting `lines[-1]` as a RED
+  guard's headline, so the 21-finding alignment RED was summarised by a `gotenberg` citation nit while the
+  two `[B departure]` lines were **invisible in the one view that speaks for the whole family** — repaired
+  to *"N finding(s); first: …"*, derived from the producer's ordering (**§5 rule 42**, +5 tests).
+  **Side-deliverable:** platform **M810 has already landed for `jobsimulation`** (`6092c6d2` destroyed the
+  ECS service/task-def/ECR) while **`cms` has not moved** — the corpus asserted it as future work in ~14
+  passages across 11 files. Landed as Fate 1 rather than routed, because the map had already been corrected
+  and half-repairing is worse than not repairing. Carve-out held: `storage.md`'s three claims verbatim, the
+  production-bucket escalation untouched. Gate **4 of 5**, unchanged — see iter-87/progress.md

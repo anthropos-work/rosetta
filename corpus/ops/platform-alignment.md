@@ -18,6 +18,7 @@ procedure produces and keeps honest.
 | v2.1 | skiller → app | seeder broke |
 | v2.7 | skillpath → app | seeder broke again; the corpus asserted skillpath as live Tier-1 in ~30 files |
 | v2.8 | jobsimulation (+ cms, roadrunner) → app | **latent** — see §2, it did not break, and that is worse |
+| v2.8 | **storage + messenger + customerio-sync → app** (`838d907`, merged `0c91421`, 2026-08-05) | **a fence caught it, unaided, hours after it landed** — `platform_alignment_guard` assertion B, 2 for 2, on a tree nobody had touched. The first occurrence in this table found by an instrument instead of by a breakage |
 
 The platform wrote its plan down. Read it — it is the single highest-value artifact in this whole area:
 `app/knowledge/plan/roadmap-<name>-in-app.md`.
@@ -26,7 +27,8 @@ The platform wrote its plan down. Read it — it is the single highest-value art
     v5.0  skillpath-in-app   shipped (M507 decommission, PR #1042)
     v7.0  jobsim-in-app      shipped (M701→M710; M710 executing)
     v8.0  cms-in-app         shipped to main (teardown M810)
-    v9.0  support-in-app     IN FLIGHT — folds storage + messenger (PRs #1096/#1098/#1103)
+    v9.0  support-in-app     SHIPPED 2026-08-05 (838d907) — folded storage + messenger
+                                                            + customerio-sync, which no plan doc named
 
 **The next two occurrences are already named and dated.** The point of this doc is to stop reacting and start
 following.
@@ -90,8 +92,15 @@ Landed as `stack-core/lib/repos_yml.sh` + `stack-core/tests/test_migration_deriv
 **iter-07 paid `cms` off and the debt list is now EMPTY** — the derived CREATE SCHEMA set is `extensions ·
 sentinel · public`, i.e. infra plus exactly what `repos.yml` declares, so rext creates no schema the platform
 does not own. The shrink branch fired for the second and last time. **Keep an emptied debt list and its
-fence rather than deleting the mechanism**: v9.0 folds `storage` + `messenger`, and the next entry should
-have to argue with a fence instead of landing as a one-word diff.
+fence rather than deleting the mechanism**: the next entry should have to argue with a fence instead of
+landing as a one-word diff.
+
+**That argument was cashed on 2026-08-05, and the emptied list is why nothing happened.** `838d907` removed
+`storage` and `messenger` from `repos.yml` — the very *"day they leave the clone set"* the time bomb above is
+about. Re-derived across the move, the migration pairs (`app:public`) and the CREATE SCHEMA set
+(`extensions · sentinel · public`) are **identical at both refs, and identical correctly**. A hand-maintained
+tuple would have silently skipped both repos; the derivation had nothing to skip, because it never named them.
+See §9.
 
 ### The third option, and the one to reach for: derive it AT THE POINT OF USE
 
@@ -1117,6 +1126,60 @@ Rules, in order of how often they actually catch something:
     overlap 14**, and the correction matters because the per-pass **recall** estimate is computed from
     the overlap, and recall is what decides whether a future **zero** means anything.
 
+41. **A check that resolves against a REMOTE-TRACKING ref is only as current as your last fetch — and
+    it reads GREEN until you fetch.** §3's corollary said a freshness check comparing to a *pin*
+    cannot detect a stale *clone*. This is the same hole one level in, and it is worse, because the
+    check that goes blind is the one you would use to find the drift.
+
+    M257x iter-87. `anchor_construct_guard.resolve()` and `platform_alignment_guard.cited_text()`
+    both default to `CITE_REF=auto`, whose ladder is **`origin/main` first**, checkout second — a
+    deliberate and correct fix (iter-68) for the demo stack pinning its clones to a build tag while
+    the exit gate names *origin HEAD*. The consequence nobody had written down: those guards read
+    the **remote-tracking ref in the local clone**, which only moves when someone fetches. The
+    platform had pushed two commits taking `docker-compose.yml` from 271 lines to **186**; the
+    hand-off measured the family at **13 GREEN · 0 RED**. Re-measured minutes later at the
+    **identical checkout**, after a `git fetch`: **10 GREEN · 3 RED**. Nothing about the corpus or
+    the checkout changed. The fetch did.
+
+    So the two halves of "advance a clone" are not one act, and they have opposite cost profiles:
+
+    | act | what it changes | who reads it |
+    |---|---|---|
+    | **fetch** | the remote-tracking ref | every citation assertion (`CITE_REF=auto`) |
+    | **checkout** | the working tree | only what reads the tree — for this family, `platform` alone |
+
+    > **Rule.** **Fetch every clone in any iter that takes a measurement; advance a clone's CHECKOUT
+    > only when the checked-out tree is an input to a derived legal set or to a build.** A fetched
+    > clone is already graded at origin HEAD no matter where its HEAD sits.
+
+    Two consequences worth having in advance. **A large "behind" count is not a large repair.** At
+    iter-87 `app` was **93** commits behind and carried **65** corpus citations — and because every
+    one was already being resolved at `origin/main`, the whole exposure showed up as **2** RED
+    anchors. The wave people budget an iteration for is usually already in the last reading.
+    **And a guard run against an unfetched clone is not a weaker measurement, it is a different
+    one** — it silently grades the corpus against whatever the last fetch happened to capture, and
+    reports the result in the guard's own confident voice (§5 rule 12). **Fetch, then measure, and
+    say when you fetched.**
+
+42. **A RED summary line must name the EVENT, and "the last line of the output" does not.** The
+    sibling of rule 11, found in the runner built to enforce rule 8. `guard_family.py` reported each
+    guard's final output line as its headline. Guards emit findings in assertion order, so the
+    headline was whichever assertion sorted last.
+
+    Measured at iter-87: `platform_alignment_guard` went RED with **21** findings whose **first two**
+    were `[B departure] the map claims messenger is in repos.yml, and it is not` and the same for
+    `storage` — **two services leaving the platform's clone set, the precise event the fence exists
+    to catch, and its first unaided catch of that event.** The family view showed
+    `[F out-of-range] gotenberg: cites docker-compose.yml:268`, a citation nit from the bottom of
+    the list. Both lines are true. Only one is the news, and the summary view — the one that claims
+    to speak for the whole family — showed the other.
+
+    The repair is **state how many, then show the first**, both derived from the guard's own output
+    (a curated pick would be the runner deciding which finding matters, which is the hand-maintained
+    list of §2 in a new costume). **When a summariser must choose, make it choose by the producer's
+    own ordering, and always print the cardinality** — a single finding shown without a count reads
+    as the whole verdict.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
@@ -1186,14 +1249,20 @@ containers — deliberately, per `app/main.go:1196-1202` **@ `app` `5ba17044`** 
 keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."* Applying the correction
 **at that ref** would have replaced two true statements with false ones.
 
-> **And then it flipped — which is the second half of the lesson (M257x iter-60).** At platform
-> `0dab54d` the M809 re-point **has landed**: compose sets **four** `*_RPC_ADDR` values and **all four**
-> read `http://backend:8083`; there is no cms or jobsimulation container left to address. So a passage
-> written to warn *"do not apply this correction"* became a passage that **forbids the correction now
-> required** — and it was fortified, which is worse than merely wrong: emphatic anti-repair language
-> ("**That address is CURRENT, not stale text**") survives readings precisely because it looks
-> adjudicated. **A refutation is a measurement, and it expires exactly like the claim it refuted.**
-> Pin it (this passage now names `2adcf71` in every sentence that depends on it) or it will be read as
+> **And then it flipped — twice, which is the second half of the lesson (M257x iter-60, extended at
+> iter-87).** At platform `0dab54d` the M809 re-point **had landed**: compose set **four** `*_RPC_ADDR`
+> variables, all of them reading `http://backend:8083`, with no cms or jobsimulation container left to
+> address. So a passage written to warn *"do not apply this correction"* became a passage that
+> **forbade the correction then required** — and it was fortified, which is worse than merely wrong:
+> emphatic anti-repair language ("**That address is CURRENT, not stale text**") survives readings
+> precisely because it looks adjudicated.
+> **Then the correction expired too.** All four variables lived on the `messenger` service block and
+> nowhere else; `838d907` (merged `0c91421`, 2026-08-05) deleted that block, so at HEAD compose sets
+> **zero** `*_RPC_ADDR` values and exactly one service address —
+> `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`). Three states in one week, and
+> the corrected form of the correction was wrong again within four days.
+> **A refutation is a measurement, and it expires exactly like the claim it refuted.**
+> Pin it (this passage names its ref in every sentence that depends on it) or it will be read as
 > standing. Fenced by `platform_predicate_guard.py` G4.
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
@@ -1285,8 +1354,18 @@ carries the rationale inline, because the person making the change has to touch 
 | artifact | what it says, in its own words |
 |---|---|
 | `repos.yml` header | *"`app` is the ONLY repo with migrations to run… they own no local schema."* |
-| `docker-compose.yml:130-133` | *"v9.0: NOT in the default profiles any more — app serves storage in-process, and running both means two writers on one bucket. Kept startable for rollback comparison."* |
+| `docker-compose.yml:84-92` | *"messenger-in-app (v9.0) and customerio-sync-in-app are folded into this container too, but deliberately have NO variables here… Pinning them to `false` here would override .env and make opting in impossible without editing this file."* |
+| `docker-compose.yml:102-103` | *"storage, messenger and customerio-sync are not services any more — this one container serves all three in-process."* |
 | the commit subject at `0dab54d` | *"run without the standalone storage; rename graphql -> core"* |
+
+> **The row this table used to carry is itself the lesson (M257x iter-87).** Until `838d907` the middle
+> row cited `docker-compose.yml:130-133` @ `0dab54d`, where the `storage` service block carried its own
+> in-comment warning that the container had left the default profiles and that starting it beside
+> `backend` would put two writers onto one bucket. That block is **deleted**, so the anchor now points
+> past the end of the construct it named, and the hazard it described is unreachable rather than merely
+> discouraged. **The example is stronger for having expired.** The platform's configuration told the
+> truth at that ref *and* at this one — four days apart, in the same file, each time in the commit that
+> made the change. Its prose did neither.
 
 Its narrative docs lag and are partly unmeasured. App `v1.366.0`'s own `knowledge/*.md` asserts *"60K+ skills"*
 with no measurement attached, and **the repo contains no job-role count anywhere** — so the long-quoted
@@ -1775,12 +1854,31 @@ Detection is cheap. Run it on a schedule, not on an incident.
 - **At every release open, and before any prove-it-live milestone:** run §4's six signals.
 - **Whenever a bring-up fails oddly:** check signals 2 and 3 *before* debugging the tooling. Three times the
   answer was "the platform moved."
-- **Watch the named next fold.** v9.0 folds `storage` + `messenger`. Expect: their compose services removed,
-  `app/internal/storage` and `app/internal/messenger` to appear, their ECS to go to zero — and, because their
-  env flags are being *deleted* rather than defaulted, anything reading `STORAGE_IN_APP` /
-  `MESSENGER_IN_APP_SUBSCRIBER` to break rather than degrade.
-- **When M810 lands** and the legacy repos leave the clone set, §2's time bomb fires. Fix the tuple before
-  then, not after.
+- **Watch the named next fold.** ~~v9.0 folds `storage` + `messenger`.~~ **It landed on 2026-08-05**
+  (`838d907`, merged `0c91421`) and took `customerio-sync` with it, which no plan doc had named. All three
+  compose services were **deleted outright** — not moved to a rollback profile — and `storage` + `messenger`
+  left `repos.yml`. The two folded subsystems are gated inside `app` by `MESSENGER_ENABLED` /
+  `CUSTOMERIO_SYNC_ENABLED`, unset meaning off on a developer machine (`docker-compose.yml:84-92`).
+  **The next fold is not yet named by the platform** — watch signal 6's `archived` flag and the PR list
+  rather than waiting for a plan doc, since 4 of the last month's 5 structural changes had no doc PR at all.
+- ~~**When M810 lands** and the legacy repos leave the clone set, §2's time bomb fires.~~ **The repos left
+  the clone set on 2026-08-05 and the bomb did not fire, because §2's derivation had already replaced the
+  tuple.** Measured across the move, with `repos_yml_schemas_to_create` run against both refs:
+
+  | | `0dab54d` | `0c91421` |
+  |---|---|---|
+  | migration pairs | `app:public` | `app:public` |
+  | CREATE SCHEMA set | `extensions sentinel public` | `extensions sentinel public` |
+
+  **Identical, and identical *correctly*** — zero human action, on the exact event that was forecast to
+  break 13 write targets with 42P01 at once. This is the **third** consecutive platform change the derived
+  layer has absorbed unaided (§5 rule 27 records the first two). The hand-maintained tuple would have
+  silently skipped both repos on this commit. **Keep the emptied debt list and its shrink-fence** — the
+  argument for that in §2 is now paid off twice over.
+- **M810 is still open, and it is UNEVEN — do not state it as one milestone-wide event.** `jobsimulation`'s
+  ECS service, task definition and ECR repository were **destroyed** by `6092c6d2`; `cms` is still at
+  `service_desired_count = 0`. Dropping the legacy `jobsimulation` schema is a further, separate M810 step.
+  The fenced map is authoritative for the per-service state.
 
 ---
 

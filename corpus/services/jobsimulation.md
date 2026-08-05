@@ -2,24 +2,28 @@
 
 > ## ⚠️ Merged into `app` — no longer a standalone service
 >
-> As of the **"jobsim-in-app"** program (platform milestone **M810** tracks the final teardown), the standalone
-> `jobsimulation` Go microservice has been **merged into the `app` monolith** (the service the platform calls
-> "backend"). Jobsimulation no longer runs as a separate service **in production**
-> (`jobsimulation/terraform/main.tf:40` `service_desired_count = 0`), and its subgraph is gone from the
-> supergraph.
+> As of the **"jobsim-in-app"** program, the standalone `jobsimulation` Go microservice has been **merged into
+> the `app` monolith** (the service the platform calls "backend"). Jobsimulation no longer runs as a separate
+> service **in production** — and since `6092c6d2` (*"remove the jobsimulation ECS service and ECR repository
+> (M810)"*) it cannot be *started* there either: **the `module "jobsimulation"` block is deleted**, so
+> `service_desired_count` does not appear anywhere in `jobsimulation/terraform/main.tf` (`:15-22`). Its
+> subgraph is gone from the supergraph. **M810 has LANDED for the ECS service**; what it has not yet done here
+> is drop the legacy `jobsimulation` schema, a deliberately separate step (`:38-40`). **Do not generalise this
+> to `cms`**, which has not moved (`cms/terraform/main.tf:39` `service_desired_count = 0`).
 >
-> **✅ The husk is GONE locally too (measured at platform `0dab54d`).** There is no `jobsimulation` compose
-> service, no `jobsimulation` entry in `repos.yml` (6 entries: app, sentinel, storage, messenger,
-> next-web-app, studio-desk) and no `jobsimulation` profile. Platform **`d11a403`** (2026-08-03) deleted
+> **✅ The husk is GONE locally too (re-measured at platform `0c91421`).** There is no `jobsimulation` compose
+> service, no `jobsimulation` entry in `repos.yml` (4 entries: app, sentinel, next-web-app, studio-desk)
+> and no `jobsimulation` profile. Platform **`d11a403`** (2026-08-03) deleted
 > both in one commit — its `repos.yml` diff removes `- name: cms`, `- name: jobsimulation` **and**
-> `- name: roadrunner`.
+> `- name: roadrunner`. (The entry list read *"6 … storage, messenger"* at `0dab54d`; `838d907` removed
+> those two a day later.)
 > *This banner used to read "**but locally the husk still starts**", and it was right at `2adcf71`:
 > `docker-compose.yml:83` @ that ref defined a `jobsimulation` service with
 > `profiles: [graphql, jobsimulation, all]` (`:140`), `graphql` was the default (`Makefile:10`
 > `PROFILE ?= graphql` **at that ref**), and `repos.yml:17-19` @ `2adcf71` still listed the repo (marked
 > `migrations: false # legacy`).* The **GitHub repo was archived 2026-07-31**. State: **frozen legacy repo,
-> no local container, no clone entry**; what **M810** tears down is the *production* rollback path
-> (`module.jobsimulation_euwest1`), not a local husk. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+> no local container, no clone entry** — **and the production ECS service is torn down as well**, so there is no
+> rollback path left to keep: `6092c6d2` deleted it under M810. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
 > [skillpath-in-app](./skillpath.md) merges.
@@ -36,12 +40,14 @@
 >   `job_simulation_sessions` (`:2`) and `DROP TABLE "sessions"` (`:79`). **`public.sessions` does not
 >   exist**; the session table is `public.job_simulation_sessions`. The old
 >   `jobsimulation` DB schema is **legacy — no longer authoritative**.
-> * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux. `messenger` reaches it at
->   `JOBSIMULATION_RPC_ADDR=`**`http://backend:8083`** locally (`docker-compose.yml:176` @ platform
->   `0dab54d`); `http://backend.internal.anthropos:8081` in production.
->   **The local re-point onto `app` — M809 — HAS landed**, and there is no husk container left to reach:
->   `0dab54d`'s compose declares **eight** services — ten effective, once `include: common.yml` adds
->   the `postgresql`/`redis` floor — and `jobsimulation` is not one of them.
+> * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux, and **nothing outside the
+>   process reaches it**. `messenger` was the last caller, at `JOBSIMULATION_RPC_ADDR`; that value was
+>   `http://backend:8083` at `0dab54d`, and `838d907` deleted the messenger block that held it, so
+>   **compose sets no `*_RPC_ADDR` at all** now. Production terraform still names
+>   `http://backend.internal.anthropos:8081`.
+>   **The local re-point onto `app` — M809 — had already landed** and there was no husk container left to
+>   reach either — `jobsimulation` is not among the **five** services compose declares at platform
+>   `0c91421` (**seven** effective, once `include: common.yml` adds the `postgresql`/`redis` floor).
 >   (`http://jobsimulation:8401` was true at `2adcf71`.) The in-app edge is registered at
 >   `app/main.go:1204` (@ `b948604` v1.366.0). `app` itself makes
 >   **no** outbound jobsim RPC — those are in-process calls now.
@@ -53,10 +59,17 @@
 > * **Dependencies that changed** — chronos is gone (session timers are Asynq jobs); roadrunner is gone (the
 >   in-process Judge0 runner executes code directly via `JUDGE0_BASE_URL`); the `BACKEND_USERS_RPC_ADDR`
 >   loopback is replaced by an in-process users reader.
-> * **Infrastructure** — `module.jobsimulation_euwest1` is **still declared** in
->   `infrastructure/terraform/production/services.tf` as the **rollback path** and takes no traffic. It still
->   **owns the LiveKit and Chime recording S3 buckets**, which `backend` reuses by literal name — move
->   ownership before destroying it. Teardown is **M810**.
+> * **Infrastructure** — **the ECS service is destroyed; this is no longer a rollback path.** `6092c6d2`
+>   (M810) deleted the `module "jobsimulation"` block that called `base_internal_service`, taking with it the
+>   ECS service, task definition, ECR repository, task/execution IAM roles, security group, Cloud Map
+>   service-discovery entry, CloudWatch log group and the CPU/memory alarms
+>   (`jobsimulation/terraform/main.tf:15-22`). The module **file** survives on purpose, and still
+>   **owns the LiveKit and Chime recording S3 buckets**, which `backend` reuses by literal name (the Chime
+>   S3 → SNS → https webhook points at `backend` too), plus the `/production/jobsimulation/*` SSM parameters
+>   and the atlas migration tracker (`:24-40`) — move bucket ownership before destroying any of it. The
+>   **remaining M810 step** here is dropping the legacy `jobsimulation` schema (`:38-40`). Whether
+>   `infrastructure/terraform/production/services.tf` still declares `module.jobsimulation_euwest1` is not
+>   something this corpus can see — `infrastructure` has never been in the clone set.
 > * **Repo** — the `jobsimulation` git repo still exists but is **frozen/legacy**; make changes in `app`.
 >
 > For current documentation of this domain, see [Backend (`app`)](./backend.md).
@@ -77,7 +90,7 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 * **Codebase**: `jobsimulation` — repo `git@github.com:anthropos-work/jobsimulation` (archived 2026-07-31). **Not cloned by `make init`**: no `repos.yml` entry since `d11a403`. Clone it by hand to read the pre-merge source; the live code is `app/internal/jobsimulation/`
 * **Language**: Go
 * **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the **Data** bullet, :31-38 above
-* **Ports**: **8080 (GraphQL/HTTP), 8081 (Connect-RPC) — the binary's own defaults**, and now the only ones there are: `cmd/root.go:77` `cmp.Or(os.Getenv("PORT"), "8080")` / `:78` `cmp.Or(os.Getenv("RPC_PORT"), "8081")` (the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. The **8400 / 8401** pair quoted all over this corpus was **compose-supplied by a service that no longer exists**: `docker-compose.yml` set `PORT=8400` (`:113`) / `RPC_PORT=8401` (`:119`) and published `8400:8400` / `8401:8401` (`:93-94`) — **at `2adcf71`**. At `0dab54d` there is no `jobsimulation` service, so nothing sets those values and nothing is published; **8400/8401 are historical, not an address you can reach**, with or without a `dev-N`/`demo-N` offset. The engine's live HTTP/GraphQL surface is `backend`'s.
+* **Ports**: **8080 (GraphQL/HTTP), 8081 (Connect-RPC) — the binary's own defaults**, and now the only ones there are: `cmd/root.go:77` `cmp.Or(os.Getenv("PORT"), "8080")` / `:78` `cmp.Or(os.Getenv("RPC_PORT"), "8081")` (the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. The **8400 / 8401** pair quoted all over this corpus was **compose-supplied by a service that no longer exists**: `docker-compose.yml` set `PORT=8400` (`:113`) / `RPC_PORT=8401` (`:119`) and published `8400:8400` / `8401:8401` (`:93-94`) — **at `2adcf71`**. At `0c91421` there is no `jobsimulation` service, so nothing sets those values and nothing is published; **8400/8401 are historical, not an address you can reach**, with or without a `dev-N`/`demo-N` offset. The engine's live HTTP/GraphQL surface is `backend`'s.
 * **Profile**: **none — there is no `jobsimulation` compose service.** Deleted by platform `d11a403` (2026-08-03), the compose clean-up that followed the fold; the line that stood here named the `graphql` profile, which `0dab54d` renamed `core`, for a service that had already been removed. Historical only (corrected M257x iter-68)
 
 ### Key directories
@@ -104,7 +117,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
-* **RPC**: `internal/rpcsrv` — reached **in-process** by Backend (incl. the in-process skill-path engine), and over the wire by **`messenger` alone**, the only service left that reads `JOBSIMULATION_RPC_ADDR`. At platform `0dab54d` that value is **`http://backend:8083`**, like all four addresses compose sets — and compose sets them only on `messenger`; `d11a403` dropped `JOBSIMULATION_RPC_ADDR` from `backend` outright, having verified zero reads in `app`. **M809 has landed** and there is no husk container left to resolve to. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1204` @ `app` `b948604` v1.366.0).
+* **RPC**: `internal/rpcsrv` — reached **in-process** by Backend (incl. the in-process skill-path engine), and **over the wire by nobody**. `messenger` was the last reader of `JOBSIMULATION_RPC_ADDR`; the value was `http://backend:8083` at `0dab54d`, set on messenger's block and nowhere else (`d11a403` had already dropped it from `backend`, having verified zero reads in `app`), and `838d907` then deleted the messenger service — so **no compose file sets it, or any other `*_RPC_ADDR`, today**. There is no husk container left to resolve to either. `app` registers its own in-app `JobSimulationService` handler (`app/main.go:1204` @ `app` `b948604` v1.366.0).
   > **This line used to say the opposite, emphatically — keep the note (M257x iter-60).** Until `2adcf71` it read *"That address is **CURRENT, not stale text**"*, and it was **right at that ref**: only `SKILLER_RPC_ADDR` had been re-pointed then. A refutation is a measurement and expires exactly like the claim it refuted — and anti-repair wording is the kind that survives readings, because it looks already-adjudicated. See [`platform-alignment.md`](../ops/platform-alignment.md) §5 rule 31.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a
@@ -124,15 +137,16 @@ internal/
 
 ### Direct dependencies
 
-> These are the edges the engine has, **not** a reading of a compose block: at `0dab54d` there is no
+> These are the edges the engine has, **not** a reading of a compose block: there is no
 > `jobsimulation` service and therefore no `depends_on` list to quote. They are satisfied in-process inside
-> `backend` (or, for the two remaining cross-process hops, by `backend`'s own compose entry).
+> `backend` — with one exception, `sentinel`, which is the **only** cross-process hop a local stack has
+> left and the only service address `backend`'s compose entry carries (`docker-compose.yml:48`).
 
 * **Backend (app)** — user context, organization scoping
-* **CMS** — simulation definitions, content, studio entities. **The engine holds no `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own**; it calls the cms domain **in-process** (same binary, no RPC hop). There is no husk container on either end of that edge any more — compose's `CMS_RPC_ADDR`, which only `messenger` reads, is `http://backend:8083` (measured at platform `0dab54d`). **The M23 content cutover does NOT ride on a `cms` container.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
+* **CMS** — simulation definitions, content, studio entities. **The engine holds no `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own**; it calls the cms domain **in-process** (same binary, no RPC hop). There is no husk container on either end of that edge any more, and no variable either: `CMS_RPC_ADDR` was read only by `messenger`, pointed at `http://backend:8083` by `d11a403`, and removed outright with the messenger block at `838d907`. **The M23 content cutover does NOT ride on a `cms` container.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
 * **Sentinel** — authz
-* **Storage** — file uploads, recordings
-* **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026): `SKILLER_RPC_ADDR=http://backend:8083`
+* **Storage** — file uploads, recordings. Also **in-process** since the v9.0 fold: `app` owns the object-storage managers itself, and `838d907` removed the `storage` container, so this is not a service hop either
+* **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026), and reached in-process. `SKILLER_RPC_ADDR` is set by no compose file: the last block to carry it was `messenger`'s, deleted at `838d907`
 * **Roadrunner** — **ORPHANED, no longer called** (v2.7 M247). Code execution moved **in-process into jobsimulation** (`internal/runner/runner.go`, an in-process Judge0 client — its header reads *"formerly the standalone 'roadrunner' service"*); `ROADRUNNER_RPC_ADDR` is dead config. See [`roadrunner.md`](roadrunner.md).
 * **PostgreSQL**, **Redis** — base infra
 

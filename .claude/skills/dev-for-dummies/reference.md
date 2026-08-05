@@ -30,20 +30,24 @@ N=0 is the main dev stack (base ports). `demo-N` / `dev-N` add `N×10000`.
 | **next-web-app** (frontend) | **3000** (hiring 3001) | **13000** | **browser** ← smooth target |
 | **studio-desk** | **9000** | **19000** | **browser** ← smooth target |
 | **ant-academy** (native) | **3077** | **13077** | **browser** ← smooth target |
-| ~~cosmo / graphql router~~ | ~~5050~~ | ~~15050~~ | **GONE** — deleted from compose at platform `2adcf71`; GraphQL is `backend`'s own `:8082/graphql/query` (row below) |
-| **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | router, other services |
-| cms | 8090 (RPC 8091) | 18090 | router, other services |
-| jobsimulation | 8400 (RPC 8401) | 18400 | router, other services |
-| skillpath | 8100 (RPC 8101) | 18100 | router, other services |
-| sentinel | 8087 | 18087 | services (authz) |
+| **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | browser + the frontend containers |
+| sentinel | 8087 | 18087 | `backend` (authz) — the one cross-process hop left |
 | presenter cockpit | 7700 | 17700 | browser (plain HTTP — see caveat) |
-| directus (only `--local-content`) | 8055 | 18055 | cms |
+| directus (only `--local-content`) | 8055 | 18055 | `backend`'s cms domain |
 | fake-FAPI (Clerkenstein) | 5400 | 15400 | browser (own TLS) |
 
+> **Ports that no longer exist on a stack — do not target them.** The Cosmo/graphql router (`5050`) was
+> deleted from compose by platform `2adcf71`; GraphQL is `backend`'s own `:8082/graphql/query`. `cms`
+> (`8090/8091`), `jobsimulation` (`8400/8401`) and `roadrunner` went at `d11a403`, `skillpath` at M507, and
+> `storage` (`8300/8301`), `messenger` (`8200/8201`) + `customerio-sync` (`8080`) at `838d907` (merged
+> `0c91421`, 2026-08-05). All of those domains are served **in-process by `backend`**, on no port of their
+> own. Nothing listens on the retired numbers, so a curl against one fails against an empty port rather
+> than erroring usefully.
+
 > **Frontend/UI targets are the smooth path** — only the *browser* talks to them, so a native process on the
-> host serves them directly. **Backend targets** (app/cms/jobsimulation/skillpath) are consumed by *other
-> containers* (the router) by Docker service name, which a host-native process can't provide — see § *Backend
-> targets* for the two caveats (infra endpoints + router federation).
+> host serves them directly. **`backend` is the one backend target left**, and it is consumed by *another
+> container* (`next-web-app`) by Docker service name, which a host-native process can't provide — see
+> § *Backend targets* for the caveats (infra endpoints + service-name resolution).
 
 **Valid TARGET repos** (must exist as `stack-demo/<repo>`):
 `app cms jobsimulation skillpath next-web-app studio-desk ant-academy messenger storage sentinel roadrunner

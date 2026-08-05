@@ -18,7 +18,7 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | TypeScript, Vite, Express.js (vanilla TS frontend, no framework) |
-| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (ports 9000/9100). It `depends_on` **`backend` alone** — `docker-compose.yml:223-225` @ platform `0dab54d`, with `profiles: [studio-desk, all]` at `:226`. It *also* listed **`cms`** (`:337-341` @ `2adcf71`) until that container was deleted from compose at `d11a403`; there is no `cms` service to depend on now, and it never depended on `graphql`, which is likewise no longer a compose service. Built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`. **⚠️ Asking for `studio-desk` as the only profile exits 1** — the profile selects `studio-desk` but *not* the `backend` it depends on, so compose rejects the whole project (`service "studio-desk" depends on undefined service "backend": invalid compose project`). Use `PROFILE=all`, which selects both. |
+| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (ports 9000/9100). It `depends_on` **`backend` alone** — `docker-compose.yml:138-140` @ platform `0c91421`, with `profiles: [studio-desk, all]` at `:141` (both re-anchored M257x iter-87; they were `:223-225`/`:226` at `0dab54d`, before `838d907` deleted three service blocks above them). It *also* listed **`cms`** (`:337-341` @ `2adcf71`) until that container was deleted from compose at `d11a403`; there is no `cms` service to depend on now, and it never depended on `graphql`, which is likewise no longer a compose service. Built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`. **⚠️ Asking for `studio-desk` as the only profile exits 1** — the profile selects `studio-desk` but *not* the `backend` it depends on, so compose rejects the whole project (`service "studio-desk" depends on undefined service "backend": invalid compose project`). Use `PROFILE=all`, which selects both. |
 | **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Authentication** | Clerk |
 | **Repository** | Local `studio-desk/` (sibling repo cloned by `make init`) |
@@ -137,7 +137,7 @@ Studio-Desk connects to the platform's GraphQL endpoint for data operations — 
 // Types auto-generated via graphql-codegen
 ```
 
-**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (`docker-compose.yml:204`, @ platform `0dab54d`); was `http://localhost:5050/graphql` when the router existed locally
+**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` as a build arg (`docker-compose.yml:119`) and again in the runtime environment (`:135`), re-anchored at platform `0c91421` (it was `:204` at `0dab54d`); was `http://localhost:5050/graphql` when the router existed locally
 
 **Type Generation**:
 ```bash

@@ -141,7 +141,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 >
 > **That retraction over-corrected, and this corrects the correction (M257x iter-48).** The twin of this
 > paragraph said *"all of that is false; that service **has never existed**"* — repaired at
-> [`service_taxonomy.md:308-317`](./service_taxonomy.md) and left standing here. The service **did** exist,
+> [`service_taxonomy.md:321-330`](./service_taxonomy.md) and left standing here. The service **did** exist,
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. And a check
@@ -169,10 +169,10 @@ In the **default local posture**, Directus is **not** part of the local stack �
 domain since cms-in-app) reaches the **production** Directus over the network. The default `core` profile is
 **not** just Postgres + `backend` — but it is far smaller than this page long claimed: it starts **five**
 containers. Three are profile-less and so in *every* selection — `postgresql` + `redis` (from the included
-`common.yml`) and `sentinel` — and two are the actual `core` members, `backend` (`docker-compose.yml:100`)
-and `gotenberg` (`:268`). **There is no `cms`, `jobsimulation` or `roadrunner` container to start**: platform
-`d11a403` deleted all three compose services outright, and their `repos.yml` entries with them. What survives
-is the *production* rollback module (teardown is M810) and a frozen repo on disk — neither is a container:
+`common.yml`) and `sentinel` — and two are the actual `core` members, `backend` (`docker-compose.yml:110`)
+and `gotenberg` (`:183`). **There is no `cms`, `jobsimulation` or `roadrunner` container to start** (deleted by `d11a403`, with their `repos.yml` entries), **and no `storage`,
+`messenger` or `customerio-sync` one either** (deleted by `838d907`, which also dropped `storage` + `messenger` from `repos.yml`). What survives
+is a *production* terraform module — **and not the same one for each**: `cms`'s is still the declared rollback path at `service_desired_count = 0` (`cms/terraform/main.tf:39`, teardown still **M810**), while **jobsimulation's ECS service is already destroyed** (`6092c6d2` deleted the `module "jobsimulation"` block — M810 landed for that row) — plus a frozen repo on disk. Neither is a container:
 
 ```mermaid
 graph TB
@@ -194,8 +194,8 @@ graph TB
     Directus --> ProdPG[(Prod PostgreSQL · directus schema)]
 ```
 
-> **Both frontends target `backend`** (`docker-compose.yml:236`/`:245` for next-web-app, `:204`/`:220`
-> for studio-desk — all four are `:8082/graphql/query`); there is no `cms` service left for them to target
+> **Both frontends target `backend`** (`docker-compose.yml:151`/`:160` for next-web-app, `:119`/`:135`
+> for studio-desk — build arg then runtime env in each case, all four `:8082/graphql/query`); there is no `cms` service left for them to target
 > even if they wanted one. And `backend` does **not** proxy content through a standalone `cms`
 > process: `app/cms_reader_switch.go` swaps the cms content reader in-place to the **in-process** cms
 > RPC server once Directus is configured, so every content read is *"a DIRECT domain call — no proto round-trip
@@ -292,9 +292,9 @@ so images stay real — no blob bytes are copied locally.
 > Directus client lives at `app/internal/cms/directus/` and runs in-process in `backend`;
 > `app/cms_reader_switch.go` swaps the content reader to the in-process cms server, and
 > `app/main.go:980-982` makes `DIRECTUS_BASE_ADDR` a hard boot requirement **of `backend`** (@ `app`
-> `b948604` v1.366.0). There is **no `cms` container left to start** — platform `0dab54d`'s compose
-> declares **eight** services — ten in the effective topology, once `include: common.yml` adds the
-> `postgresql`/`redis` floor — and `cms` is not one of them; every content read is `backend`'s own.
+> `b948604` v1.366.0). There is **no `cms` container left to start** — the compose at platform `0c91421` declares
+> **five** services (**seven** effective, once `include: common.yml` adds the `postgresql`/`redis` floor; it was
+> eight/ten at `0dab54d`, before `838d907` dropped `storage`/`messenger`/`customerio-sync`) — and `cms` is not one of them; every content read is `backend`'s own.
 
 The cms domain connects to Directus via:
 
@@ -737,7 +737,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
 NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:8082/graphql/query   # was :5050/graphql
 # NB the var is WUNDERGRAPH, not GRAPHQL — `NEXT_PUBLIC_GRAPHQL_ENDPOINT` does not exist in
-# next-web-app. Set on the image at docker-compose.yml:236 (build arg) and :245 (runtime env).
+# next-web-app. Set on the image at docker-compose.yml:151 (build arg) and :160 (runtime env).
 ```
 
 **For Studio-Desk**:
@@ -818,19 +818,22 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 # There is no `graphql` service since platform `2adcf71` — check the endpoint's real host:
 docker compose ps backend
 
-# Check backend's own dependencies are up (docker-compose.yml:92-99 — redis, postgresql, sentinel;
-# `cms`, `jobsimulation` and `storage` are NOT among them). Of those three only `cms` and
-# `jobsimulation` name nothing startable — both compose blocks were deleted at `d11a403`, so
+# Check backend's own dependencies are up (docker-compose.yml:101-109 — redis, postgresql, sentinel;
+# `cms`, `jobsimulation`, `storage`, `messenger` and `customerio-sync` are NOT among them, and none of
+# the five names anything startable — every one of those compose blocks has been deleted, so
 # `docker compose ps cms` exits 1 with "no such service".
 docker compose ps postgresql redis sentinel
 ```
-> **`storage` is the exception — it is still a declared service, just not a default one.** At platform
-> `0dab54d` it sits at `docker-compose.yml:102` under `profiles: [storage-legacy]` (`:134`), so
-> `docker compose ps storage` **exits 0** (measured 2026-08-05 against `stack-demo/platform`, against
-> `ps cms` / `ps jobsimulation` → rc 1 "no such service"). It is dropped from `backend`'s `depends_on`
-> — *"storage removed at v9.0: served in-process by this container now"* (`docker-compose.yml:93`) — and
-> out of the default selection, which is **not** the same thing as removed from the file. Running it
-> alongside `backend` is the two-writers-on-one-bucket hazard compose warns about at `:131-132`; see
+> **`storage` was the exception until 2026-08-05, and no longer is.** At platform `0dab54d` it was still a
+> declared service, just not a default one — its own block, behind `profiles: [storage-legacy]` — so
+> `docker compose ps storage` **exited 0** while `ps cms` / `ps jobsimulation` returned rc 1
+> "no such service" (measured 2026-08-05 against `stack-demo/platform`). Platform `838d907` (merged
+> `0c91421`, the same day) deleted the `storage`, `messenger` and `customerio-sync` service blocks
+> outright — the `storage-legacy` / `messenger` / `customerio-sync` profiles are gone with them — so all three now
+> behave exactly like `cms`: rc 1, no such service. The two-writers-on-one-bucket hazard compose used to
+> warn about in that block is closed by construction — there is one writer now, `backend`,
+> which serves object storage in-process. (Deliberately no `file:line` for the deleted block: every line
+> number it used to own now points at another service.) See
 > [`platform-migration-status.md`](./platform-migration-status.md).
 
 **Schema outdated**:

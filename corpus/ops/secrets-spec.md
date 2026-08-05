@@ -184,14 +184,15 @@ local-vs-prod realities never poison the score:
 |---|---|---|
 | `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification |
 | `waived-aws-mount` | `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID` | AWS recording creds are mounted from `~/.aws/credentials`, never a `.env` secret |
-| `waived-profile-gated` | `platform/BREVO_KEY` | only needed under the `messenger` docker-compose profile, which the default `core` profile does not select |
+| `waived-profile-gated` | `platform/BREVO_KEY` | the class name is historical: the `messenger` profile is gone — `838d907` deleted the container along with the profile. Messenger now runs in-process inside `backend`, gated by `MESSENGER_ENABLED`, which defaults **off** on a developer machine (`ENVIRONMENT=development`; `docker-compose.yml:84-92`), so no default stack ever reads the key |
 | `waived-optional` | `platform/BUNNY_STREAM_API_KEY`, `app/TAILSCALE_AUTH_KEY`, `studio-desk/GCLOUD_SERVICE_ACCOUNT`, `studio-desk/YOUTUBE_API_KEY`, `next-web-app/BUNNY_CDN_TOKEN_KEY` | example-only / absent from live / convenience — a local stack comes up without them |
 
 A waived gene names **no operators** and is never measured (`Validate` enforces this). Because the catalog is
-scoped to the **default stack's** service set, the denominator is honest for it; a different profile would
-carry a different waived set — `platform/BREVO_KEY` is waived precisely because the default selection
-(`core` at platform `0dab54d`: `backend` + `gotenberg` + the always-on `postgresql`/`redis`/`sentinel` floor)
-carries no `messenger`.
+scoped to the **default stack's** service set, the denominator is honest for it — `platform/BREVO_KEY` is
+waived because the default selection (`core` at platform `0c91421`: `backend` + `gotenberg` + the always-on
+`postgresql`/`redis`/`sentinel` floor) sends no mail. Since `838d907`, **no selection does**: there is no
+`messenger` container left to start, and `backend`'s in-process messenger stays dormant until
+`MESSENGER_ENABLED` is set in `.env`.
 
 > **⚠️ The DNA's `profile` field still literally reads `graphql`** — the token platform `0dab54d` renamed to
 > `core`. Nothing mis-selects on it: the field is never resolved against compose, only required non-empty at

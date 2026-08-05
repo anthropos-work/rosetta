@@ -8,19 +8,21 @@ For the *categorised* view (tiers, ports, profiles, which repos are cloned where
 [`../architecture/service_taxonomy.md`](../architecture/service_taxonomy.md); for how the
 services talk to each other see [`../architecture/dependency_map.md`](../architecture/dependency_map.md).
 
-> **⚠️ `app` is the backend monolith.** **Four** services in this index — skiller, skillpath,
-> jobsimulation and cms — are **folded into `app`** and no longer deploy separately. Their docs are kept for
-> domain knowledge and carry a merge banner at the top.
+> **⚠️ `app` is the backend monolith.** **Seven** services in this index — skiller, skillpath,
+> jobsimulation, cms, storage, messenger and customerio-sync — are **folded into `app`** and no longer
+> deploy separately. Their docs are kept for domain knowledge and carry a merge banner at the top.
 >
-> **`roadrunner` is the fifth, and it is different: orphaned, not merged-and-undeployed.** Nothing calls it,
+> **`roadrunner` is the eighth, and it is different: orphaned, not merged-and-undeployed.** Nothing calls it,
 > but `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` — so it **does** still deploy,
-> unlike cms (`:39` = 0) and jobsimulation (`:40` = 0). It is the one row where prod and the platform's own
+> unlike cms (`cms/terraform/main.tf:39` = 0) and jobsimulation, whose ECS service **M810 has already destroyed** (`6092c6d2`; `service_desired_count` no longer appears in `jobsimulation/terraform/main.tf` at all — `:15-22`). It is the one row where prod and the platform's own
 > `repos.yml` contradict each other. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > And **none of them starts a container any more.** cms, jobsimulation and roadrunner did run locally as
 > unfederated husks, but platform **`d11a403`** (2026-08-03) deleted all three from `docker-compose.yml`
-> **and** from `repos.yml`. At `0dab54d` compose declares **8** services (10 effective, with `common.yml`'s
-> `postgresql` + `redis`) and `repos.yml` carries **6** entries — none of them these three.
+> **and** from `repos.yml`; **`838d907`** (merged `0c91421`, 2026-08-05, *"drop the storage, messenger and
+> customerio-sync containers"*) then did the same to the last three.
+> `docker-compose.yml` declares **5** services (7 effective, with `common.yml`'s `postgresql` +
+> `redis`), and `repos.yml` carries **4** entries — `app`, `sentinel`, `next-web-app`, `studio-desk`.
 > Read [`backend.md`](backend.md) for the current shape.
 
 ## Core backend services (Tier 1 — Go)
@@ -30,12 +32,12 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`backend.md`](backend.md) | Backend (`app`) | **The monolith.** Main API gateway + user/org management, **plus** the folded skiller (taxonomy, matching, embeddings), skillpath, jobsimulation, cms and roadrunner domains — and the AI-readiness subsystem, academy store, AI Labs LabSession |
 | [`cms.md`](cms.md) | CMS — **merged into `app`** | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline. Folded in at cms-in-app v8.0 (app v1.360.0); teardown **M810** |
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
-| [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; teardown **M810** |
-| [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
+| [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; the prod **ECS service is deleted — M810 landed** (`6092c6d2`), the terraform module surviving only to own the LiveKit/Chime buckets, the SSM parameters and the atlas tracker |
+| [`storage.md`](storage.md) | Storage — **merged into `app`** | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB. Folded in at v9.0 "support-in-app" (2026-08-04); container and `repos.yml` entry deleted at `838d907`. In prod the ECS service is **deleted**, not scaled to zero — the module survives only to keep the buckets/CDN under `prevent_destroy` |
 | [`roadrunner.md`](roadrunner.md) | Roadrunner — **orphaned** (not "merged and undeployed") | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL` — but prod terraform still reads `= 1` (`roadrunner/terraform/main.tf:19`), even though `d11a403` removed its local container **and** its `repos.yml` entry |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
-| [`messenger.md`](messenger.md) | Messenger | Centralized transactional email via Brevo + Liquid templates. Opt-in `messenger` profile. Other services don't call Brevo directly — they **publish Redis Stream events** that messenger consumes (`messenger/internal/flow/flow.go:70-95`, `AddSubscriber("backend", …)`). Messenger *exposes* a `MessengerService` Connect-RPC surface, but **no service constructs a client for it**: `MESSENGER_RPC_ADDR` appears in no repo, and `git log -S` over the whole platform history returns **0** commits that ever set it |
-| [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync | One-directional background pipeline, Postgres `public` → Customer.io, for marketing automation. Opt-in profile; built from a GitHub URL, not cloned |
+| [`messenger.md`](messenger.md) | Messenger — **merged into `app`** | Centralized transactional email via Brevo + Liquid templates. Folded in at v9.0 "support-in-app"; container, `repos.yml` entry and `messenger` profile all deleted at `838d907`, and `app` gates the domain behind `MESSENGER_ENABLED` (unset = off on a laptop). Other services never called Brevo directly — they **publish Redis Stream events** the domain consumes (`messenger/internal/flow/flow.go:70-95`, `AddSubscriber("backend", …)`); `app` took over messenger's own consumer group. It *exposes* a `MessengerService` Connect-RPC surface, but **no service ever constructed a client for it**: `MESSENGER_RPC_ADDR` appears in no repo, and `git log -S` over the whole platform history returns **0** commits that ever set it |
+| [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync — **merged into `app`** | One-directional background pipeline, Postgres `public` → **Brevo** (the Customer.io name is a fossil), for marketing automation. The last Go service folded into `app`; container deleted at `838d907`, gated by `CUSTOMERIO_SYNC_ENABLED`. Its unique "build straight from a GitHub URL" compose pattern died with it |
 | [`db-backup.md`](db-backup.md) | db-backup | Scheduled Postgres backups every 6 h to three geographies (S3, Azure, Hetzner). **Production-only** — not in local compose |
 
 ## Frontends & gateway

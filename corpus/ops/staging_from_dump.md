@@ -19,7 +19,7 @@ It is the bridge between "the stack starts" and "I can log in as my own admin ac
 ## Prerequisites
 
 You should already have, per `setup_guide.md`:
-- `platform/`, `app/`, `cms/`, `jobsimulation/`, `sentinel/`, `storage/`, `messenger/`, `roadrunner/`, `next-web-app/`, `studio-desk/`, `graphql-wundergraph/` cloned as siblings. (`skillpath` is decommissioned into `app` — no longer cloned.)
+- `platform/` plus the four `repos.yml` entries — `app/`, `sentinel/`, `next-web-app/`, `studio-desk/` — cloned as siblings. (`skiller`, `skillpath`, `cms`, `jobsimulation`, `roadrunner`, `storage`, `messenger` and `customerio-sync` are all folded into `app` and no longer cloned or built; `graphql-wundergraph` went with the router at `2adcf71`.)
 - `platform/.env` with `GH_PAT`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` filled in.
 - `make up postgresql` succeeds and Postgres is healthy.
 
@@ -34,23 +34,25 @@ You also need:
 
 ## 1. Outbound-email kill switch (mandatory, do this FIRST)
 
-A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications via `messenger` → Brevo (welcome emails, invitation flows, weekly recaps, password resets). If `BREVO_KEY` is set to a real value, those emails will go out to real people the moment you exercise the relevant flow.
+A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications through the messenger subsystem → Brevo (welcome emails, invitation flows, weekly recaps, password resets). If `BREVO_KEY` is set to a real value, those emails will go out to real people the moment you exercise the relevant flow.
 
-**Blank `BREVO_KEY` in `platform/.env` and restart `messenger` BEFORE running any flow that could enqueue a notification:**
+> **⚠️ There is no `messenger` container any more.** Platform `838d907` (2026-08-05) deleted it — messenger runs in-process inside `backend` (v9.0 "support-in-app"), gated by `MESSENGER_ENABLED`. Any `docker compose … messenger` command now fails with *no such service*; target **`backend`** instead. `MESSENGER_ENABLED` unset means off while `ENVIRONMENT=development`, but do not lean on that — a staging `.env` copied from elsewhere may well set it, which is exactly why blanking the key is the mandatory step.
+
+**Blank `BREVO_KEY` in `platform/.env` and restart `backend` BEFORE running any flow that could enqueue a notification:**
 
 ```bash
 sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
-docker compose -f platform/docker-compose.yml restart messenger
+docker compose -f platform/docker-compose.yml restart backend
 ```
 
 Verify:
 
 ```bash
-docker compose -f platform/docker-compose.yml exec -T messenger env | grep BREVO_KEY
-# Expected: BREVO_KEY=  (empty)
+docker compose -f platform/docker-compose.yml exec -T backend env | grep -E '^(BREVO_KEY|MESSENGER_ENABLED)='
+# Expected: BREVO_KEY=  (empty); MESSENGER_ENABLED absent, or explicitly false
 ```
 
-The messenger boots with `INFO Brevo Messenger` either way; with the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
+With the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
 
 Apply the same caution to any other live-customer integration you don't intend to fire from staging:
 - `CUSTOMERIO_*` (marketing/lifecycle email — disable unless you're testing customer.io integration explicitly).
@@ -292,7 +294,7 @@ return ""
 
 `authn/provider/clerk/clerk_user.go` `GetOrganization()` — fall back to v2 claim names + lazy-fetch `public_metadata.eid` via Clerk API with a process-wide cache (Clerk rate-limits otherwise).
 
-Each consuming service (`app`, `cms`, `jobsimulation`, `messenger`, `storage`, `sentinel`) needs:
+Each consuming service needs the steps below. On a current stack that is **`app` and `sentinel`** — the only Go services left; when this recipe was written it also covered `cms`, `jobsimulation`, `messenger` and `storage`, all since folded into `app`:
 
 1. `cp -r <patched-colony> <service>/vendor-colony`
 2. Append to `<service>/go.mod`:
@@ -320,9 +322,12 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see **8** services running at platform `0dab54d` — `--profile all` selects 8 of the 10
-declared (the count was ~14 before the cms/jobsimulation/roadrunner fold and the `graphql` deletion;
-corrected M257x iter-78). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
+You should see **7** services running at platform `0c91421` — `--profile all` now selects the whole
+effective topology (`backend`, `gotenberg`, `next-web-app`, `studio-desk` + the always-on
+`postgresql`/`redis`/`sentinel` floor). The count was ~14 before the cms/jobsimulation/roadrunner
+fold and the `graphql` deletion, 8 at `0dab54d`, and 7 since `838d907` dropped the `storage`,
+`messenger` and `customerio-sync` containers (corrected M257x iter-78, re-measured iter-87). If any
+service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
 
 ---
 

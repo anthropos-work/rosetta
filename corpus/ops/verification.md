@@ -19,8 +19,9 @@ and scoped to the **services actually brought up**. So when a bring-up says "UP"
 > authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform
 > repo is modified.**
 >
-> **In scope:** the backend services the **default** profile starts — `core` at platform `0dab54d`
-> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis`/`sentinel` floor). **Out of scope:** the
+> **In scope:** the backend services the **default** profile starts — `core` at platform `0c91421`
+> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis`/`sentinel` floor; the same five as at
+> `0dab54d` — `838d907` deleted three services, none of which `core` selected). **Out of scope:** the
 > frontend tier — the frontends don't exist in the stack yet; **M19** adds them and extends the verify
 > service list. Deep behavioural / e2e flows remain the operator-driven `/test-platform` job; this
 > auto-run is the always-on *smoke net*.
@@ -162,7 +163,7 @@ Directus) never false-warns even on an unscoped run:
   `PING`, GraphQL introspection (`:8082+offset` at `/graphql/query` — re-pointed at M257x iter-13 when the
   `:5050` router was deleted; a wrong *host* refuses loudly but a wrong *path* connects and 404s, so both
   halves moved), gotenberg version (`:3200+offset`), sentinel
-  Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
+  Connect-RPC handler mounted (`:8087+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
   `directus-collections` registration check **and the `directus-serves-content` probe that reads an actual
   item back over HTTP** (§"cheap-wins" 3/3b above — the registration count alone graded three cold cycles
@@ -171,6 +172,14 @@ Directus) never false-warns even on an unscoped run:
   deep probe whose backing service isn't in scope (the same `target_service_selected` gate as liveness), so a
   reduced bring-up never produces a wall of false `down`s in *either* phase. (The directus row is scoped in
   only on a `--local-content` bring-up and gated on the container existing — a prod-read stack stays clean.)
+
+> **The registry still carries merged-away rows on purpose.** `lib/services.sh` keeps `jobsimulation`,
+> `cms`, `storage` and `roadrunner` rows (and `readiness.sh` keeps `probe_storage_rpc`, base
+> `:8300`/`:8301`) for older/rollback clones. None of them can fire on a current stack: `2adcf71`,
+> `d11a403` and `838d907` deleted those containers, and both `/dev-up` and `/demo-up` pass a **derived**
+> `--services` scope that filters the rows out. Running `verify.sh` with **no** `STACK_SERVICES` set
+> probes the whole table and will false-`down` every merged-away row — that is a scope error, not a
+> broken stack.
 
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,

@@ -2,15 +2,21 @@
 
 > ## `app` is the backend monolith
 >
-> **Five former microservices now run inside `app`**, in merge order:
+> **Eight former microservices now run inside `app`**, in merge order:
 >
 > | Merged service | Program | What moved in |
 > |---|---|---|
 > | [skiller](./skiller.md) | skiller-in-app (v2.1 "quick change", July 2026) | the skills-taxonomy graph (**≥42,790 skills / ≥22,470 job roles** — public subset; [not "60K/18K"](../architecture/shared_libraries.md#taxonomy-figures)), embeddings, AI matching |
 > | [skillpath](./skillpath.md) | skillpath-in-app (M502→M507) | skill-path progression engine, session state |
 > | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
-> | [jobsimulation](./jobsimulation.md) | jobsim-in-app (teardown **M810**) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
-> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (teardown **M810**) | content layer + Directus edge + Studio — `internal/cms/` |
+> | [jobsimulation](./jobsimulation.md) | jobsim-in-app (prod ECS teardown **M810 — LANDED**, `6092c6d2`) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
+> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (prod teardown **M810 — still pending**) | content layer + Directus edge + Studio — `internal/cms/` |
+> | [storage](./storage.md) | v9.0 "support-in-app", 2026-08-04 | the private + public object-storage managers — `internal/storage/`, `internal/storagens/`, `internal/publicstorage/` |
+> | [messenger](./messenger.md) | v9.0 "support-in-app", 2026-08-04 | transactional email (Brevo + Liquid) and messenger's **own** Redis consumer group — `internal/messenger/`; switch-gated by `MESSENGER_ENABLED` |
+> | [customerio-sync](./customerio-sync.md) | v9.0 "support-in-app" | the one-way Brevo marketing-contact push — `internal/customeriosync/`; switch-gated by `CUSTOMERIO_SYNC_ENABLED` |
+>
+> The last three lost their **containers** a day later, at platform `838d907` (merged `0c91421`,
+> 2026-08-05): compose now declares **five** services and `repos.yml` **four** entries.
 >
 > Consequences that hold platform-wide:
 > * **The federation composes ONE subgraph** (`backend`). cms-in-app was the **3 → 1** step: the single
@@ -20,13 +26,22 @@
 >   here, not at its own merge.
 > * **All of their tables live in `public`**, with the same table names. The `skiller`, `skillpath`,
 >   `jobsimulation` and `cms` DB schemas are legacy and non-authoritative.
-> * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux.** `messenger` is the only
->   remaining external caller.
+> * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux — and nothing outside the
+>   process calls them.** `messenger` was the last external caller; `838d907` deleted its container and
+>   the four `*_RPC_ADDR` values that addressed the mux, so compose sets **none**. The one cross-process
+>   edge left on a local stack is `backend → sentinel`.
 > * **`app` owns the `skiller`, `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both
 >   producer and consumer are in-process. Merge new handlers onto the existing subscriber with
 >   `.AddHandler(...)`; a second `AddSubscriber` for the same stream silently overwrites the first.
-> * **`module.jobsimulation_euwest1` and `module.cms_euwest1` are still declared in production terraform**
->   as the rollback path and take no traffic. Teardown is **M810**.
+> * **The M810 prod teardown is UNEVEN — do not state the two together.** `cms` has not moved:
+>   `module.cms_euwest1` is still declared as the rollback path and takes no traffic
+>   (`cms/terraform/main.tf:39` `service_desired_count = 0`). **`jobsimulation`'s ECS service is already
+>   destroyed** — `6092c6d2` deleted the `module "jobsimulation"` block with its task definition and ECR
+>   repository (`jobsimulation/terraform/main.tf:15-22`); the module file survives only to own the
+>   LiveKit/Chime recording buckets `backend` reads by literal name, the `/production/jobsimulation/*` SSM
+>   parameters and the atlas tracker (`:24-40`), and dropping the legacy `jobsimulation` schema is a separate,
+>   still-pending M810 step. Fenced statement:
+>   [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > The skiller-specific detail below is the authoritative
 > [**§ Skiller-in-app merge — fact-sheet**](#skiller-in-app-merge--fact-sheet-v21-quick-change).
@@ -36,11 +51,11 @@
 `app` is the **main API gateway** of the platform — the service that frontends, hiring apps, and other backend services talk to first. It owns the `public` schema (users, organizations, memberships, assignments, subscriptions, payments) and, since the **skiller-in-app merge (July 2026)**, the **skills taxonomy domain** — the skills graph (**≥42,790 skills** across **≥22,470 job roles**; that is the measured *public* subset, `organization_id IS NULL`, 2026-06-29 — the long-quoted "60K skills / 18K roles" is not a measurement, and [18K is outright refuted](../architecture/shared_libraries.md#taxonomy-figures)), skill/job-role embeddings, and AI skill matching formerly owned by the standalone [skiller](./skiller.md) service. It exposes:
 
 * **GraphQL Federation v2 subgraph** for high-level user / organization / assignment queries — plus the taxonomy types/queries absorbed from the former skiller subgraph (`graph/schemas/skiller_taxonomy.graphqls`)
-* **Connect-RPC** for inter-service calls (the only remaining external caller is **messenger**) — the mux registers five handlers unconditionally (`main.go:1185-1228` @ `app` `b948604` v1.366.0): `UsersService` (`:1187`), `OrganizationsService` (`:1188`), `SkillerService` (`:1196`), `JobSimulationService` (`:1204`) and `lab.v1.LabSessionService` (`:1228`), plus **`CMSService` only when the Directus edge is configured** (`if cmsRPCServer != nil`, `:1212-1214`).
+* **Connect-RPC** for inter-service calls (**no external caller is left** — `messenger` was the last, and `838d907` removed its container) — the mux registers five handlers unconditionally (`main.go:1185-1228` @ `app` `b948604` v1.366.0): `UsersService` (`:1187`), `OrganizationsService` (`:1188`), `SkillerService` (`:1196`), `JobSimulationService` (`:1204`) and `lab.v1.LabSessionService` (`:1228`), plus **`CMSService` only when the Directus edge is configured** (`if cmsRPCServer != nil`, `:1212-1214`).
 
   **There is no `SkillPathSessionService`** — measured: **0** occurrences in Go source, and no `skillpath…v1connect` package is imported. Skill-path session state lives in `public.skill_path_sessions` and is reached through the GraphQL subgraph and in-process calls, not over RPC.
 
-  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:80`, `app/knowledge/architecture.md:28` — measured at `app` origin/main `7177374`, and identical at the checked-out `b948604`), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
+  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:109`, `app/knowledge/architecture.md:28` — re-derived at `app` origin/main `2035f9a`; the CLAUDE.md line was `:80` when this was first measured, so re-find the sentence rather than trusting the offset), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
 * **HTTP** endpoints on port 8082 (local; 8080 in production) for webhooks and miscellaneous integrations — including `POST /api/webhook/directus`, which **fails closed** without `DIRECTUS_WEBHOOK_SECRET`
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
@@ -74,13 +89,15 @@ containerized bring-up + migrate, and read-only prod.
   within that drift — 42,790 skills / 22,470 job roles / 18,919 job-role embeddings; see
   [the canonical "60K / 18K" statement](../architecture/shared_libraries.md#taxonomy-figures). **These are
   floors, not totals** — a public-only measurement cannot see org-private rows.
-- **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
-  (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
-  locally — **all four occurrences** in `docker-compose.yml` **@ platform `0808b92`**, the ref this fact-sheet
-  grades against (`backend:89`, `jobsimulation:151`, `cms:204`, `messenger:334`). **That count is
-  ref-relative, not a constant:** @ `0dab54d` only **one** is left (`docker-compose.yml:183`, messenger's) —
-  the `jobsimulation` and `cms` blocks were deleted outright at `d11a403`, and `backend` no longer addresses
-  the surface it now serves itself. In prod terraform the address is `http://backend:8081`.
+- **RPC re-pointed, then un-set** — the `SkillerService` Connect-RPC surface is served **by app itself**
+  (`internal/rpc/skillerrpc/`). Consumers kept the env var `SKILLER_RPC_ADDR`, re-pointed at
+  `http://backend:8083`. **That count was always ref-relative, and it has now reached zero:** four
+  occurrences in `docker-compose.yml` @ platform `0808b92` (the ref this fact-sheet was first ground
+  against — `backend`, `jobsimulation`, `cms` and `messenger` each carried one); **one** @ `0dab54d`,
+  messenger's, after `d11a403` deleted the `jobsimulation` and `cms` blocks and dropped it from
+  `backend`, which no longer addresses a surface it serves itself; and **none** @ `0c91421`, because
+  `838d907` deleted the `messenger` block that held the last one. **No compose file sets any
+  `*_RPC_ADDR` today.** In prod terraform the address is `http://backend:8081`.
 - **Federation is now 1 subgraph**: **backend**. The skiller subgraph was removed at the skiller merge
   (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@749dc86`, "remove skiller subgraph and update
   related configurations", 2026-06-24), which left **4** — backend, jobsimulation, cms, skillpath. The
@@ -102,8 +119,9 @@ containerized bring-up + migrate, and read-only prod.
   `20260518125439` and cms `20250116133510` fail with `schema "extensions" does not exist`. (Bring-up
   ordering, tracked for M211; not a merge defect.)
 
-**Live de-risk (2026-07-08):** a cold containerized `make up` on stack-dev built the 86-commit merged
-image and brought up the federation with **no skiller container** (`SKILLER_RPC_ADDR=http://backend:8083`)
+**Live de-risk (measured 2026-07-08):** a cold containerized `make up` on stack-dev built the 86-commit
+merged image and brought up the federation with **no skiller container** — `SKILLER_RPC_ADDR` pointed at
+`http://backend:8083`, which is what compose set at that ref and sets nowhere now
 — 4 subgraphs as it stood then; skillpath, jobsimulation and cms have since also merged into `app`, so the
 current supergraph is **1 subgraph** (backend).
 A clean-slate `make reset-db` + `make migrate` created the full `public` taxonomy from scratch —
@@ -117,7 +135,7 @@ was bootstrapped (see prerequisite above).
 * **Language**: Go 1.26
 * **Database**: PostgreSQL `public` schema (Ent ORM + Atlas migrations)
 * **Ports**: 8082 (HTTP/GraphQL — `PORT`), 8083 (Connect-RPC — `RPC_PORT`), 8084 (meta/health — `META_PORT`). Container publishes 8081/8082/8083; 8081 is reserved/unused.
-* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:100`, derived from `docker-compose.yml` @ platform `0dab54d`). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
+* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:110`, derived from `docker-compose.yml` @ platform `0c91421`; it was `:100` at `0dab54d`, and compose clean-ups move it). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
 * **Versioning**: Semantic; CHANGELOG.md is generated from conventional commits. Tags trigger production deploys.
 
 ### Key directories
@@ -196,7 +214,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the supergraph as the `backend` subgraph — **the only one left**, and on a local stack the frontends now reach it directly at `:8082/graphql/query` rather than through a router.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. The only remaining external caller is **messenger**, and **all four of its addresses point here.** At platform `0dab54d`, `docker-compose.yml:173-183` sets `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all to `http://backend:8083`, under its own comment *"cms + jobsimulation are folded into app: all four RPC edges are the one backend mux"* (`:171-172`). **The M809 re-point has landed** — the earlier two-of-four split (`http://cms:8091` / `http://jobsimulation:8401`, true at platform `2adcf71`) is history, not current configuration. `app`'s own source comment still says *"additive + DORMANT: external callers (messenger) keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**"* (`app/main.go:1205-1211` @ `b948604` v1.366.0) — **that comment is now stale in `app`**; grade the address against compose, not against the comment. In production terraform the re-pointed pair is at `http://backend.internal.anthropos:8081`. Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. **There is no external caller left, and no address to be one with.** `messenger` was the last, and it reached four surfaces — `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`, `SKILLER_RPC_ADDR` — all pointed at `http://backend:8083` by `d11a403` (M809), all set on messenger's own compose block and nowhere else, under compose's own comment *"cms + jobsimulation are folded into app: all four RPC edges are the one backend mux"*. `838d907` deleted that block, so **compose now sets zero `*_RPC_ADDR` variables** and the only cross-process edge a local stack has is `backend → sentinel` (`AUTHORIZATION_ADDRESS`, `docker-compose.yml:48`). The earlier two-of-four split (`http://cms:8091` / `http://jobsimulation:8401`, true at platform `2adcf71`) is history twice over. `app`'s own source comment still says *"additive + DORMANT: external callers (messenger) keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**"* (`app/main.go:1205-1211` @ `b948604` v1.366.0) — **that comment is now stale in `app`**; grade the address against compose, not against the comment. In production terraform the re-pointed pair is at `http://backend.internal.anthropos:8081`. Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
@@ -209,13 +227,13 @@ internal/
 ### Downstream dependencies
 
 * **Sentinel** — authz on every request
-* **Object storage** — **in-process since the v9.0 fold** (2026-08-04), not a service hop: `app` constructs the private and public managers itself (`internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472` @ `app` `9d00a313` v1.367.0) and threads them to each consumer. `STORAGE_RPC_ADDR` has **0 read sites** at that ref — its 3 remaining occurrences are comments, one of which (`main.go:451`) says *"STORAGE_RPC_ADDR is gone"*. See [Storage](./storage.md)
+* **Object storage** — **in-process since the v9.0 fold** (2026-08-04), not a service hop: `app` constructs the private and public managers itself (`internalstorage.NewManager` / `NewPublicManager` at `app/main.go:524`, `:525`, re-derived at `app` origin/main `2035f9a`) and threads them to each consumer. `STORAGE_RPC_ADDR` has **0 read sites** — its 3 remaining occurrences are comments, one of which (`app/main.go:504`) says *"STORAGE_RPC_ADDR is gone"*. There is no `storage` compose service to address either, since `838d907`. See [Storage](./storage.md)
 * **Directus** (`content.anthropos.work`) — the external content edge read by the in-process cms domain
 * **Judge0** — sandboxed code execution, called directly (`JUDGE0_BASE_URL`) since roadrunner merged in
 * **LiveKit / AWS Chime** — simulation voice + recording, for the in-process jobsim engine
 * **Gotenberg** — Office → PDF conversion
 * **PostgreSQL** (`public` schema), **Redis** (cache + streams)
-* **External**: Clerk (auth), Stripe (payments), Customer.io, PostHog, Bedrock (AI), AI providers via the shared `ai` library (embeddings + skill matching — merged skiller domain), Brevo (via Messenger), Sentry
+* **External**: Clerk (auth), Stripe (payments), PostHog, Bedrock (AI), AI providers via the shared `ai` library (embeddings + skill matching — merged skiller domain), **Brevo** — reached in-process by both folded subsystems (transactional mail via messenger-in-app, marketing contacts via customerio-sync-in-app), each behind its own switch — and Sentry
 
 ### Redis Streams
 
@@ -269,7 +287,8 @@ go test ./internal/askengine/...
 ## Related Documentation
 
 * [AI Architecture](../architecture/ai_architecture.md) — Bedrock routing, cost tracking
-* [CMS](./cms.md), [Jobsimulation](./jobsimulation.md) — the merged domains, now inside `app` (no compose service at platform `0dab54d`)
+* [CMS](./cms.md), [Jobsimulation](./jobsimulation.md) — the merged domains, now inside `app` (no compose service since `d11a403`)
 * [Skiller](./skiller.md) — the former standalone skills-taxonomy service, merged into app (July 2026)
 * [Skillpath](./skillpath.md) — the former standalone skill-path runtime engine, merged into app ("skillpath-in-app", M502→M507)
+* [Storage](./storage.md), [Messenger](./messenger.md), [CustomerIO Sync](./customerio-sync.md) — the v9.0 "support-in-app" trio; no compose service since `838d907`
 * [Gotenberg](./gotenberg.md) — PDF conversion sidecar

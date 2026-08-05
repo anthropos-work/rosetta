@@ -4,15 +4,18 @@ This directory contains guides for operating the Anthropos platform locally.
 
 > ## ⚠️ Monolith merge — read before following any stack runbook
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms`
-> (cms-in-app v8.0, app v1.360.0) are all **folded into `app`** and run in-process as the
-> single `backend` service. What that changes for ops:
+> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app), `cms`
+> (cms-in-app v8.0, app v1.360.0), `storage` + `messenger` (v9.0 support-in-app) and
+> `customerio-sync` are all **folded into `app`** and run in-process as the single `backend`
+> service. What that changes for ops:
 >
-> * There is **no `cms`, `jobsimulation`, `skiller`, `skillpath` or `roadrunner` container**,
->   profile, port, or subgraph. Use `backend` for all of them (`make logs S=backend`,
+> * There is **no `cms`, `jobsimulation`, `skiller`, `skillpath`, `roadrunner`, `storage`,
+>   `messenger` or `customerio-sync` container**, profile, port, or subgraph — `838d907`
+>   (2026-08-05) deleted the last three. Use `backend` for all of them (`make logs S=backend`,
 >   `make dev S=backend`).
-> * The federation composes **one** subgraph. Compose builds `graphql` from the **production**
->   `graphql-wundergraph/Dockerfile`, so it uses the committed `schemas/backend.graphqls`.
+> * The federation composes **one** subgraph, and there is no router to compose it with:
+>   platform `2adcf71` deleted the `graphql` compose service, its `repos.yml` entry and its
+>   clone. GraphQL is served by `backend` itself at `:8082/graphql/query`.
 > * `app` is the **only** repo with migrations. All application tables — taxonomy, skill-path
 >   sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables — live in
 >   **`public`**. The old per-service schemas are legacy and non-authoritative.
@@ -41,7 +44,7 @@ This directory contains guides for operating the Anthropos platform locally.
 | [Webhook Setup](./webhook_setup.md) | Configure Clerk webhooks for user sync | When you need user/org data locally |
 | [Platform Update](./update_guide.md) | Sync code, deps, and schemas | After being away or before new features (superseded by `staging-sync.md` on staging hosts) |
 | [Platform Repo](./platform_repo.md) | The `platform` orchestrator repo — the Makefile entry points, Docker Compose profiles, `repos.yml`, and how `make init`/`up`/`migrate` drive the whole local stack. | Understanding what `make` does, the compose profiles, or the repo layout |
-| **[Platform Alignment](./platform-alignment.md)** | **How to detect that the platform moved, follow it, and fence it so the drift cannot silently recur.** The microservices→`app` consolidation is a **program**, not three accidents (v2.0 skiller → v5.0 skillpath → v7.0 jobsim → v8.0 cms → **v9.0 storage+messenger, in flight**), so the next occurrences are already named. Carries the six cheap **detection signals** (the load-bearing pair being `migrations:`/`schema:` in `repos.yml`); the four traps (**`migrations: false` entails nothing** — `sentinel` is `false` and alive with its own schema, so a fence keyed on the flag is wrong; the **declared vs actual** topology can disagree *by design*; the platform's own plan docs lag its code ~9 days; it ships **coordinated multi-repo** changes); why v2.8 was **latent** rather than broken (`migrate-demo.sh`'s **hand-maintained 4-tuple** creates the legacy schemas itself, bypassing `repos.yml` — with `skillpath` already the visible canary and M810 the time bomb); why nobody noticed (**pinning disables drift detection** — 11/11 clones report `behind: null` while the log says "provably fresh"); the **search discipline** (the NUL-byte trap is *folklore*: 3 false absences, 0 caused by NUL bytes — never swallow stderr, always run a positive control); and the **3-layer fence**. (v2.8/M257x) | The platform changed under you, a bring-up fails oddly, or a service is being folded into `app` |
+| **[Platform Alignment](./platform-alignment.md)** | **How to detect that the platform moved, follow it, and fence it so the drift cannot silently recur.** The microservices→`app` consolidation is a **program**, not three accidents (v2.0 skiller → v5.0 skillpath → v7.0 jobsim → v8.0 cms → **v9.0 storage+messenger+customerio-sync, landed at `838d907`**), so the next occurrences are already named. Carries the six cheap **detection signals** (the load-bearing pair being `migrations:`/`schema:` in `repos.yml`); the four traps (**`migrations: false` entails nothing** — `sentinel` is `false` and alive with its own schema, so a fence keyed on the flag is wrong; the **declared vs actual** topology can disagree *by design*; the platform's own plan docs lag its code ~9 days; it ships **coordinated multi-repo** changes); why v2.8 was **latent** rather than broken (`migrate-demo.sh`'s **hand-maintained 4-tuple** creates the legacy schemas itself, bypassing `repos.yml` — with `skillpath` already the visible canary and M810 the time bomb); why nobody noticed (**pinning disables drift detection** — 11/11 clones report `behind: null` while the log says "provably fresh"); the **search discipline** (the NUL-byte trap is *folklore*: 3 false absences, 0 caused by NUL bytes — never swallow stderr, always run a positive control); and the **3-layer fence**. (v2.8/M257x) | The platform changed under you, a bring-up fails oddly, or a service is being folded into `app` |
 | [Quick Ops](./quick_ops.md) | Common commands reference | When you need a quick command |
 | [Demo Stacks](./rosetta_demo.md) | **Disposable, isolated demo stacks (`demo-N`) alongside the dev stack — Clerkenstein-wired, offset ports, killable cleanly, zero platform-repo change. Skills `/demo-up`, `/demo-down`; list via `/stack-list`.** (v1.1/M3) | Spinning up a throwaway demo environment to seed (M4) + show |
 | [Seeding Spec](./seeding-spec.md) | Declaratively backfill a stack with structural data (blueprint + DAG + the 3-layer write isolation guard). Skill `/stack-seed` (`dev-N` or `demo-N`). (v1.1/M7) | Populating a demo/dev stack with an org + users + activity |

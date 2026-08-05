@@ -12,12 +12,16 @@ Run through this guide when:
 - You see dependency errors or schema mismatches
 - Before starting work on a new feature
 
-> **⚠️ The consolidation is COMPLETE — the backend is one monolith.** `jobsimulation`
-> (jobsim-in-app) and `cms` (cms-in-app v8.0, app v1.360.0) have since followed skiller and
-> skillpath into `app`, along with `roadrunner`. The router composes **1 subgraph** (`backend`),
-> there is no cms/jobsim/skiller/skillpath/roadrunner container or profile, `app` is the only
-> migration repo, and **every** application table lives in `public`. Read the note below as the
-> historical mid-program state.
+> **⚠️ The consolidation is COMPLETE — the backend is one monolith.** **Eight** services now run
+> in-process inside `app`: `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app),
+> `cms` (cms-in-app v8.0, app v1.360.0), `storage` + `messenger` (v9.0 support-in-app) and
+> `customerio-sync` — the last three losing their containers at `838d907` (merged `0c91421`,
+> 2026-08-05), which also took `storage` and `messenger` out of `repos.yml`. The federation is down to **1 subgraph**
+> (`backend`) and there is no router left to compose it: platform `2adcf71` deleted the
+> `graphql` service outright. There is no cms/jobsim/skiller/skillpath/roadrunner/storage/
+> messenger/customerio-sync container or profile, `app` is the only migration repo, and
+> **every** application table lives in `public`. Read the note below as the historical
+> mid-program state.
 >
 > **⚠️ Consolidation re-sync (v2.7 "july jitter", M246) — skillpath is decommissioned into `app`.**
 > The skiller→app merge (v2.1) was one step of a program that consolidates every runtime engine into
@@ -77,7 +81,7 @@ pkill -f "pnpm dev:web" 2>/dev/null || true
 
 ## 2. Update Repository Code
 
-Pull latest changes from all repositories using the Makefile.
+Pull latest changes for the four repos `repos.yml` still lists, using the Makefile.
 
 ### Navigate to Platform Directory
 
@@ -87,7 +91,7 @@ cd stack-dev/platform
 
 ### Update All Repositories
 
-The `make pull` command updates all repos defined in `repos.yml`. It automatically:
+The `make pull` command updates the **4** repos defined in `repos.yml` — `app`, `sentinel`, `next-web-app`, `studio-desk` (`Makefile:31-45`). It automatically:
 - Stashes dirty changes before pulling
 - Checks out main/master branch
 - Pulls with rebase
@@ -183,7 +187,7 @@ cd stack-dev/platform
 make migrate
 ```
 
-This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml`. Since the monolith merge that is **`app` alone** — the cms and jobsimulation tables were re-created in `public` under `app/terraform/migrations/`, so both dropped to `migrations: false` (skillpath and skiller are gone from `repos.yml` entirely).
+This automatically runs Atlas migrations for all repos with `migrations: true` in `repos.yml`. Since the monolith merge that is **`app` alone** — the cms and jobsimulation tables were re-created in `public` under `app/terraform/migrations/`, and platform `d11a403` then removed both repos from `repos.yml` outright (as `21429b7`/`a4db680` had already done for skiller and skillpath, and `838d907` for storage and messenger). Four entries remain: `app`, `sentinel`, `next-web-app`, `studio-desk`.
 
 ### Apply Single Service Migration
 

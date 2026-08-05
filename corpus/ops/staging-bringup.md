@@ -37,7 +37,8 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 +------------------ <yourhost>.taildc510.ts.net (Tailscale) ------------------+
 |                                                                            |
 |  /home/<you>/platform/        docker compose orchestrator                  |
-|  /home/<you>/{app,cms,...}    14 service-repo sibling clones (always main) |
+|  /home/<you>/{app,sentinel,   the 4 repos.yml sibling clones (always main) |
+|    next-web-app,studio-desk}  older hosts also carry the folded repos      |
 |  /home/<you>/rosetta/         this corpus                                  |
 |  /home/<you>/ant-singularity/ agent fleet & operations docs                |
 |                                                                            |
@@ -114,7 +115,8 @@ The platform's `Makefile init` target does the heavy lifting (it clones every re
 cd ~
 git clone https://github.com/anthropos-work/platform.git
 cd platform
-make init                  # clones app/, cms/, jobsimulation/, ...
+make init                  # clones the 4 repos.yml entries: app/, sentinel/,
+                           # next-web-app/, studio-desk/
                            # uses GH_PAT under-the-hood via the gh-cli helper
 
 cd ~
@@ -125,35 +127,28 @@ git clone https://github.com/anthropos-work/anthropos-knowledge-base.git
 
 **Quirk #1** — `make init` may issue `git clone git@github.com:` (SSH). If yours doesn't have `gh auth setup-git` configured, you'll see prompts for SSH keys. Fix by editing `Makefile` to `git clone https://github.com/` (or land the upstream PR that does this) before re-running `make init`. The dockerfiles themselves use `GH_PAT` over HTTPS — no SSH agent needed.
 
-**Quirk #2** — the compose service `customerio-sync` originally builds from `git@github.com:anthropos-work/customerio-sync.git#main` (Docker daemon doesn't have your GitHub creds). On staging clones this is patched to `context: ../customerio-sync` and the repo is cloned locally. Upstream `platform/docker-compose.yml` may still carry the SSH form — update it locally:
-
-```yaml
-customerio-sync:
-  build:
-    context: ../customerio-sync
-    # remove: context: git@github.com:anthropos-work/customerio-sync.git#main
-```
+**Quirk #2 — RETIRED, nothing to patch.** The compose service `customerio-sync` used to build from `git@github.com:anthropos-work/customerio-sync.git#main` (the Docker daemon has no GitHub creds), so staging clones repointed it at `context: ../customerio-sync`. Platform `838d907` (2026-08-05) **deleted that service outright**, together with `storage` and `messenger` — `backend` serves all three in-process. There is no build context left to patch, and none of the three can be started locally any more. The quirk keeps its number so the consolidated list below still lines up.
 
 You will end up with this layout:
 
 ```
 /home/<you>/
 ├── platform/                      # orchestrator (Makefile, docker-compose.yml, .env)
-├── app/                           # Go backend (CORS, GraphQL gateway; hosts the skill-path engine since "skillpath-in-app")
-├── cms/                           # Go content management
-├── jobsimulation/                 # Go AI simulations service
+├── app/                           # Go backend monolith — also hosts cms, jobsimulation,
+│                                  #   roadrunner, skillpath, skiller, storage, messenger
+│                                  #   and customerio-sync in-process
 ├── sentinel/                      # Go authz (casbin)
-├── storage/                       # Go S3-shim
-├── messenger/                     # Go transactional email (Brevo)
-├── roadrunner/                    # Go scheduler
-├── customerio-sync/               # Go marketing-email sync
 ├── next-web-app/                  # Next.js 15 frontend monorepo
 ├── studio-desk/                   # TypeScript content design tool
-├── graphql-wundergraph/           # GraphQL federation gateway
 ├── rosetta/                       # this corpus
 ├── anthropos-knowledge-base/      # knowledge layer
 └── ant-singularity/               # agent fleet (this node)
 ```
+
+> Stagings brought up before the folds also carry `cms/`, `jobsimulation/`, `roadrunner/`,
+> `storage/`, `messenger/`, `customerio-sync/` and `graphql-wundergraph/` on disk. `make init` no
+> longer creates any of them and no compose service builds from them; they are inert clones you can
+> read the pre-merge source in, and nothing else.
 
 ---
 
@@ -367,9 +362,12 @@ cd ~/platform
 docker compose --profile all up --build -d
 ```
 
-Wait 5-15 min for all services to report healthy. At platform `0dab54d` `--profile all` selects
-**8** of the 10 declared services (it no longer includes `messenger` or `storage` — running both
-alongside `app` would put two consumers on one Redis group and two writers on one bucket):
+Wait 5-15 min for all services to report healthy. At platform `0c91421` `--profile all` selects
+**all 7** services of the effective topology — `backend`, `gotenberg`, `next-web-app`, `studio-desk`
+and the always-on `postgresql`/`redis`/`sentinel` floor. (It used to leave `messenger` and `storage`
+out, because running either alongside `app` meant two consumers on one Redis group or two writers on
+one bucket; `838d907` deleted both containers, and `customerio-sync` with them, so there is nothing
+left for it to exclude.)
 
 ```bash
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
@@ -383,7 +381,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 1. **Quirk #1 — Makefile uses SSH** — already addressed in §2. Patch `git clone git@github.com:` → `https://github.com/`.
 
-2. **Quirk #2 — `customerio-sync` builds from a git URL** — already addressed in §2. Use `context: ../customerio-sync`.
+2. **Quirk #2 — RETIRED** — `customerio-sync` used to build from a git URL; `838d907` deleted the service. Nothing to patch. See §2.
 
 3. **Quirk #3 — `cms/Dockerfile.dev` references removed `studio/` submodule** — `COPY studio/` (line ~39) and `RUN pip install -r studio/requirements.txt` (line ~42) fail with `not found`. Comment them out (mark the lines with `# Staging patch (Quirk #3)` so the next operator knows why); the Go binary runs fine without the Python studio runner. The 2026-05-14 cleanup opened [`anthropos-work/cms#fix/dockerfile-remove-studio-submodule`](https://github.com/anthropos-work/cms/pulls) to fix upstream — **PR is still open and unmerged as of 2026-05-14**, so the patch must be re-applied on every fresh clone and is one of the long-lived skip-worktree files on each staging. When the PR lands, the daily sync's `git reset --hard origin/main` will drop the staging-local comments naturally and the skip-worktree entry on `cms/Dockerfile.dev` can be removed.
 

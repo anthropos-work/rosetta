@@ -31,8 +31,9 @@
 > skillpath, which were *removed* from `repos.yml` + `docker-compose.yml` **and whose GitHub repos really are
 > archived** (skiller 2026-07-01, skillpath 2026-07-31). It was true when written — the entry sat at
 > `repos.yml:29-31` **at `2adcf71`**, one of **9** entries at that ref. Platform `d11a403` (2026-08-03) then
-> deleted it. **At `0dab54d` `repos.yml` has 6 entries — app, sentinel, storage, messenger, next-web-app,
-> studio-desk — and roadrunner is not among them.** What still separates roadrunner from that list is only
+> deleted it. **At `0dab54d` `repos.yml` had 6 entries — app, sentinel, storage, messenger, next-web-app,
+> studio-desk — and roadrunner was not among them. It has 4 since `838d907` took `storage` and
+> `messenger` out too: app, sentinel, next-web-app, studio-desk.** What still separates roadrunner from that list is only
 > its **GitHub repo, which is NOT archived**, and prod's `service_desired_count = 1`.
 >
 > **`jobsimulation` was previously listed above as also *removed* from both files; it is not (corrected
@@ -40,7 +41,7 @@
 > as late as `2adcf71` it did remain in both files — `jobsimulation`'s entry at `repos.yml:17-19` and
 > its service at `docker-compose.yml:83`, with
 > `profiles: [graphql, jobsimulation, all]`, **at that ref** — so its container then still started on a bare
-> `make up`. Platform `d11a403` (2026-08-03) removed **both**: at `0dab54d` there is no `jobsimulation`
+> `make up`. Platform `d11a403` (2026-08-03) removed **both**: at `0c91421` there is no `jobsimulation`
 > `repos.yml` entry and no `jobsimulation` compose service, so nothing of it starts. **The two ended up in
 > exactly the same place** — orphaned, de-orchestrated, uncloned — which is why the old
 > orphaned-but-still-orchestrated distinction this blockquote drew between them has been withdrawn. Related
@@ -110,7 +111,7 @@ internal/
 
 Every submission enqueues exactly one poll task on the `roadrunner:default` queue (MaxRetry 3) from `runner.CreateSubmission`; the worker (10 concurrent, `internal/worker/worker.go`) runs `HandleSubmissionResultTask`, which polls Judge0 up to 15 times at 1s intervals, then publishes a `RoadrunnerSubmissionCompleted` event. The RPC handlers call the runner directly and never invoke the Asynq client; there are no HTTP handlers.
 
-On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the whole repo contains one `roadrunner` mention (`internal/runner/runner.go:3`, a parenthetical), with no handler and no event reference; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with `:117` below (*"Upstream consumers: none (orphaned)"*).
+On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the whole repo contains one `roadrunner` mention (`internal/runner/runner.go:3`, a parenthetical), with no handler and no event reference; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with `:118` below (*"Upstream consumers: none (orphaned)"*).
 
 ## Dependencies
 

@@ -12,9 +12,11 @@
 > `docker-compose.yml` **and** `repos.yml` and re-pointed local dev at `backend`. **There is no `:5050` on a
 > local stack.** **The `graphql` profile is gone too:** `0dab54d` (*"rename graphql -> core"*) renamed it,
 > so `Makefile:10` reads `PROFILE ?= core` and the token appears in **no `profiles:` key at all** — the
-> eight that exist are `core`, `backend`, `all`, `storage-legacy`, `customerio-sync`, `messenger`,
-> `studio-desk`, `frontend`. Asking for `graphql` therefore **exits 0** and starts only the always-on
-> floor (`postgresql`, `redis`, `sentinel`), which is worse than an error.
+> **five** that exist are `core`, `backend`, `all`, `studio-desk`, `frontend`. (This list read *"the
+> eight"* until platform `838d907`, 2026-08-05: `storage-legacy`, `customerio-sync` and `messenger`
+> were deleted along with the three services that declared them, so those three tokens are now
+> retired exactly as `graphql` is.) Asking for `graphql` therefore **exits 0** and starts only the
+> always-on floor (`postgresql`, `redis`, `sentinel`), which is worse than an error.
 >
 > The supergraph is **ONE** subgraph: `915da06` (2026-07-29) folded the cms subgraph into `backend`
 > (cms-in-app v8.0) and deleted the `jobsimulation` entry in the **same commit** — a **3 → 1** step,
@@ -168,9 +170,11 @@ configs still contain these rows and a reader will find them there.
 
 * **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile. **In production** they
   hit the router; **locally they hit `backend` directly** at `:8082/graphql/query`
-  (`docker-compose.yml:220` studio-desk's `VITE_GRAPHQL_ENDPOINT`, `:236` next-web-app's
-  `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` build arg — @ platform `0dab54d`; the same two constructs sat at
-  `:334,352` @ `2adcf71`), because the router service no longer exists in compose.
+  (`docker-compose.yml:135` studio-desk's `VITE_GRAPHQL_ENDPOINT`, `:160` next-web-app's
+  `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — each also baked as a build arg, at `:119` and `:151`), because
+  the router service no longer exists in compose. Those line numbers move on every compose
+  clean-up — they were `:220`/`:236` at `0dab54d` and `:334`/`:352` at `2adcf71` — so grade the
+  construct, not the offset.
 * **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, `jobsimulation` and `cms`.
 * ~~**Compose `depends_on`**~~ — moot: there is no compose service. Historically `backend`, `jobsimulation`, `cms`, **`storage`** (note `storage` was **not** a GraphQL subgraph but was in the startup-order list).
 * **CI/prod**: GitHub Releases on **`anthropos-work/app` only** (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`. `ci/update-subgraph.sh:9` carries **exactly one** `gh release download`, `-R anthropos-work/app`; the `jobsimulation` and `cms` downloads were **deleted at `915da06`** when those subgraphs folded into `backend`. (This bullet claimed all three until M257x iter-49 — the two bullets above it already carried their historical fence; this one did not.)

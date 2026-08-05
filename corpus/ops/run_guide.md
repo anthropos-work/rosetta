@@ -85,7 +85,7 @@ This starts the backend tier (default `core` profile — `postgresql`, `redis`, 
 make up
 ```
 
-This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath and skiller are all merged into `app`; the standalone storage moved to the `storage-legacy` profile; the Cosmo router was deleted at platform `2adcf71`.)
+This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
@@ -96,8 +96,9 @@ Start only the services you need:
 ```bash
 make up PROFILE=core       # the default: backend + gotenberg (+ the always-on floor)
 make up PROFILE=backend    # the same five — `backend` and `core` select identically
-# NB: the retired cms / graphql / storage tokens EXIT 0 and start ONLY postgresql, redis,
-#     sentinel. Nothing warns; the stack just has no application in it.
+# NB: the retired cms / graphql / storage / storage-legacy / messenger / customerio-sync
+#     tokens EXIT 0 and start ONLY postgresql, redis, sentinel. Nothing warns; the stack
+#     just has no application in it.
 make up-all                # Everything including frontend and studio-desk
 ```
 

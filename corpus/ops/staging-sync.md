@@ -100,6 +100,15 @@ The 14 repos the routine covers (same on every staging host; was 15 before `skil
 
 **Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
 
+> **⚠️ Seven of those eleven no longer build anything.** This is the routine's *configured* scope, read
+> off the staging hosts; upstream has moved out from under most of it. At platform `0c91421` only `app`,
+> `sentinel`, `next-web-app` and `studio-desk` are still `repos.yml` entries, and only `backend`,
+> `sentinel`, `next-web-app`, `studio-desk` and `gotenberg` are still compose services.
+> `graphql-wundergraph` went at `2adcf71`/`360efd4`; `cms`, `jobsimulation` and `roadrunner` at
+> `d11a403`; `storage`, `messenger` and `customerio-sync` at `838d907` — every one of them folded into
+> `app`. Force-resetting those clones still works; the **rebuild** step for them has no compose service
+> left to name. Re-derive the routine's live scope from the host's own script before trusting this list.
+
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
 **Excluded by design:**
@@ -173,15 +182,15 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | ------------------- | ---------------------- |
 | `app`               | `backend`              |
 | `next-web-app`      | `next-web-app`         |
-| `cms`               | `cms`                  |
-| `jobsimulation`     | `jobsimulation`        |
-| `storage`           | `storage`              |
+| `cms`               | ~~`cms`~~ — service **deleted** at `d11a403` |
+| `jobsimulation`     | ~~`jobsimulation`~~ — service **deleted** at `d11a403` |
+| `storage`           | ~~`storage`~~ — service **deleted** at `838d907` |
 | `sentinel`          | `sentinel`             |
-| `roadrunner`        | `roadrunner`           |
-| `messenger`         | `messenger`            |
-| `customerio-sync`   | `customerio-sync`      |
+| `roadrunner`        | ~~`roadrunner`~~ — service **deleted** at `d11a403` |
+| `messenger`         | ~~`messenger`~~ — service **deleted** at `838d907` |
+| `customerio-sync`   | ~~`customerio-sync`~~ — service **deleted** at `838d907` |
 | `studio-desk`       | `studio-desk`          |
-| `graphql-wundergraph` | `graphql`            |
+| `graphql-wundergraph` | ~~`graphql`~~ — service **deleted** at `2adcf71` |
 
 Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Build failures are logged but don't abort the rest of the run — they show up in `errors[]` of `last.json`.
 

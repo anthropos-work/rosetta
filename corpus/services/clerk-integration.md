@@ -48,7 +48,7 @@ MFA / TOTP / passkeys · OAuth / social / SAML / Enterprise SSO (mobile is email
 ## How It Works (Deep Dive)
 
 ### 1. Authentication — the `authn` library
-Every Go service that authenticates a user does so through the shared **`authn`** library (now shipped inside **colony** as `colony/authn`; see [Shared Libraries → authn](../architecture/shared_libraries.md#authn)). Since the merges that is **`app` alone**: of the four Go repos still in `repos.yml` @ platform `0dab54d` (app, sentinel, storage, messenger), only `app` imports `colony/authn` — measured, 129 files in `app` vs **0** in each of the other three, consistent with the tables at §3 and § *Dependent Repos* below. Its Clerk provider:
+Every Go service that authenticates a user does so through the shared **`authn`** library (now shipped inside **colony** as `colony/authn`; see [Shared Libraries → authn](../architecture/shared_libraries.md#authn)). Since the merges that is **`app` alone**: `repos.yml` now lists just **two** Go repos, `app` and `sentinel`, and only `app` imports `colony/authn` — measured, 129 files in `app` vs **0** in `sentinel`, consistent with the tables at §3 and § *Dependent Repos* below. (At `0dab54d` there were four, `storage` and `messenger` alongside them, and the same measurement gave 0 for each; `838d907` removed both entries.) Its Clerk provider:
 - Verifies the session JWT against Clerk's **JWKS** (`clerk-sdk-go/v2` `jwt.Verify` + `jwks.Client`, 1-minute leeway), then `jwt.Decode`s the claims.
 - The HTTP/Echo middleware returns **401** on an invalid/missing token and otherwise injects the authenticated `User` into request context. That's authentication/route-protection — no role check.
 

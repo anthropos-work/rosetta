@@ -4,18 +4,21 @@
 >
 > As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
-> separate service **in production** (`cms/terraform/main.tf:39` `service_desired_count = 0`), and its
-> subgraph is gone from the supergraph. It was the **fourth** engine consolidated into `app`, after
+> separate service **in production**. Its subgraph is gone from the supergraph, and its ECS service is
+> **scaled to zero, not deleted** — `cms/terraform/main.tf:39` `service_desired_count = 0` — and this is
+> the **one M810 row that has not moved**: do not read jobsimulation's teardown onto it (`6092c6d2`
+> destroyed that module's service block outright). It was the **fourth** engine consolidated into `app`, after
 > [skiller](./skiller.md), [skillpath](./skillpath.md) and [jobsimulation](./jobsimulation.md) — **not the
-> last.** The v9.0 program (2026-08-04) then folded [`storage`](./storage.md) and
-> [`messenger`](./messenger.md), each recorded in compose's own comments at `0dab54d`
-> (`docker-compose.yml:131-133`, `:193-195`). See the fenced map,
+> last.** The v9.0 program (2026-08-04) then folded [`storage`](./storage.md),
+> [`messenger`](./messenger.md) and [`customerio-sync`](./customerio-sync.md), and platform `838d907`
+> (merged `0c91421`, 2026-08-05) deleted all three containers the next day. See the fenced map,
 > [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
-> **✅ The husk is GONE locally, and M809 has landed (measured at platform `0dab54d`).**
-> There is no `cms` compose service, no `cms` entry in `repos.yml` (6 entries: app, sentinel, storage,
-> messenger, next-web-app, studio-desk) and no `cms` profile. Compose sets **four** `*_RPC_ADDR` values
-> and **all four** read `http://backend:8083` — messenger now reaches the cms domain inside `backend`.
+> **✅ The husk is GONE locally, and M809 has landed (re-measured at platform `0c91421`).**
+> There is no `cms` compose service, no `cms` entry in `repos.yml` (4 entries: app, sentinel,
+> next-web-app, studio-desk) and no `cms` profile. Nor is there a `CMS_RPC_ADDR` any more: M809
+> re-pointed it at `http://backend:8083` on the `messenger` block, and `838d907` deleted that block —
+> **compose now sets zero `*_RPC_ADDR` values**, and the cms domain is reached in-process.
 > *(Until `2adcf71` all of the above was false, and this banner said so; the M809 re-point is what
 > changed it.)* **Scope note: this is the LOCAL compose topology only.** Whether production's
 > `module.cms_euwest1` rollback path has also been torn down (**M810**) was not measured here — do not
@@ -33,15 +36,17 @@
 >   `studio_documents`, `studio_tasks` were re-created in the **`public` schema** by
 >   `app/terraform/migrations/20260724132049_cms_data_model.sql`, with the **same table names**. The old `cms`
 >   DB schema is **legacy — no longer authoritative**.
-> * **RPC** — `CMSService` is served on `app`'s single RPC mux. `messenger` reaches it at
->   `CMS_RPC_ADDR=`**`http://backend:8083`** locally (`docker-compose.yml:174` @ platform `0dab54d`) —
->   **the M809 re-point has landed**, and there is no husk container left to reach: `0dab54d`'s compose
->   declares **eight** services — ten in the effective topology, once `include: common.yml` adds the
->   `postgresql`/`redis` floor — and `cms` is not one of them. (`http://cms:8091`, still quoted around this
+> * **RPC** — `CMSService` is served on `app`'s single RPC mux, and **nothing outside the process
+>   reaches it**. `messenger` was the last caller; `CMS_RPC_ADDR` was `http://backend:8083` at
+>   `0dab54d`, set on messenger's block alone, and `838d907` deleted that block — so the variable is
+>   set by no compose file today.
+>   **The M809 re-point had already landed** and there was no husk container left to reach either — `cms` is
+>   not among the **five** services compose declares at platform `0c91421` (**seven** effective, once
+>   `include: common.yml` adds the `postgresql`/`redis` floor). (`http://cms:8091`, still quoted around this
 >   corpus, was true at `2adcf71`.) `http://backend.internal.anthropos:8081` in production.
 >   `app`'s own source comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still calls the in-app
->   edge *"additive + DORMANT … until the **M809** re-point"* — **that comment is stale in `app`**;
->   grade the address against compose. `app` itself makes **no** outbound cms RPC.
+>   edge *"additive + DORMANT … until the **M809** re-point"* — **that comment is stale in `app`**, and
+>   there is no compose value left to grade it against. `app` itself makes **no** outbound cms RPC.
 > * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph. That single commit,
 >   `graphql-wundergraph@915da06` (2026-07-29), deleted **both** `schemas/cms.graphqls` **and**
 >   `schemas/jobsimulation.graphqls`, taking the supergraph from **3 subgraphs to 1** — not 2 to 1. (The
@@ -55,9 +60,13 @@
 > * **Caching** — the Directus item cache still lives in its own Redis DB, `REDIS_CMS_CACHE_INDEX` (5).
 > * **Studio** — the Python `anthropos-studio-room` project is now pulled into the **`app`** image via the CI
 >   `additional_repo` mechanism (app v1.360.1), the same way `cms` used to do it.
-> * **Infrastructure** — `module.cms_euwest1` is **still declared** in
->   `infrastructure/terraform/production/services.tf` as the **rollback path** and takes no traffic. Teardown
->   is **M810**.
+> * **Infrastructure** — the **rollback path is intact and takes no traffic**: `cms/terraform/main.tf:39`
+>   still reads `service_desired_count = 0` in an otherwise-whole 191-line module, so the image and task
+>   definition stay declared and a revert is a one-line change plus an apply. **This is the one M810 row
+>   that has not moved** — jobsimulation's ECS service was destroyed outright at `6092c6d2`, and generalising
+>   that to `cms` is exactly the mistake [`platform-migration-status.md`](../architecture/platform-migration-status.md)
+>   fences. Whether `infrastructure/terraform/production/services.tf` still declares `module.cms_euwest1` is
+>   **not visible to this corpus** — the `infrastructure` repo has never been in the clone set.
 > * **Repo** — the `cms` git repo still exists but is **frozen/legacy**; make changes in `app`.
 >
 > For current documentation of this domain, see [Backend (`app`)](./backend.md).
@@ -169,7 +178,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ## Interface Discovery
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
-* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger` — which, **since M809, reaches it inside `backend`**: compose sets `CMS_RPC_ADDR=http://backend:8083` locally (measured at platform `0dab54d`), `http://backend.internal.anthropos:8081` in production.
+* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux, and **every caller is in-process**. `messenger` was the last external one: M809 pointed its `CMS_RPC_ADDR` at `http://backend:8083`, and `838d907` deleted the messenger service and that variable with it, so compose sets it nowhere. Production terraform still names `http://backend.internal.anthropos:8081`.
 * **Federation**: **there is none left to speak of.** The cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Then platform `2adcf71` (2026-07-31, PR #23 *"drop the WunderGraph router"*) **deleted the Cosmo/WunderGraph router itself** — service, `repos.yml` entry and clone. So this line's old ending, *"Cosmo Router now composes `backend` alone"*, names a component that no longer exists: **nothing composes anything.** GraphQL is served **directly by `backend`** at `:8082/graphql/query` — note the path moved with it (`/graphql` → `/graphql/query`), so a host-only re-point 404s rather than errors.
 
 ### Upstream consumers
@@ -177,8 +186,9 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 * Studio-Desk (GraphQL for studio entities)
 * Backend (`app`) — the skill-path engine, the jobsimulation engine and the cms domain all run **in the same
   process**, so those hops are plain function calls, **not RPC**; the Redis Streams edge has `app` on both
-  ends. (**messenger**'s `CMS_RPC_ADDR` now resolves to `backend` too — there is no husk `cms`
-  container left to receive RPC. M809 landed; measured at platform `0dab54d`.)
+  ends. (**messenger** was the one remaining out-of-process consumer; M809 re-pointed its `CMS_RPC_ADDR`
+  at `backend`, and `838d907` removed the messenger container and the variable. There is no husk `cms`
+  container left to receive RPC either.)
 
 ### Downstream dependencies
 * Directus (content storage)
@@ -187,8 +197,11 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 * Redis (cache, Watermill streams)
 * AI providers — **OpenAI / Azure OpenAI / Anthropic** for the `studio/` Python generation pipeline
   (`services/ai.py:705-708`). **Mistral is NOT one of them**: it is a Go-side, **OCR-only** dependency —
-  `app/internal/cms/studio/markdownManager.go:11`, `:19` build a `mistral.NewMistral(nil, MISTRAL_API_KEY)`
-  client whose single use is `OCRProcess` (document → markdown) on the studio attachment path
+  `app/internal/cms/studio/markdownManager.go:10` imports `internal/cms/studio/mistralocr` and `:30`
+  builds the client (`mistralocr.New(aiKey)` inside `NewMarkdownManager`, re-derived at `app` origin/main
+  `2035f9a`; it was `:11`/`:19` and a `mistral.NewMistral(nil, MISTRAL_API_KEY)` call before the key-plumbing
+  fix that stopped it reading `os.Getenv` behind the caller's back).
+  Its single use is `OCRProcess` (document → markdown) on the studio attachment path
   (`studioManager.go:531` *"supported ocr content types for mistral ocr"*, `:583`, and `xlsx.go:13` — xlsx is
   rendered locally precisely because Mistral OCR rejects it). Nothing generates through it
 

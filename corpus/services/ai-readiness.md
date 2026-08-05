@@ -260,7 +260,7 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
   seeds the 31-skill default + 3 sims + the 3-step plan idempotently, behind the new `/setup` GET/POST endpoints.
 - **The notifications lifecycle** — `aireadiness/notifications/` (invitation fan-out, a 5-slot reminder cadence +
   unsubscribe, launch confirmation, the weekly manager digest), backed by the `ai_readiness_notification_logs` +
-  `ai_readiness_notification_optouts` tables, emitting proto events consumed by the messenger service.
+  `ai_readiness_notification_optouts` tables, emitting proto events consumed by the messenger **domain** — in-process inside `backend` since the v9.0 fold and switch-gated by `MESSENGER_ENABLED`, not a separate service (its container went at `838d907`).
 - **Email overrides + preview** (M407/M408) — `aireadiness/emailoverride/` + `emailpreview/`: per-org email-copy
   overrides (`ai_readiness_email_overrides`) validated against `messenger/pkg/aireadinessemail` placeholders, with
   an admin preview renderer.

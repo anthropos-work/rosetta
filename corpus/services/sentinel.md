@@ -82,11 +82,11 @@ terraform/                      AWS ECS (base_internal_service module)
 | `OrgGetOrganizationFeatureCredits` / `OrgSetOrganizationFeatureCredits` | Manage org feature credit budgets |
 | `Reload` | Hot-reload policies from DB |
 
-Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **one** compose block at platform `0dab54d` — **backend**'s, `docker-compose.yml:48` (measured: 1 occurrence across `docker-compose.yml`, `common.yml` and `.env_example`). No other declared service sets it: `storage`, `messenger`, `customerio-sync`, `gotenberg`, `studio-desk` and `next-web-app` all have no such env and no sentinel dependency. The two blocks that used to carry it — the `jobsimulation` and `cms` services, plus `roadrunner` — were deleted from compose entirely at `d11a403`, so there is nothing off-path left to hold the address either.
+Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **one** compose block at platform `0c91421` — **backend**'s, `docker-compose.yml:48` (measured: 1 occurrence across `docker-compose.yml`, `common.yml` and `.env_example`). It is also the only *service* address compose sets at all: there are **zero** `*_RPC_ADDR` variables left, so `backend → sentinel` is the one cross-process edge a local stack has. No other declared service sets it — the only ones left to check are `gotenberg`, `studio-desk` and `next-web-app`, and none has the env or a sentinel dependency. The blocks that used to carry it are gone rather than corrected: `jobsimulation`, `cms` and `roadrunner` at `d11a403`, then `storage`, `messenger` and `customerio-sync` at `838d907` — so there is nothing off-path left to hold the address either.
 
 ## Dependencies
 
-* **Upstream consumers**: **`app` only** — the sole service that gates requests through Sentinel, and the only compose block that is given its address (`docker-compose.yml:48`). `messenger` and `storage` never call it; the `cms`, `jobsimulation` and `roadrunner` services no longer exist in compose at all (deleted at `d11a403`)
+* **Upstream consumers**: **`app` only** — the sole service that gates requests through Sentinel, and the only compose block that is given its address (`docker-compose.yml:48`). `messenger` and `storage` never called it, and neither is a compose service any more (deleted at `838d907`); `cms`, `jobsimulation` and `roadrunner` went earlier, at `d11a403`
 * **Downstream**: PostgreSQL (`sentinel` schema, table `casbin_rules`)
 * **No outbound RPC** to other platform services
 

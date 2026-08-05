@@ -32,9 +32,9 @@
 >    it dropped is **`public.sessions`**, replaced by `public.job_simulation_sessions` (`:2`). **No `app`
 >    migration touches the `jobsimulation` schema at all**, and **in production** that schema **survives,
 >    frozen, until M710** — while **no local dev/demo stack creates it at all** (at platform `0dab54d`
->    `platform/repos.yml` carries **6** entries and `jobsimulation` is **not one of them** — `d11a403`
->    deleted it; `app` at `repos.yml:11-14` is the only `migrations: true` entry. Qualified M257x iter-52,
->    re-anchored in the M257x sweep: the old `repos.yml:17-19` citation now lands on sentinel/storage)
+>    `platform/repos.yml` carried **6** entries — **4** since `838d907` — and `jobsimulation` is **not one of them** — `d11a403`
+>    deleted it; `app` (`repos.yml:14-17`) is the only `migrations: true` entry. Qualified M257x iter-52,
+>    re-anchored in the M257x sweep)
 >    — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
 >    and [`dependency_map.md:78`](../architecture/dependency_map.md) already said. `app/atlas.hcl:8` pins
 >    `search_path=public`, and the only `CREATE SCHEMA` in the entire migration set is `auth`.
@@ -176,8 +176,8 @@ schema, read directly by the resolver.
 > **production** it survives frozen until M710. (`askengine/registry.go:192` is cited for the M710 horizon
 > only: it is an LLM-facing name-alias map whose `jobsimulation.*` names **resolve to the public tables** —
 > it is not evidence that the schema is physically present. On a **local dev/demo stack it is not**:
-> `jobsimulation` has had **no `repos.yml` entry at all** since `d11a403` (6 entries @ platform `0dab54d`),
-> and `app` (`repos.yml:11-14`) is the only repo with migrations to run. Qualified M257x iter-52,
+> `jobsimulation` has had **no `repos.yml` entry at all** since `d11a403` (6 entries @ platform `0dab54d`,
+> 4 since `838d907`), and `app` (`repos.yml:14-17`) is the only repo with migrations to run. Qualified M257x iter-52,
 > re-anchored in the M257x sweep.) So what is gone is the **mirror half** of the old
 > pair, not both halves; there is one row per (candidate × attempt) now, in `public`. Corrected M257x iter-49.
 
@@ -324,8 +324,8 @@ To make a hiring org's comparison scoreboard render on a demo/dev stack: seed an
 sim) — **one** `public.job_simulation_sessions` row (the score lives on it; the old co-written
 `jobsimulation.sessions` + `public.local_jobsimulation_sessions` **pair** is no longer written — the
 `public.local_jobsimulation_sessions` **mirror** was dropped at `20260729133514.sql:58-62`, and **on a
-dev/demo stack there is no `jobsimulation` schema at all** — `platform/repos.yml` @ `0dab54d` has **no
-`jobsimulation` entry** (6 entries; `d11a403` deleted it), and app's only `CREATE SCHEMA` is `auth`
+dev/demo stack there is no `jobsimulation` schema at all** — `platform/repos.yml` has **no
+`jobsimulation` entry** (6 entries @ `0dab54d`, 4 since `838d907`; `d11a403` deleted it), and app's only `CREATE SCHEMA` is `auth`
 (`20230817154747_supabase_baseline.sql:2`), so `to_regclass('jobsimulation.sessions')`
 is NULL. Do not seed into it. This passage **previously said** `jobsimulation.sessions` *"still exists,
 frozen and unwritten, until M710"* unqualified — **refuted** for local stacks at M257x iter-52), plus the

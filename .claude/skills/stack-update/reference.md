@@ -93,18 +93,26 @@ make logs S=[service]
 
 ## Repository update order (the make-driven `pull` order)
 
+`make pull` walks `repos.yml` in file order, so the whole list is **four** repos plus the `platform`
+clone you run it from (`Makefile:31-45`, `repos.yml` @ platform `0c91421`):
+
 ```
-1. platform       (Docker configs, shared .env)
-2. app            (main API)
-3. cms            (content management + embedded studio-room)
-4. jobsimulation
-5. skillpath
-6. next-web-app   (frontend)
-7. studio-desk
-8. ant-academy    (internal learning portal — independent of backend, safe to update last)
+1. platform       (Docker configs, shared .env — the repo you are standing in)
+2. app            (the monolith: skiller, skillpath, roadrunner, jobsimulation, cms,
+                   storage, messenger and customerio-sync all served in-process)
+3. sentinel       (authorization — the one other Go service still deployed)
+4. next-web-app   (frontend)
+5. studio-desk
 ```
 
-Archived (no longer cloned/orchestrated): `chronos`, `intelligence`, `skiller` (merged into `app`, July 2026).
+`ant-academy` is **not** in `repos.yml` by design, so `make pull` never touches it — update it by hand in
+whatever clone you made (`git -C ant-academy pull`); it is independent of `backend`, so it is safe to do
+last, or not at all.
+
+No longer cloned or orchestrated, and therefore not in this order: `chronos`, `intelligence`, `skiller`
+(merged into `app` in July 2026), `skillpath` (M502→M507), `cms` + `jobsimulation` + `roadrunner`
+(entries deleted at `d11a403`) and `storage` + `messenger` (deleted at `838d907`). **None of those repos
+were deleted** — clone one by hand if you need to read the pre-merge source.
 
 ## Updating a stack's tooling (tag bump, not in-place edit)
 

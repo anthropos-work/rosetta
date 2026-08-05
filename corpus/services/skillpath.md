@@ -31,9 +31,10 @@
 >   Measured: **0** occurrences in Go source across the clone set and no `skillpath…v1connect` import; the
 >   platform's own M506 record says so — *"**No in-app RPC handler is served**"* / *"the client is simply
 >   deleted"*. Callers read sessions **in-process**, and `SKILLPATH_RPC_ADDR` was dropped from terraform.
->   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:80` and
->   `app/knowledge/architecture.md:28` still list the service — measured at `app` origin/main `7177374`, and
->   identical at the checked-out `b948604`. Trap C, *the platform's planning docs lag its
+>   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:109` and
+>   `app/knowledge/architecture.md:28` still list the service — re-derived at `app` origin/main `2035f9a`;
+>   the CLAUDE.md line was `:80` when this was first measured, so re-find the sentence rather than
+>   trusting the offset. Trap C, *the platform's planning docs lag its
 >   own code*. Grade against `main.go`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
 >   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations
@@ -43,7 +44,7 @@
 >   `backend` subgraph** (`app/internal/web/backend/graphql/graph/schemas/skillpath_sessions.graphqls`). The fold
 >   landed dormant at **M505**; the router owner-swap that routes `SkillPathSession` to `app` was the atomic
 >   **M506** cutover.
-> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath; **6** @ `0dab54d`, after `d11a403` dropped the cms / jobsimulation / roadrunner entries too) and from
+> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath; **6** @ `0dab54d`, after `d11a403` dropped the cms / jobsimulation / roadrunner entries too; **4** since `838d907` dropped storage and messenger) and from
 >   docker-compose (no skillpath service); the standalone service + its terraform module were decommissioned at
 >   **M507**. Only residual env plumbing remains (e.g. the `SKILLPATH_STREAM=skillpath` Redis-stream name).
 > * **Repo** — the `skillpath` git repo still exists but is **legacy/decommissioned**, no longer deployed or
@@ -55,7 +56,7 @@
 
 * **Content-vs-runtime split (unchanged).** "Skillpath" the engine ≠ skill-path *content*. The content it runs
   against — chapters → steps, curators, the job-simulation steps, skills-to-verify, versioning — is owned by
-  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app (the env var still exists on `messenger`, but `d11a403` re-pointed it at **`backend`** — `docker-compose.yml:174` @ platform `0dab54d` reads `CMS_RPC_ADDR=http://backend:8083`. **M809 has landed**; there is no cms process left to address).
+  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app — and the variable itself is gone: it survived on the `messenger` block, re-pointed at `backend` by `d11a403` (M809), until `838d907` deleted that block. **No compose file sets any `*_RPC_ADDR` now**, and there is no cms process left to address.
   This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).
 
 * **Session model.** The engine owns a hierarchical session: `SkillPathSession → ChapterSession → StepSession`,

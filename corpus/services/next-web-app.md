@@ -45,7 +45,7 @@
 
 ## Interface Discovery
 
-* **GraphQL**: single endpoint `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — compose now bakes `http://localhost:8082/graphql/query` (`docker-compose.yml:236`, @ platform `0dab54d`); the env-var NAME still says wundergraph, the router behind it is gone locally; Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`.
+* **GraphQL**: single endpoint `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — compose bakes `http://${PUBLIC_HOST:-localhost}:8082/graphql/query`, as a build arg (`docker-compose.yml:151`) and again in the runtime environment (`:160`), re-anchored at platform `0c91421` (it was `:236` at `0dab54d`); the env-var NAME still says wundergraph, the router behind it is gone locally; Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`.
 * **Auth edge**: **`apps/web/src/proxy.ts`** (and `apps/hiring/src/proxy.ts`) — **not `middleware.ts`**, which does not exist at origin HEAD: **Next 16 renamed the `middleware.ts` convention to `proxy.ts`** (the repo's own `CLAUDE.md:55` says so). `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
 * **Observability proxies**: `/logpoint/*` → PostHog (EU); `/monitoring` tunnels Sentry/Better Stack events.
 
@@ -84,8 +84,8 @@ make up-frontend                 # builds Dockerfile.dev (web app only), serves 
 ```
 
 > ⚠️ **`make up PROFILE=frontend` on its own EXITS 1 — it builds nothing.** `next-web-app` declares
-> `depends_on: backend` (`docker-compose.yml:250-252`) and `backend` is `profiles: [core, backend, all]`
-> (`:100`), which the `frontend` profile does not select — so compose rejects the whole project with
+> `depends_on: backend` (`docker-compose.yml:165-167`) and `backend` is `profiles: [core, backend, all]`
+> (`:110`), which the `frontend` profile does not select — so compose rejects the whole project with
 > *"service `next-web-app` depends on undefined service `backend`: invalid compose project."* Use
 > `make up-frontend` (which adds `core`), or `make up PROFILE=all`.
 

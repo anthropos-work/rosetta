@@ -15,18 +15,18 @@ Storage is the **centralized file/blob service** for the platform.
 > the production **M810** rollback-path teardown was not measured here.) Since v9.0 the object-storage
 > *manager itself* is in-process too, so that call site no longer crosses a network at all.
 >
-> **⚠️⚠️ And the v9.0 fold COMPLETED on 2026-08-04.** This block read MID-FOLD for four M257x
-> iterations; the half it was waiting on landed in a single working morning. Re-derived at platform
-> `0dab54d` / `app` `9d00a313` v1.367.0 / `storage` `63bffc8`, recorded on BOTH sides because one
-> side alone is not a claim (`D-M257x-59-4`).
+> **⚠️⚠️ And the v9.0 fold COMPLETED on 2026-08-04 — the container went the next morning.** This block read MID-FOLD for four M257x
+> iterations; the half it was waiting on landed in a single working morning, and platform `838d907`
+> (merged `0c91421`, 2026-08-05, *"drop the storage, messenger and customerio-sync containers"*) then removed the local service and
+> its clone entry. Re-derived on BOTH sides, because one side alone is not a claim (`D-M257x-59-4`).
 >
-> | side | measured at platform `0dab54d` / app `9d00a313` v1.367.0 |
+> | side | measured at platform `0c91421` / app `2035f9a` / storage `9f8cb53` |
 > |---|---|
-> | **prod** | `storage/terraform/main.tf:38` `service_desired_count = 0` — the compute is stopped, following the cms precedent. The buckets, CloudFront distribution and media DNS record are **not** touched: same module, `prevent_destroy`, custody transfer is M903 (`:35-37`) |
+> | **prod** | the ECS service is **DELETED, not scaled to zero** — `storage/terraform/main.tf` is 18 lines and declares no service block at all. Its own comment: *"The ECS service that used to live here is GONE (v9.0 'support-in-app'): app serves object storage in-process. What remains is the ASSETS — the two buckets, the CloudFront distribution and the media DNS record, all in storage.tf."* The module deliberately survives: deleting the block would destroy those assets along with their `prevent_destroy` guards, which are read from configuration (`storage/terraform/main.tf:13`). Custody transfer is M903 (`:18`) |
 > | **config** | `STORAGE_RPC_ADDR` is set by **no** compose file and is **absent from `.env_example`** — 0 occurrences across `docker-compose.yml`, `common.yml`, `.env_example` |
-> | **compose** | the `storage` service moved to `profiles: [storage-legacy]` (`docker-compose.yml:134`), so a default bring-up never starts it — rationale in-comment at `:131-133` (two writers on one bucket) |
-> | **`repos.yml`** | `storage` is **still an entry** (`repos.yml:18-20`) — still cloned, and the standalone stays startable. The rollback path, exactly as `cms` and `jobsimulation` are kept |
-> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472`, consumed at `:494` and `:1048`; the constants at `app/internal/storage/service.go:22`, `:24` are the bucket **env-var NAMES** (`EnvBucket = "STORAGE_S3_BUCKET"`, `EnvPublicBucket = "STORAGE_S3_PUBLIC_BUCKET"`), not the bucket names — those are still read from the environment, at `app/main.go:463`, `:464`. `STORAGE_RPC_ADDR` is read by **nothing** at this ref: `git grep -n STORAGE_RPC_ADDR 9d00a313 -- '*.go'` returns **3 hits, all of them comments** — `app/main.go:451` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
+> | **compose** | there is **no `storage` service to start.** `0dab54d` parked it behind a rollback-only profile for one release; `838d907` then deleted the service block outright, and the `storage-legacy` profile is gone with it |
+> | **`repos.yml`** | **no `storage` entry** — `838d907` removed it, so `make init` does not clone the repo any more. Four entries remain: `app`, `sentinel`, `next-web-app`, `studio-desk`. (It was `repos.yml:18-20` at `0dab54d`, kept then as the rollback path.) The repo itself is not deleted — clone it by hand to read the pre-merge source |
+> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:524`, `:525`, consumed at `:547` (`resource.NewManager`) and `:1102` (`cmsStorage`); the constants at `app/internal/storage/service.go:22`, `:24` are the bucket **env-var NAMES** (`EnvBucket = "STORAGE_S3_BUCKET"`, `EnvPublicBucket = "STORAGE_S3_PUBLIC_BUCKET"`), not the bucket names — those are still read from the environment, at `app/main.go:516`, `:517`. `STORAGE_RPC_ADDR` is read by **nothing**: `git grep -n STORAGE_RPC_ADDR -- '*.go'` returns **3 hits, all of them comments** — `app/main.go:504` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
 >
 > The mid-fold hazard this block used to describe — a client built against an empty address, failing
 > at call time rather than boot time, and two `cmd/` tools hard-failing outright — **is gone**, because
@@ -41,12 +41,12 @@ Storage is stateless and owns no database: all state lives in S3 (the private ma
 
 ## Architecture & Code Map
 
-* **Codebase**: `storage` (local) — repo `git@github.com:anthropos-work/storage`
+* **Codebase**: `storage` — repo `git@github.com:anthropos-work/storage`. **Not cloned by `make init`**: `838d907` removed the `repos.yml` entry along with the container. Clone it by hand to read the pre-merge source; the live code is `app/internal/storage/` (+ `app/internal/storagens/`, `app/internal/publicstorage/`)
 * **Language**: Go 1.25
 * **Framework**: Connect-RPC (via the shared `colony` library), Cobra CLI
 * **Database**: none — all state lives in S3 (or local filesystem in dev)
-* **Ports**: 8300 (HTTP health), 8301 (Connect-RPC) — `PORT=8300` and `RPC_PORT=8301` in compose, mapped 1:1 to host (CLAUDE.md mentions different defaults at the binary level, but the platform compose pins them to 8300/8301 in both directions)
-* **Profile**: `storage-legacy` **only** — `profiles: [storage-legacy]` (`docker-compose.yml:134`, derived from `docker-compose.yml` @ platform `0dab54d`). **Not** in the default selection. Corrected M257x iter-68: the old line named two profiles the platform does not have — there is no `graphql` profile (`0dab54d` renamed it `core`) and there was never any `storage` profile at all
+* **Ports**: 8300 (HTTP health), 8301 (Connect-RPC) — `PORT=8300` and `RPC_PORT=8301` were injected by the `storage` compose block, mapped 1:1 to host, until `838d907` deleted that block. The repo's own CLAUDE.md documents different binary-level defaults; **nothing publishes 8300/8301 on a stack now**
+* **Profile**: **none — there is no `storage` compose service.** Platform `838d907` (merged `0c91421`, 2026-08-05) deleted the service block outright; `0dab54d` had parked it behind a rollback-only profile for one release, and the `storage-legacy` profile is gone with it. Corrected M257x iter-87 — iter-68 had corrected the same line for naming two profiles the platform did not have
 
 ### Two storage managers
 
@@ -136,7 +136,7 @@ storage sync <source> <dest> [--dry-run]      # bulk migrate
 
 * **Upstream consumers**: **`app` only** — the jobsimulation domain (recordings, simulation documents),
   the cms domain (content assets, media) and app itself (user files, profile images) all call from
-  inside the `backend` binary. There are no `jobsimulation`/`cms` containers left to call anything — `d11a403` deleted both compose services and both `repos.yml` entries; only the prod rollback path survives (teardown **M810**).
+  inside the `backend` binary. There are no `jobsimulation`/`cms` containers left to call anything — `d11a403` deleted both compose services and both `repos.yml` entries. In prod their fates now differ: `cms`'s ECS module survives as the rollback path (teardown still **M810**), while `jobsimulation`'s ECS service is already destroyed (`6092c6d2` — M810 landed for that row).
 * **Downstream**: AWS S3 (production), CloudFront (public bucket), `colony` shared library, `proto` for RPC contracts
 * **No outbound RPC** to other platform services — storage is a leaf
 
@@ -146,24 +146,25 @@ storage sync <source> <dest> [--dry-run]      # bulk migrate
 
 ```bash
 cd platform
-make up                       # the `core` profile — which does NOT include storage any more
-# `storage` moved to `profiles: [storage-legacy]` at platform 0dab54d. To start the
-# standalone service (rollback comparison only — app serves storage in-process, and running
-# both means two writers on one bucket):
-docker compose --profile storage-legacy up storage
+make up                       # the `core` profile — and there is no storage container to include
+# You cannot start one. Platform 838d907 (merged 0c91421, 2026-08-05) deleted the service block
+# outright, and the `storage-legacy` profile is gone with it — 0dab54d had parked storage behind
+# that profile for a single release, as a rollback path, while app took object storage in-process.
 # Asking for the retired `storage` token does NOT fail: it exits 0 and starts only the floor.
 ```
 
-In local dev the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically (`STORAGE_S3_BUCKET` is unset in compose), and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is NOT sandboxed locally — compose hardcodes `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and fail without AWS credentials (none are set in `platform/.env`). To run public storage fully local, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
+**What the container used to do with its buckets, and what the binary still does with them.** With `STORAGE_S3_BUCKET` empty the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically, and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is not sandboxed by that fallback — the deleted `storage` compose block hardcoded `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and failed without AWS credentials (none are set in `platform/.env`). Running the binary by hand, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
 
 ### Run natively
 
 ```bash
-cd platform
-make dev S=storage
-cd ../storage
+cd storage
 go run main.go   # or: go run .
 ```
+
+The old first step — `cd platform && make dev S=storage`, which stopped the container so the native
+process could take its port — is moot: `838d907` removed the container, and the repo is not a sibling
+clone any more (`make init` does not fetch it), so `cd storage` assumes you cloned it by hand.
 
 `make setup`/`make gen` exist in the Makefile but are legacy no-ops — the repo has no codegen (no `//go:generate` directives, no gqlgen/graphql usage; gqlgen is vestigial).
 
@@ -176,6 +177,11 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 ```
 
 ## Environment Variables
+
+> **HISTORICAL — there is no `storage` container to inject any of these into.** The middle column
+> records what `docker-compose.yml` set on the `storage` service block; `838d907` (merged `0c91421`,
+> 2026-08-05) deleted that block, so nothing sets them for this binary any more. They still describe
+> the binary's own inputs if you run it by hand.
 
 | Variable | Compose value | Description |
 |----------|---------------|-------------|

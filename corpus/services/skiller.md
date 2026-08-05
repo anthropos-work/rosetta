@@ -15,9 +15,12 @@
 >   data in the **`public` schema** of the same PostgreSQL database. The old `skiller` DB schema is **legacy —
 >   no longer authoritative**.
 > * **RPC** — the skiller Connect-RPC surface (`SkillerService`) is now served by `app`
->   (`app/internal/rpc/skillerrpc/`). Consumers keep the same env var, re-pointed:
->   `SKILLER_RPC_ADDR=http://backend:8083` locally; `skiller_rpc_addr = http://backend:8081` in production
->   terraform. The externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
+>   (`app/internal/rpc/skillerrpc/`). Consumers kept the same env var, re-pointed at
+>   `http://backend:8083` locally; `skiller_rpc_addr = http://backend:8081` in production
+>   terraform. **Locally that variable is now set by nothing**: the last block to carry it was
+>   `messenger`'s, and platform `838d907` (merged `0c91421`, 2026-08-05) deleted that service — so
+>   there is no out-of-process consumer left to address, and the surface is reached in-process. The
+>   externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
 >   `GetJobRole`) are implemented in `app`.
 > * **GraphQL** — the skiller subgraph was **removed** from the WunderGraph/Cosmo federation; `app`'s `backend`
 >   subgraph now serves the taxonomy types/queries (`app/.../graph/schemas/skiller_taxonomy.graphqls`). The

@@ -283,23 +283,17 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
-This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-07:
+This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. At platform
+`0c91421` (2026-08-05) that is **four** repos:
 
 | Repo | Type | Has Migrations |
 |------|------|---------------|
-| `app` | Go backend | Yes (public schema) |
-| `cms` | Go backend | Yes (cms schema) |
-| `jobsimulation` | Go backend | Yes (jobsimulation schema) |
-| `sentinel` | Go backend | No |
-| `storage` | Go backend | No |
-| `messenger` | Go backend | No |
-| `roadrunner` | Go backend | No |
+| `app` | Go backend | Yes (`public` schema) |
+| `sentinel` | Go backend | No (it creates its own `sentinel` schema) |
 | `next-web-app` | Node.js (pnpm) | No |
 | `studio-desk` | Node.js (npm) | No |
-| `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
-| `graphql-wundergraph` | Node.js (npm) | No |
 
-> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`); `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned); and `skillpath` was likewise merged into `app` ("skillpath-in-app", M502→M507) and decommissioned — its skill-path session state now lives in `app`'s `public.skill_path_sessions`, so it is no longer in `repos.yml` and no longer has its own migration/schema. Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
+> **Note**: the clone set has shrunk repeatedly as services were folded into `app`. Removed from `repos.yml`: `intelligence` (`fdfa189`) and `chronos` (`045857c`); `skiller` (`21429b7` — merged into `app` in July 2026, its taxonomy tables now in `app`'s `public` schema); `skillpath` (`a4db680` — "skillpath-in-app", M502→M507, session state now in `public.skill_path_sessions`); `graphql-wundergraph` (`360efd4`); `cms`, `jobsimulation` and `roadrunner` (`d11a403`); and `storage` + `messenger` (`838d907`). **None of those repos were deleted from GitHub** — `make init` simply no longer clones them, and none of them owns a local schema; clone one by hand if you need to read the pre-merge source. `customerio-sync` was never a `repos.yml` entry (it built straight from a GitHub URL) and **is no longer a compose service either** — `838d907` deleted that container too, so it cannot be started locally at all. `ant-academy` is likewise not a `repos.yml` entry (by design) and has no compose service — clone it by hand and run it natively (see the Ant Academy section below). See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
 ### Initialize CMS Studio Submodule
 
@@ -367,7 +361,7 @@ All services share a **single centralized `.env` file** located in the `platform
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
-> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails and `messenger` will send them on any flow that triggers a notification. Blank the key in `platform/.env`:
+> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails, and the messenger subsystem will send them on any flow that triggers a notification. Since `838d907` there is **no `messenger` container to stop** — messenger runs in-process inside `backend`, switched on by `MESSENGER_ENABLED` (unset means off while `ENVIRONMENT=development`), so blanking the key is the one kill switch that survives someone flipping that variable. Blank it in `platform/.env`:
 >
 > ```bash
 > sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
@@ -375,7 +369,7 @@ All services share a **single centralized `.env` file** located in the `platform
 >
 > Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
 
-**Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
+**Note**: The docker-compose configuration uses this single `.env` file for all services (`backend`, `sentinel`, and the two frontends). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
 
 ### Studio-Desk Environment (Only for Native Development)
 
@@ -438,7 +432,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+    This builds from local repos and starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath, skiller, storage, messenger and customerio-sync all run in-process inside Backend/`app` — not one of them is a compose service any more, the last three having been deleted at `838d907`; the GraphQL/Cosmo router was deleted at platform `2adcf71`.)
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -500,9 +494,9 @@ Start specific service groups instead of the full stack:
 |---------|---------------|
 | `make up` | the `core` profile (`PROFILE ?= core`): postgresql, redis, sentinel, backend, gotenberg |
 | `make up PROFILE=backend` | the same five — `backend` and `core` select identically |
-| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend`, which this profile does not select |
-| `make up PROFILE=studio-desk` | **exits 1**, same reason |
-| *(the retired `cms` / `graphql` / `storage` tokens)* | **exit 0 and start nothing but the floor** — not profiles any more; deliberately not spelled runnably |
+| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend` (`docker-compose.yml:165-167`), which the `frontend` profile does not select, so compose rejects the project as invalid |
+| `make up PROFILE=studio-desk` | **exits 1**, same `depends_on: backend` reason (`docker-compose.yml:138-140`) |
+| *(the retired `cms` / `graphql` / `storage` / `storage-legacy` / `messenger` / `customerio-sync` tokens)* | **exit 0 and start nothing but the floor** — not profiles any more; the last three were removed at `838d907` with the containers themselves. Deliberately not spelled runnably |
 | `make up-all` | Everything |
 
 Base services (PostgreSQL, Redis, Sentinel) always start regardless of profile.
