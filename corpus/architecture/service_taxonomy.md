@@ -23,10 +23,9 @@ graph TB
     end
     
     subgraph Core["⚙️ Core Backend Services"]
-        Backend["Backend/App — THE MONOLITH<br/>(+ skiller, skillpath, roadrunner,<br/>jobsimulation, cms folded in)"]
-        Sentinel[Sentinel]
-        Storage[Storage]
-        Others[+ Others]
+        Backend["Backend/App — THE MONOLITH<br/>(+ skiller, skillpath, roadrunner,<br/>jobsimulation, cms, messenger,<br/>storage, customerio-sync folded in)"]
+        Sentinel["Sentinel — the ONLY<br/>out-of-process service"]
+        Others[+ Gotenberg, Cosmo Router]
     end
     
     Desk --> Backend
@@ -47,24 +46,34 @@ graph TB
 - **Database**: PostgreSQL (dedicated schemas per service)
 - **Source**: Private GitHub repositories
 
-**Services** (current local docker-compose, as of 2026-07):
+**Services** (current local docker-compose, as of platform `0dab54d`):
+
+> **The default profile is now `core`, not `graphql`.** Platform `0dab54d` renamed it; the Makefile's
+> `PROFILE ?= core`. There is no `graphql` profile any more — every `--profile graphql` invocation in
+> older notes should read `--profile core`.
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Backend/App** | 8081-8083 (container: HTTP 8082, RPC 8083, meta 8084) | **The monolith.** Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)), the **skill-path progression engine** (merged skillpath, "skillpath-in-app" M502→M507 — [→](../services/skillpath.md)), the **simulation runtime** (merged jobsimulation, "jobsim-in-app" — [→](../services/jobsimulation.md)), the **content layer + Studio** (merged cms, "cms-in-app v8.0" app v1.360.0 — [→](../services/cms.md)), **Judge0 code execution** (merged roadrunner — [→](../services/roadrunner.md)), plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine, academy store) | graphql, backend | Local `../app` (+ `anthropos-studio-room` baked into the image) |
-| **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC) | (always on) | Local `../sentinel` |
-| **Storage** | 8300-8301 | File/Blob Storage Management | graphql, storage | Local `../storage` |
-| **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | graphql, backend | Third-party image `gotenberg/gotenberg:8` |
-| **Graphql** (Cosmo Router) | 5050 | Apollo Federation v2 gateway — **one** subgraph (`backend`) since cms-in-app; built from the **production** Dockerfile so it uses the committed `schemas/backend.graphqls` | graphql | Local `../graphql-wundergraph` |
+| **Backend/App** | 8081-8083 (container: HTTP 8082, RPC 8083, meta 8084) | **The monolith.** Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)), the **skill-path progression engine** (merged skillpath, "skillpath-in-app" M502→M507 — [→](../services/skillpath.md)), the **simulation runtime** (merged jobsimulation, "jobsim-in-app" — [→](../services/jobsimulation.md)), the **content layer + Studio** (merged cms, "cms-in-app v8.0" app v1.360.0 — [→](../services/cms.md)), **Judge0 code execution** (merged roadrunner — [→](../services/roadrunner.md)), and — since **v9.0 "support-in-app"** (2026-08-04) — **transactional email** (merged messenger, `MESSENGER_ENABLED` — [→](../services/messenger.md)), **S3 object storage** (merged storage, `STORAGE_S3_*_BUCKET` — [→](../services/storage.md)) and the **Brevo marketing-contact sync** (merged customerio-sync, `CUSTOMERIO_SYNC_ENABLED` — [→](../services/customerio-sync.md)), plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine, academy store) | core, backend | Local `../app` (+ `anthropos-studio-room` baked into the image) |
+| **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC). **The only Anthropos service still running out-of-process** | (always on) | Local `../sentinel` |
+| **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | core, backend | Third-party image `gotenberg/gotenberg:8` |
+| **Graphql** (Cosmo Router) | 5050 | Apollo Federation v2 gateway — **one** subgraph (`backend`) since cms-in-app; built from the **production** Dockerfile so it uses the committed `schemas/backend.graphqls` | core | Local `../graphql-wundergraph` |
 
-**Available but not in default `graphql` profile**:
+**Available but not in the default `core` profile**:
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Messenger** | 8200-8201 | Email notifications via Brevo | messenger | Local `../messenger` |
-| **CustomerIO Sync** | 8080 | Background data sync to Customer.io | customerio-sync | Built directly from `git@github.com:anthropos-work/customerio-sync.git#main` (not cloned locally) |
-| **Studio-Desk** | 9000, 9100 | Studio design tool (containerized variant) | studio-desk | Local `../studio-desk` |
-| **Next-Web-App** | 3000 | Frontend (containerized variant) | frontend | Local `../next-web-app` |
+| **Storage** | 8300-8301 | **Merged into `app` at v9.0** — kept startable purely as a rollback comparison. Running it alongside `backend` means **two writers on one bucket** | storage-legacy | Local `../storage` (frozen) |
+| **Messenger** | 8200-8201 | **Merged into `app` at v9.0** — kept startable as the rollback path. Dropped from the `all` profile: `backend` consumes messenger's **own** Redis consumer group, so running both puts two consumers on one group | messenger | Local `../messenger` (frozen) |
+| **CustomerIO Sync** | 8080 | **Merged into `app` at v9.0** — but still declared in compose and still in `all`. The push destination is **Brevo**, not Customer.io (the name is a fossil) | customerio-sync, all | Built directly from `git@github.com:anthropos-work/customerio-sync.git#main` (not cloned locally, frozen) |
+| **Studio-Desk** | 9000, 9100 | Studio design tool (containerized variant) | studio-desk, all | Local `../studio-desk` |
+| **Next-Web-App** | 3000 | Frontend (containerized variant) | frontend, all | Local `../next-web-app` |
+
+> **Why the three v9.0 services are still in compose at all.** `storage` and `messenger` stay in
+> `repos.yml` and in the compose file as **rollback paths** — the same treatment `cms` and
+> `jobsimulation` got. `customerio-sync` has **no** rollback path (its terraform module was deleted and
+> its ECR repo destroyed); its compose entry is simply residue, and because it builds from
+> `#main` it builds the frozen repo at whatever `main` happens to be.
 
 **Base services (no profile, always on with any `make up`)**:
 - **PostgreSQL** :5432 (custom image with pgvector extension)
@@ -81,6 +90,9 @@ graph TB
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app"); 23 run-state tables → `public`; no container/subgraph; ECS module kept as the rollback path, teardown **M810**; repo frozen | [jobsimulation.md](../services/jobsimulation.md) |
 | **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810**; repo frozen | [cms.md](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; no container | [roadrunner.md](../services/roadrunner.md) |
+| **Messenger** | Merged into Backend/App (v9.0 "support-in-app", 2026-08-04); the mailer + its 24 handlers run in-process behind `MESSENGER_ENABLED`, on messenger's **own** Redis consumer group. ECS module deleted; ECR repo preserved (`removed { destroy = false }`) and now **unmanaged** in AWS. Still in compose + `repos.yml` as the rollback path; repo frozen | [messenger.md](../services/messenger.md) |
+| **Storage** | Merged into Backend/App (v9.0); `backend` reads/writes both S3 buckets directly, `STORAGE_RPC_ADDR` gone. ECS service gone but **`module.storage-service_euwest1` is deliberately kept** — it now declares only the buckets, CloudFront + OAI and the `media.anthropos.work` CNAME. Still in compose (`storage-legacy`) + `repos.yml` as the rollback path; repo frozen | [storage.md](../services/storage.md) |
+| **CustomerIO Sync** | Merged into Backend/App (v9.0); the 10-minute **Brevo** marketing-contact push runs on app's asynq scheduler behind `CUSTOMERIO_SYNC_ENABLED`. Terraform module **fully deleted**, ECR destroyed — **no rollback path**. Compose entry survives (profiles `customerio-sync`, `all`); repo frozen | [customerio-sync.md](../services/customerio-sync.md) |
 
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
@@ -356,14 +368,17 @@ go run .               # Run natively — this one process covers skiller,
 | Profile | Services started |
 |---------|------------------|
 | (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| `graphql` (the Makefile default) | postgresql, redis, sentinel, backend, jobsimulation, cms, storage, roadrunner, gotenberg, graphql |
+| **`core`** (the Makefile default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg, graphql |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
-| `cms` / `jobsimulation` / `storage` / `roadrunner` | postgresql, redis, sentinel + the named service |
-| `messenger` | postgresql, redis, sentinel, messenger (depends on backend/cms/jobsimulation — bring those up too) |
-| `customerio-sync` | postgresql, redis, sentinel, customerio-sync |
+| `storage-legacy` | postgresql, redis + the frozen standalone `storage` (rollback comparison only) |
+| `messenger` | postgresql, redis + the frozen standalone `messenger`. **`make up PROFILE=messenger` alone exits 1** — messenger declares `depends_on: backend`, which this profile does not select, so compose rejects the project. Use `docker compose --profile core --profile messenger up` |
+| `customerio-sync` | postgresql + the frozen standalone `customerio-sync` |
 | `frontend` | + next-web-app (containerized) |
 | `studio-desk` | + studio-desk (containerized) |
-| `all` | Everything in the compose file |
+| `all` | Everything in the compose file **except `messenger` and `storage`** — both were removed from `all` at v9.0, because each would duplicate a subsystem `backend` now runs in-process (two consumers on one Redis group; two writers on one bucket). `customerio-sync` **is** still in `all` |
+
+> The `cms`, `jobsimulation` and `roadrunner` profiles are gone with their services — those domains
+> are inside `backend`. `storage` (the bare profile name) never existed; it is `storage-legacy` now.
 
 Use `docker compose --profile <name> config --services` to verify the actual member list for a given profile.
 
@@ -373,11 +388,11 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 
 | Tier | Count | Technology | Deployment | Management |
 |:-----|:------|:-----------|:-----------|:-----------|
-| **Core Backend (local `graphql` profile)** | 6 Go services + Gotenberg + Cosmo Router | Go (+ embedded Python in cms) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
-| **Other profiles (off by default)** | Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
+| **Core Backend (local `core` profile)** | **2** Go services (`backend`, `sentinel`) + Gotenberg + Cosmo Router | Go (+ embedded Python studio-room in the `app` image) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Other profiles (off by default)** | Storage (`storage-legacy`), Messenger, CustomerIO Sync — all three **frozen rollback paths**, not live services — plus Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
-| **Archived / merged** | Chronos, Intelligence, Skiller (merged into app, July 2026), Skillpath (merged into app, M502→M507) | Go | Removed from local orchestration | GitHub repos still exist |
+| **Archived / merged** | Chronos, Intelligence, Skiller, Skillpath, Roadrunner, Jobsimulation, CMS, **Messenger, Storage, CustomerIO Sync** (the last three at v9.0 "support-in-app", 2026-08-04) | Go | Merged into `app`; removed from local orchestration or demoted to an opt-in rollback profile | GitHub repos still exist (frozen) |
 | **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |

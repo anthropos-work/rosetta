@@ -168,7 +168,7 @@ not, so it stays local until you say otherwise.
   naming the exact fix command. A half-satisfied public path is never shipped.
 - **Pass nothing and NOTHING happens** — no `tailscale` process, no cert mint, no serve config, no new files.
   This is fenced by a tripwire stub, not asserted in prose (`dev-stack/tests/test_dev_public_host.py`).
-- It fronts only the ports **your profile actually publishes** (default `graphql` ⇒ the backend API + Cosmo
+- It fronts only the ports **your profile actually publishes** (default `core` ⇒ the backend API + Cosmo
   GraphQL), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the next
   bring-up.
 - ⚠️ **Transport, not authentication.** This puts the stack behind the tailnet's TLS + authenticated device

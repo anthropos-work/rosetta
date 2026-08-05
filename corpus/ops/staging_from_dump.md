@@ -19,7 +19,7 @@ It is the bridge between "the stack starts" and "I can log in as my own admin ac
 ## Prerequisites
 
 You should already have, per `setup_guide.md`:
-- `platform/`, `app/`, `cms/`, `jobsimulation/`, `sentinel/`, `storage/`, `messenger/`, `roadrunner/`, `next-web-app/`, `studio-desk/`, `graphql-wundergraph/` cloned as siblings. (`skillpath` is decommissioned into `app` — no longer cloned.)
+- `platform/`, `app/`, `sentinel/`, `next-web-app/`, `studio-desk/` cloned as siblings — that plus `storage/` and `messenger/` is all `repos.yml` still carries. `storage` and `messenger` are cloned **only so the v9.0 rollback containers can be built**; both are folded into `app`. (`cms`, `jobsimulation`, `roadrunner`, `skillpath` and `skiller` are decommissioned into `app` and no longer cloned; `graphql-wundergraph` was retired 2026-07-31.)
 - `platform/.env` with `GH_PAT`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` filled in.
 - `make up postgresql` succeeds and Postgres is healthy.
 
@@ -34,26 +34,48 @@ You also need:
 
 ## 1. Outbound-email kill switch (mandatory, do this FIRST)
 
-A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications via `messenger` → Brevo (welcome emails, invitation flows, weekly recaps, password resets). If `BREVO_KEY` is set to a real value, those emails will go out to real people the moment you exercise the relevant flow.
+A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications → Brevo (welcome emails, invitation flows, weekly recaps, password resets). If they are armed, those emails will go out to real people the moment you exercise the relevant flow.
 
-**Blank `BREVO_KEY` in `platform/.env` and restart `messenger` BEFORE running any flow that could enqueue a notification:**
+> **The mailer is `backend`, not `messenger`.** Since **v9.0 "support-in-app" (2026-08-04)** `messenger` (Brevo transactional mail + all 24 event handlers) and `customerio-sync` (the 10-minute marketing-contact push — destination **Brevo**, the name is a fossil) run in-process inside `app`, as `internal/messenger` and `internal/customeriosync`. **There is no `messenger` container on a default stack** — it survives only on the opt-in `messenger` profile as a rollback path, and `restart messenger` / `exec messenger` on a default stack now just error with "no such service". Anything that used to describe restarting or inspecting the messenger container is describing the rollback container.
+
+**The primary control is the switch, not the key.** Both in-process jobs are gated by env switches read at boot (`app/env_guards.go`):
+
+| Switch | Gates |
+|--------|-------|
+| `MESSENGER_ENABLED` | all transactional mail (the 24 event handlers) |
+| `CUSTOMERIO_SYNC_ENABLED` | the 10-minute marketing-contact push — **this one rewrites real Brevo marketing contacts**, not just sends mail |
+
+Neither is in `.env_example`. The guards are strict in **both** directions:
+
+- **unset ⇒ OFF** on a developer machine (which is what a compose stack is — `backend`'s compose env sets `ENVIRONMENT=development`). This is the safe default and needs no action.
+- **unset in a *deployed* environment ⇒ `backend` refuses to boot.** If your staging box is configured as a deployed environment rather than `development`, you must set both explicitly.
+- **an unparseable value is an error everywhere.** `true/1/yes/on` and `false/0/no/off` are all accepted (case- and whitespace-insensitive); anything else — a typo like `ture` or `True!` — is a boot failure rather than being read as "false", so a fat finger can't silently disable the subsystem.
+
+So on a prod-dump stack, **turn the switches off explicitly**:
 
 ```bash
-sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
-docker compose -f platform/docker-compose.yml restart messenger
+grep -q '^MESSENGER_ENABLED=' platform/.env \
+  && sed -i.bak 's/^MESSENGER_ENABLED=.*/MESSENGER_ENABLED=false/' platform/.env \
+  || echo 'MESSENGER_ENABLED=false' >> platform/.env
+grep -q '^CUSTOMERIO_SYNC_ENABLED=' platform/.env \
+  && sed -i.bak 's/^CUSTOMERIO_SYNC_ENABLED=.*/CUSTOMERIO_SYNC_ENABLED=false/' platform/.env \
+  || echo 'CUSTOMERIO_SYNC_ENABLED=false' >> platform/.env
+
+docker compose -f platform/docker-compose.yml up -d backend
 ```
 
-Verify:
+Verify against **`backend`**:
 
 ```bash
-docker compose -f platform/docker-compose.yml exec -T messenger env | grep BREVO_KEY
-# Expected: BREVO_KEY=  (empty)
+docker compose -f platform/docker-compose.yml exec -T backend env \
+  | grep -E 'MESSENGER_ENABLED|CUSTOMERIO_SYNC_ENABLED|BREVO_KEY'
+# Expected: MESSENGER_ENABLED=false / CUSTOMERIO_SYNC_ENABLED=false
+# (empty output is also the OFF state — unset means off on a developer machine)
 ```
 
-The messenger boots with `INFO Brevo Messenger` either way; with the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
+> **Do NOT reach for the old "just blank `BREVO_KEY`" reflex first.** Blanking it is still wise defence-in-depth, but **`BREVO_KEY` is REQUIRED whenever either switch is on — `backend` fails fast on an empty key and will not boot.** So an empty key plus an on switch is not a muted mailer, it is a dead stack. **Turn the switch off; leave the key alone** (or blank it *and* keep both switches off — that combination is fine and is the default local posture).
 
 Apply the same caution to any other live-customer integration you don't intend to fire from staging:
-- `CUSTOMERIO_*` (marketing/lifecycle email — disable unless you're testing customer.io integration explicitly).
 - `HEYGEN_WEBHOOK_SECRET` (third-party webhooks — won't fire if not exposed publicly anyway, but blank it to be safe).
 - `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` (media / voice — these don't email but can incur cost or bandwidth charges; use sandbox keys if available).
 
@@ -292,7 +314,7 @@ return ""
 
 `authn/provider/clerk/clerk_user.go` `GetOrganization()` — fall back to v2 claim names + lazy-fetch `public_metadata.eid` via Clerk API with a process-wide cache (Clerk rate-limits otherwise).
 
-Each consuming service (`app`, `cms`, `jobsimulation`, `messenger`, `storage`, `sentinel`) needs:
+Each consuming service needs the following. On a current stack that means **`app` and `sentinel`** — the only two that build into a running container; `cms`, `jobsimulation`, `messenger` and `storage` are frozen (folded into `app`) and only need it if you are building a rollback container:
 
 1. `cp -r <patched-colony> <service>/vendor-colony`
 2. Append to `<service>/go.mod`:
@@ -320,7 +342,7 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see ~14 services running (was ~15 before `skillpath` was decommissioned into `app`). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
+You should see **8** containers: `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`, `customerio-sync`, `studio-desk`, `next-web-app`. (It was ~14 before the merges.) Note `--profile all` no longer means "everything declared" — **`messenger` was dropped from `all` at v9.0** and `storage` moved to the `storage-legacy` profile, so neither starts here. If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
 
 ---
 

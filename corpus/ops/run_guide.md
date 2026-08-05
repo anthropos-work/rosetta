@@ -79,7 +79,8 @@ cd stack-dev/platform
 
 ### Option A: Start Full Backend (Recommended)
 
-This starts all backend services + GraphQL router (default `graphql` profile):
+This starts the backend + GraphQL router (default **`core`** profile — renamed from `graphql` at
+platform `0dab54d`; the Makefile's `PROFILE ?= core`):
 
 ```bash
 make up
@@ -131,7 +132,7 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 
 ## 4. Start Frontend (Next.js Web App)
 
-**Required** — the frontend always runs natively (not in Docker for the `graphql` profile). It must be
+**Required** — the frontend always runs natively (not in Docker for the default `core` profile). It must be
 started in a **tmux session** so it survives Claude Code session closure.
 
 ### Verify Node.js Version

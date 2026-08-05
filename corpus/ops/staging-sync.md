@@ -96,9 +96,16 @@ In practice this almost never fires — the rule is "no WIP on staging clones". 
 
 ## Repo scope
 
-The 14 repos the routine covers (same on every staging host; was 15 before `skillpath` was decommissioned into `app`):
+The 14 repos the routine covers (same on every staging host; was 15 before `skillpath` was decommissioned into `app`). The *count* has not moved, but since v9.0 most of the service half is frozen — the sync still force-resets those clones, there is just nothing live to rebuild from them:
 
-**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
+**Service repos (rebuild on change):** `app`, `next-web-app`, `sentinel`, `studio-desk`.
+
+**Frozen — force-reset if still cloned, but no live container maps to them:**
+
+- `messenger`, `storage`, `customerio-sync` — folded into `app` at **v9.0 "support-in-app" (2026-08-04)**. Their compose services survive only as the rollback path (`messenger` / `storage-legacy` / `customerio-sync` profiles); a default stack starts none of them. `sentinel` is now the only out-of-process Anthropos service.
+- `cms`, `jobsimulation`, `roadrunner` — folded into `app` earlier (cms-in-app v8.0, jobsim-in-app; `roadrunner` went in with jobsim and `backend` calls Judge0 directly).
+- `graphql-wundergraph` — **retired 2026-07-31**. The repo is archived and clients call `backend`'s own GraphQL endpoint directly; there is no `graphql` compose service and `:5050` is free.
+- `skillpath` — decommissioned, merged into `app` ("skillpath-in-app" M502→M507); no longer built/cloned at all.
 
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
@@ -114,7 +121,7 @@ The 14 repos the routine covers (same on every staging host; was 15 before `skil
 
 ## Skip-worktree handling
 
-The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
+The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative). On a host brought up before the merges, the marks on the **frozen** clones (`cms`, `jobsimulation`, `storage`, `messenger`) are still there and the sync still dances them through the force-reset — they just no longer feed a running container. Only `app`, `sentinel`, `next-web-app` and `platform` marks affect what actually runs.
 
 ### Apply once per staging clone (idempotent)
 
@@ -140,8 +147,9 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 | Repo                       | Skip-worktree files                                                                                                  |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, `internal/cors/cors.go`, `internal/web/backend/graphql/graph/handler.go`       |
-| `cms`                      | `Dockerfile.dev`, `go.mod`                                                                                           |
-| `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
+| `cms` *(frozen)*           | `Dockerfile.dev`, `go.mod`                                                                                           |
+| `sentinel`                 | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                                                      |
+| `jobsimulation`, `storage`, `messenger` *(frozen)* | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
 | `next-web-app`             | `Dockerfile.dev`                                                                                                     |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
 
@@ -173,15 +181,18 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | ------------------- | ---------------------- |
 | `app`               | `backend`              |
 | `next-web-app`      | `next-web-app`         |
-| `cms`               | `cms`                  |
-| `jobsimulation`     | `jobsimulation`        |
-| `storage`           | `storage`              |
 | `sentinel`          | `sentinel`             |
-| `roadrunner`        | `roadrunner`           |
-| `messenger`         | `messenger`            |
-| `customerio-sync`   | `customerio-sync`      |
 | `studio-desk`       | `studio-desk`          |
-| `graphql-wundergraph` | `graphql`            |
+
+Frozen — the mapping is kept only so a rollback build is possible; the service is in no default profile, so a SHA move on these repos rebuilds nothing on a normal host:
+
+| Repo                | Docker compose service | Profile |
+| ------------------- | ---------------------- | ------- |
+| `storage`           | `storage`              | `storage-legacy` (rollback only) |
+| `messenger`         | `messenger`            | `messenger` (rollback only) |
+| `customerio-sync`   | `customerio-sync`      | `customerio-sync` (still in `all`) |
+
+`cms`, `jobsimulation` and `roadrunner` have **no compose service at all** any more, and `graphql-wundergraph` maps to a `graphql` service that no longer exists (router retired 2026-07-31).
 
 Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Build failures are logged but don't abort the rest of the run — they show up in `errors[]` of `last.json`.
 

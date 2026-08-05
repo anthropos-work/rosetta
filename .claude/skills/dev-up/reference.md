@@ -30,38 +30,46 @@ ssh -T git@github.com               # GitHub SSH (run /setup-github if this fail
 
 ```bash
 # First-time build (in stack-dev/platform):
-make init                 # clone all repos from repos.yml (incl. ant-academy)
-cd cms && make init-studio && cd ..   # CMS studio submodule
+make init                 # clone the six repos in repos.yml (ant-academy is NOT one — clone it by hand)
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"
-make up                   # build from local code + start (graphql profile) — expect 11 containers
-make migrate              # apply migrations (app, cms, jobsimulation, skillpath)
+make up                   # build from local code + start (core profile) — expect 5 containers
+make migrate              # apply migrations — `app` only; it is the sole migrations:true repo
 
 # Start / restart an already-built stack:
 make up                   # rebuild + start
-make ps                   # 11 healthy containers in graphql
+make ps                   # 5 healthy containers in core
 ```
 
-### Expected service set (default `graphql` profile, main dev stack)
+### Expected service set (default `core` profile, main dev stack)
+
+The default profile was **renamed `graphql` → `core` at v9.0** (`PROFILE ?= core` in the Makefile); there is
+no `graphql` profile any more. The count below is **containers in the default profile** — 5, down from 11,
+because eight services were folded into `backend` and the Cosmo Router was retired.
 
 | Container | Port(s) | Notes |
 |-----------|---------|-------|
 | anthropos-postgresql-1 | 5432 | Health gate for others |
 | anthropos-redis-1 | 6379 | Health gate for others |
-| anthropos-sentinel-1 | 8087 | Always on (no profile) |
-| anthropos-backend-1 | 8081-8083 | Also serves the merged skiller RPC surface |
-| anthropos-skillpath-1 | 8100-8101 | |
-| anthropos-cms-1 | 8090-8091 | Embedded Python studio-room |
-| anthropos-jobsimulation-1 | 8400-8401 | |
-| anthropos-storage-1 | 8300-8301 | |
-| anthropos-roadrunner-1 | 10400-10401 | |
-| anthropos-graphql-1 | 5050 | Cosmo Router |
+| anthropos-sentinel-1 | 8087 | Always on (no profile) — the only out-of-process Anthropos service |
+| anthropos-backend-1 | 8081-8083 | The monolith: skiller, skillpath, roadrunner, jobsimulation, cms + (v9.0) messenger, storage, customerio-sync all in-process. GraphQL on 8082 |
 | anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
 
-Not in this profile (don't expect running): `messenger`, `customerio-sync` (explicit profile),
-`ant-academy` (native-only on port 3077, never in docker-compose). Archived (not orchestrated locally):
-`chronos`, `intelligence`, `skiller` (merged into `app`, July 2026).
+Not in this profile (don't expect running):
+
+- `storage` — folded into `backend` at v9.0; the container moved to the **`storage-legacy`** profile (rollback only). Running it alongside `backend` means two writers on one bucket.
+- `messenger` — folded into `backend` at v9.0; **explicit `messenger` profile, and dropped from `all`**. Never run it against a `MESSENGER_ENABLED=true` backend — `app` takes over messenger's own Redis consumer group, so both running = two consumers on one group.
+- `customerio-sync` — folded into `backend` at v9.0; explicit profile (still in `all`).
+- `ant-academy` — native-only on port 3077, never in docker-compose.
+
+Gone entirely (no container, no profile): `cms`, `jobsimulation`, `roadrunner`, `skillpath`, `skiller`
+(all merged into `app`) and `graphql` (Cosmo Router **retired 2026-07-31**; `:5050` is free).
+Archived and not orchestrated locally: `chronos`, `intelligence`.
+
+`MESSENGER_ENABLED` and `CUSTOMERIO_SYNC_ENABLED` are absent from `.env_example` — **unset means off on a
+developer machine**, which is the expected `/dev-up` state. `BREVO_KEY` is only required if you turn one on
+(`backend` refuses to boot on an empty key with a switch on).
 
 ## Mode B — additional dev-N (N ≥ 1): bring up + set-dress
 
@@ -88,7 +96,7 @@ the `directus` replay skips with exit 4 — the stack reads content live from pr
 docker info > /dev/null 2>&1 && echo "Docker OK" || echo "Start Docker"
 docker exec anthropos-postgresql-1 pg_isready -U postgres
 docker exec anthropos-redis-1 redis-cli ping
-curl -s http://localhost:5050/health && echo "GraphQL OK"     # main stack; offset for dev-N
+curl -s http://localhost:8082/api/health && echo "backend OK"  # main stack; offset for dev-N (:5050 is retired)
 docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 ```
 
@@ -96,7 +104,7 @@ docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 
 ### Port already in use
 ```bash
-lsof -i :5050        # find the holder
+lsof -i :8082        # find the holder (backend's HTTP/GraphQL port; :5050 is free since the router retired)
 # kill -9 <PID> (ask the user first) — or bring the stack up as dev-N on offset ports.
 ```
 
@@ -114,7 +122,9 @@ docker exec anthropos-postgresql-1 psql -U postgres -c "CREATE SCHEMA IF NOT EXI
 ```
 
 ### CMS Docker build fails (`"/studio": not found`)
-Run `cd cms && make init-studio` before `make up`.
+Historical — there is no `cms` service or clone any more (cms-in-app v8.0), so `make init-studio` is not part
+of a bring-up. CI pulls `anthropos-studio-room` into the `app` image. If you hit this, you are building an
+old checkout.
 
 ### Docker build fails (SSH / private Go modules)
 ```bash
