@@ -1327,3 +1327,25 @@ defect and would also explain why no amount of accessor work has helped.
   "two files". **A claim's restatement count is not guessable**, and the guard's scope is the DIFF, so a
   repair commit surfaces sites the previous run could not see: **one green run is not the fixpoint, two
   consecutive greens are.** Gate **4 of 5**, unchanged — see iter-92/progress.md
+- iter-93 (tik): **fence the HEDGE, not the sentence** — closing the class iter-92 discovered by committing
+  it twice. iter-92 repaired six restatements of one claim by hand and **the repair leaked twice doing it**
+  (`repair_leak_guard` RED on the iter commit, RED again on the first repair, GREEN on the second), which is
+  the measured case for TOK-05 read literally: hand-repair does not hold; make the predicate
+  unrepresentable. Shipped `stack-core/unreadable_repo_claim_guard.py` — **every corpus mention of a
+  `module.*_euwest1` construct must carry an unmeasurable marker IN ITS OWN PARAGRAPH**, those modules being
+  declared in `infrastructure/terraform/production/services.tf` and `infrastructure` never having been in a
+  clone set. Registered in `guard_family.py` (**mandatory** — the family's reconciliation is bidirectional,
+  so an unregistered guard on disk exits the whole family 2); **the family is now 17 members** and reads
+  *"all 4 `module.*_euwest1` mention(s) are marked unmeasurable."* Four decisions, each tested not asserted:
+  the marker is a **set of phrases, not a mandated token** (a fence requiring a magic string teaches people
+  to type the string); the scope is the **paragraph**, with a wrapped blockquote counted as one, since a
+  marker three screens away would launder a flat assertion while a fixed ±1 window would false-RED the real
+  corpus (**both directions tested**); the guard **re-measures its own premise and RETIRES ITSELF** —
+  if an `infrastructure` clone ever appears it prints *PREMISE LIFTED — go and MEASURE those declarations*,
+  because a fence still demanding a hedge after the hedge became unnecessary is **pinning the current shape
+  of our ignorance** (§8 rule 3 turned on a fence's own premise); and **no mentions ⇒ exit 2, never green**.
+  That last rung proved itself inside the iter that wrote it: the live-corpus control was first written with
+  a hardcoded `parents[3]` — `.agentspace/` in the authoring copy — so it **silently SKIPPED** and the suite
+  printed `OK (skipped=1)`. **A check that skips reads exactly like a check that passes, including when it
+  is the check on the guard that exists to say so** — ninth consecutive iteration in which the author of a
+  rule broke it while writing the thing the rule governs. Gate **4 of 5**, unchanged — see iter-93/progress.md

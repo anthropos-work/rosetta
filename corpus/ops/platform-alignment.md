@@ -1827,6 +1827,42 @@ asserts against a recording fake `Conn` that accepts any table name — *a fake 
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
 only check that knows what the migration path actually produced.
 
+### Fencing a document does not fence its PARAPHRASES (M257x iter-92 / iter-93)
+
+The fenced map's `cms` row said, in its own voice:
+
+> Whether that rollback declaration still stands is **not something this map can see** — it never could,
+> since infrastructure has never been in the clone set.
+
+Six other documents — `services/backend.md`, `CLAUDE.md`, `architecture/dependency_map.md`,
+`services/cms.md`, `architecture/external_services.md`, `services/storage.md` — stated flatly that
+`module.cms_euwest1` **is still declared as the rollback path**, a thing **not visible to this corpus** at
+all, since `infrastructure` has never been in the clone set. **Only the fenced map carried the hedge.**
+
+This is a limit on the whole fencing method of TOK-02 and TOK-05, and it is worse than an unfenced claim:
+**a hedge that survives only in the one file a guard reads implies the system checked, when it did not.**
+`claim_twin_guard` fences *adjudicated claims* across the tree; nothing fenced a **hedge**.
+
+Two hard-won riders, both from the iter that named the class:
+
+1. **The restatement count is not guessable.** The estimate at the moment of naming was *"two files."* It
+   was six, and it took `repair_leak_guard` **two rounds** to reach the floor: RED on the iter commit
+   itself, RED again on the first repair, GREEN on the second. The iter that named the class committed the
+   class while fixing it — twice.
+2. **`repair_leak_guard`'s scope is the DIFF, so run it again after the repair.** A repair commit
+   introduces a fresh candidate set and surfaces sites the previous run could not see. **One green run is
+   not the fixpoint; two consecutive greens are.** §8's *run the fence at the COMMIT* said when, not how
+   many times.
+
+> **Rule.** When a fenced document hedges a claim *because the evidence is unreachable*, the hedge is part
+> of the claim. Fence the **hedge**, tree-wide — not the sentence in the one document that carries it.
+
+iter-93 does that for the case at hand (`unreadable_repo_claim_guard.py`: every `module.*_euwest1` mention
+must carry an unmeasurable marker **in its own paragraph**, because a reader lands on a paragraph and not
+on a file). The guard **re-measures its own premise on every run** and **retires itself** the moment an
+`infrastructure` clone appears — a fence that kept demanding a hedge after the hedge became unnecessary
+would be pinning the current shape of our ignorance, which is rule 3 above turned on the fence itself.
+
 ### A PARTIAL skip is worse than a total one — grade the cannot-tell (M257x iter-91)
 
 §5 rule 8 says *a check that SKIPS reads exactly like a check that PASSES*. Its sharper form: **a check that
