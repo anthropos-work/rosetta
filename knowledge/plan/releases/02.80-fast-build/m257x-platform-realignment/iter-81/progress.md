@@ -141,5 +141,5 @@ Three findings, in increasing order of depth. Full argument in
 - **`FIX-M257x-iter83-adjudication-has-no-per-anchor-ledger`** — iter-76 recorded rejection
   *mechanisms* and counts, never per-anchor verdicts, so the 12 rejections cannot be subtracted from
   any reach measurement. → iter-84
-- **`CHECK-M257x-iter83-standalone-is-the-forgettable-class`** — 9 of 14 guards are `standalone`;
+- **`CHECK-M257x-iter83-standalone-is-the-forgettable-class`** — **10 of the 14** guards at that repair were `standalone`;
   nothing runs them by derivation. → iter-85

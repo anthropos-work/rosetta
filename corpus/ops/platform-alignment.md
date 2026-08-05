@@ -1094,7 +1094,10 @@ Rules, in order of how often they actually catch something:
 
     **(c) The forgettable class is the one that gets forgotten.** `repair_leak_guard` goes RED on
     iter-81's commit and **was not run**, because it declares `FENCE_KIND = "standalone"` and the
-    DERIVED registry selects only `postcondition`-kind fences — **9 of 14 guards are standalone**. A
+    DERIVED registry selects only `postcondition`-kind fences — **10 of the 14 guards standing at that
+    repair were `standalone`** (4 `postcondition`; 11 of 15 once iter-83 adds one, and the census is
+    derivable in one `ast` pass rather than counted by hand — which is how this very figure was
+    caught wrong, see below). A
     repair choosing its guard list by hand is §2's hand-maintained tuple wearing a new hat, inside
     the machinery built to end it. **If a guard only runs when someone remembers it, it is not a
     fence; it is a habit.**

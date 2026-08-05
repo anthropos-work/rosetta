@@ -984,7 +984,8 @@ defect and would also explain why no amount of accessor work has helped.
   runnable command block**; `platform-alignment.md:1249`; `messenger.md:122`), all three still
   standing at HEAD, and it is **absent from the six guards the commit message lists**; and it is
   absent **structurally**, because it declares `FENCE_KIND = "standalone"` while the DERIVED registry
-  selects only `postcondition`-kind fences — **9 of 14 guards are standalone**, i.e. the class you
+  selects only `postcondition`-kind fences — **10 of the 14 guards then standing were standalone** (4
+  `postcondition`), i.e. the class you
   must remember, which is §2's hand-maintained tuple inside the machinery built to end it.
   **The arithmetic inconsistency is settled first, and it was a category error, not a slip:** 29/30
   count blocker **blocks**, 41 counted distinct **anchors**. Re-derived (extractor positive-controlled
@@ -1003,5 +1004,4 @@ defect and would also explain why no amount of accessor work has helped.
   recovered from `git log` + the diff under an explicit **non-contemporaneous** banner, every field
   tagged `[git]`/`[msg]`/`[iter-83]`/`UNRECOVERABLE` (2 fields left unrecoverable rather than inferred),
   **re-grading iter-81 `closed-fixed` → `closed-fixed-partial`**. **No corpus claim repaired** —
-  adjudication-before-repair is binding. `stack-core` 822 → **843**. Gate **4 of 5**, unchanged —
-  see iter-83/progress.md
+  adjudication-before-repair is binding. `stack-core` 822 → **843**. **And rule 40 was tested on its author within the hour and FAILED** (`D-M257x-83-9`): the *"9 of 14 standalone"* figure was a **hand count** and is wrong — it is **10 of 14** (4 `postcondition`), caught by **the pre-commit hook's own output on the very commit that shipped rule 40**. Now DERIVED in one `ast` pass and always stated with its denominator and moment. *Derive, else fence, else declare* applies to the numbers a milestone states about **itself** — a hand-counted scalar in a plan doc is a **P11** waiting to happen, and P11 is one of the eleven. Corrected by follow-up commit, never by amend, so the evidence survives. Gate **4 of 5**, unchanged — see iter-83/progress.md

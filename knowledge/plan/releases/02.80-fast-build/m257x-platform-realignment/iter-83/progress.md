@@ -203,7 +203,8 @@ Not repaired here (adjudication first). Routed to iter-84.
 
 **Layer 3 — it was not run because the guard list was hand-maintained.** `repair_leak_guard` declares
 `FENCE_KIND = "standalone"`, and the **derived** registry in `repair_postcondition.py` selects only
-`postcondition`-kind fences. **9 of the 14 guards are `standalone`** — the class you have to *remember*.
+`postcondition`-kind fences. **10 of the 14 guards standing at iter-81 were `standalone`** — 4
+`postcondition` — the class you have to *remember*. (11 of 15 once this iter adds one.)
 A repair choosing its own guard list by hand is **§2 of this milestone's own protocol doc**: the
 hand-maintained tuple nobody updates, which is the defect the whole milestone was opened to end.
 Routed as **`CHECK-M257x-iter83-standalone-is-the-forgettable-class`** → iter-85.
@@ -285,7 +286,7 @@ ref-relative ruling all survived iter-82's re-read.
 | `FIX-M257x-iter83-eleven-discharges-unproven` | iter-84 | re-derive all 11 verdicts as membership questions |
 | `FIX-M257x-iter83-adjudication-has-no-per-anchor-ledger` | iter-84 | per-anchor verdicts, so reach can be graded against *upheld* |
 | `FIX-M257x-iter83-leak-guard-3-sites` | iter-84 | the 3 live leaks, incl. `CLAUDE.md:285` |
-| `CHECK-M257x-iter83-standalone-is-the-forgettable-class` | iter-85 | 9 of 14 guards run only if remembered |
+| `CHECK-M257x-iter83-standalone-is-the-forgettable-class` | iter-85 | 11 of 15 guards run only if remembered |
 | `CHECK-M257x-iter83-recall-lift-options` | user | costed; not actioned |
 | `CHECK-M257x-iter76-seat-ref-discipline` | open | 3rd occurrence, unchanged |
 
@@ -298,5 +299,9 @@ ref-relative ruling all survived iter-82's re-read.
 2. **Check the units before subtracting.** iter-82's `29 + 30 − 41 = 18 ≠ 15` was not an arithmetic
    slip; it was a category error between blocks and anchors, and it would have propagated into the
    recall estimate that decides what a future zero means.
-3. **The forgettable class is the one that gets forgotten.** A derived registry that covers 5 of 14
-   guards leaves 9 to memory, and memory is what §2 of this protocol was written about.
+3. **The forgettable class is the one that gets forgotten.** A derived registry that covers **4** of
+   14 guards leaves **10** to memory, and memory is what §2 of this protocol was written about.
+4. **The rule was tested on its author within the hour — see `D-M257x-83-9`.** I published *"9 of 14"*
+   in five places from a hand count, and the pre-commit hook printed the derived figure on the very
+   commit that shipped rule 40. **Derive, else fence, else declare** (TOK-04 P4) is not advice about
+   platform facts; it applies to the numbers a milestone states about *itself*.

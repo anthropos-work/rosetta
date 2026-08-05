@@ -41,8 +41,9 @@ which is *larger* than iter-81's. §8's standing rule — *fence so it cannot si
 TOK-05's P4 ordering (**derive, else fence, else declare**) both point the same way, and iter-85 needs a
 gradeable repair or it will reproduce iter-81 exactly.
 
-`FENCE-M257x-iter83-repair-reach` — `repair_reach_guard.py`, 16 behaviour tests + a 5-mutant battery,
-watched RED on a real answer key (`iter-76/raw/` × `328ece5`) before being trusted.
+`FENCE-M257x-iter83-repair-reach` — `repair_reach_guard.py`, 16 behaviour tests + a **6-mutant battery
+(5 RED kills, ≥3 distinct signatures, 3 of them inversions, + 1 declared-GREEN no-op control that must
+survive)**, watched RED on a real answer key (`iter-76/raw/` × `328ece5`) before being trusted.
 
 **Why a new fence and not a widening of an existing one:** `repair_postcondition` is keyed on the tree
 the commit *produced* and `repair_leak_guard` on the prose the commit *removed*. Both are blind by
@@ -55,7 +56,8 @@ the code, never the guard's subject.
 It exits **1** on `328ece5^..328ece5` naming 3 sites, and is **absent** from the six guards iter-81's
 commit message lists. The reason is not carelessness: it declares `FENCE_KIND = "standalone"`, so
 `repair_postcondition.py`'s **derived** registry — which selects only `postcondition`-kind fences —
-never reaches it. **9 of 14 guards are `standalone`.**
+never reaches it. **10 of the 14 guards standing at iter-81 were `standalone`** and 4 `postcondition`
+(11 of 15 once this iter adds one) — derived in one `ast` pass over `FENCE_KIND`, not counted by hand.
 
 A repair choosing its guard list by hand is **§2 of this milestone's own protocol doc** — the
 hand-maintained tuple nobody updates — reproduced inside the machinery built to end it.
@@ -106,6 +108,39 @@ the confirming reading per §5 rule 18(b)). **None implemented — the ask was a
 doc is updated in the same commit (skill § Protocol evolution). It is the corollary TOK-05 was missing:
 `D-M257x-59-1` changed the **unit** of repair from claim to predicate and said nothing about **when a
 predicate is done**.
+
+## D-M257x-83-9 — rule 40 was tested on its author, within the hour, and it failed
+
+**Recorded rather than quietly corrected**, because a silent fix here would be the same act the whole
+iteration is about.
+
+I published *"**9 of 14** guards are `standalone`"* — in `platform-alignment.md` rule 40, in this iter's
+`progress.md` (three times), in `decisions.md`, in the milestone ledger, in `iter-81/progress.md`, and in
+**both commit messages**. It was a **hand count**, taken from a `grep` I had run and eyeballed.
+
+The correct figure is **10 of 14** (4 `postcondition`) at iter-81, and **11 of 15** once this iter adds
+one. It was caught **by the pre-commit hook's own output on the very commit that shipped rule 40** —
+`repair-postcondition: 4 participating fence(s) …; 11 standalone` — printed on screen, contradicting the
+number in the message being committed.
+
+Three things follow, and the third is why this is a decision and not an erratum:
+
+1. **The figure is now derived, not counted** — one `ast` pass over every `*_guard.py`'s `FENCE_KIND`,
+   the same mechanism `repair_postcondition.py` already uses for its registry. Wherever it is stated it
+   is stated **with its denominator and its moment** (14 at iter-81, 15 after), because it changes every
+   time a guard is added — which is exactly the shape of claim this milestone spends its life repairing.
+2. **`D-M257x-59-1`'s ordering — *derive, else fence, else declare* — applies to the numbers a milestone
+   states about ITSELF**, not only to platform facts. Every hand-counted scalar in a plan document is a
+   `P11` waiting to happen, and P11 (*"false scalars/sets against source"*) is one of the eleven
+   predicates this milestone is repairing.
+3. **The correction lands as a follow-up commit, not an amend.** The wrong figure is in two commit
+   messages that are already objects; rewriting them would erase the evidence that rule 40 caught its
+   own author. `platform-alignment.md:74` — *a commit message is testimony, not evidence* — cuts both
+   ways: the messages stay, and the **documents** are the record.
+
+**This is the fifth-or-later occurrence in this milestone of *"the author of a newly written rule
+violated it while writing it"*** (harden pass 19 counted four). That it was caught in minutes, by
+machinery, rather than in two iterations by a blind read, is the only part of it that is progress.
 
 ## Unchanged routes
 
