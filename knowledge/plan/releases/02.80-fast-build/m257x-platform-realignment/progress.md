@@ -851,3 +851,25 @@ defect and would also explain why no amount of accessor work has helped.
   **second confirmed instance** of a foreign sha laundering a platform claim.
   `CHECK-M257x-iter76-compose-service-count` **CLOSED**. 149 guard tests, 5 corpus guards GREEN.
   Gate **4 of 5**, unchanged — see iter-78/progress.md
+- iter-79 (tik, closed-fixed): **`CHECK-M257x-iter77-cross-repo-pin` sized and CLOSED — 145 → 3, the
+  sixth routed count in this milestone to collapse on derivation** (64→5, 23→1, 21→0, 92→0, 4→3,
+  145→3). Of **390** pin-exempted blocks live, **145** are exempted by a sha that does not resolve in
+  the platform repo (28 distinct shas) — but only **3** gate a platform-file assertion, and iter-77
+  and iter-78 had already repaired 2. Both predictions registered in the overview held (*fewer than
+  10*, *0 new findings*). **The finding is the duplication, not the count:** G9 hit this mechanism at
+  iter-77 and G10 hit it independently at iter-78, and each fixed it *inside itself* — while G2/G4/G5,
+  which assert claims about `repos.yml` and `docker-compose.yml` and are in exactly the same class,
+  still took any sha in the block as a date. **A rule discovered twice and implemented twice is a rule
+  not implemented.** Now one helper (`ref_resolves_in` / `pin_dates_a_platform_claim`) that the
+  platform-file assertions call — deliberately NOT a widening of `_pin_exempts`, because the other 142
+  are legitimate `app`-repo citations about `app` files and punishing them would be Trap A with 142
+  false positives. Reach up one claim, findings unchanged at **0**. **And the generalisation inverted
+  on first contact:** called unconditionally it made every sha unresolvable on a non-git platform dir,
+  so no pin dated anything and the guard went RED across the whole corpus — iter-77's defect with the
+  sign flipped, *blind there, hostile here*, both from reading "cannot answer" as an answer. **An
+  existing silence-asserting test caught it within one run.** Fixed with `can_resolve_refs`, degrading
+  to prior behaviour rather than to a verdict, and generalised: **every derived discriminator has
+  three outcomes — yes, no, and cannot-tell.** Also wired `D-M257x-63-1`'s currency clause into G9/G10,
+  which had silently opted out of all three by resolving refs instead of calling `_pin_exempts`.
+  157 guard tests, 5 corpus guards GREEN, stack-core 1F/819. Gate **4 of 5**, unchanged —
+  see iter-79/progress.md
