@@ -1005,3 +1005,42 @@ defect and would also explain why no amount of accessor work has helped.
   tagged `[git]`/`[msg]`/`[iter-83]`/`UNRECOVERABLE` (2 fields left unrecoverable rather than inferred),
   **re-grading iter-81 `closed-fixed` → `closed-fixed-partial`**. **No corpus claim repaired** —
   adjudication-before-repair is binding. `stack-core` 822 → **843**. **And rule 40 was tested on its author within the hour and FAILED** (`D-M257x-83-9`): the *"9 of 14 standalone"* figure was a **hand count** and is wrong — it is **10 of 14** (4 `postcondition`), caught by **the pre-commit hook's own output on the very commit that shipped rule 40**. Now DERIVED in one `ast` pass and always stated with its denominator and moment. *Derive, else fence, else declare* applies to the numbers a milestone states about **itself** — a hand-counted scalar in a plan doc is a **P11** waiting to happen, and P11 is one of the eleven. Corrected by follow-up commit, never by amend, so the evidence survives. Gate **4 of 5**, unchanged — see iter-83/progress.md
+- iter-84 (tik): **the adjudication — 40 of 43 UPHELD (93.0 %), with a PER-ANCHOR ledger — and the
+  eleven discharges re-derived by membership.** Four parallel adjudicators over disjoint packets, each
+  re-deriving from the clones. 31 blocker · 9 minor · **0 unsettled**; pre-registered floor ≥ 70 %
+  **HOLDS**, and the falsification condition (< 50 %, "the post-repair signal is mostly noise") did not
+  fire — **the instrument did not regress across iter-81's repair** (iter-80 measured 92.1 % on the
+  pre-repair union). `FIX-M257x-iter83-adjudication-has-no-per-anchor-ledger` **discharged in the same
+  act**: the reach fence now has an `upheld` denominator (**40**), not only a `booked` one. Work list by
+  predicate: **Q1** stale cross-repo anchor 13 · **Q2** present-tense claim about a **deleted** fact 7
+  (re-anchoring is NOT the repair) · **Q3** wrong scalar/set 8 · **Q4** wrong predicate no line-checker
+  could catch 7 · **Q5** 1. **The eleven discharges: 5 stand (P2 P3 P5 P6 P10), 4 refuted (P4 ≥17 live
+  members in the published tree + 7 in rext source vs "~10 discharged"; P9 1; P11 ≥3), P1 recorded
+  UNSETTLED** (clean inside the 40 files, ungraded candidates on the ops surface — *an unswept surface
+  reported as clean is the defect this milestone exists to end*), P7/P8 folded into the adjudication.
+  **THE FINDING THAT REFRAMES THE GATE:** a predicate's membership spans the whole published tree —
+  **112 `.md` files — and the instrument reads 40**; `corpus/ops/**` alone is **46, larger than the
+  entire instrument set**, and it is where the runnable commands live. **Of P4's live members exactly
+  ONE is inside the 40.** That is a **REACH** limit, independent of iter-83's ~50 % **RECALL** limit, and
+  they compound: a paired zero speaks for about a third of the tree. It also explains iter-81 better than
+  the diff could — the repair inherited its partition from the **read's** 40-file partition, so no seat
+  owned `corpus/ops/**`; **§5 rule 19 says the partition correct for reading is wrong for repairing.**
+  Surfaced to the user (`CHECK-M257x-iter84-instrument-reach-40-of-112`); **clause 5 NOT re-cut.**
+  **All 3 rejections are one mechanism — `CHECK-M257x-iter76-seat-ref-discipline` at its 4th and 5th
+  occurrences, and the declared escalation condition FIRED.** The diagnosis is that the rule is **stated
+  wrong**: *"grade at the ref"* is silent on a sentence asserting **currency**, so seats apply it
+  unevenly. Amended form — *grade at the ref the claim names UNLESS the sentence asserts currency* —
+  which cleanly separates `graphql-wundergraph.md:13` (UPHELD) from `hiring.md:73` (REJECTED); plus the
+  structural half, **the ground-truth table must carry each clone's `origin/main` sha beside its checkout
+  sha**. Routed, **not written into §5 mid-run** (amending the frozen briefing's subject between readings
+  is the one thing TOK-04 protects). **Adjudicate-before-repair earned itself again on a single anchor:**
+  `ai_architecture.md:225` is **CORRECT** — the composited MP4 *is* in prod S3 — and the false statement
+  is in `corpus/ops/demo/media-substrate-spec.md:33-35`, load-bearing for a **safety disposition**;
+  repairing the booked anchor would have broken a true sentence and left the false one standing. **A LIVE
+  REXT DEFECT, not a doc defect:** `dev-stack:186`/`:414` default `profile="graphql"`, so a bare
+  `/dev-up N` runs `docker compose --profile graphql` — the token that **exits 0 and starts only the
+  floor** (`FIX-M257x-iter84-dev-stack-default-profile`, high). The 3 leak-guard sites graded **2 real,
+  1 benign** (67 % precision on a commit six guards passed clean) — `CLAUDE.md:285` and
+  `platform-alignment.md:1305`, the latter being **the protocol doc contradicting the rule it teaches**.
+  **§5 rule 32 fired twice in one run:** adjudicator B's own summary undercounted its own verdicts
+  (9 vs 10). **No repair landed, by design.** Gate **4 of 5**, unchanged — see iter-84/progress.md
