@@ -4,14 +4,23 @@ This directory contains all Project Rosetta documentation. For the full project 
 
 > ## ⚠️ The backend is a monolith
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app
-> v8.0, app **v1.360.0**) are all **folded into `app`** and served in-process by the single
-> `backend` service. The GraphQL federation composes **one** subgraph, and every application
-> table lives in the **`public`** Postgres schema.
+> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app), `cms` (cms-in-app
+> v8.0, app **v1.360.0**) and — since **v9.0 "support-in-app"** (2026-08-04) — `messenger`,
+> `storage` and `customerio-sync` are all **folded into `app`** and served in-process by the
+> single `backend` service. That is **eight** former microservices. The GraphQL federation
+> composes **one** subgraph, and every application table lives in the **`public`** Postgres
+> schema.
+>
+> **[`services/sentinel.md`](./services/sentinel.md) is the only Anthropos service still
+> running in its own process.** `backend` → `sentinel` is the one remaining inter-process
+> Connect-RPC edge; `backend`'s own RPC mux has no external callers left.
 >
 > Their service docs are kept for domain knowledge and carry a merge banner. Start from
 > [`services/backend.md`](./services/backend.md). Standalone-deployment teardown for
-> jobsimulation and cms is tracked as **M810**; skillpath's is **M507**.
+> jobsimulation and cms is tracked as **M810**; skillpath's is **M507**. The v9.0 three are
+> already down: messenger's and customerio-sync's terraform modules were deleted, and
+> storage's ECS service is gone — though `module.storage-service_euwest1` itself **must
+> stay**, because it now owns the S3 buckets, CloudFront and `media.anthropos.work`.
 
 ## Directory Structure
 

@@ -181,12 +181,15 @@ local-vs-prod realities never poison the score:
 |---|---|---|
 | `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification |
 | `waived-aws-mount` | `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID` | AWS recording creds are mounted from `~/.aws/credentials`, never a `.env` secret |
-| `waived-profile-gated` | `platform/BREVO_KEY` | only needed under the `messenger` docker-compose profile, not the default `graphql` profile |
+| `waived-profile-gated` | `platform/BREVO_KEY` | **the waiver still holds, but the label is now a fossil — the gate is no longer a compose profile.** Since **v9.0 "support-in-app" (2026-08-04)** the mailer *is* `backend`: `messenger` and `customerio-sync` were folded into `app` (`internal/messenger`, `internal/customeriosync`) and are gated by the env switches **`MESSENGER_ENABLED`** and **`CUSTOMERIO_SYNC_ENABLED`**, not by `--profile messenger`. Neither switch is in `.env_example`, and **unset ⇒ off on a developer machine**, so a default stack still comes up with no `BREVO_KEY` — which is what keeps the gene out of the denominator. **But it is not "optional" in the soft sense: flip either switch on and `BREVO_KEY` becomes hard-required — `backend` refuses to boot on an empty key** (`app/env_guards.go`), and in a *deployed* environment leaving a switch unset is itself a boot refusal. On the DNA's own vocabulary the honest class is `waived-optional` ("a local stack comes up without them"); the gene is left on its existing status string here rather than silently re-labelled — re-label it (or move it) the next time the DNA is touched |
 | `waived-optional` | `platform/BUNNY_STREAM_API_KEY`, `app/TAILSCALE_AUTH_KEY`, `studio-desk/GCLOUD_SERVICE_ACCOUNT`, `studio-desk/YOUTUBE_API_KEY`, `next-web-app/BUNNY_CDN_TOKEN_KEY` | example-only / absent from live / convenience — a local stack comes up without them |
 
 A waived gene names **no operators** and is never measured (`Validate` enforces this). Because the catalog is
-profile-scoped to `graphql` (the DNA's `profile` field), the denominator is honest for the default stack;
-a different profile would carry a different waived set.
+profile-scoped to the platform's default profile (the DNA's `profile` field — still the literal string
+`graphql`, the name that profile carried before v9.0 renamed it **`core`**), the denominator is honest for
+the default stack; a different profile would carry a different waived set. Note the v9.0 shift: for
+`BREVO_KEY` the deciding knob is no longer *which profile you selected* but *which env switch is on*, so
+"profile-scoped" no longer fully describes what makes that one gene waivable.
 
 ### The provisioning engine (`provision` — the one place secret bytes move)
 

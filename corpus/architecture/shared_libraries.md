@@ -39,7 +39,7 @@ third-party dependency. This keeps the services consistent and small.
 | **Module** | `github.com/anthropos-work/colony` |
 | **Language** | Go (`go.mod` declares `go 1.25.0`; built with `golang:1.26-bookworm`) |
 | **Version pin** | `v0.34.3` across all live services (archived `chronos` pins `v0.30.1`) |
-| **Imported by** | **Every** live Go service: app, sentinel, storage, messenger (the decommissioned skiller / skillpath / roadrunner / jobsimulation / cms usage is all folded into app) |
+| **Imported by** | Four repos — `app` and `sentinel` (the two that still **deploy**) plus the **frozen** `storage` and `messenger` repos, which still import it at pinned tags. The skiller / skillpath / roadrunner / jobsimulation / cms usage is all folded into app |
 
 The platform framework. Each service composes its server out of colony packages:
 

@@ -4,13 +4,33 @@ This directory contains guides for operating the Anthropos platform locally.
 
 > ## ⚠️ Monolith merge — read before following any stack runbook
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms`
-> (cms-in-app v8.0, app v1.360.0) are all **folded into `app`** and run in-process as the
-> single `backend` service. What that changes for ops:
+> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app), `cms`
+> (cms-in-app v8.0, app v1.360.0) and — since **v9.0 "support-in-app"** (2026-08-04) —
+> `messenger`, `storage` and `customerio-sync` are all **folded into `app`** and run
+> in-process as the single `backend` service. **`sentinel` is the only support service
+> left.** What that changes for ops:
 >
 > * There is **no `cms`, `jobsimulation`, `skiller`, `skillpath` or `roadrunner` container**,
 >   profile, port, or subgraph. Use `backend` for all of them (`make logs S=backend`,
 >   `make dev S=backend`).
+> * **The default profile is `core`, not `graphql`** — platform `0dab54d` renamed it, and the
+>   Makefile's `PROFILE ?= core`. Every `--profile graphql` in a runbook below should read
+>   `--profile core`.
+> * `storage` and `messenger` **still have compose entries**, but only as rollback paths:
+>   `storage` moved to `profiles: [storage-legacy]`, `messenger` stayed on `messenger` and
+>   was dropped from `all`. Starting either alongside `backend` is actively harmful — two
+>   writers on one S3 bucket, or two consumers on one Redis group. `customerio-sync` is
+>   still declared *and still in `all`*, which is residue rather than intent.
+> * **The outbound-email kill switch moved.** The mailer is `backend`, and the control is
+>   **`MESSENGER_ENABLED`** (unset ⇒ off on a developer machine). `docker compose restart
+>   messenger` does nothing on a default stack — there is no messenger container. Blanking
+>   `BREVO_KEY` is *not* a substitute: `backend` **refuses to boot** if a switch is on with
+>   an empty key. On a prod-dump stack, leave the switches off. The same applies to
+>   `CUSTOMERIO_SYNC_ENABLED`, which rewrites real **Brevo** marketing contacts.
+> * **`backend`'s compose env points both S3 buckets at PRODUCTION** — `STORAGE_S3_BUCKET`
+>   and `STORAGE_S3_PUBLIC_BUCKET` are hardcoded to the real bucket names, and the private
+>   one is no longer empty, so the old "/tmp fallback" reasoning does not apply. The
+>   boot-time bucket-access guard is disarmed by `ENVIRONMENT=development`.
 > * The federation composes **one** subgraph. Compose builds `graphql` from the **production**
 >   `graphql-wundergraph/Dockerfile`, so it uses the committed `schemas/backend.graphqls`.
 > * `app` is the **only** repo with migrations. All application tables — taxonomy, skill-path

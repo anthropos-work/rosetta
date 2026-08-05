@@ -134,26 +134,30 @@ customerio-sync:
     # remove: context: git@github.com:anthropos-work/customerio-sync.git#main
 ```
 
+> Still true of the compose entry — the git-URL build context is unchanged — but since **v9.0 "support-in-app" (2026-08-04)** you will normally never hit it. `customerio-sync` was folded into `app` (`internal/customeriosync`, the 10-minute marketing-contact push, on `backend`'s asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED`). The container survives only on the opt-in `customerio-sync` profile, so this quirk bites only if you deliberately select it. Its destination is **Brevo**, not Customer.io — the name is a fossil.
+
 You will end up with this layout:
 
 ```
 /home/<you>/
 ├── platform/                      # orchestrator (Makefile, docker-compose.yml, .env)
-├── app/                           # Go backend (CORS, GraphQL gateway; hosts the skill-path engine since "skillpath-in-app")
-├── cms/                           # Go content management
-├── jobsimulation/                 # Go AI simulations service
-├── sentinel/                      # Go authz (casbin)
-├── storage/                       # Go S3-shim
-├── messenger/                     # Go transactional email (Brevo)
-├── roadrunner/                    # Go scheduler
-├── customerio-sync/               # Go marketing-email sync
+├── app/                           # Go backend — THE monolith (deployed as `backend`)
+├── sentinel/                      # Go authz (casbin) — the only out-of-process service left
+├── cms/                           # FROZEN — folded into app (cms-in-app v8.0)
+├── jobsimulation/                 # FROZEN — folded into app (jobsim-in-app)
+├── roadrunner/                    # FROZEN — folded into app with jobsim; backend calls Judge0 direct
+├── storage/                       # FROZEN — folded into app/internal/storage (v9.0); rollback only
+├── messenger/                     # FROZEN — folded into app/internal/messenger (v9.0); rollback only
+├── customerio-sync/               # FROZEN — folded into app/internal/customeriosync (v9.0); rollback only
 ├── next-web-app/                  # Next.js 15 frontend monorepo
 ├── studio-desk/                   # TypeScript content design tool
-├── graphql-wundergraph/           # GraphQL federation gateway
+├── graphql-wundergraph/           # RETIRED 2026-07-31 — repo archived, no `graphql` service
 ├── rosetta/                       # this corpus
 ├── anthropos-knowledge-base/      # knowledge layer
 └── ant-singularity/               # agent fleet (this node)
 ```
+
+The **FROZEN** clones are kept on disk only so a rollback container can still be built — none of them is in a default compose profile, and `make init` no longer clones the merged-and-decommissioned ones (`cms`, `jobsimulation`, `roadrunner`; `repos.yml` keeps only `app`, `sentinel`, `storage`, `messenger`, `next-web-app`, `studio-desk`). Change `app`, not them.
 
 ---
 

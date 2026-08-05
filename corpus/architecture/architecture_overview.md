@@ -6,17 +6,13 @@ This document provides a high-level overview of the Anthropos platform architect
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
-    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — 60K+ skills graph, vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
-    *   **Sentinel**: Security and access control (the bouncer)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by CMS. Currently still standalone — it is the next runtime engine slated for the same in-app consolidation.)
-    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python, in the same container)
-    *   **Storage**: File/blob storage
-    *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
-    *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
+*   **Core Backend Services**: The set below is the **local `core` profile** — what runs after a normal `make up`. (`core` is the Makefile default; it was called `graphql` until platform `0dab54d` renamed it.) See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
+    *   **Backend/App**: **The monolith.** Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — 60K+ skills graph, vector embeddings (RAG), AI skill matching — the **simulation runtime** (merged jobsimulation), the **content layer + Studio** (merged cms), **Judge0 code execution** (merged roadrunner), and since **v9.0 "support-in-app"** (2026-08-04) **transactional email** (merged messenger), **S3 object storage** (merged storage) and the **Brevo marketing-contact sync** (merged customerio-sync) — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
+    *   **Sentinel**: Security and access control (the bouncer). **The only Anthropos service still running in its own process**
+    *   **Gotenberg**: Office-doc → PDF conversion (used by `app`; third-party image)
 
-    Off by default (opt-in via Docker profile): **Messenger** (Brevo email), **CustomerIO Sync**.
-    Archived (removed from local orchestration): Chronos, Intelligence.
+    Off by default, and all three now **frozen rollback paths rather than live services** — each was folded into Backend/App at v9.0: **Storage** (`storage-legacy` profile), **Messenger** (`messenger` profile), **CustomerIO Sync** (`customerio-sync`, and still in `all`).
+    Archived / merged (removed from local orchestration): Chronos, Intelligence, Skiller, Skillpath, Roadrunner, Jobsimulation, CMS.
     Production-only: **db-backup** (scheduled PostgreSQL backups).
 *   **Studio Services**: Specialized tools for content creation:
     *   **Studio-Desk**: Web app where creators design job simulations
@@ -49,13 +45,19 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private access
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
-**Service Tiers** (local development reality, default `graphql` profile):
-1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage, Messenger (when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+**Service Tiers** (local development reality, default `core` profile):
+1. **Core Backend Services**: Backend/App (the monolith) and Sentinel + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
 
-   Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
-   ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and **cms**
-   ("cms-in-app v8.0", app v1.360.0). The federation is down to a **single subgraph**. `chronos` and
-   `intelligence` are retired.
+   **Eight** former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
+   ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"), **cms**
+   ("cms-in-app v8.0", app v1.360.0), and **messenger** + **storage** + **customerio-sync**
+   (v9.0 "support-in-app", 2026-08-04). The federation is down to a **single subgraph**, and
+   **`sentinel` is the only remaining out-of-process Anthropos service**. `chronos` and `intelligence`
+   are retired.
+
+   The v9.0 three added no GraphQL surface — they are side-effect subsystems, and both outbound ones
+   are behind explicit switches (`MESSENGER_ENABLED`, `CUSTOMERIO_SYNC_ENABLED`) that are **off unless
+   set by name** on a developer machine and a **boot failure if unset in a deployed environment**.
 2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is now embedded in the CMS container.
 3. **External Services**: Clerk, Directus, GraphQL, AI providers, LiveKit, AWS Chime
 4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
@@ -81,17 +83,17 @@ graph TD
     end
 
     subgraph Core["⚙️ Core Backend Services (Go)"]
-        Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)"]
-        Sentinel[Sentinel]
-        Storage[Storage]
-        Messenger[Messenger]
+        Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)<br/>+ messenger (Brevo mail, MESSENGER_ENABLED)<br/>+ storage (S3 private + public)<br/>+ customerio-sync (Brevo contacts)"]
+        Sentinel["Sentinel<br/>the ONLY out-of-process service"]
         Gotenberg[Gotenberg<br/>PDF conversion]
     end
 
     subgraph Data["💾 Data & Infrastructure"]
         Postgres[(PostgreSQL)]
         Redis[(Redis)]
+        S3[(AWS S3<br/>private + public bucket)]
         Directus[Directus CMS]
+        Brevo[Brevo<br/>mail + contacts]
     end
     
     %% Frontend connections
@@ -108,16 +110,16 @@ graph TD
     %% GraphQL aggregation (ONE subgraph: backend)
     GraphQL --> Gateway
 
-    %% Core service dependencies
+    %% Core service dependencies — one inter-process edge left
     Gateway --> Sentinel
     Gateway --> Gotenberg
-    Gateway --> Storage
     Gateway --> Directus
-    Messenger --> Gateway
 
     %% Data connections
     Gateway --> Postgres
     Gateway --> Redis
+    Gateway --> S3
+    Gateway --> Brevo
     Directus --> Postgres
     
     %% Clerk integration
@@ -131,16 +133,18 @@ graph TD
 
 #### Core Backend Services (Tier 1)
 
-Default local development set (started by `make up`, profile `graphql`):
+Default local development set (started by `make up`, profile `core` — renamed from `graphql` at platform `0dab54d`):
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026) | [→](../services/backend.md) |
-| **CMS** *(now a domain in `app`)* | Go + embedded Python (studio-room) | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
-| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
-| **Jobsimulation** *(now a domain in `app`)* | Go | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from the cms domain by ID | [→](../services/jobsimulation.md) |
-| **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
-| **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
+| **Backend** (`app`) | Go + embedded Python (studio-room) | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026) | [→](../services/backend.md) |
+| **CMS** *(a domain in `app`)* | — | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
+| **Jobsimulation** *(a domain in `app`)* | — | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from the cms domain by ID | [→](../services/jobsimulation.md) |
+| **Roadrunner** *(a domain in `app`)* | — | Code execution, Judge0 called directly via `JUDGE0_BASE_URL` | [→](../services/roadrunner.md) |
+| **Messenger** *(a domain in `app`)* | — | Transactional email via Brevo + the 24 event handlers, on its **own** Redis consumer group. Gated by `MESSENGER_ENABLED` | [→](../services/messenger.md) |
+| **Storage** *(a domain in `app`)* | — | S3 object read/write, private + public bucket (`STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`) | [→](../services/storage.md) |
+| **CustomerIO Sync** *(a domain in `app`)* | — | The 10-minute Brevo marketing-contact push, on the asynq scheduler. Gated by `CUSTOMERIO_SYNC_ENABLED` | [→](../services/customerio-sync.md) |
+| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC). **The only Anthropos service in its own process** | [→](../services/sentinel.md) |
 | **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
 
 > [!IMPORTANT]
@@ -150,12 +154,14 @@ Default local development set (started by `make up`, profile `graphql`):
 >
 > So **skill-path *content* ≠ the skill-path *engine*; "jobsimulation" ≠ simulation content.** Content = the cms domain/Directus; the engine/runtime = the state machine over that content. All of it now lives in `app`. See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), and [Jobsimulation](../services/jobsimulation.md).
 
-Available but off by default (opt-in via Docker profile):
+Available but off by default (opt-in via Docker profile) — since v9.0 all three are **frozen standalone
+binaries kept as rollback comparisons**, not live services. Their domains run inside `backend`:
 
 | Service Name | Profile | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Messenger** | `messenger` | Email notifications via Brevo (Sendinblue) | [→](../services/messenger.md) |
-| **CustomerIO Sync** | `customerio-sync` | Background data sync to Customer.io | [→](../services/customerio-sync.md) |
+| **Storage** | `storage-legacy` | The pre-fold standalone. Running it alongside `backend` = **two writers on one bucket** | [→](../services/storage.md) |
+| **Messenger** | `messenger` | The pre-fold standalone. Dropped from `all`; running it alongside a `MESSENGER_ENABLED=true` backend = **two consumers on one Redis group** | [→](../services/messenger.md) |
+| **CustomerIO Sync** | `customerio-sync`, `all` | The pre-fold standalone. Still in `all`; has **no** terraform rollback path left | [→](../services/customerio-sync.md) |
 
 Production-only (deployed but not in local docker-compose):
 
@@ -174,6 +180,9 @@ Archived / merged (removed from local orchestration; repos still exist):
 | **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810** | [→](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
+| **Messenger** | Merged into Backend/App (v9.0 "support-in-app", 2026-08-04) — the mailer + its 24 handlers run in `app` behind `MESSENGER_ENABLED`, on messenger's **own** Redis consumer group. ECS module deleted; ECR repo preserved and now unmanaged in AWS. Still startable from the `messenger` compose profile as the rollback path | [→](../services/messenger.md) |
+| **Storage** | Merged into Backend/App (v9.0) — `backend` reads/writes both S3 buckets directly; `STORAGE_RPC_ADDR` is gone. ECS service gone, but **`module.storage-service_euwest1` is deliberately kept**: it owns the buckets, CloudFront + OAI and the `media.anthropos.work` CNAME. Still startable from `storage-legacy` | [→](../services/storage.md) |
+| **CustomerIO Sync** | Merged into Backend/App (v9.0) — the 10-minute **Brevo** contact push runs on `app`'s asynq scheduler behind `CUSTOMERIO_SYNC_ENABLED`. Terraform module deleted, ECR destroyed — **no rollback path**. Its compose entry survives (and is still in `all`) | [→](../services/customerio-sync.md) |
 
 #### Shared Libraries (Not Deployed)
 
@@ -236,8 +245,11 @@ A typical API request follows this path:
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
   → backend (the sole subgraph)
-    → gRPC to internal services (sentinel, storage, roadrunner, ...)
-    → Redis Streams for async events
+    → Connect-RPC to sentinel — the ONE remaining inter-process hop
+    → in-process calls into the folded domains (cms, jobsimulation, skiller,
+      skillpath, roadrunner, messenger, storage, customerio-sync)
+    → direct AWS S3, Directus, Judge0, Brevo, LiveKit/Chime, AI providers
+    → Redis Streams for async events; Redis/asynq for scheduled work
 ```
 
 ### Multi-Tenancy

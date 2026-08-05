@@ -8,24 +8,27 @@ For the *categorised* view (tiers, ports, profiles, which repos are cloned where
 [`../architecture/service_taxonomy.md`](../architecture/service_taxonomy.md); for how the
 services talk to each other see [`../architecture/dependency_map.md`](../architecture/dependency_map.md).
 
-> **⚠️ `app` is the backend monolith.** Five services in this index — skiller, skillpath,
-> roadrunner, jobsimulation and cms — are **folded into `app`** and no longer deploy
-> separately. Their docs are kept for domain knowledge and carry a merge banner at the top.
-> Read [`backend.md`](backend.md) for the current shape.
+> **⚠️ `app` is the backend monolith.** **Eight** services in this index — skiller, skillpath,
+> roadrunner, jobsimulation, cms, and (at v9.0 "support-in-app", 2026-08-04) messenger, storage and
+> customerio-sync — are **folded into `app`** and no longer deploy separately. Their docs are kept
+> for domain knowledge and carry a merge banner at the top. Read [`backend.md`](backend.md) for the
+> current shape.
+>
+> **[`sentinel.md`](sentinel.md) is the only Go support service still running out-of-process.**
 
 ## Core backend services (Tier 1 — Go)
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`backend.md`](backend.md) | Backend (`app`) | **The monolith.** Main API gateway + user/org management, **plus** the folded skiller (taxonomy, matching, embeddings), skillpath, jobsimulation, cms and roadrunner domains — and the AI-readiness subsystem, academy store, AI Labs LabSession |
+| [`backend.md`](backend.md) | Backend (`app`) | **The monolith.** Main API gateway + user/org management, **plus** the folded skiller (taxonomy, matching, embeddings), skillpath, jobsimulation, cms, roadrunner, messenger, storage and customerio-sync domains — and the AI-readiness subsystem, academy store, AI Labs LabSession |
 | [`cms.md`](cms.md) | CMS — **merged into `app`** | **The content layer** — owns authored CONTENT/DEFINITIONS (skill paths, simulation blueprints, the library), wrapping Directus as proxy + business logic + cache. Embeds the studio-room generation pipeline. Folded in at cms-in-app v8.0 (app v1.360.0); teardown **M810** |
-| [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
+| [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel. **The only support service still deployed alongside `backend`** |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; teardown **M810** |
-| [`storage.md`](storage.md) | Storage | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB |
+| [`storage.md`](storage.md) | Storage — **merged into `app`** | The private + public S3-backed object managers. `backend` reads/writes both buckets directly since v9.0; `STORAGE_RPC_ADDR` is gone. The ECS service is gone but `module.storage-service_euwest1` **must stay** — it owns the buckets, CloudFront and `media.anthropos.work` |
 | [`roadrunner.md`](roadrunner.md) | Roadrunner — **merged into `app`** | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine; `backend` calls Judge0 directly via `JUDGE0_BASE_URL` |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
-| [`messenger.md`](messenger.md) | Messenger | Centralized transactional email via Brevo + Liquid templates. Opt-in `messenger` profile; other services fire an RPC rather than calling Brevo |
-| [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync | One-directional background pipeline, Postgres `public` → Customer.io, for marketing automation. Opt-in profile; built from a GitHub URL, not cloned |
+| [`messenger.md`](messenger.md) | Messenger — **merged into `app`** | Transactional email via Brevo + Liquid templates and the 24 event handlers. In `backend` since v9.0, gated by `MESSENGER_ENABLED`; `app` **takes over messenger's own Redis consumer group** rather than merging handlers. ECS module deleted; still startable from the `messenger` profile as the rollback path |
+| [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync — **merged into `app`** | One-directional background pipeline, Postgres `public` → **Brevo** marketing contacts (the "Customer.io" name is a fossil). In `backend` on the asynq scheduler since v9.0, gated by `CUSTOMERIO_SYNC_ENABLED`. Terraform module deleted — **no rollback path** |
 | [`db-backup.md`](db-backup.md) | db-backup | Scheduled Postgres backups every 6 h to three geographies (S3, Azure, Hetzner). **Production-only** — not in local compose |
 
 ## Frontends & gateway
@@ -59,6 +62,7 @@ These describe services that no longer run. They stay because many docs still li
 |---|---|
 | [`skiller.md`](skiller.md) | **Merged into `app`** (July 2026). The skills domain now lives in `app`'s `public` schema; no skiller container or subgraph. Heavily inbound-linked — treat as a redirect, do not delete |
 | [`skillpath.md`](skillpath.md) | **Merged into `app`** then decommissioned ("skillpath-in-app", platform M502→M507). The runtime session engine now lives in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph. Skill-path *content* still lives in CMS. Heavily inbound-linked — treat as a redirect |
+| [`messenger.md`](messenger.md), [`storage.md`](storage.md), [`customerio-sync.md`](customerio-sync.md) | **Merged into `app`** at v9.0 "support-in-app" (2026-08-04). Listed above under Tier 1 because their docs still carry the ported domain detail, but none of the three deploys any more. See [`backend.md`](backend.md) § *The v9.0 "support-in-app" fold* |
 | [`chronos.md`](chronos.md) | **Archived** — removed from compose + `repos.yml` (platform `045857c`). Session timeouts are now in-process Asynq |
 | [`intelligence.md`](intelligence.md) | **Archived** — removed from compose + `repos.yml` (platform `fdfa189`). Was background sync between the backend and skiller schemas |
 

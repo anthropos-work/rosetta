@@ -2,7 +2,7 @@
 
 > ## `app` is the backend monolith
 >
-> **Five former microservices now run inside `app`**, in merge order:
+> **Eight former microservices now run inside `app`**, in merge order:
 >
 > | Merged service | Program | What moved in |
 > |---|---|---|
@@ -11,18 +11,54 @@
 > | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
 > | [jobsimulation](./jobsimulation.md) | jobsim-in-app (teardown **M810**) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
 > | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (teardown **M810**) | content layer + Directus edge + Studio — `internal/cms/` |
+> | [messenger](./messenger.md) | v9.0 "support-in-app", 2026-08-04 | Brevo transactional mail + the 24 event handlers — `internal/messenger/`, gated by `MESSENGER_ENABLED` |
+> | [storage](./storage.md) | v9.0 "support-in-app", 2026-08-04 | S3 object read/write, private + public bucket — `internal/storage/`, driven by `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET` |
+> | [customerio-sync](./customerio-sync.md) | customerio-sync-in-app, 2026-08-04 | the 10-minute Brevo marketing-contact push — `internal/customeriosync/`, on the asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED` |
 >
 > Consequences that hold platform-wide:
-> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the 2→1 step.
+> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the 2→1 step. The three v9.0
+>   folds added **no** GraphQL surface — they are background/infrastructure domains.
+> * **[Sentinel](./sentinel.md) is the ONLY support service still running out-of-process.**
 > * **All of their tables live in `public`**, with the same table names. The `skiller`, `skillpath`,
->   `jobsimulation` and `cms` DB schemas are legacy and non-authoritative.
-> * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux.** `messenger` is the only
->   remaining external caller.
+>   `jobsimulation` and `cms` DB schemas are legacy and non-authoritative; the **schema drops are still
+>   pending**.
+> * **All of their Connect-RPC surfaces are served on `app`'s single RPC mux — which now has NO external
+>   callers.** `messenger` was the last one, and it folded in at v9.0. Adding a method to the mux is only
+>   worth it for a genuinely new out-of-process consumer; anything inside `backend` should be a plain Go
+>   call into the domain's manager.
 > * **`app` owns the `skiller`, `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both
 >   producer and consumer are in-process. Merge new handlers onto the existing subscriber with
 >   `.AddHandler(...)`; a second `AddSubscriber` for the same stream silently overwrites the first.
+>   **messenger is the deliberate exception**: it gets its own `SubscriberServer` on its own consumer
+>   group — see below.
 > * **`module.jobsimulation_euwest1` and `module.cms_euwest1` are still declared in production terraform**
->   as the rollback path and take no traffic. Teardown is **M810**.
+>   as the rollback path and take no traffic. Teardown is **M810**. **`module.storage-service_euwest1`
+>   is also still declared, and must stay** — it no longer runs a service but it owns the S3 buckets,
+>   CloudFront and the `media.anthropos.work` record that `backend` uses (see [storage](./storage.md)).
+>   messenger's module was deleted (ECR preserved, now unmanaged); customerio-sync's was deleted
+>   outright.
+
+### The v9.0 "support-in-app" fold — what is different about it
+
+The first five folds moved **request-path** services: their surfaces became `app`'s surfaces and their
+callers were re-pointed. The three v9.0 folds moved **side-effect** services — things that email people,
+write buckets, and rewrite a marketing CRM. Two consequences worth carrying:
+
+* **Both outbound subsystems are behind explicit switches**, `MESSENGER_ENABLED` and
+  `CUSTOMERIO_SYNC_ENABLED` (`app/env_guards.go`). Being separate deployments used to be what kept them
+  off a developer's laptop; folding them in deleted that barrier, since `BREVO_KEY` and `REDIS_ADDR` are
+  already in the same `.env`. So they are **off unless switched on by name** — an inferred condition
+  ("deployed?", "key present?") is deliberately not accepted as consent. The switch is strict in **both**
+  directions: unset on a laptop is off, but unset in a **deployed** environment is a **boot failure**,
+  because accidentally-off means every notification is silently never sent while the ALB reports healthy.
+  An unparseable value is an error everywhere. `BREVO_KEY` is required whenever either switch is on.
+* **messenger takes over its own consumer group rather than merging handlers.** `app` starts a second,
+  dedicated `SubscriberServer` on the literal `messenger` Redis consumer group. Attaching to the existing
+  group means Redis keeps the cursor, so cutover has no gap; a dedicated server is required because
+  messenger registers `AddSubscriber` for streams `app` already subscribes to, and on a shared server
+  those would silently replace app's own handlers. Boot verifies the group exists rather than creating a
+  fresh one. **Never run the standalone `messenger` container alongside a `MESSENGER_ENABLED=true`
+  backend** — two consumers on one group split the work at random.
 >
 > The skiller-specific detail below is the authoritative
 > [**§ Skiller-in-app merge — fact-sheet**](#skiller-in-app-merge--fact-sheet-v21-quick-change).
@@ -172,7 +208,8 @@ internal/
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. The only remaining external caller is **messenger**, which points `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all at `http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production terraform). Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services — `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService`, `CMSService`, `MessengerService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
+  > **The mux has NO external callers left.** `messenger` was the last one (pointing `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all at `http://backend:8083` locally), and it folded in at v9.0. The service definitions stay in `proto/` — they are still the contracts the frozen repos build against at pinned tags — but nothing outside `backend` dials them. Adding a method is only worth it for a genuinely new out-of-process consumer.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
@@ -184,20 +221,21 @@ internal/
 
 ### Downstream dependencies
 
-* **Sentinel** — authz on every request
-* **Storage** — file uploads
+* **Sentinel** — authz on every request. **The only out-of-process service `app` calls.**
+* **AWS S3** — file uploads, written **directly** since storage merged in (`STORAGE_S3_BUCKET` private + `STORAGE_S3_PUBLIC_BUCKET` public, the latter fronted by CloudFront at `media.anthropos.work`). No storage RPC hop
 * **Directus** (`content.anthropos.work`) — the external content edge read by the in-process cms domain
 * **Judge0** — sandboxed code execution, called directly (`JUDGE0_BASE_URL`) since roadrunner merged in
 * **LiveKit / AWS Chime** — simulation voice + recording, for the in-process jobsim engine
 * **Gotenberg** — Office → PDF conversion
-* **PostgreSQL** (`public` schema), **Redis** (cache + streams)
-* **External**: Clerk (auth), Stripe (payments), Customer.io, PostHog, Bedrock (AI), AI providers via the shared `ai` library (embeddings + skill matching — merged skiller domain), Brevo (via Messenger), Sentry
+* **PostgreSQL** (`public` schema), **Redis** (cache + streams + the asynq scheduler)
+* **External**: Clerk (auth), Stripe (payments), PostHog, Bedrock (AI), AI providers (embeddings + skill matching — merged skiller domain), Sentry, and **Brevo directly** — one `BREVO_KEY` now covers transactional mail (`MESSENGER_ENABLED`), product tracking, and the marketing-contact sync (`CUSTOMERIO_SYNC_ENABLED`). There is no Messenger hop and no Customer.io
 
 ### Redis Streams
 
 * app is **both producer and consumer** of all five application streams: `backend`, `skiller`, `skillpath`, `jobsimulation`, `cms`, plus the `AI`/`ai_usage` usage stream
 * The one external producer left is **Directus**, whose webhooks feed the `cms` stream
 * Each stream has exactly **one** subscriber with multiple handlers merged via `.AddHandler(...)` — colony keys by stream name, so a second `AddSubscriber` for the same stream silently overwrites the first
+* **The messenger exception**: the folded mailer runs on a **separate `SubscriberServer`** attached to messenger's **own** consumer group (the literal `messenger`), not merged onto app's subscribers. That is deliberate — messenger subscribes to streams app already subscribes to, so a shared server would have silently replaced app's handlers, and re-using the existing group is what makes cutover gapless. It only runs when `MESSENGER_ENABLED` is on, and boot verifies the group already exists
 
 ## Local Development
 

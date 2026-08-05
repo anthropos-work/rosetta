@@ -283,23 +283,18 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
-This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-07:
+This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-08 there are **six**:
 
-| Repo | Type | Has Migrations |
-|------|------|---------------|
-| `app` | Go backend | Yes (public schema) |
-| `cms` | Go backend | Yes (cms schema) |
-| `jobsimulation` | Go backend | Yes (jobsimulation schema) |
-| `sentinel` | Go backend | No |
-| `storage` | Go backend | No |
-| `messenger` | Go backend | No |
-| `roadrunner` | Go backend | No |
-| `next-web-app` | Node.js (pnpm) | No |
-| `studio-desk` | Node.js (npm) | No |
-| `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
-| `graphql-wundergraph` | Node.js (npm) | No |
+| Repo | Type | Has Migrations | Live? |
+|------|------|---------------|-------|
+| `app` | Go backend — the monolith, deployed as `backend` | Yes (public schema) | Yes — **the only `migrations: true` entry** |
+| `sentinel` | Go backend | No | Yes — the only out-of-process Anthropos service |
+| `storage` | Go backend | No | **Frozen** — folded into `app/internal/storage` (v9.0); cloned only so the `storage-legacy` rollback container can be built |
+| `messenger` | Go backend | No | **Frozen** — folded into `app/internal/messenger` (v9.0); cloned only so the `messenger` rollback container can be built |
+| `next-web-app` | Node.js (pnpm) | No | Yes |
+| `studio-desk` | Node.js (npm) | No | Yes |
 
-> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`); `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned); and `skillpath` was likewise merged into `app` ("skillpath-in-app", M502→M507) and decommissioned — its skill-path session state now lives in `app`'s `public.skill_path_sessions`, so it is no longer in `repos.yml` and no longer has its own migration/schema. Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
+> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`); `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app v8.0) were all merged into `app` and decommissioned — their tables live in `app`'s `public` schema, so they are no longer in `repos.yml` and have no migration/schema of their own. **v9.0 "support-in-app" (2026-08-04) folded in three more**: `messenger` (Brevo transactional mail + the 24 event handlers, gated by `MESSENGER_ENABLED`), `storage` (private + public S3 managers — `backend` reads/writes both buckets directly via `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`; `STORAGE_RPC_ADDR` is gone), and `customerio-sync` (the 10-minute marketing-contact push, gated by `CUSTOMERIO_SYNC_ENABLED` — destination **Brevo**, the name is a fossil). `storage` and `messenger` stay in `repos.yml` as the rollback path; `customerio-sync` is built directly from its GitHub URL by docker-compose and is not cloned locally. `ant-academy` is not in `repos.yml` by design (runs natively / Vercel), and `graphql-wundergraph` came off it when the router was **retired 2026-07-31**. Their repos still exist on GitHub but `make init` no longer clones them. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
 ### Initialize CMS Studio Submodule
 
@@ -367,13 +362,20 @@ All services share a **single centralized `.env` file** located in the `platform
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
-> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails and `messenger` will send them on any flow that triggers a notification. Blank the key in `platform/.env`:
+> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), disarm the mailer before `make up`. The dump contains real customer emails.
+>
+> **The mailer is `backend`, not `messenger`.** Since v9.0 "support-in-app" (2026-08-04) both `messenger` (transactional mail) and `customerio-sync` (the marketing-contact push to **Brevo**) run in-process inside `app`; there is no `messenger` container on a default stack. The control is the switch:
 >
 > ```bash
-> sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
+> echo 'MESSENGER_ENABLED=false'       >> platform/.env
+> echo 'CUSTOMERIO_SYNC_ENABLED=false' >> platform/.env
 > ```
 >
-> Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
+> Neither switch is in `.env_example` and **unset already means off on a developer machine**, so the safe default needs no action — set them explicitly anyway if the box runs as a *deployed* environment, where an unset switch makes `backend` refuse to boot. `true/1/yes/on` and `false/0/no/off` are all accepted; anything else is an error everywhere rather than being read as "false".
+>
+> Blanking `BREVO_KEY` is still reasonable defence-in-depth **but is not the primary control and can backfire**: `BREVO_KEY` is *required* whenever either switch is on, and `backend` fails fast on an empty key. An empty key plus an on switch is a dead stack, not a muted mailer — turn the switch off instead.
+>
+> Apply the same caution to `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
 
 **Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
 
@@ -434,11 +436,11 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     cd platform
     ```
 
-2.  **Start all backend services** (default `graphql` profile):
+2.  **Start all backend services** (default **`core`** profile — renamed from `graphql` at platform `0dab54d`):
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+    This builds from local repos and starts **five containers**: PostgreSQL, Redis, Sentinel, Backend, Gotenberg — plus the GraphQL/Cosmo Router. That is the whole default stack. `cms`, `jobsimulation`, `roadrunner`, `skiller` and `skillpath` are folded into Backend/`app` and have no containers at all; `storage`, `messenger` and `customerio-sync` folded in at **v9.0 "support-in-app"** and survive only as opt-in rollback profiles (`storage-legacy`, `messenger`, `customerio-sync`) which you should **not** start alongside `backend`.
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -525,8 +527,9 @@ instead of the manual hand-copy. The keys it needs: `CLERK_SECRET_KEY`, `NEXT_PU
 `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, and the Azure-OpenAI pair (see [`secrets-spec.md`](secrets-spec.md) for the
 full per-repo gene list).
 
-*Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082`, which are correct
-for local development.
+*Note*: `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` must point at **`http://localhost:8082/graphql/query`** — `backend`'s
+own gqlgen endpoint. The var name is historical: the WunderGraph/Cosmo router was **retired 2026-07-31**, so the
+old `localhost:5050` default is dead and nothing listens there.
 
 *Verification*: `ls apps/web/.env` should show the file exists.
 

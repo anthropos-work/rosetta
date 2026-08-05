@@ -2,7 +2,16 @@
 
 ## Role & Responsibility
 
-Sentinel is the **centralized authorization service** of the platform. Every other service (`app`, `jobsimulation`, `cms`, `messenger`) calls Sentinel via Connect-RPC to check permissions before executing operations. It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+Sentinel is the **centralized authorization service** of the platform. It wraps **Casbin v3** with a PostgreSQL-backed policy store and a single in-memory enforcer that handles all of Anthropos's authorization patterns.
+
+> **Sentinel is now the ONLY out-of-process service on the platform.** With the v9.0 "support-in-app"
+> fold (messenger + storage + customerio-sync, 2026-08-04) finishing what the skiller / skillpath /
+> jobsim / cms merges started, `backend` ↔ `sentinel` is the **one remaining Connect-RPC edge between
+> two Anthropos processes** — and therefore the only change that still needs the `proto/` round-trip.
+> The former callers (`jobsimulation`, `cms`, `messenger`) are domains inside `backend`, so their
+> authorization checks come from the same client.
+
+`backend` calls Sentinel via Connect-RPC to check permissions before executing operations.
 
 Sentinel does **not** handle authentication — that's Clerk's job. It also does not validate JWTs (the shared `authn` library does that in each consuming service). Sentinel only answers *"is this subject allowed to perform this action on this object?"*.
 
@@ -79,7 +88,7 @@ Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087` in every other service
 
 ## Dependencies
 
-* **Upstream consumers**: every other Anthropos service that gates requests (`app`, `cms`, `jobsimulation`, `messenger`)
+* **Upstream consumers**: **`backend` (`app`) only** — the `cms`, `jobsimulation` and `messenger` callers are all domains inside that binary now, sharing its Sentinel client
 * **Downstream**: PostgreSQL (`sentinel` schema, table `casbin_rules`)
 * **No outbound RPC** to other platform services
 

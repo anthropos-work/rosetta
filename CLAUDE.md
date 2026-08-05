@@ -177,27 +177,49 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 **Core Backend Services (Tier 1)**: Go microservices
 
-> **⚠️ `app` is the backend monolith.** Five services below are **folded into `app`** and run
-> in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
-> ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and
-> **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph 2→1).
+> **⚠️ `app` is the backend monolith.** **Eight** services below are **folded into `app`** and
+> run in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
+> ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"),
+> **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph 2→1), and
+> **messenger** + **storage** + **customerio-sync** (**v9.0 "support-in-app"**, 2026-08-04).
 > There is no cms / jobsimulation / skiller / skillpath / roadrunner container, profile, port
-> or subgraph. Every application table lives in the **`public`** schema. Standalone-deployment
-> teardown for jobsimulation and cms is **M810**; skillpath's is **M507**.
+> or subgraph; `storage` and `messenger` keep opt-in rollback profiles only. Every application
+> table lives in the **`public`** schema. Standalone-deployment teardown for jobsimulation and
+> cms is **M810**; skillpath's is **M507**; the v9.0 three are already down.
+>
+> **`sentinel` is the only Anthropos service still running out-of-process.** `backend` →
+> `sentinel` is the one remaining inter-process Connect-RPC edge — `backend`'s own mux lost
+> its last external caller when `messenger` folded in.
+>
+> **The default compose profile is `core`, not `graphql`** (platform `0dab54d` renamed it).
 
-In the default local profile (`graphql`):
+In the default local profile (`core`):
 - Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`) **and the skills domain** — taxonomy (60K skills, 18K roles), assessment, AI skill matching, and vector embeddings (RAG), absorbed from the former standalone Skiller service (its Ent models now live in `app`, data in the `public` schema; the old `skiller` DB schema is legacy). The skiller RPC surface (GetSkills, GetSkill, SearchSkill, MatchSkill, GetJobRole) is served by `app` — consumers keep the env var, re-pointed at `SKILLER_RPC_ADDR=http://backend:8083` (local; `http://backend:8081` in prod terraform); the `skiller` git repo still exists but is decommissioned. **Also hosts the skill-path progression engine** (per-user `SkillPathSession → ChapterSession → StepSession` state) — absorbed from the former standalone **Skillpath** service ("skillpath-in-app", platform M502→M507); session state now lives in `public.skill_path_sessions` (the old `skillpath` DB schema is a legacy husk), and the `SkillPathSessionService` RPC + the skill-path session GraphQL types are served by `app`'s `backend` subgraph. And the **newer app-owned domains**: course-builder (`corpus/services/coursebuilder.md`), AI Labs + credits (`corpus/services/ai-labs.md`), ask-engine / Talk-to-Data (`corpus/services/askengine.md`), and the server-owned academy store (`corpus/services/academy-backend.md`)
   **Plus the cms, jobsimulation and roadrunner domains** (see the merge banner above):
   - **cms domain** (`app/internal/cms/`): **the content layer** — owns the authored CONTENT / DEFINITIONS (skill paths, simulation blueprints, the content library), wrapping Directus as a proxy + business-logic + cache layer; **and the embedded studio-room AI generation pipeline** (the `anthropos-studio-room` repo is pulled into the `app` image by CI). Directus itself stays external at `content.anthropos.work`. **NB: the cms domain — not the skill-path or jobsimulation engines — owns skill-path and simulation content** (content-vs-runtime-state split below)
   - **jobsimulation domain** (`app/internal/jobsimulation/`, wired by `internal/jobsimwiring/`): **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events; the simulation *definition/blueprint* it runs is CONTENT read from the cms domain by ID — **in-process** now, no `cms.GetSimulation` RPC hop. It holds run/session state — not content
   - **roadrunner domain**: Judge0 code execution, called directly via `JUDGE0_BASE_URL`
-- Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Storage: File/blob storage management
+
+  **Plus the three v9.0 "support-in-app" domains** (2026-08-04) — side-effect subsystems, no GraphQL surface of their own:
+  - **messenger domain** (`app/internal/messenger/`): Brevo transactional email + the 24 event handlers, gated by **`MESSENGER_ENABLED`**. It runs on a **second, dedicated subscriber attached to messenger's OWN Redis consumer group** — the one place `app` does not merge handlers onto an existing subscriber, because messenger subscribes to streams app already owns (a shared server would silently overwrite them) and re-using the group made the cutover gapless
+  - **storage domain** (`app/internal/storage/`): the private + public S3 managers, driven by `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`. `STORAGE_RPC_ADDR` is **gone**
+  - **customeriosync domain** (`app/internal/customeriosync/`): the 10-minute marketing-contact push on `app`'s asynq scheduler, gated by **`CUSTOMERIO_SYNC_ENABLED`**. It pushes to **Brevo** — the "Customer.io" name is a fossil
+- Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware, not Sentinel. **The only service still in its own process**
 - Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
 
-Available in other profiles but NOT started by default:
-- Messenger (`messenger` profile): Email notifications via Brevo (Sendinblue)
-- CustomerIO Sync (`customerio-sync` profile): Background data sync to Customer.io. Unique build pattern — built directly from GitHub URL, not cloned locally.
+> **Both outbound switches are off unless set by name, and strict in both directions.**
+> `MESSENGER_ENABLED` / `CUSTOMERIO_SYNC_ENABLED` (`app/env_guards.go`): unset ⇒ **off** on a
+> developer machine — folding these in deleted the "separate binary, separate credentials"
+> barrier, so consent is now explicit rather than inferred from a key being present. But unset
+> in a **deployed** environment is a **boot failure**, because accidentally-off means every
+> notification is silently never sent while the ALB reports healthy. An unparseable value is an
+> error everywhere. `BREVO_KEY` is **required** when either switch is on.
+
+Available in other profiles but NOT started by default — all three are **frozen rollback
+paths** since v9.0, not live services:
+- Storage (`storage-legacy` profile): the pre-fold standalone. Running it alongside `backend` means **two writers on one bucket**
+- Messenger (`messenger` profile): the pre-fold standalone; dropped from `all`. Running it alongside a `MESSENGER_ENABLED=true` backend means **two consumers on one Redis group**
+- CustomerIO Sync (`customerio-sync` profile — and still in `all`): the pre-fold standalone. Unique build pattern — built directly from GitHub URL, not cloned locally. Its terraform module was deleted outright, so unlike the other two it has **no rollback path** in production
 
 Production-only / deployed-only (not in local docker-compose):
 - db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
@@ -210,6 +232,9 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - Roadrunner (was: Judge0 code-execution proxy) — **merged into `app`** with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. See `corpus/services/roadrunner.md`
 - Jobsimulation (was: the AI-simulation runtime/session engine) — **merged into `app`** ("jobsim-in-app"); the engine is `app/internal/jobsimulation/`, its 23 run-state tables moved to `public`, no container/subgraph. `module.jobsimulation_euwest1` is still declared in production terraform as the **rollback path** (no traffic) and still **owns the LiveKit/Chime recording S3 buckets** that `backend` reuses by literal name — teardown is **M810**. See `corpus/services/jobsimulation.md`
 - CMS (was: the content layer + Studio) — **merged into `app`** ("cms-in-app v8.0", app **v1.360.0**); the domain is `app/internal/cms/`, its similarity/Studio tables moved to `public`, and the supergraph went **2 → 1 subgraph**. Directus stays external. `module.cms_euwest1` is still declared as the rollback path (no traffic) — teardown is **M810**. See `corpus/services/cms.md`
+- Messenger (was: the transactional-email service) — **merged into `app`** (v9.0 "support-in-app", 2026-08-04); the domain is `app/internal/messenger/`, gated by `MESSENGER_ENABLED`, running on messenger's **own** Redis consumer group. ECS module deleted; the ECR repo was preserved through the removal and is now **unmanaged** in AWS. Still in `repos.yml` + the `messenger` compose profile as the rollback path. Its Go module is still published but **imported by nothing**. See `corpus/services/messenger.md`
+- Storage (was: the file/blob service) — **merged into `app`** (v9.0); the domain is `app/internal/storage/` and `backend` reads/writes both S3 buckets directly. The ECS *service* is gone, but **`module.storage-service_euwest1` must NOT be deleted** — it now declares the platform's object-storage assets: both buckets (~92 GiB), versioning + SSE, the CloudFront distribution + OAI + bucket policy, and the `media.anthropos.work` CNAME. `prevent_destroy` will not save you, because it is read from *configuration*. Careful with the name: that module is **not** `module.storage_euwest1` (`modules/core/storage`), which is the RDS instance and the ElastiCache replication group. See `corpus/services/storage.md`
+- CustomerIO Sync (was: the marketing-contact sync) — **merged into `app`** (v9.0); the domain is `app/internal/customeriosync/`, on the asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED`, pushing to **Brevo**. Terraform module **fully deleted** and ECR destroyed — **no rollback path**. The compose entry survives and is still in `all`. See `corpus/services/customerio-sync.md`
 
 **Shared Libraries** (imported as private Go modules — **not** cloned by `make init`/`repos.yml`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). See `corpus/architecture/shared_libraries.md`.
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
@@ -218,7 +243,10 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
 - taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app` (backend — the `public` schema, since the skiller→app merge)
 
-> Since the merges these libraries are imported by **app, sentinel, storage and messenger** only.
+> Since the merges these libraries are imported by four repos only — **app** and **sentinel**
+> (the two that still deploy) plus the **frozen** **storage** and **messenger**, which import
+> them at pinned tags. Don't remove the `MessengerService` / `StorageService` definitions from
+> `proto` — they are the contracts those pinned builds compile against.
 
 **Studio Services & Standalone Internal Apps (Tier 2)**: Content creation tools + internal-only apps
 - Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
@@ -240,7 +268,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since the merges the only remaining cross-process RPC edges are backend → sentinel/storage and messenger → backend; the `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends
+- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since v9.0 there is exactly **one** cross-process RPC edge left: **backend → sentinel**. The `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends, and `backend`'s own mux has no external callers (messenger was the last)
 - **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, a single `backend` subgraph)
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
@@ -287,14 +315,17 @@ Docker Compose profiles control which services start:
 
 | Profile | Services |
 |---------|----------|
-| `graphql` (default) | All backend + Cosmo Router |
-| `backend` | app only |
-| `cms` | cms only |
+| **`core`** (default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg, graphql |
+| `backend` | postgresql, redis, sentinel, backend, gotenberg |
+| `storage-legacy` | the frozen standalone `storage` (rollback comparison only) |
+| `messenger` | the frozen standalone `messenger` (needs `--profile core` too — it `depends_on: backend`) |
+| `customerio-sync` | the frozen standalone `customerio-sync` |
 | `frontend` | next-web-app (containerized) |
 | `studio-desk` | studio-desk (containerized) |
-| `all` | Everything |
+| `all` | Everything **except `messenger` and `storage`** — both were removed from `all` at v9.0, because each duplicates a subsystem `backend` now runs in-process |
 
-Usage: `make up PROFILE=cms`
+Usage: `make up PROFILE=backend`. The `cms`, `jobsimulation` and `roadrunner` profiles are gone
+with their services.
 
 ## Key Documentation Locations
 

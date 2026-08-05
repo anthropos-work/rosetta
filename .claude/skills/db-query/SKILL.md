@@ -169,7 +169,8 @@ next-gen **simulator_sessions** / **simulator_interactions** / **simulator_valid
 orchestration; don't treat it as live), and the old **`skiller`** schema is a **legacy remnant** of the July 2026
 skiller→app merge (data ported to `public`; not authoritative — don't query it for current data).
 
-> **Local/stack DBs differ slightly.** A `dev-N` / `demo-N` stack built from the default `graphql` profile carries
+> **Local/stack DBs differ slightly.** A `dev-N` / `demo-N` stack built from the default profile (`core` since
+> platform `0dab54d`, previously `graphql`) carries
 > the same app schemas but **adds** an `auth` schema (a Supabase/GoTrue-style `auth.users` — a local auth artifact,
 > NOT platform app data) and **omits** the prod-only `simulator_*` / `skillsgateway` / `chronos` schemas. Whether
 > it has a local `directus` content schema depends on the stack's content posture (v1.5 M22/M23): a

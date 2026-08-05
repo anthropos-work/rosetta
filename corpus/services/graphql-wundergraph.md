@@ -116,9 +116,11 @@ make logs S=graphql     # tail router logs
 open http://localhost:5050
 ```
 
-`graphql` lives in the **`graphql`** and **`all`** profiles only. A single-service
-profile like `make up PROFILE=cms` does **not** start the gateway — bring up the
-`graphql` profile (or `all`) to get a usable federated endpoint.
+The `graphql` **service** lives in the **`core`** and **`all`** profiles only. (`core` is the
+default profile, renamed from `graphql` at platform `0dab54d` — so the profile and the
+service no longer share a name.) A single-service profile like `make up PROFILE=backend`
+does **not** start the gateway — bring up `core` (or `all`) to get a usable federated
+endpoint.
 
 ### Smoke-test the endpoint
 

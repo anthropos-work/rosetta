@@ -8,9 +8,9 @@
 ## Role & Responsibility
 
 `platform` is **not a deployed service**. It is the dev-environment control plane: a
-**Makefile + Docker Compose** orchestrator that clones the 10 sibling repos and
-builds/runs the microservices locally **from source**. It is the one repo you `cd` into to
-operate everything else.
+**Makefile + Docker Compose** orchestrator that clones the six sibling repos still in
+`repos.yml` and builds/runs the services locally **from source**. It is the one repo you
+`cd` into to operate everything else.
 
 * **Repo**: `git@github.com:anthropos-work/platform` → cloned to `stack-dev/platform`
 * **Drivers**: GNU Make (`SHELL=/bin/bash`), Docker Compose v2, YAML
@@ -20,7 +20,7 @@ operate everything else.
 
 ```
 Makefile            Single entry point for all dev ops (parses repos.yml with awk — no yq/python)
-docker-compose.yml  11 app service definitions; `include: [common.yml]`
+docker-compose.yml  8 app service definitions; `include: [common.yml]`
 common.yml          Base infra: postgresql + redis (always-on, no profile); declares app-network
 repos.yml           Manifest of repos `make init` clones (name / type / migrations / schema)
 postgresql/         Custom Postgres image (Dockerfile: compiles pgvector v0.4.4 onto bitnamilegacy/postgresql:15)
@@ -36,12 +36,12 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make init` | Clone every repo in `repos.yml` not yet present in `../` from `git@github.com:anthropos-work/<name>.git` |
 | `make pull` | Checkout + rebase `main` on all repos, auto-stashing dirty trees |
 | `make status` | Per-repo branch / dirty / behind table |
-| `make up [PROFILE=…]` | `docker compose --profile $(PROFILE) up --build -d` — **`PROFILE` defaults to `graphql`** |
-| `make up-all` | Start every service (profile `all`) |
-| `make up-frontend` | Start `next-web-app` together with the graphql backend stack |
+| `make up [PROFILE=…]` | `docker compose --profile $(PROFILE) up --build -d` — **`PROFILE` defaults to `core`** (renamed from `graphql` at v9.0; there is no `graphql` profile any more) |
+| `make up-all` | Start every service (profile `all`) — note `all` no longer includes `messenger` or `storage`, see the profile table |
+| `make up-frontend` | Start `next-web-app` together with the `core` backend stack (`--profile core --profile frontend`) |
 | `make down` / `make ps` | Stop all services / list containers |
 | `make logs [S=svc]` | Tail compose logs, optionally one service |
-| `make migrate [S=svc]` | `atlas migrate apply --env local`. **`app` is the only migration repo now** — the cms and jobsim tables were re-created in `public` under `app/terraform/migrations/`, so `repos.yml` drops both to `migrations: false` |
+| `make migrate [S=svc]` | `atlas migrate apply --env local`. **`app` is the only `migrations: true` repo** — every folded domain's tables were re-created in `public` under `app/terraform/migrations/`. The three repos still in `repos.yml` beside it (`sentinel`, `storage`, `messenger`) are all `migrations: false` |
 | `make dev S=svc` | Stop a service container and print native-run instructions (`cd ../svc && go run .`) |
 | `make build-frontend` | `pnpm install && pnpm build` in `../next-web-app` |
 | `make reset-db` | **Confirm-gated** wipe of `data/postgresql/`, restart Postgres, re-migrate (waits on `pg_isready`) |
@@ -56,37 +56,50 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **11 app services**: `graphql`, `sentinel`, `backend`,
-`storage`, `customerio-sync`, `messenger`, `studio-desk`, `next-web-app` — plus the
-third-party `gotenberg` image and the two base services from `common.yml`.
+`docker-compose.yml` defines **8 app services**: `sentinel`, `backend`, `storage`,
+`customerio-sync`, `messenger`, `studio-desk`, `next-web-app` — plus the third-party
+`gotenberg` image and the two base services from `common.yml`. (The `graphql` service is
+gone: the WunderGraph/Cosmo router was **retired 2026-07-31**, so `:5050` is free and
+clients hit `backend`'s own gqlgen endpoint.)
 
-> **Five services were folded into `backend`.** `skiller`, `skillpath`, `roadrunner`,
+> **Eight services were folded into `backend`.** `skiller`, `skillpath`, `roadrunner`,
 > `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app v8.0) all run in-process inside
-> `app`; their compose services and profiles are gone, and the federation composes a single
-> `backend` subgraph. `backend` also has no `*_RPC_ADDR` loopbacks any more — only
-> `messenger` still reaches those surfaces, at `http://backend:8083`.
+> `app`, and **v9.0 "support-in-app" (2026-08-04) added `messenger`, `storage` and
+> `customerio-sync`**. `sentinel` is now the **only out-of-process Anthropos service** on a
+> default stack.
+>
+> The first five have no compose service left at all. The v9.0 three still have one, but
+> **not in any default profile** — they are kept startable purely as the rollback path
+> (`storage-legacy` / `messenger` / `customerio-sync`).
+>
+> `backend` has **no `*_RPC_ADDR` loopbacks**, and since v9.0 its RPC mux has **no external
+> callers left**. The `BACKEND_USERS_RPC_ADDR` / `CMS_RPC_ADDR` / `JOBSIMULATION_RPC_ADDR` /
+> `SKILLER_RPC_ADDR=http://backend:8083` env block lives in the **`messenger` service
+> definition only** — i.e. it is the standalone rollback container's wiring, not something a
+> default stack exercises.
 
-(The former `skiller`
-service was merged into `app`/`backend` in July 2026 — its RPC surface is now served
-by `backend`, `SKILLER_RPC_ADDR=http://backend:8083` in compose. The former `skillpath`
-service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→M507 — and is
-**gone from compose**; only the residual `SKILLPATH_STREAM=skillpath` env plumbing remains.)
+(The former `skiller` service was merged into `app`/`backend` in July 2026 — its RPC
+surface is now served by `backend`. The former `skillpath` service was likewise merged
+into `app`/`backend` — "skillpath-in-app", M502→M507 — and is **gone from compose**; only
+the residual `SKILLPATH_STREAM=skillpath` env plumbing remains.)
 
 | Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
 |---------|------------------------------------------------------------------------|
-| `graphql` *(default)* | backend, sentinel, storage, gotenberg, **graphql** |
-| `backend` | backend, gotenberg |
-| `storage` | **only that one service** (the `jobsimulation`, `cms`, `skiller`, `skillpath` and `roadrunner` profiles are gone) |
-| `messenger` | messenger (bring up its dep too: backend — it now serves the cms/jobsim/skiller RPC surfaces) |
-| `customerio-sync` | customerio-sync |
+| `core` *(default)* | backend, gotenberg — **renamed from `graphql` at v9.0**; with the router retired and storage folded in, the two members are all that is left |
+| `backend` | backend, gotenberg — **identical membership to `core`** since v9.0 |
+| `storage-legacy` | storage — **rollback only**, never started by default (`app` serves storage in-process; running both means two writers on one bucket) |
+| `messenger` | messenger — **rollback only**. **Never run it alongside a `MESSENGER_ENABLED=true` backend**: `app` takes over messenger's *own* Redis consumer group (the literal `messenger`), so both running = two consumers on one group |
+| `customerio-sync` | customerio-sync — **still in `all`** (see below) |
 | `frontend` | next-web-app (containerized Workforce) |
 | `studio-desk` | studio-desk (containerized) |
-| `all` | everything |
+| `all` | backend, gotenberg, customerio-sync, studio-desk, next-web-app. **`messenger` was dropped from `all` at v9.0** (the consumer-group clash above) and `storage` is `storage-legacy`-only — so `make up-all` no longer means "everything declared" |
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
-> * A **single-service profile does NOT start the `graphql` gateway** (it's only in `graphql`/`all`). `make up PROFILE=backend` gives you the backend but no usable `:5050` endpoint.
-> * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it.
+> * There is **no gateway container to miss** any more — `backend` serves GraphQL itself at `http://localhost:8082/graphql/query`. `:5050` is free.
+> * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it. That is unchanged by v9.0 — but the job it runs is now `backend`'s (`internal/customeriosync`, on app's asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED`), so the container only matters if you deliberately select its profile. Its destination is **Brevo**, not Customer.io — the name is a fossil.
+> * `backend`'s compose `environment:` hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` and `STORAGE_S3_PUBLIC_BUCKET=production-storage-public20240919130721114900000001` — **a default local stack points at the REAL PRODUCTION buckets**. `STORAGE_RPC_ADDR` is gone (read by no code).
+> * `MESSENGER_ENABLED` and `CUSTOMERIO_SYNC_ENABLED` are **not** in `.env_example`. Unset ⇒ **off** on a developer machine, which is the intended local default; unset in a *deployed* environment ⇒ `backend` **refuses to boot**, and an unparseable value is an error everywhere (`app/env_guards.go`). `BREVO_KEY` is **required** whenever either switch is on — `backend` fails fast on an empty key.
 > * Every Go service hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it.
 > * All app builds use BuildKit SSH forwarding (`ssh: ["default"]`) + `GH_ACCESS_TOKEN=$GH_PAT` to pull private Go modules — needs a loaded SSH agent **and** `GH_PAT` in `.env`.
 
@@ -94,32 +107,37 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 ## `repos.yml` (what `make init` clones)
 
-Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
+Entries with `name` / `type` / `migrations` (+ `schema` for Go services with migrations).
+**Six entries remain:**
 
-* **Go**: `app` (public) is the only `migrations: true` entry. `cms`, `jobsimulation`, `roadrunner`, `sentinel`, `storage`, `messenger` are `migrations: false` — the first three are frozen legacy repos whose tables all live in `app`'s `public` schema. (`skillpath` and `skiller` are decommissioned and no longer in `repos.yml` at all.)
-* **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm), `ant-academy` (node-npm), `graphql-wundergraph` (node-npm).
+* **Go**: `app` (public) is the only `migrations: true` entry. `sentinel`, `storage` and `messenger` are `migrations: false`. Since v9.0 only `sentinel` is a live out-of-process service — **`storage` and `messenger` are frozen legacy too**, folded into `app`, and they are still listed here **on purpose**: `make init` keeps a clone on disk so the rollback containers can be built. (`cms`, `jobsimulation`, `roadrunner`, `skillpath` and `skiller` are decommissioned and no longer in `repos.yml` at all — clone them by hand to read the pre-merge source.)
+* **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm).
 
-> `ant-academy` is cloned but has **no compose service** (runs natively / Vercel). The
-> shared libraries (colony, authn, proto, ai, taxonomy) are **not** here — they are pulled
-> as Go modules, see [Shared Libraries](../architecture/shared_libraries.md).
+> `ant-academy` is **not** in `repos.yml` (by design) and has no compose service — it runs
+> natively / on Vercel, so clone it yourself. `graphql-wundergraph` is gone from `repos.yml`
+> with the router's retirement. The shared libraries (colony, authn, proto, ai, taxonomy)
+> are **not** here either — they are pulled as Go modules, see
+> [Shared Libraries](../architecture/shared_libraries.md).
 
 ## Ports
 
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — one mux serving `BackendUsers`, `BackendOrganizations`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`), 8084 (`META_PORT`) |
-| sentinel | 8087 |
-
-| messenger | 8200, 8201 (RPC) |
-| storage | 8300, 8301 (RPC) |
-
+| backend (`app`) | 8081, 8082 (`PORT` — HTTP/GraphQL/`/api/health`), 8083 (RPC — one mux serving `BackendUsers`, `BackendOrganizations`, `SkillerService`, `SkillPathSessionService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`; **no external caller left since v9.0**). `META_PORT=8084` is set but **not published** to the host |
+| sentinel | 8087 — the only out-of-process Anthropos service on a default stack |
 | studio-desk | 9000 (backend), 9100 (frontend) |
-
-| graphql (WunderGraph/Cosmo) | **5050 → container 8080** |
 | next-web-app | 3000 |
-| customerio-sync | 8080 |
 | gotenberg | 3200 |
+
+**Rollback-only ports.** These are the *rollback target's* ports, not a default stack's — nothing
+listens on them unless you deliberately select the profile:
+
+| Service (profile) | Host port(s) |
+|---------|--------------|
+| messenger (`messenger`) | 8200, 8201 (RPC) |
+| storage (`storage-legacy`) | 8300, 8301 (RPC) |
+| customerio-sync (`customerio-sync`) | 8080 |
 
 ## Infrastructure (`common.yml`)
 
@@ -136,7 +154,7 @@ cd platform
 cp .env_example .env
 brew install ariga/tap/atlas   # required on the host for migrations
 make init && make up && make migrate
-open http://localhost:5050     # GraphQL playground
+open http://localhost:8082/graphql/query   # backend's own GraphQL endpoint (:5050 is retired)
 ```
 
 Key variables include `GH_PAT` (private Go modules), `CLERK_SECRET_KEY`, the

@@ -430,9 +430,13 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
   called at all.)
 - **`DEV_PUBLIC_HOST`, not `STACK_PUBLIC_HOST`.** `up-injected.sh` *exports* the latter, so an inherited value
   would otherwise flip a dev stack public with no flag on the command line. Dev has its own namespace.
-- **Only the ports your `--profile` actually publishes are fronted** (default `graphql` ⇒ backend API + Cosmo
+- **Only the ports your `--profile` actually publishes are fronted** (the default profile ⇒ backend API + Cosmo
   GraphQL). The demo's fixed registry does not apply: `tailscale serve` **binds** what it fronts, so fronting a
   port with no listener would hold it against the next bring-up.
+  > That default profile is **`core`** since platform `0dab54d` (v9.0 "support-in-app") — it was `graphql`,
+  > and no `graphql` profile exists any more. `docker compose --profile <unknown>` exits **0** and selects
+  > nothing, so a stale token here fails silently: no containers, no error. See
+  > [`frontend-tier.md`](./frontend-tier.md) for the same caveat on the demo path.
 - **No cockpit, no Clerkenstein.** A dev stack authenticates against **real Clerk** and has no presenter
   launcher. §3.2's *"unauthenticated, authz-weakened build"* is a description of a **demo**, not of this.
 
