@@ -1827,6 +1827,45 @@ asserts against a recording fake `Conn` that accepts any table name — *a fake 
 dropped*, which is why 2,617 offline tests passed while the bring-up was broken for four days. Live is the
 only check that knows what the migration path actually produced.
 
+### A PARTIAL skip is worse than a total one — grade the cannot-tell (M257x iter-91)
+
+§5 rule 8 says *a check that SKIPS reads exactly like a check that PASSES*. Its sharper form: **a check that
+skips PART of its work reads like a check that passed, and carries a real verdict to prove it.**
+
+`platform_alignment_guard` had exactly one positive control — `subject_checked == 0`, which trips when the
+resolver fails *entirely*. Partial blindness had none. Two things were printed on every run and graded by
+nothing:
+
+- **`unresolvable > 0`** — citations the run could not resolve at all. Each is a claim it did not check.
+- **the silent worktree fallback** — `cited_text` tries `origin/main`, then `HEAD`, then reads the
+  **checkout**, returning provenance `worktree(no-ref)`. The string was always there; nothing read it.
+
+That second one is the dangerous shape, because the two references **disagree**. Measured on the shipped map:
+
+| reference | verdict |
+|---|---|
+| `auto`, refs present | GREEN — 90 resolved, 0 unresolvable |
+| the worktree fallback | RED — 8 findings, **4 unresolvable, ungraded** |
+
+So a clone that could not see the objects it needed was graded against whatever it happened to have, and
+told nobody. A RED is not safety here: it *looks* like diligence while 4 citations went unchecked.
+
+> **Rule.** A guard has **three** verdicts, not two: pass, fail, and **UNMEASURED**. Reserve a distinct exit
+> code for the third (2 here, which the family runner already renders as CANNOT-RUN), and route every
+> partial-blindness signal into it. An accept-the-gap escape hatch is fine — `ALIGNMENT_ALLOW_UNMEASURED=1`,
+> `--allow-not-run` — because it **records** the gap; silence does not.
+
+Two riders:
+
+1. **Fix it at the point of use, not in the runner.** Only the guard knows which refs it needs. A
+   family-level "is this clone stale" heuristic would rebuild §2's hand-maintained tuple in a new costume —
+   and *stale* is not even locally decidable (a clone fetched a minute ago can be behind). Reserve the
+   runner's refusal for what IS locally decidable and unambiguous: a platform-facing run against a clone
+   with **no `origin/main` at all**.
+2. **Print the REFERENCE with every verdict.** The runner named a *directory* and never a *commit*, so every
+   `13 GREEN` transcript in this milestone is unre-checkable after the fact — which is exactly how a green
+   reading gets quoted forward into a brief. A verdict without its refs is an anecdote.
+
 ### Guards must be tested in PAIRS — a green suite proves each guard, not the specification (M257x iter-90)
 
 Every rule above hardens **one** fence. This one is about what a set of fences can hide from a suite that

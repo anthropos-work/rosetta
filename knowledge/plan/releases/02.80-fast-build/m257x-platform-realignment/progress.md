@@ -1267,3 +1267,31 @@ defect and would also explain why no amount of accessor work has helped.
   is real and worse**: `platform_alignment_guard` falls back to the **worktree** when a ref is missing and
   never says so (`auto` → GREEN/0-unresolvable vs `worktree` → **RED/8 findings**), and `unresolvable` is
   **printed but never graded**. Gate **4 of 5**, unchanged — see iter-90/progress.md
+- iter-91 (tik): **the cannot-tell is now graded, and the user's question is answered with a measurement —
+  a qualified NO.** *Should `guard_family.py` refuse against a stale clone?* **"Stale" is not locally
+  decidable** (a clone fetched a minute ago can be behind; one fetched last week can be current), so
+  answering it needs the network, and a fence that cannot run offline stops being run — the network check
+  therefore exists and is **opt-in** (`--verify-remote`). **"Cannot see the objects it needs" IS locally
+  decidable**, and that is what actually bit: `platform_alignment_guard` resolves at `origin/main` → `HEAD`
+  → **silently the WORKTREE**, and its only positive control was `subject_checked == 0`, so **total**
+  resolver failure tripped while **partial** blindness was folded into a verdict. Measured, the two
+  references disagree — `auto` reads GREEN/0-unresolvable, the worktree fallback read **RED with 8 findings
+  and 4 unresolvable UNGRADED**. That RED is the sharp case: it *looks* like diligence while 4 citations
+  went unchecked. **A partial skip is worse than a total one, because it arrives with a verdict attached.**
+  Both conditions now return **UNMEASURED (exit 2)**, with an `ALIGNMENT_ALLOW_UNMEASURED=1` hatch that
+  RECORDS the gap. Fixed **at the point of use**, because only the guard knows which refs it needs — pushing
+  it into the runner would rebuild §2's hand-maintained tuple in a new costume. The runner's own gap was
+  smaller and worse: it printed `platform=<dir>` and **never a sha**, so every `13 GREEN` transcript in this
+  milestone names a DIRECTORY, not a commit — which is exactly how a green reading gets quoted forward with
+  no way to re-check it. The reference (corpus sha, platform sha, `origin/main`, in-sync, fetch age) is now
+  printed on every run, and a platform-facing run against a clone with **no `origin/main`** exits 2 **before
+  any guard runs**. **The 7-guard pair grid was enumerated** (Decision 1 item 3): of 21 pairs, **12 can
+  interact, 5 were uncovered, 4 now have tests**. The two landed here were covered by **nothing** and are
+  the safety-critical ones — **every** G1/G6 escape test drives `apply`, while **`revert` is the verb that
+  writes AND runs `git checkout -- <path>`**; deleting its firewall call turns 3 subtests RED. Verification:
+  `stack-core` **873 tests, 1 failure, PROVEN pre-existing** (the answer key re-run against a milestone copy
+  with iter-90/91 removed gave the identical 2 hits / 101 claims) — and substantive: the claim it fires on
+  asserts the `cms`/`jobsimulation` husks still run, which `838d907`/`0c91421` changed, so **the answer key
+  is stale because the platform moved**. Folded into iter-92's M810 sweep. Guard family **15 GREEN · 0 RED ·
+  0 could-not-check**, every clone fetched, `platform @ 0c91421df, in sync`. Gate **4 of 5**, unchanged —
+  see iter-91/progress.md
