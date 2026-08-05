@@ -867,7 +867,7 @@ docker compose ps postgresql redis sentinel
 # The schema is served by backend itself; restart it:
 docker compose restart backend
 ```
-> Consistent with :522 above, where the same correction is already recorded.
+> Consistent with :546 above, where the same correction is already recorded.
 
 ---
 
