@@ -305,3 +305,37 @@ ref-relative ruling all survived iter-82's re-read.
    in five places from a hand count, and the pre-commit hook printed the derived figure on the very
    commit that shipped rule 40. **Derive, else fence, else declare** (TOK-04 P4) is not advice about
    platform facts; it applies to the numbers a milestone states about *itself*.
+
+---
+
+## Close — 2026-08-05
+
+**Outcome:** the mechanism behind iter-81's false discharge is **measured, not inferred** — reach
+**109/147 = 74.1 %**, with **35 of 38** misses in files the repair had open; H1 (partition gap) and H2
+(estimated membership) both **refuted**; the mechanism is **general**, so all eleven verdicts are
+**unproven** and route to iter-84. Overlap arithmetic settled (**union 43 · intersection 14**), recall
+estimated (**Chapman N̂ = 57; per-pass ≈ 50 %**), and what a zero would/would not establish written
+down. `FENCE-M257x-iter83-repair-reach` shipped and watched RED. `FIX-M257x-iter82-iter81-has-no-record`
+discharged. **No corpus claim repaired, by design.**
+
+**Type:** tik (shape `tooling`)
+**Status:** closed-fixed — all four declared lines landed; no planned scope routed away
+**Gate:** NOT MET — clause 5 is graded only by a reading that returns zero, and no reading was taken
+this iter. Gate stands at **4 of 5**.
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n —
+(5) cap-reached: n — (6) protocol-stop: n — Outcome: continue
+
+**Decisions:** D-M257x-83-1 … D-M257x-83-9 (iter-83/decisions.md)
+
+**Side-deliverables:** none. The guard-census correction (`D-M257x-83-9`) is **not** a side-deliverable —
+it is a defect this iter induced and then repaired, and it does not upgrade or downgrade the status.
+
+**Routes carried forward:** `FIX-M257x-iter82-reread-union` (iter-84) ·
+`FIX-M257x-iter83-eleven-discharges-unproven` (iter-84) ·
+`FIX-M257x-iter83-adjudication-has-no-per-anchor-ledger` (iter-84) ·
+`FIX-M257x-iter83-leak-guard-3-sites` (iter-84) ·
+`CHECK-M257x-iter83-standalone-is-the-forgettable-class` (iter-85) ·
+`CHECK-M257x-iter83-recall-lift-options` (user)
+
+**Lessons:** in §5 **rule 40**, committed with the iter. The fourth — that the rule caught its own
+author within the hour — is `D-M257x-83-9`.

@@ -3,8 +3,9 @@ iter: 83
 milestone: M257x
 iteration_type: tik
 iter_shape: tooling
-status: in-progress
+status: closed-fixed
 opened: 2026-08-05
+closed: 2026-08-05
 ---
 
 # iter-83 — why a discharged predicate had a surviving member
