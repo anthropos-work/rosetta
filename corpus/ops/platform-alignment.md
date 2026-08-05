@@ -1856,6 +1856,64 @@ Corollary, from the same iter: **a shared symptom is not a shared cause.** Both 
 subject IS rext's manifest set, so it is correct by design, and "fixing" it to honour `--repo-root` would
 have broken it in the rext-only checkouts the family is consumed from per-stack.
 
+### Then audit the guards' TESTS the same way — that is where the next three were (M257x harden pass 20)
+
+The rule above was written after three guards were caught passing over nothing. The obvious next question
+was not asked for four iterations: **the guards were audited for vacuity; their tests were not.** Swept in
+harden pass 20, and the very first one was the worst possible case.
+
+`guard_family.py` exists because *"all six corpus guards exit 0"* was a statement about a list somebody
+remembered. Its single load-bearing property is that **a guard which says it checked nothing must not read
+as GREEN.** The test named for that property was:
+
+```python
+for out in ("repair-leak: CANNOT RUN — no candidate shingles", ...):
+    self.assertTrue("CANNOT RUN" in out or "Nothing was checked" in out)
+```
+
+Two string literals declared three lines above, asserted to contain substrings of themselves. It never
+imported the behaviour and never called `run_one`. **Measured:** blinding the branch to `if False:` left
+all 22 tests in the file green. *The runner built to refuse an unearned green was, on its one property,
+covered by nothing.*
+
+> **Rule.** A test that never calls the code is a fixture asserting against itself. The cheapest detector
+> is the one that found this: **blind the branch and re-run.** A control you have not watched fail is a
+> control you have not got — and this applies to the CONTROLS with exactly the force it applies to the
+> guards, because a vacuous test and a real one produce the identical green.
+
+Five more followed from the same sweep, and they cluster into three shapes worth naming:
+
+| shape | instances |
+|---|---|
+| **a flag or hatch that silently does nothing** | `--verify-remote` performed no network call at all without `--platform`; `ALIGNMENT_ALLOW_UNMEASURED=1` promised in its own message to *"RECORD the gap rather than hide it"* and recorded **nothing**, emitting an unqualified `OK` |
+| **a verdict published over a graded set of zero** | `repair_reach_guard` printed *"every booked finding was reached"* when every anchor failed to parse; `unreadable_repo_claim_guard`'s "PREMISE LIFTED" was an exit 0 the family counted as green |
+| **a summary sentence contradicting the line above it** | `guard-family: N guard(s) NOT RUN and accepted` followed immediately by `OK — every member of the census was run and returned green` |
+
+**The generalisation.** Every one of these is *the same* substitution as the guard-level rule, moved one
+layer out: **the thing that reports is not the thing that measured.** So the question to ask of any
+reporting path — a flag, an escape hatch, a summary line, a test — is the one the rule above asks of a
+guard: *did the thing making this claim actually reach the thing it is claiming about?*
+
+Two operational corollaries, both paid for:
+
+1. **An accepted gap is still a gap.** An escape hatch that suppresses a refusal must print what it
+   suppressed, and the verdict sentence must be qualified (`OK WITH AN ACCEPTED GAP … this is NOT a
+   whole-map green`). Otherwise the hatch converts an honest UNMEASURED into a quotable green, which is
+   the failure the refusal existed to prevent, reachable by one environment variable.
+2. **Grade on the exit code, not on a substring of the output, wherever the exit code is available.**
+   `guard_family`'s CANNOT-CHECK detection sniffed merged stdout+stderr unconditionally, so a guard that
+   exited 1 while *echoing a corpus line* containing the phrase was downgraded from RED to
+   could-not-check — and its findings vanished from the one view that summarises the family. Two guards
+   in the census echo corpus lines verbatim. The sniff belongs only on `rc == 0`, the case it was for.
+
+**And the recursion is real.** In this same pass, the mutation battery caught the *new* provenance test
+passing over nothing: two git repos built by one helper in the same second are byte-identical commits and
+share a sha, so `assertIn(corpus_head, out)` was satisfied by the **platform** reference line. iter-94's own
+fix — the anti-vacuity control the rule above is named for — had meanwhile been appended *after* its file's
+`if __name__ == "__main__"` guard, so direct execution collected 23 tests instead of 25 and printed `OK`.
+**A control that could never fire, whose fix was placed where it could never run.** Assume you have done it
+too; the only reliable check is mechanical.
+
 ### Fencing a document does not fence its PARAPHRASES (M257x iter-92 / iter-93)
 
 The fenced map's `cms` row said, in its own voice:
