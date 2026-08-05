@@ -1221,6 +1221,45 @@ And: **verify a claim before escalating it, including a claim made by an audit.*
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.
 
+44. **"`git grep` at a named ref" is necessary and NOT sufficient — name the tree AND its ref, PER TREE.**
+    A ref alone does not make an instrument honest, and here the obvious fix is the worse one. Three
+    mechanisms hide a tracked file, and they defeat different tools:
+
+    - **Gitignored-but-tracked.** The shell's `grep` is a function over `ugrep -G --ignore-files`, so it
+      skips any tracked file an active `.gitignore` matches. `git grep` sees these; bare `grep` does not.
+      Measured across the clone set: **12** such non-empty text files — three times the 4 first counted,
+      because `git check-ignore` needs **`--no-index`** to report *tracked* paths at all, and because the
+      first census did not descend into the nested repos below. The census missed them by the very
+      mechanism it was measuring.
+    - **NUL-bearing source.** `grep -I` and `git grep` **both** skip a file containing NUL bytes, and
+      `file(1)` calls it "data". Two exist: `next-web-app/apps/web/src/hooks/useCoursebuilder.ts`
+      (50,433 bytes, 1,178 NULs) and `ant-academy/code/src/time/store.js`. A zero over a tree containing
+      one is not a proven zero — it is a zero with a hole in it, and no tool will tell you.
+    - **Nested untracked repos — where the naive fix is worse than no fix.** `stack-demo/app/studio` and
+      `stack-demo/cms/studio` are each the `anthropos-studio-room` repo (177 files, own HEAD `aeec036`),
+      hidden from their hosts by `app/.gitignore:79` and `cms/.gitignore:129`. `git -C app grep <anything>
+      HEAD -- studio/` returns **0 for every predicate** — a guaranteed zero that reads like evidence.
+      Only the nested repo's own ref sees them. On the `mistralai` predicate the three instruments
+      returned **1 / 0 / 22**; the ref-named `git grep` was the one that scored **0**, and that false
+      clearance minted an "imported nowhere" claim that stood in **four** documents until M257x iter-96.
+      Worked example: [`studio-room.md`](../services/studio-room.md), the requirements callout.
+
+    So: **enumerate the nested repos before claiming any tree-wide zero**, grep each at its own ref, and
+    say which trees the number covers. A tree-wide zero that does not name its sub-repos is an unproven zero.
+
+    ```bash
+    # 0. enumerate every git tree, nested ones included — this is the search set
+    find stack-demo -name .git -maxdepth 4 | sed 's|/\.git$||' | sort
+    # 1. grep each at ITS OWN ref (never the host's), with a positive control in the same pass
+    for d in $(find stack-demo -name .git -maxdepth 4 | sed 's|/\.git$||'); do
+      printf '%-34s hits=%-4s ref=%s\n' "$d" \
+        "$(git -C "$d" grep -c "$TERM" HEAD 2>/dev/null | wc -l | tr -d ' ')" \
+        "$(git -C "$d" rev-parse --short HEAD)"
+    done
+    # 2. name the holes the tools cannot see, then read them by hand
+    git -C "$d" ls-files | git -C "$d" check-ignore --stdin --no-index     # mechanism 1
+    ```
+
 ### Trap E — the tooling's own host preconditions are invisible until a clean host
 
 Everything above is about the platform moving. This one is about *us*: a tooling path that quietly depends on
@@ -1303,7 +1342,7 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 > standing. Fenced by `platform_predicate_guard.py` G4.
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
-`corpus/services/backend.md:175` — a corpus line asserting messenger points *all four* addresses at
+`corpus/services/backend.md:187` — a corpus line asserting messenger points *all four* addresses at
 `backend:8083`. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
 premature, not permanently wrong, which is its own lesson). **One false corpus line, cited as authority, produced two false corrections in
 a hand-off designed to be applied mechanically.** An audit that reads the corpus to correct the corpus is

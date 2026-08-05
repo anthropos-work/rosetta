@@ -18,8 +18,13 @@ Callers don't talk to Brevo directly — they **publish Redis Stream events that
 
 > **⚠️ Nobody "fires a Messenger RPC", and nobody ever did.** The standalone *exposed* a `MessengerService`
 > Connect-RPC surface, but **no service in the platform ever constructed a client for it**: `MESSENGER_RPC_ADDR`
-> occurs in **no** repo, and `git log -S MESSENGER_RPC` over the platform's entire history returns **0**
-> commits (positive control: `-S SKILLER_RPC` returns 3). The RPC traffic ran the other way — messenger
+> occurs in **no** repo — measured at each clone's own named ref, and including the two NESTED repos a
+> host-ref grep cannot see (`app/studio` and `cms/studio`, both `anthropos-studio-room` @ `aeec036`).
+> And `git -C stack-demo/platform log -S 'MESSENGER_RPC' --oneline 0c91421d | wc -l` returns **0**
+> commits over the platform's whole 121-commit history (**positive control**, same repo and ref:
+> `-S 'SKILLER_RPC'` returns **7**; add `--all` and both become 8-and-0, the 8th being `464dfe3` on a
+> non-main branch — so state the scope). The earlier control figure here was **3**, which is reproducible
+> at no repo, ref, spelling or scope; corrected M257x iter-96. The RPC traffic ran the other way — messenger
 > called **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`).
 > **Compose set those four on the `messenger` service block and nowhere else**, so deleting the block
 > deleted them: since `838d907` **no compose file sets any `*_RPC_ADDR` at all**, and there is no

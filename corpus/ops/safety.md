@@ -200,10 +200,11 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 |---|---|---|
 | **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points `cms`'s `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
+| **S3 PRIVATE bucket** | ⚠️ **unclassified — the guard does not cover it** | Since platform `0dab54d` (2026-08-03) compose also hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` on `backend` (`docker-compose.yml:82` @ `0c91421`). `PreflightEnv` forces the **public** bucket only (`stack-seeding/isolation/audit.go:146`) — there is **no** entry for the private one, so a stack with working AWS credentials writes private uploads into the **production** private bucket. This contract **names** that exposure; its disposition is an open escalated item (`DEF-M257x-iter80-storage-prod-bucket`, severity high) and is deliberately **not** resolved here. |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
 | **coresignal** | `External` | enrichment source — safe to read, **never write** on non-prod |
-| **Postgres / Redis / S3-private / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack) |
+| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and has been REMOVED** — it is not per-stack-isolated at platform `0c91421`; see its own row above |
 
 > **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
 > `jobsimulation.{sessions, validation_attempt_results, validation_attempt_skill_results,
@@ -230,7 +231,9 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
    non-prod pollution impossible by construction, not by configuration.
 2. **`Guard.PreflightEnv(env, target)`** — *before* seeding begins, asserts and repairs the environment:
    - **forces `STORAGE_S3_PUBLIC_BUCKET = ""`** (always, every target) so no storage write can reach the shared
-     public bucket;
+     public bucket — **and only that one.** `STORAGE_S3_BUCKET` (the PRIVATE bucket, hardcoded to a production
+     bucket in compose since `0dab54d`) is **not** in the forced set — `stack-seeding/isolation/audit.go:146` is
+     the whole of it. See the S3-private row above and `DEF-M257x-iter80-storage-prod-bucket`;
    - on non-prod, **rejects a live-Clerk base URL** (any of `CLERK_API_URL`, `CLERK_FAPI_URL`, … pointing at
      `clerk.com` / `api.clerk.com` / `*.clerk.accounts.dev` / `*.clerk.services`) as a hard error — it must be a
      Clerkenstein/local host;
@@ -276,10 +279,16 @@ fenced twice over:
   header; prod serves only the public predicate). The earlier "every stack keeps
   `DIRECTUS_BASE_ADDR=content.anthropos.work`" state (the M10 collection-schema gap) is **retired** — the gap
   is closed (M21 structure capture + auto-provision) and the per-stack Directus is booted (M22) + cut over (M23).
-- **Prod S3 public bucket.** `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the prod bucket in the platform compose;
-  `PreflightEnv` **unconditionally** overrides it to `""`, so storage writes fall back to the per-stack local
-  store. (Snapshot media is carried as **refs only** today — the byte payloads + a cloud snapshot store are
-  **deferred (unscheduled backlog)**, see "Future" below.)
+- **Prod S3 buckets — the PUBLIC one is covered, the PRIVATE one is NOT.** `STORAGE_S3_PUBLIC_BUCKET` is
+  hardcoded to the prod bucket in the platform compose; `PreflightEnv` **unconditionally** overrides it to `""`,
+  so public storage writes fall back to the per-stack local store. (Snapshot media is carried as **refs only**
+  today — the byte payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
+  **`STORAGE_S3_BUCKET` — the PRIVATE bucket — is hardcoded to a production bucket too**, since platform
+  `0dab54d` (`docker-compose.yml:82` @ `0c91421`, on the `backend` block), and it is **not** in the
+  forced-override set. With AWS credentials present — `backend` mounts `$HOME/.aws/credentials`
+  (`docker-compose.yml:100`) and `README.md:81-87` tells you to supply them — a stack's private uploads land in
+  production. This contract **names** that exposure; its disposition is an open escalated item
+  (`DEF-M257x-iter80-storage-prod-bucket`, severity high) and is deliberately not resolved here.
 
 ### 2.4 The capture-source policy is the write-side's read-half complement
 

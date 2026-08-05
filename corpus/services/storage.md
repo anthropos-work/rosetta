@@ -22,11 +22,11 @@ Storage is the **centralized file/blob service** for the platform.
 >
 > | side | measured at platform `0c91421` / app `2035f9a` / storage `9f8cb53` |
 > |---|---|
-> | **prod** | the ECS service is **DELETED, not scaled to zero** — `storage/terraform/main.tf` is 18 lines and declares no service block at all. Its own comment: *"The ECS service that used to live here is GONE (v9.0 'support-in-app'): app serves object storage in-process. What remains is the ASSETS — the two buckets, the CloudFront distribution and the media DNS record, all in storage.tf."* The module deliberately survives: deleting the block would destroy those assets along with their `prevent_destroy` guards, which are read from configuration (`storage/terraform/main.tf:13`). Custody transfer is M903 (`:18`) |
+> | **prod** | the ECS service is **DELETED, not scaled to zero** — `storage/terraform/main.tf` is 18 lines and declares no service block at all. Its own comment: *"The ECS service that used to live here is GONE (v9.0 'support-in-app'): app serves object storage in-process. What remains is the ASSETS — the two buckets, the CloudFront distribution and the media DNS record, all in storage.tf."* The module deliberately survives: deleting the block would destroy those assets along with their `prevent_destroy` guards, which are read from configuration (`storage/terraform/main.tf:13`). **`:18` is not a custody clause** — it reads *"See outputs.tf — consumers should reference these by output, never by literal name."*, and *custody* occurs **0** times in the storage repo at `9f8cb53`. **M903 was never executed and is superseded**: its only mention in the repo is `storage/terraform/storage.tf:22-25` — *"An earlier plan, M903, instead proposed `moved`-ing these resources into a local module in the infrastructure repo. That was never executed, and the shipped design supersedes it: the assets stay here and the module stays declared."* No `moved` block exists in the repo. The plan itself is `app/knowledge/plan/releases/09.00-support-in-app/m903-s3-custody/` @ app `2035f9a` — its `overview.md` front-matter says `status: planned`, its `progress.md` says *"Planned, not started — no terraform applied, no branch"*. **State the ref or this flips:** at the checked-out storage ref `4ce8ece5` (20 behind `9f8cb53`) the same header still reads M903 as a live instruction — *"relocate the assets out of this module BEFORE M907"* — and `main.tf` is 100 lines still declaring the ECS module. `d3e6d32` (2026-08-05) retired it: *"M903 never ran."* |
 > | **config** | `STORAGE_RPC_ADDR` is set by **no** compose file and is **absent from `.env_example`** — 0 occurrences across `docker-compose.yml`, `common.yml`, `.env_example` |
 > | **compose** | there is **no `storage` service to start.** `0dab54d` parked it behind a rollback-only profile for one release; `838d907` then deleted the service block outright, and the `storage-legacy` profile is gone with it |
 > | **`repos.yml`** | **no `storage` entry** — `838d907` removed it, so `make init` does not clone the repo any more. Four entries remain: `app`, `sentinel`, `next-web-app`, `studio-desk`. (It was `repos.yml:18-20` at `0dab54d`, kept then as the rollback path.) The repo itself is not deleted — clone it by hand to read the pre-merge source |
-> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:524`, `:525`, consumed at `:547` (`resource.NewManager`) and `:1102` (`cmsStorage`); the constants at `app/internal/storage/service.go:22`, `:24` are the bucket **env-var NAMES** (`EnvBucket = "STORAGE_S3_BUCKET"`, `EnvPublicBucket = "STORAGE_S3_PUBLIC_BUCKET"`), not the bucket names — those are still read from the environment, at `app/main.go:516`, `:517`. `STORAGE_RPC_ADDR` is read by **nothing**: `git grep -n STORAGE_RPC_ADDR -- '*.go'` returns **3 hits, all of them comments** — `app/main.go:504` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
+> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:524`, `:525`, consumed at `:547` (`resource.NewManager`) and `:1102` (`cmsStorage`); the constants at `app/internal/storage/service.go:22`, `:24` are the bucket **env-var NAMES** (`EnvBucket = "STORAGE_S3_BUCKET"`, `EnvPublicBucket = "STORAGE_S3_PUBLIC_BUCKET"`), not the bucket names — those are still read from the environment, at `app/main.go:516`, `:517`. `STORAGE_RPC_ADDR` is read by **nothing** *at `app` origin/main* — `git -C stack-demo/app grep -n STORAGE_RPC_ADDR 2035f9a -- '*.go'` returns **3 hits, all of them comments**. **The ref is load-bearing and this cell states it deliberately:** run the same grep ref-less, on the older `app` checkout a demo pins, and it returns **15 hits, 7 of them live env reads** — a ref-less command contradicts this sentence on the clone a reader actually has. The older side's ref and per-hit breakdown live in [`platform-migration-status.md`](../architecture/platform-migration-status.md)'s `storage` row, and are **deliberately not repeated here**: a block that names two refs makes every anchor in it ungradeable (M257x run-53), and every `app` path in this cell resolves at `2035f9a` only. The three comment hits: `app/main.go:504` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
 >
 > The mid-fold hazard this block used to describe — a client built against an empty address, failing
 > at call time rather than boot time, and two `cmd/` tools hard-failing outright — **is gone**, because
@@ -37,7 +37,7 @@ Storage is the **centralized file/blob service** for the platform.
 
 Callers push and pull binary objects through it instead of dealing with S3 themselves. It has two parallel storage managers — **private** (internal files, recordings, documents) and **public** (CDN-served assets) — each backed by its own S3 bucket and accessed by namespace + UUID.
 
-Storage is stateless and owns no database: all state lives in S3 (the private manager falls back to local filesystem in dev when `STORAGE_S3_BUCKET` is unset; the public manager is wired to production S3 in compose).
+Storage is stateless and owns no database: all state lives in S3 — and since platform `0dab54d` **both** managers are wired to **production** buckets in compose (`docker-compose.yml:82`, `:83` @ `0c91421`, on `backend`), not just the public one. Each manager falls back to local filesystem only when ITS bucket variable is set **empty**; on a stock stack neither is. See the hazard note under "Two storage managers".
 
 ## Architecture & Code Map
 
@@ -55,7 +55,29 @@ Storage is stateless and owns no database: all state lives in S3 (the private ma
 | Private | `STORAGE_S3_BUCKET` | Internal data: session recordings, documents. Reads via RPC or presigned URLs. |
 | Public | `STORAGE_S3_PUBLIC_BUCKET` | Public assets served via CloudFront at `media.<root_domain>`. |
 
-Each manager falls back to local filesystem only when ITS bucket env var is empty (private → `/tmp/anthropos-storage/`, public → `/tmp/anthropos-public-storage/`). In the platform compose, `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the production public bucket, so locally the PUBLIC manager talks to real S3 (`PutPublicObject`/`GetPublicObject` require AWS credentials), while the PRIVATE manager uses local FS.
+Each manager falls back to local filesystem only when ITS bucket env var is empty (private → `/tmp/anthropos-storage/`, public → `/tmp/anthropos-public-storage/`) — `getKeyPath` branches on `s3Bucket != ""` (`app/internal/storage/storage.go:193-200` @ app `2035f9a`), so any **non-empty** value routes to `s3://…` unconditionally, for both managers.
+
+> **⚠️ HAZARD — on a stock stack NEITHER manager uses local FS, and the private one writes to production.**
+> In the platform compose **both** buckets are hardcoded to **production** buckets, on the `backend` service
+> block: `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` (`docker-compose.yml:82`) and
+> `STORAGE_S3_PUBLIC_BUCKET=production-storage-public20240919130721114900000001` (`:83`) @ platform
+> `0c91421`, with the reason in-comment at `:73-79` (*"These MUST be set"*). The **private** line arrived
+> with `0dab54d` (2026-08-03, *"run without the standalone storage; rename graphql -> core"*) — that commit
+> is when the private manager stopped being local. **This document previously said the private manager uses
+> local FS while only the public one talks to real S3; that is RETRACTED.**
+>
+> The credentials are there by design, not by accident: `backend` mounts `$HOME/.aws/credentials` read-only
+> (`docker-compose.yml:100`) and platform's own `README.md:81-87` instructs you to put a live
+> `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in `.env`. **So a local stack with
+> working AWS credentials writes its private uploads into the production private bucket.** Nothing warns:
+> app's two boot guards (`main.go:518-523` empty-bucket fatal, `:529-535` `verifyBucketAccess`) both run
+> only `if deployedEnvironment()`, and `deployedEnvironment()` returns **false** for
+> `ENVIRONMENT=development` (`app/env_guards.go:37-44`).
+>
+> The empty-env escape still works — set the variable to empty **explicitly** and that manager falls back to
+> its `/tmp` root. **Disposition of this hazard is an open escalated item
+> (`DEF-M257x-iter80-storage-prod-bucket`, severity high).** It is a platform/compose fact, not a corpus
+> fact; this document records the exposure and deliberately prescribes no change.
 
 ### Object layout
 
@@ -153,7 +175,7 @@ make up                       # the `core` profile — and there is no storage c
 # Asking for the retired `storage` token does NOT fail: it exits 0 and starts only the floor.
 ```
 
-**What the container used to do with its buckets, and what the binary still does with them.** With `STORAGE_S3_BUCKET` empty the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically, and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is not sandboxed by that fallback — the deleted `storage` compose block hardcoded `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and failed without AWS credentials (none are set in `platform/.env`). Running the binary by hand, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
+**What the container used to do with its buckets, and what the binary still does with them.** With `STORAGE_S3_BUCKET` empty the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically, and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is not sandboxed by that fallback — the deleted `storage` compose block hardcoded `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and failed without AWS credentials. (That parenthetical used to say none were set in `platform/.env` — **no longer true**: platform `README.md:81-87` @ `0c91421` instructs you to put live `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in `.env`, and `docker-compose.yml:100` mounts `$HOME/.aws/credentials` into `backend`, so on a current stack the credentials are generally present and the write **succeeds**.) Running the binary by hand, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
 
 ### Run natively
 
@@ -187,7 +209,7 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 |----------|---------------|-------------|
 | `PORT` | `8300` | HTTP health port (binary default 8080, overridden in compose) |
 | `RPC_PORT` | `8301` | Connect-RPC port (binary default 8081, overridden in compose) |
-| `STORAGE_S3_BUCKET` | (empty) | Private bucket. Absent from compose env and `.env` → local FS fallback at `/tmp/anthropos-storage/`. |
+| `STORAGE_S3_BUCKET` | (empty) | Private bucket. The deleted `storage` service block never set it, so **this binary** fell back to `/tmp/anthropos-storage/`. **Do not read that across to the live path:** `backend` sets it to the production private bucket (`docker-compose.yml:82` @ `0c91421`) — see the hazard note under "Two storage managers". |
 | `STORAGE_S3_PUBLIC_BUCKET` | `production-storage-public20240919130721114900000001` | Public bucket — hardcoded to a real PRODUCTION S3 bucket in compose (**`docker-compose.yml:210`** @ platform `2adcf71`; `:324` is inside the *studio-desk* block). NOT empty in local dev. |
 | `AWS_REGION` / `AWS_DEFAULT_REGION` | `eu-west-1` | AWS region (EU-first) |
 | `ENVIRONMENT` | (empty) | Environment name |

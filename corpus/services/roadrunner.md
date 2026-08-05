@@ -37,7 +37,7 @@
 > its **GitHub repo, which is NOT archived**, and prod's `service_desired_count = 1`.
 >
 > **`jobsimulation` was previously listed above as also *removed* from both files; it is not (corrected
-> M257x iter-46, and **superseded by the platform at iter-77**).** Its GitHub repo IS archived (2026-07-31), and
+> M257x iter-46, and **superseded by the platform at iter-77**).** Its GitHub repo's archive state is **not visible to this corpus** (this line asserted an archive on 2026-07-31; `origin/main` took four commits on 2026-08-04 — see [`jobsimulation.md`](./jobsimulation.md)), and
 > as late as `2adcf71` it did remain in both files — `jobsimulation`'s entry at `repos.yml:17-19` and
 > its service at `docker-compose.yml:83`, with
 > `profiles: [graphql, jobsimulation, all]`, **at that ref** — so its container then still started on a bare

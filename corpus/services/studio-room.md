@@ -85,6 +85,9 @@ studio-room/
 │   └── production_config.ini    # (configs/local_* and configs/test_* are gitignored)
 ├── benchmark/          # Benchmark suites
 ├── knowledge/          # Knowledge / reference data
+├── tools/              # Standalone CLI doc-prep utilities — r3.py (any2pdf → pdf2md → md2cleanMd),
+│                       # NOT part of the generation pipeline. Tracked but gitignored (.gitignore:2),
+│                       # which is why a plain `grep -r` over this tree misses it entirely
 └── workspace/          # Generation workspace
     ├── attachments/    # Input/blueprint files
     ├── trace/          # Generation state files (worklog_path)
@@ -346,7 +349,7 @@ pip install -r requirements.txt
 ```
 openai          # AI provider
 anthropic       # AI provider
-mistralai       # DECLARED BUT IMPORTED NOWHERE — see below
+mistralai       # OCR — imported ONLY by tools/pdf2md.py, off the generation path; see below
 rich            # console output
 pyyaml
 requests        # taxonomy client
@@ -356,14 +359,34 @@ pytest-asyncio  # tests
 ```
 (`asyncio` is part of the standard library; no `aiohttp` dependency.)
 
-> **⚠️ `mistralai` is a declared dependency with no code behind it** (measured M257x iter-86 @
-> `anthropos-studio-room` `aeec036`). `grep -rni mistral` over the whole repo returns **exactly one
-> hit — this `requirements.txt` line**. The provider registry at `services/ai.py:705-708` is
-> `{'openai', 'azure', 'anthropic'}`, and `ai.py`'s imports are `openai` and `anthropic` only. **The
-> Python pipeline has no Mistral path.** Mistral in this platform is **Go-side and OCR-only**
-> (`app/internal/cms/studio/markdownManager.go` → `OCRProcess`). The line was previously annotated
-> *"# AI provider"* here, which is how the Python-side Mistral claim propagated into
-> `service_taxonomy.md` and `dependency_map.md`.
+> **⚠️ `mistralai` IS imported — by a standalone OCR tool, not by the generation pipeline**
+> (re-measured M257x iter-96 @ `anthropos-studio-room` `aeec036a`, superseding an iter-86 reading that
+> said the opposite). `git grep -i mistral aeec036a` returns **22 hits across 3 files**:
+> `requirements.txt:8`, `tools/pdf2md.py` (18) and `tools/r3.py` (3). `tools/pdf2md.py:24` is a real
+> `from mistralai import Mistral`; `:96` builds the client and `:127` calls `model="mistral-ocr-latest"`.
+> It is a **CLI utility** — one leg of `tools/r3.py`'s "Robust Ready RAG" chain
+> (`any2pdf.py` → `pdf2md.py` → `md2cleanMd.py`), whose step 2 hard-requires `MISTRAL_API_KEY`
+> (`r3.py:194`). **Nothing dispatches it from the pipeline:** `gen.py` imports only
+> `console`/`format`/`agents`/`services.ai`/`postgen`, a reference sweep outside `tools/` finds no code
+> reference, and no Go caller exists (Go execs only `studio/gen.py`, `studioManager.go:119`). The package
+> **is** installed in the shipped image (`app/Dockerfile:45-46` copies the whole `studio/` tree and
+> pip-installs this file).
+>
+> **So: the generation engine has no Mistral path** — the registry at `services/ai.py:705-708` is
+> `{'openai', 'azure', 'anthropic'}` and `ai.py:1-2` imports only `openai`/`anthropic` — **but the repo
+> does.** Mistral in this platform is **OCR-only on both sides**: Go-side for studio attachments
+> (`app/internal/cms/studio/markdownManager.go` → `OCRProcess`) and Python-side for this offline tool.
+>
+> **⚠️ Instrument caveat — two ignore rules make this invisible, and they point opposite ways.**
+> `app/studio/.gitignore:2` is `tools/`: the directory is **tracked in the studio repo but gitignored**,
+> so the shell's `ugrep -G --ignore-files` skips it and a recursive `grep` over `app/studio/` returns
+> **1** (the `requirements.txt` line only) — that false clearance is how the "imported nowhere" claim was
+> minted, and it propagated into `service_taxonomy.md` and `dependency_map.md`. Separately,
+> `app/.gitignore:79` is `studio/*`, so `git -C app grep <anything> -- studio/` returns **0 for
+> everything**. Only `git -C app/studio grep -i <term> aeec036a` — the nested repo's own history — sees
+> `tools/`. **And there are TWO copies of this repo, not one:** `stack-demo/cms/studio` is the same
+> `anthropos-studio-room` at the same sha, hidden the same way by `cms/.gitignore:129`. The generalized
+> rule is [`platform-alignment.md`](../ops/platform-alignment.md) §5 rule 44.
 
 #### Configuration
 

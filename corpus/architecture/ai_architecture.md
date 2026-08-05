@@ -30,8 +30,11 @@ What is actually implemented, in `app/internal/jobsimulation/ai/ai.go` (and mirr
 4. **The one automatic fallback is 429-only.** `isThrottlingError` sets `vendor = Openai` for the next
    retry attempt — i.e. **direct US OpenAI**. Nothing else (timeout, 5xx, region outage) moves a
    request off its vendor.
-5. **Mistral is nowhere in this path.** Its only use in `app` is OCR inside the cms domain
-   (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`).
+5. **Mistral is nowhere in this path.** *Every* use of it in `app` is **OCR**, never generation: Go-side
+   in the cms domain (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`), and Python-side
+   in the in-image studio tree at `studio/tools/pdf2md.py:24` (`mistral-ocr-latest`) — a standalone CLI on
+   neither the AI manager's path nor the generation pipeline's
+   (`git -C app/studio grep -i mistral aeec036a`, 22 hits / 3 files).
 
 **EU data residency still holds — but by a different mechanism than the ladder implied.** The posture
 rests on the *default clients* being EU-resident (Azure EU, Bedrock `eu-west-1`), not on a policy that
@@ -45,7 +48,7 @@ earlier revision counted it as one of *"exactly three things … within the mana
 rather than a miscount. *(It does **not** additionally "flip Studio-Room off Bedrock": Studio-Room was
 never on Bedrock — `grep -rin 'bedrock\|boto3' app/studio/` returns **0** hits, and there the key is a
 credential while the selector is the ini's `TARGET SERVICE`; see the provider row at
-[`external_services.md:543`](external_services.md). Corrected M257x iter-48.)*
+[`external_services.md:567`](external_services.md). Corrected M257x iter-48.)*
 
 One layer *above* the manager, a sequence whose **`ai_vendor` is unset** reaches **direct US OpenAI on the
 first attempt, with no error condition** — the residency-relevant route, and the one nothing in
@@ -54,7 +57,7 @@ first attempt, with no error condition** — the residency-relevant route, and t
 `simulation.Sequence`; nil is replaced by `simulation.Openai` at `:1302-1305` **before** the sequence is
 built at `:1307`, so the value reaching the vendor switch takes **`case simulation.Openai:`**
 (`simulator/ai/ai.go:58-59`) — the same arm an explicit caller takes. Full per-line derivation:
-[`external_services.md:594-604`](external_services.md) (item 4 of the four live EU-exit routes).
+[`external_services.md:619-629`](external_services.md) (item 4 of the four live EU-exit routes).
 
 The switch's `default:` arm (`:114-115`) is a **separate** door: an *unrecognised* vendor string. The
 Directus enum has **five** members and the switch **four** cases (`Openai` `:58`, `Azure` `:69`,
@@ -81,8 +84,8 @@ fallback order (there is none; see above).
 | Provider | Models | Default client |
 |:---------|:-------|:---------------|
 | **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US via `flag_use_azure_us`). **Direct US OpenAI is NOT only a 429 retry target**: a simulation sequence with `ai_vendor` unset or set to `Openai` reaches it on the first attempt with no error condition, via `case simulation.Openai:` at `simulator/ai/ai.go:58-59` (the `default:` arm at `:114-115` is the separate *unrecognised-vendor* door, not the unset one). Corrected M257x iter-46, mechanism corrected iter-48 |
-| **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` — for **Course Builder** it is the selector (key set → first-party API); for **Studio-Room**, which was never on Bedrock, it is only the credential the `anthropic` `TARGET SERVICE` needs ([`external_services.md:543`](external_services.md)) |
-| **Mistral (EU)** | Mistral OCR | cms-domain OCR **only** — not reachable from the AI manager |
+| **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` — for **Course Builder** it is the selector (key set → first-party API); for **Studio-Room**, which was never on Bedrock, it is only the credential the `anthropic` `TARGET SERVICE` needs ([`external_services.md:567`](external_services.md)) |
+| **Mistral (EU)** | Mistral OCR (`mistral-ocr-latest`) | **OCR only** — the cms domain's Go client plus the in-image `studio/tools/pdf2md.py` CLI; reachable from neither the AI manager nor the generation pipeline |
 | **Speech** | GPT-4o Mini TTS, TTS v2 HD, TTS v2 | Azure voice client (`CreateSpeech` is Azure-only) |
 | **Transcription** | GPT-4o Transcribe | Azure EU (US via `flag_use_azure_us`) |
 | **Embeddings** | Text Embedding 3 Small | OpenAI |

@@ -4,7 +4,7 @@ This document describes the security architecture, data protection measures, and
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers default to EU endpoints — but there is **no ordered EU-first fallback chain** (`external_services.md:555`): the US path is a PostHog **flag** (`flag_use_azure_us`), not a fallback rung, and Course Builder's `ANTHROPIC_API_KEY` path leaves the EU entirely. See [EU Data Residency](#eu-data-residency). The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, but **most** of the per-check pass/fail verdicts it counts are produced by an LLM. *Most*, not all — deterministic `EngineTextDiff` checks are the exception, and "all verdicts are AI" is the opposite error. **The legal classification itself is a question for counsel; this corpus only records that the stated technical premise is false.**
+Anthropos follows a **defense-in-depth** approach to security. All customer data is stored and processed in **EU-West-1 (Ireland)** by default. AI providers default to EU endpoints — but there is **no ordered EU-first fallback chain** (`external_services.md:579`): the US path is a PostHog **flag** (`flag_use_azure_us`), not a fallback rung, and Course Builder's `ANTHROPIC_API_KEY` path leaves the EU entirely. See [EU Data Residency](#eu-data-residency). The platform is **GDPR-compliant** with a Data Processing Agreement (DPA v1.4) and 18 approved sub-processors. AI Simulations are classified as **Limited Risk** under the EU AI Act — **but the stated reason for that classification does not hold at platform HEAD** (see [EU AI Act](#eu-ai-act) below): the rubric *arithmetic* is deterministic, but **most** of the per-check pass/fail verdicts it counts are produced by an LLM. *Most*, not all — deterministic `EngineTextDiff` checks are the exception, and "all verdicts are AI" is the opposite error. **The legal classification itself is a question for counsel; this corpus only records that the stated technical premise is false.**
 
 Key guarantees:
 - EU data residency (primary)
@@ -195,10 +195,10 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
 - **Primary region**: EU-West-1 (Ireland)
 - AI provider clients are **EU-resident by default** — Azure OpenAI EU (`ai.go:262-266`), AWS Bedrock pinned
   to `eu-west-1` (`:85-88`). **Not "routed through EU endpoints first"**: there is no ordered EU-first
-  fallback chain (`external_services.md:555`), and the wording mattered because the two US paths *inside
+  fallback chain (`external_services.md:579`), and the wording mattered because the two US paths *inside
   the AI manager* — the two the bullets below cover — are a flag and a retry target, which a "first"
   implies are tried only after an EU option fails. Corrected M257x iter-46. **Those two are not the whole
-  set**: [`external_services.md:577-582`](./external_services.md) enumerates **four live** ways a request leaves
+  set**: [`external_services.md:602-607`](./external_services.md) enumerates **four live** ways a request leaves
   the EU, the other two being `ANTHROPIC_API_KEY` and an authored sequence with `ai_vendor` unset — the
   latter reaching direct US OpenAI unconditionally, on the first attempt. A fifth arm, **Studio-Room's own
   `openai` `TARGET SERVICE`**, is a bare client against `https://api.openai.com` that **no shipped config
@@ -215,7 +215,7 @@ The `db-backup` service runs on a schedule, dumping PostgreSQL to three geograph
   `app/internal/coursebuilder/bedrock.go:109-112` (`newUnderlyingClient` → `NewAnthropicClientWithModel`),
   with `ModelBackendName()` (`:100`) returning `"anthropic-api"` to say so. That is a **US-terminating**
   path outside the Bedrock EU region, selected by an env var rather than a flag — so it is not covered by
-  the `flag_use_azure_us` caveat below. [`external_services.md:543`](./external_services.md) carries the
+  the `flag_use_azure_us` caveat below. [`external_services.md:567`](./external_services.md) carries the
   provider row and `coursebuilder.md:48` calls it *"the shipped path"*; this section said the opposite.
   Corrected M257x iter-46 — *the anchor said `:489`, which is a TypeScript codegen comment, because it was
   transcribed from a blocker ledger instead of re-derived; corrected iter-48*

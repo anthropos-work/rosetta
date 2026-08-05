@@ -21,7 +21,10 @@
 > `docker-compose.yml:83` @ that ref defined a `jobsimulation` service with
 > `profiles: [graphql, jobsimulation, all]` (`:140`), `graphql` was the default (`Makefile:10`
 > `PROFILE ?= graphql` **at that ref**), and `repos.yml:17-19` @ `2adcf71` still listed the repo (marked
-> `migrations: false # legacy`).* The **GitHub repo was archived 2026-07-31**. State: **frozen legacy repo,
+> `migrations: false # legacy`).* **The repo's GitHub archive state is not visible to this corpus** — this banner asserted an archive on
+2026-07-31; `origin/main` then landed **four commits on 2026-08-04** (`6092c6d2`, `caf36c96` = merged
+PR #439, `1e40d184`, `82cb66ec`), and an archived repo is read-only, so the flat claim cannot stand.
+Report both, assert neither. State: **frozen legacy repo,
 > no local container, no clone entry** — **and the production ECS service is torn down as well**, so there is no
 > rollback path left to keep: `6092c6d2` deleted it under M810. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
@@ -87,7 +90,7 @@ This is the user-facing "experience" service. Everything else (skills, content, 
 
 ## Architecture & Code Map
 
-* **Codebase**: `jobsimulation` — repo `git@github.com:anthropos-work/jobsimulation` (archived 2026-07-31). **Not cloned by `make init`**: no `repos.yml` entry since `d11a403`. Clone it by hand to read the pre-merge source; the live code is `app/internal/jobsimulation/`
+* **Codebase**: `jobsimulation` — repo `git@github.com:anthropos-work/jobsimulation` (GitHub archive state **unmeasurable from a clone** — see the banner at the top of this file; the repo took four commits on 2026-08-04). **Not cloned by `make init`**: no `repos.yml` entry since `d11a403`. Clone it by hand to read the pre-merge source; the live code is `app/internal/jobsimulation/`
 * **Language**: Go
 * **Database**: ~~PostgreSQL `jobsimulation` schema~~ → the 23 run-state tables live in **`public`**, created by **`app`**'s migrations (`app/terraform/migrations/20260722081626_jobsim_data_model.sql`). The legacy `jobsimulation` schema is **not authoritative** — consistent with the **Data** bullet, :31-38 above
 * **Ports**: **8080 (GraphQL/HTTP), 8081 (Connect-RPC) — the binary's own defaults**, and now the only ones there are: `cmd/root.go:77` `cmp.Or(os.Getenv("PORT"), "8080")` / `:78` `cmp.Or(os.Getenv("RPC_PORT"), "8081")` (the Dockerfiles `EXPOSE 8080`), which is what the in-repo `CLAUDE.md` documents. The **8400 / 8401** pair quoted all over this corpus was **compose-supplied by a service that no longer exists**: `docker-compose.yml` set `PORT=8400` (`:113`) / `RPC_PORT=8401` (`:119`) and published `8400:8400` / `8401:8401` (`:93-94`) — **at `2adcf71`**. At `0c91421` there is no `jobsimulation` service, so nothing sets those values and nothing is published; **8400/8401 are historical, not an address you can reach**, with or without a `dev-N`/`demo-N` offset. The engine's live HTTP/GraphQL surface is `backend`'s.

@@ -600,7 +600,7 @@ path — believing the live-recompute never completed in the coverage harness's 
 translation N+1, the M46 per-object-RPC class).
 > **⚠️ That premise was REFUTED at v2.3 M219: the live recompute completes in 2.09 s.** The
 > never-completes claim is retracted, and is recorded as retracted at
-> [`seeding-spec.md:496-498`](../seeding-spec.md), [`services/ai-readiness.md:371,449-450`](../../services/ai-readiness.md)
+> [`seeding-spec.md:497-499`](../seeding-spec.md), [`services/ai-readiness.md:371,449-450`](../../services/ai-readiness.md)
 > and `CLAUDE.md`. It stood here unfenced, as the stated justification for the strategy below, until
 > M257x iter-49. **The closed-cycle strategy is still the one that shipped** — it is simply not held up
 > by this reason.

@@ -109,7 +109,16 @@ containerized bring-up + migrate, and read-only prod.
   messenger's, after `d11a403` deleted the `jobsimulation` and `cms` blocks and dropped it from
   `backend`, which no longer addresses a surface it serves itself; and **none** @ `0c91421`, because
   `838d907` deleted the `messenger` block that held the last one. **No compose file sets any
-  `*_RPC_ADDR` today.** In prod terraform the address is `http://backend:8081`.
+  `*_RPC_ADDR` today.** In prod terraform the address is `http://backend.internal.anthropos:8081` —
+  the `app` service deploys as `local.project = "backend"` (`app/terraform/locals.tf:6` @ `b948604f`),
+  registers in the Cloud Map service-discovery namespace `internal.anthropos` (`app/terraform/main.tf:58`;
+  cf. the sibling names `cms.internal.anthropos` / `jobsimulation.internal.anthropos`), and exposes
+  `local.rpc_port = 8081` (`locals.tf:8`, mapped at `main.tf:185-186`). **The unqualified `backend:8081`
+  form, which this corpus quoted in several places, is the same endpoint written short — not a second
+  variable.** Note the literal value is set in the un-cloned `infrastructure` root module: every cloned
+  service module *declares* its `*_rpc_addr` variable with **no default**
+  (`messenger/terraform/variables.tf:77,82,87,92` @ `fa47850d`; `app/terraform/variables.tf:197,230` @
+  `b948604f`), so the address is derived, not read from a `.tf` in the clone set.
 - **Federation is now 1 subgraph**: **backend**. The skiller subgraph was removed at the skiller merge
   (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@749dc86`, "remove skiller subgraph and update
   related configurations", 2026-06-24), which left **4** — backend, jobsimulation, cms, skillpath. The
@@ -124,7 +133,10 @@ containerized bring-up + migrate, and read-only prod.
   `categoryTree`/`fullCategoryTree` were dropped, not ported.
 - **No skiller container / repo / schema search-path.** Not in `repos.yml` or `docker-compose.yml`; the app
   DB connection uses the default `public` search_path (no `search_path=skiller`); `app` subscribes to the
-  `skiller` Redis stream **in-process** (both ends now inside app).
+  `skiller` Redis stream — but only as a **consumer**: nothing in `app` publishes to it (`main.go:1276`
+  @ `b948604f` is an `AddSubscriber`; no `NewPublisher` names `SKILLER_STREAM` at `b948604f` or at
+  origin/main `2035f9a4`). The producer was the standalone skiller service and went with it. See the
+  Redis Streams section below.
 - **Clean-bring-up prerequisite:** the merged migrations create the taxonomy vector columns as
   `extensions.vector(1536)` and a GIN-trigram index via `extensions.gin_trgm_ops`, so the **`extensions`
   schema (pgvector + `pg_trgm`) must be bootstrapped before `make migrate`** on a clean DB — else app

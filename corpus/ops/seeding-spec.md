@@ -95,10 +95,11 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 |---|---|---|
 | **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**, the shared instance **never written**. (Reads: since v1.5 **M22/M23** a **`--local-content`** stack (demo default-on; dev opt-in) serves content from its **own** per-stack Directus — `cms` cut over to the in-network instance — so the read is **local, not live-prod**; the prod **data plane** is read only at capture time. A stack **without** `--local-content` reads public content **live** from prod, a demo **anonymously** with the token stripped — the documented fallback. The asset plane stays on prod public links either way. See [`directus-local.md`](directus-local.md) + [`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).) |
 | **S3 public bucket** | shared-pollution-risk | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
+| **S3 PRIVATE bucket** | ⚠️ **unclassified — not covered by the guard** | also hardcoded to a **production** bucket in compose since platform `0dab54d` (`docker-compose.yml:82` @ `0c91421`, on `backend`); `PreflightEnv` forces the **public** bucket only (`isolation/audit.go:146`). Named, not resolved — see [`safety.md`](safety.md) and `DEF-M257x-iter80-storage-prod-bucket` |
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
 | **coresignal** | external | read-only; writes blocked on non-prod |
-| **Postgres / Redis / S3-private / pgvector** | per-stack-isolated | seed freely |
+| **Postgres / Redis / pgvector** | per-stack-isolated | seed freely. (**`S3-private` was in this row and has been REMOVED** — not per-stack-isolated at platform `0c91421`; see its own row above) |
 
 > **The "shared skillpaths across stacks" myth.** Legacy skillpath sessions appearing across stacks trace to
 > the *shared Clerk identity* (sessions for a shared login leaked via shared auth) — **not** a shared skillpath

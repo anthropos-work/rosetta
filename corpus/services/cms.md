@@ -92,7 +92,7 @@ The CMS service is the **content layer of the platform** — it owns the authore
 
 1. **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — **skill paths** (title, description, cover/video, curators a.k.a. "Meet the Experts", library categories, **chapters → steps**, the job-simulation steps inside a chapter, skills-to-verify, settings, versioning — the `skill_paths` Directus collection), **job-simulation blueprints** (the `simulations` collection + `sequences`, roles, tasks, validation criteria), and the **content library** (`library_categories`, `library_macro_categories`, `resource`) — all proxied through Directus with Anthropos-specific business logic on top.
 2. **Owns the Studio data model** — `StudioDocument` (simulation blueprints), `StudioTask` (generation jobs), and related entities for the content-authoring workflow.
-3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against **OpenAI, Azure OpenAI or Anthropic** — those three and no others. The provider registry is a three-entry dict: `{'openai': OpenAIProvider, 'azure': AzureProvider, 'anthropic': AnthropicProvider}` (`services/ai.py:705-708` @ `anthropos-studio-room` `aeec036` v0.51.1), and `services/ai.py:1-2` imports only `openai`/`anthropic`. **There is no Mistral path in the Python engine.** `mistralai` is declared in `requirements.txt` and imported nowhere — that declaration is the string's *only* occurrence in the whole repo. Mistral is a **Go-side, OCR-only** dependency (see the Downstream-dependencies bullet below).
+3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against **OpenAI, Azure OpenAI or Anthropic** — those three and no others. The provider registry is a three-entry dict: `{'openai': OpenAIProvider, 'azure': AzureProvider, 'anthropic': AnthropicProvider}` (`services/ai.py:705-708` @ `anthropos-studio-room` `aeec036` v0.51.1), and `services/ai.py:1-2` imports only `openai`/`anthropic`. **There is no Mistral path in the Python *generation* engine** — but `mistralai` is **not** unimported. `tools/pdf2md.py:24` does `from mistralai import Mistral` (client at `:96`, `model="mistral-ocr-latest"` at `:127`): a **standalone CLI OCR utility**, one leg of the `tools/r3.py` offline PDF→markdown chain, that nothing on the generation path calls — `gen.py` never imports `tools`, nothing outside `tools/` references it, and no Go caller exists (Go execs only `studio/gen.py`, `studioManager.go:119`). `git -C app/studio grep -i mistral aeec036a` returns **22 hits in 3 files** (`requirements.txt:8`, `tools/pdf2md.py`, `tools/r3.py`), not one. So Mistral is **OCR-only on both sides** — Go-side for studio attachments, Python-side for that offline tool — and on the generation path on neither (see the Downstream-dependencies bullet below, and [`studio-room.md`](./studio-room.md) for the grep caveat that hid `tools/`).
 
 This last point was the first structural shift: **studio-room is not a standalone deployable**. Since cms-in-app it rides in the **`app`** image rather than the cms one.
 
@@ -211,14 +211,18 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
   legacy `cms` schema is non-authoritative. Consistent with the **Data** bullet, :28-31 above)
 * Redis (cache, Watermill streams)
 * AI providers — **OpenAI / Azure OpenAI / Anthropic** for the `studio/` Python generation pipeline
-  (`services/ai.py:705-708`). **Mistral is NOT one of them**: it is a Go-side, **OCR-only** dependency —
+  (`services/ai.py:705-708`). **Mistral is NOT one of them**: every use of it is **OCR**, never generation. The Go one —
   `app/internal/cms/studio/markdownManager.go:10` imports `internal/cms/studio/mistralocr` and `:30`
   builds the client (`mistralocr.New(aiKey)` inside `NewMarkdownManager`, re-derived at `app` origin/main
   `2035f9a`; it was `:11`/`:19` and a `mistral.NewMistral(nil, MISTRAL_API_KEY)` call before the key-plumbing
   fix that stopped it reading `os.Getenv` behind the caller's back).
   Its single use is `OCRProcess` (document → markdown) on the studio attachment path
   (`studioManager.go:531` *"supported ocr content types for mistral ocr"*, `:583`, and `xlsx.go:13` — xlsx is
-  rendered locally precisely because Mistral OCR rejects it). Nothing generates through it
+  rendered locally precisely because Mistral OCR rejects it). Nothing generates through it. There is also a
+  **Python-side** Mistral OCR user in the same image — `app/studio/tools/pdf2md.py:24`
+  `from mistralai import Mistral` (`mistral-ocr-latest`), a standalone CLI nothing dispatches
+  (`git -C app/studio grep -i mistral aeec036a` → 22 hits / 3 files; `git -C app grep -- studio/`
+  returns 0 because `studio/` is untracked in `app`, `app/.gitignore:79`)
 
 ## Local Development
 

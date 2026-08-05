@@ -244,13 +244,22 @@ revision of this doc reproduced a `directus:` compose block — image `10.10.1`,
 mounted uploads volume — and attributed it to `platform/docker-compose.yml`. That block is fictional; the
 platform compose has no such service.)
 
-The only Directus-related platform config is the address `backend` points at — set in the shared `.env`, which
-`backend` consumes via `env_file:` (its compose `environment:` block carries no `DIRECTUS_*`):
+The only Directus-related platform config is the address `backend` points at — and it arrives by **two** routes,
+not one. **`backend`'s compose `environment:` block carries exactly ONE `DIRECTUS_*` variable**,
+`DIRECTUS_PUBLIC_BASE_ADDR` (`docker-compose.yml:53` @ platform `0c91421`, inside the block that runs `:46-94`);
+the rest arrive through `env_file: .env`, and `.env_example` declares only those (`:91-92`). Compose's
+`environment:` **overrides** `env_file:`, so re-pointing the *public* address in `.env` alone is a no-op —
+the data-plane address `DIRECTUS_BASE_ADDR` is the one that is genuinely `.env`-settable, which is why the
+M23 local-content cutover targets it:
 
 ```bash
-# platform/.env  — backend reads these through `env_file: .env`, NOT its compose environment: block
+# platform/.env  (`.env_example:91-92`) — backend reads these through `env_file: .env`
 DIRECTUS_BASE_ADDR=https://content.anthropos.work
-DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
+DIRECTUS_TOKEN=
+
+# platform/docker-compose.yml:53 — set in backend's compose `environment:` block, which wins over
+# env_file. It is NOT in .env_example at all.
+      - DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 ```
 
 > The **per-stack local Directus** that the v1.5 "prop room" tooling stands up (`directus/directus:11.6.1`, on an
@@ -408,9 +417,24 @@ graph TB
 
 > Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more, **and no `graphql` profile either** — the token appears in no `profiles:` key at `0dab54d`, so asking for it exits 0 and silently starts only the three profile-less services (`postgresql`, `redis`, `sentinel`), which is worse than an error. There is likewise no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
 
-From `docker-compose.yml` *before the drop*, the gateway `depends_on`:
+From `docker-compose.yml` at **`2adcf71^1` (`1e8e754`) — the last mainline state before the drop** — the gateway
+`depends_on` named **four** services, each `condition: service_started` (`docker-compose.yml:19-27`):
 - backend
+- jobsimulation
+- cms
 - storage
+
+`storage` was never a subgraph — it was only in the startup-order list. The set had read this way since
+`a4db680` (the skillpath decommission, 2026-07-21); earlier it also named `skillpath`, `skiller`, `chronos`,
+`intelligence` and `simulator` in turn. Replay it with
+`git -C stack-demo/platform log 0c91421d --format=%h --reverse -- docker-compose.yml`.
+
+> **⚠️ This list previously named only two services, and that pair never existed on mainline.** It is the
+> block at `464dfe3` (*"compose: remove skiller/jobsimulation/cms/skillpath services (folded into backend)"*),
+> which lives **only** on the unmerged branch `origin/feat/cms-in-app` — `git merge-base --is-ancestor 464dfe3
+> 0c91421d` exits **1**. A `git log --all -- docker-compose.yml` sweep reaches that commit, and because it is
+> dated after the last mainline compose change it *reads* like the newest pre-drop state. It is not. **Grade a
+> pre-deletion compose claim against `git log <mainline-ref> -- <file>`, never against `--all`.**
 
 It starts after these services have reported "started" (not necessarily healthy — there is no subgraph healthcheck). The composed `config.json` is generated at image build time, so **any** subgraph SDL change means rebuilding the gateway.
 
@@ -538,7 +562,7 @@ For full details on models, routing, voice engines, and recording architecture, 
 | **Azure OpenAI (EU)** | `vendor = Azure` from the caller | Jobsimulation domain, Backend (app — merged skiller domain), cms domain, Studio | GPT-5.x, GPT-4.1 for simulations and content |
 | **Azure OpenAI (US)** | `vendor = Azure` **+ PostHog `flag_use_azure_us`** | same as above | The EU deployment's US twin — a flag flip, not a failure fallback |
 | **AWS Bedrock (EU)** | `vendor = AnthropicAws` **or** `Anthropic` — both resolve to the *same* Bedrock client | Jobsimulation domain, Backend (app) | `eu.anthropic.claude-sonnet-4-6` (simulation report agent, `app/internal/jobsimulation/agent/report_agent.go:31`; ask-engine, `app/internal/askengine/bedrock.go:25`) and `eu.anthropic.claude-opus-4-8` / `eu.anthropic.claude-sonnet-4-6` (course-builder author/grader, `app/internal/coursebuilder/bedrock.go:23,29`) |
-| **Mistral (EU)** | direct client, not via the AI manager | cms domain **only** | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19`, for studio attachment → markdown |
+| **Mistral (EU)** | direct client, not via the AI manager | cms domain (Go) + the in-image `studio/tools/` CLI — **never** the generation pipeline | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19` for studio attachment → markdown; and `from mistralai import Mistral` at `app/studio/tools/pdf2md.py:24` (`mistral-ocr-latest`), a standalone PDF→markdown utility nothing dispatches (`git -C app/studio grep -i mistral aeec036a`) |
 | **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
 | **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:770` @ `app` `b948604` v1.366.0, `coursebuilder.ModelBackendName()`) |
 
@@ -570,8 +594,9 @@ mechanics, all in `app/internal/jobsimulation/ai/ai.go`:
    OpenAI or Anthropic SDK (`:130-141`); the retry wrapper then sets `vendor = Openai` on the next
    attempt (`:150-155`, mirrored at `:296-302`/`:326`), i.e. **direct US OpenAI**. Nothing else —
    not a timeout, not a 5xx, not a region outage — moves a request off its vendor.
-5. **Mistral is not in this manager at all.** Its only use anywhere in `app` is OCR in the cms
-   domain (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`), so it can neither
+5. **Mistral is not in this manager at all.** *Every* use of it in `app` is **OCR** — the cms domain's Go
+   client (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`) and, in the in-image studio
+   tree, `studio/tools/pdf2md.py:24` (a standalone CLI, off the generation pipeline) — so it can neither
    receive nor pass on a simulation request.
 
 **Residency consequence, stated plainly:** the EU posture rests on the *default* vendor clients

@@ -22,8 +22,13 @@ This is a **third class of test**, beside the two everyone already knows:
 | **integration** | Do these components work together? |
 | **alignment** | Do *two independent implementations* behave identically for the same input? |
 
-The framework is **engine-agnostic and reusable** — it lives in rosetta and knows nothing about
-Clerk. Clerkenstein is just its first consumer.
+The framework is **engine-agnostic and reusable** — it knows nothing about Clerk. Clerkenstein is just its
+first consumer.
+
+**It does not live in rosetta.** The harness is the `alignment/` section of **`rosetta-extensions`** (Go module
+`anthropos.dev/alignment`) — authored in the `.agentspace/rosetta-extensions/` copy, tagged, and consumed
+per-stack at that tag. rosetta ships this doc and the `/align-dna` + `/align-run` skills, and **no executable
+alignment code at all**; see *Where things live* below for the full split.
 
 ## Vocabulary
 
