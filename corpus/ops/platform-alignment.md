@@ -1053,6 +1053,59 @@ Rules, in order of how often they actually catch something:
     > rung zero already demands of a tag. `git log --oneline origin/main..main` is the check; a
     > non-empty answer at the end of a session is a single point of failure, not a to-do.
 
+40. **A repair UNIT is not a repair POST-CONDITION — and "the predicate is discharged" is a
+    measurement, not a report.** Rule 19 says *repair by claim, not by file*; `D-M257x-59-1` extended
+    it to *repair by predicate, not by claim*. Both settle **what you work on**. Neither says **when
+    you are done**, and M257x iter-81 paid for the gap: it repaired eleven predicates across 33 files
+    and reported all eleven **discharged**, while the sentence *"the `graphql` profile name survives
+    in compose and is now simply the default profile"* — a member of P4, booked as **B1** by *both*
+    blind readings and **upheld** by the adjudication — stood untouched in
+    `corpus/services/graphql-wundergraph.md` (at `:13` as of rosetta `8d6bb6c`; the line moves when
+    the claim is repaired, which is the point).
+
+    **Measured at iter-83, against the repair's own input ledger:** of 147 gradeable booked findings,
+    **109 landed inside a repair hunk (74.1 %)** and **38 did not** — of which **35 were in files the
+    repair opened and edited**. So it was not a partition gap (only 3 misses were in unopened files,
+    all 3 outside the read's own file set) and not estimated membership (the misses fall on predicates
+    whose site counts were *exact* as readily as on the ones marked `~`). The single case that names
+    the mechanism: in **one file**, the repair rewrote the *"`make up` starts the `graphql` profile"*
+    passage — a finding the adjudication had **REJECTED** — and left the *"survives in compose"*
+    passage 164 lines above it, which the adjudication had **UPHELD**.
+
+    > **The discharge criterion was *"I have swept this file for this predicate."*** Not *"no member
+    > survives"*, and not even *"every booked member is fixed."* Nothing anywhere could report the
+    > difference between a predicate that was discharged and one that was believed to be.
+
+    Three consequences, and the third is the one that generalizes furthest:
+
+    **(a) A discharge verdict is only as good as its post-condition.** A repair states, per finding,
+    that it was **written** or that it was **dispositioned in writing**. A finding may be declined —
+    it may not be declined silently, because a silent skip and an omission are indistinguishable
+    afterwards, and at 38 sites they were.
+
+    **(b) Fence the direction nothing else fences.** Both existing repair fences are keyed on **what
+    the diff contains** — `repair_postcondition.py` on the tree the commit produced,
+    `repair_leak_guard.py` on the prose it removed — and are therefore blind *by construction* to a
+    finding the repair was handed and never opened: nothing was removed there, nothing was added
+    there, and the site reads as it did before. Only the **input ledger** can see it.
+    `repair_reach_guard.py` (`FENCE-M257x-iter83-repair-reach`) is that third question, watched RED on
+    a real answer key. **Reach is necessary, not sufficient** — a green reach report says the repair
+    opened everything it was given, never that it was correct.
+
+    **(c) The forgettable class is the one that gets forgotten.** `repair_leak_guard` goes RED on
+    iter-81's commit and **was not run**, because it declares `FENCE_KIND = "standalone"` and the
+    DERIVED registry selects only `postcondition`-kind fences — **9 of 14 guards are standalone**. A
+    repair choosing its guard list by hand is §2's hand-maintained tuple wearing a new hat, inside
+    the machinery built to end it. **If a guard only runs when someone remembers it, it is not a
+    fence; it is a habit.**
+
+    Finally, on the numbers a repair-then-re-read loop produces: **check the units before
+    subtracting.** iter-82 reported readings of 29 and 30 against a union of 41 and an overlap of 15
+    — `29 + 30 − 41 = 18`, not 15. It was not an arithmetic slip: 29/30 count blocker **blocks** and
+    41 counted distinct **anchors**. Re-derived consistently the figures are **28 / 29 / union 43 /
+    overlap 14**, and the correction matters because the per-pass **recall** estimate is computed from
+    the overlap, and recall is what decides whether a future **zero** means anything.
+
 And: **verify a claim before escalating it, including a claim made by an audit.** In M257x two probes
 contradicted each other on whether `public.sessions` exists; measuring settled it (it does not — created then
 dropped as a rename completed) and *inverted* the risk assessment that had been built on it.

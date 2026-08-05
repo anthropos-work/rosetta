@@ -966,3 +966,42 @@ defect and would also explain why no amount of accessor work has helped.
   empty `raw/`, no overview/progress/decisions, zero mentions in this file; the 11 predicates exist
   as a written list only inside its commit message. **No repair landed in this iter, by
   instruction** — see iter-82/progress.md
+- iter-83 (tik, shape `tooling`): **why a discharged predicate had a surviving member — measured, and
+  it is general.** iter-81 reported eleven predicates discharged; graded against **its own input
+  ledger** (`iter-76/raw/`, 152 booked), it reached **109 of 147 gradeable findings = 74.1 %**, and
+  **35 of the 38 misses sit in files it opened and edited**. So **H1 (partition gap) is REFUTED** —
+  only 3 misses are in unopened files and all 3 are outside the read's own 40-file set — and **H2
+  (estimated `~` membership) is REFUTED** too: the misses land on **exact**-count predicates
+  (`external_services.md` ×5 = P8's 9; `storage.md` ×3 = P9's 3) as readily as on `~` ones. The
+  decisive case is mechanical and is pinned as a regression test: in **one file**,
+  `graphql-wundergraph.md`, the repair **rewrote `:177`** — a finding the adjudication had
+  **REJECTED** — and **left `:13`**, booked as **B1** by **both** readings and **UPHELD**. **The
+  discharge criterion was *"I have swept this file for this predicate"*** — not *"no member
+  survives"*, not even *"every booked member is fixed"*. **Therefore all eleven verdicts are
+  UNPROVEN** and are re-derived as membership questions at iter-84, not trusted. **Two deeper layers
+  found while measuring:** `repair_leak_guard.py` — the one fence whose question is *"did this commit
+  FINISH?"* — **exits 1 on `328ece5`** naming 3 sites (`CLAUDE.md:285`, a **live P4 member in a
+  runnable command block**; `platform-alignment.md:1249`; `messenger.md:122`), all three still
+  standing at HEAD, and it is **absent from the six guards the commit message lists**; and it is
+  absent **structurally**, because it declares `FENCE_KIND = "standalone"` while the DERIVED registry
+  selects only `postcondition`-kind fences — **9 of 14 guards are standalone**, i.e. the class you
+  must remember, which is §2's hand-maintained tuple inside the machinery built to end it.
+  **The arithmetic inconsistency is settled first, and it was a category error, not a slip:** 29/30
+  count blocker **blocks**, 41 counted distinct **anchors**. Re-derived (extractor positive-controlled
+  by reproducing iter-82's own per-seat table and both totals): **D₁₅ 28 · D₁₆ 29 · union 43 ·
+  intersection 14**, and 28+29−14=43 ✓ — iter-82's own printed intersection list has **14** items
+  while its prose said 15. **Recall follows:** Chapman `N̂` = **57**, **per-pass ≈ 49–51 %**, union
+  ≈ 75 % — a *lower* bound on population and an *upper* bound on recall, because the two readings share
+  a briefing/file-set/partition/model and correlated blind spots inflate the overlap. **Stated
+  plainly, and it is the honest close-claim: a paired zero bounds the residual at roughly R ≤ 2 at
+  95 %, not at none.** Clause 5 is **NOT** re-cut. **Shipped `FENCE-M257x-iter83-repair-reach`**
+  (`repair_reach_guard.py`) — the third question, keyed on the **input ledger** where the other two are
+  keyed on the diff and are blind by construction — **watched RED on a real answer key** (`iter-76/raw/`
+  × `328ece5`), 16 behaviour tests + a **5-mutant battery, 5 kills, ≥3 distinct signatures**, no-op
+  control survives; the load-bearing mutant `file-level-reach-accepted` is a mechanical statement of
+  iter-81's actual criterion. **`FIX-M257x-iter82-iter81-has-no-record` DISCHARGED** — iter-81's record
+  recovered from `git log` + the diff under an explicit **non-contemporaneous** banner, every field
+  tagged `[git]`/`[msg]`/`[iter-83]`/`UNRECOVERABLE` (2 fields left unrecoverable rather than inferred),
+  **re-grading iter-81 `closed-fixed` → `closed-fixed-partial`**. **No corpus claim repaired** —
+  adjudication-before-repair is binding. `stack-core` 822 → **843**. Gate **4 of 5**, unchanged —
+  see iter-83/progress.md
