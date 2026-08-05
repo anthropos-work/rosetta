@@ -346,7 +346,7 @@ serializes in order.
 The two-sided fidelity gene needs a **source** side (the captured manifest) and a **replay** side (the live stack).
 M9b wires both: `dna.CapturedFromManifest` derives the per-table expectations from a real `manifest.json` (refusing
 a non-public-only manifest), and `datadna measure-snapshot --stack demo-N --dna <dna> --manifest <taxonomy.json>`
-runs the five fidelity operators (row-count / structural / referential / embedding-dim / public-only) against the
+runs the fidelity operators for the surface (`stack-seeding/dna/snapshot.go:62` declares **six**; the taxonomy surface uses five of them — row-count / structural / referential / embedding-dim / public-only — and the content surface swaps `embedding-dim` for `snapshot-cross-surface-closure`) against the
 replayed stack, exiting non-zero if critical fidelity < 100%.
 
 **Read-side public-only is asymmetric to the capture side** (pinned by the M9b hardening pass — `PgFidelityProbe`):

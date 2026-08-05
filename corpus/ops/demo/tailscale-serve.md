@@ -247,7 +247,7 @@ verb ever reads, echoes, or logs a secret value. The `GH_PAT` in the bundle both
 (Step 1) and rides into the Docker builds as `GH_ACCESS_TOKEN`.
 
 The secret source is laid out **by repo** (`<root>/.agentspace/secrets/<repo>/<target-file>`); the full layout +
-the 6-repo/56-gene coverage DNA + the `DIRECTUS_TOKEN`-stays-blank safety are in
+the 6-repo/64-gene coverage DNA + the `DIRECTUS_TOKEN`-stays-blank safety are in
 [`../secrets-spec.md`](../secrets-spec.md). `/demo-up` runs `/stack-secrets` as an auto-provision step, so a demo
 is self-sourced from `.agentspace/secrets`; you can also pre-run it explicitly with `/stack-secrets demo-1`.
 
@@ -460,9 +460,10 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
   called at all.)
 - **`DEV_PUBLIC_HOST`, not `STACK_PUBLIC_HOST`.** `up-injected.sh` *exports* the latter, so an inherited value
   would otherwise flip a dev stack public with no flag on the command line. Dev has its own namespace.
-- **Only the ports your `--profile` actually publishes are fronted** (default `graphql` ⇒ backend API + Cosmo
-  GraphQL). The demo's fixed registry does not apply: `tailscale serve` **binds** what it fronts, so fronting a
-  port with no listener would hold it against the next bring-up.
+- **Only the ports your `--profile` actually publishes are fronted** (default `core` at platform `0dab54d` ⇒ the
+  backend API on `:8082+off`, which is also where GraphQL is served since `2adcf71` deleted the Cosmo router —
+  there is no second GraphQL port to front). The demo's fixed registry does not apply: `tailscale serve` **binds**
+  what it fronts, so fronting a port with no listener would hold it against the next bring-up.
 - **No cockpit, no Clerkenstein.** A dev stack authenticates against **real Clerk** and has no presenter
   launcher. §3.2's *"unauthenticated, authz-weakened build"* is a description of a **demo**, not of this.
 

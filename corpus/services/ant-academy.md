@@ -219,14 +219,25 @@ academy up fully configured (it always did); the M245 change makes that config *
 
 ### The language switch is a `?lang=` query param, not a `/it` route (the #2 verdict, v2.6 M238)
 
-The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code this
-is **not a code bug** — it decomposes into:
+The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code the
+`/it` half is **not a code bug**; the "shows no menu" half is **unresolved** (M257x — see the second bullet, which
+used to dismiss it on a premise that was never true). It decomposes into:
 - **Locale is a `?lang=<code>` QUERY PARAM only** (`src/i18n/locale.js` — explicit by-design; there is **no
   `/[locale]` path-prefix route**). A bare `/it` URL 404s because it was never a route. `coerceLocale` falls back to
   `en` for anything unsupported.
-- **The switcher (`src/i18n/LocaleSwitch.jsx`) is a 2-way EN↔IT toggle `<Link>`** that sets `?lang=it` on the current
-  path (mounted in the public header), **not a dropdown menu**. `src/i18n/translate.js` returns the inline-English
-  `defaultEn` on any key miss, so a switch can't error — it degrades to English.
+- **There are TWO switchers, and only one of them is the 2-way toggle.** `src/i18n/LocaleSwitch.jsx` **is** a 2-way
+  EN↔IT toggle `<Link>` that sets `?lang=it` on the current path — but it is mounted **only in the public-storefront
+  header** (`src/views/public/PublicHeader.jsx:20`, i.e. `/library` + `/free`). The **app-shell** header mounts a
+  different component, and that one **IS a dropdown menu**: `src/components/LanguageSelector.jsx`
+  (`src/components/TopBar.jsx:76`) renders a flag-only trigger opening a `role="menu"` panel of **7**
+  `role="menuitemradio"` options over `SUPPORTED_LOCALES = ['en', 'it', 'es', 'fr', 'de', 'nl', 'pt']`
+  (`src/i18n/locale.js:10`) — and `TopBar` is on `/`, `/chapters/*`, `/latest`, `/bookmarks` and `/my-activity`.
+  **So "the switcher shows no menu" cannot be dismissed as "there is no menu."** This bullet read *"not a dropdown
+  menu"* until M257x; that half is **retracted**, and it was wrong **when written**, not merely stale — the dropdown
+  has been mounted in `TopBar` since `5b05b7d9` (2026-05-05) and 7-locale since `e22f3230` (2026-05-18), both well
+  before M238. What survives is the mechanism: locale is a `?lang=` param either way, never a route.
+  `src/i18n/translate.js` returns the inline-English `defaultEn` on any key miss, so a switch can't error — it
+  degrades to English.
 - **Switching language on a CHAPTER reader** re-runs `resolveServerChapterBody(slug, 'it')` (the chapter RSC reads
   `?lang=` via `localeFromSearchParams` and threads the locale) → in a demo that hit the **same backend-null 404** as
   #3. So it is **fixed by the M238 chapter-body patch**, which serves the locale-aware FS body (the `it/` overlay

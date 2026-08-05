@@ -40,7 +40,7 @@ Clone a stack's repos (`make init` / `/dev-up` / `/demo-up`'s `ensure-clones`) �
 ## Mission
 
 1. **Read the spec** — [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) (the source-dir/zip
-   layout, the 6-repo/56-gene secret-DNA, the per-repo target-file map, the values-blind safety statement, the
+   layout, the 6-repo/64-gene secret-DNA, the per-repo target-file map, the values-blind safety statement, the
    alias/collision rules, the waived class, the `DIRECTUS_TOKEN` non-rearm safety). **Confirm the target is a
    non-prod stack** (`dev-N` / `demo-N`, never production). `provision` hard-refuses the **main dev stack
    (N=0, `anthropos`)** without `--force` — it holds the operator's real source `.env`.

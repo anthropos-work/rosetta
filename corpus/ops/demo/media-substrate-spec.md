@@ -22,7 +22,7 @@ without a recording.
 
 Two facets, two very different shapes.
 
-### 1.1 The recorded call → a Bunny.net CDN reference (NOT an S3 blob)
+### 1.1 The recorded call → a Bunny.net CDN reference (NOT a blob the demo copies)
 
 A recorded session's media is **not** stored as a blob the demo copies. It is a **reference**:
 
@@ -30,9 +30,20 @@ A recorded session's media is **not** stored as a blob the demo copies. It is a 
   is playable"; `'not_available'` means "no recording" (the faithful default for every non-recorded session).
 - **`ChimeRecording`** ent (`jobsimulation`) — one row per recorded session, carrying **`bunny_video_id`** (plus
   `recording_id`, `session_id`, `attendee_id`, `meeting_id`, `media_pipeline_id`). The `bunny_video_id` resolves to
-  an MP4 in a **Bunny.net Stream CDN** pull-zone (`vz-…​.b-cdn.net`). **The bytes live on Bunny's CDN, never in the
-  platform DB and never in prod S3** — which is why S3 read access (the old `DEF-M10-01`) is neither necessary nor
-  sufficient to exhibit a recording.
+  an MP4 in a **Bunny.net Stream CDN** pull-zone (`vz-…​.b-cdn.net`) — **the only place the demo ever fetches a byte
+  from**. **The bytes are never in the platform DB** (`ChimeRecording` carries ids only, no blob column) — **but they
+  ARE in prod S3.** This bullet said *"never in prod S3"* until M257x, and that was **false**: Chime writes the
+  composited MP4 into the recording bucket (`jobsimulation/internal/recording/chime.go:166-167` capture sink,
+  `:240-247` concatenation sink → `<bucket-arn>/concatenated`), the SNS S3-event handler (`:381-426`) flips
+  `chime_status` to `completed`, and `SaveRecording` then **reads that object back out of S3**
+  (`chime.go:289-331` → `s3Client.GetObject`, key `concatenated/composited-video/<media_pipeline_id>.mp4`) in order
+  to upload it to Bunny (`internal/simulator/manager/manager.go:3272-3291`). **Nothing deletes the S3 copy** — there
+  is no `DeleteObject` anywhere in `chime.go` (the only `Delete*` is `DeleteMeeting`, `:279`) and no lifecycle
+  expiration rule in `terraform/chime.tf`. **S3 is the origin; Bunny is the delivery copy** — which is what
+  [`ai_architecture.md` § *Recording Architecture*](../../architecture/ai_architecture.md) has said all along.
+  **The consequence is unchanged; only its reason is.** S3 read access (the old `DEF-M10-01`) is still **neither
+  necessary** — this demo renders by Bunny reference and never touches S3 — **nor sufficient**: S3 bytes yield no
+  `bunny_video_id` and no `chime_status`, and the render gate reads both.
 
 **The recorded pool is almost entirely HIRING interview VIDEO of real candidates** (a face + a voice). Assessment /
 training / interview-sim *voice* sessions carry **no** recording. This is decisive for content-story sourcing (§5).

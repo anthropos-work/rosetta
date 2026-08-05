@@ -205,8 +205,8 @@ graph TB
 
 > **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
 > tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to the stack's
-> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:636-637`
-> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:53`). `backend`
+> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:669-670`
+> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:84`). `backend`
 > is in that tuple because — per the `cms_reader_switch` above — **`backend` is the service that actually
 > reads Directus**; re-pointing only `cms` would leave the real reader aimed at production content.
 >
@@ -216,7 +216,7 @@ graph TB
 > `cms` had `DIRECTUS_BASE_ADDR=http://directus:8055` while `backend` still had
 > `https://content.anthropos.work` with an empty `DIRECTUS_TOKEN`, which surfaced as **96 all-403 lines** in
 > `backend`'s log. That test is gone, replaced by `test_backend_the_actual_reader_is_repointed`
-> (`stack-injection/tests/test_injection.py:1051`), which asserts the opposite. See
+> (`stack-injection/tests/test_injection.py:1109`), which asserts the opposite. See
 > [`directus-local.md`](../ops/directus-local.md).
 
 ### Integration Pattern
@@ -819,9 +819,19 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 docker compose ps backend
 
 # Check backend's own dependencies are up (docker-compose.yml:92-99 — redis, postgresql, sentinel;
-# `cms`, `jobsimulation` and `storage` are NOT among them and would name nothing startable)
+# `cms`, `jobsimulation` and `storage` are NOT among them). Of those three only `cms` and
+# `jobsimulation` name nothing startable — both compose blocks were deleted at `d11a403`, so
+# `docker compose ps cms` exits 1 with "no such service".
 docker compose ps postgresql redis sentinel
 ```
+> **`storage` is the exception — it is still a declared service, just not a default one.** At platform
+> `0dab54d` it sits at `docker-compose.yml:102` under `profiles: [storage-legacy]` (`:134`), so
+> `docker compose ps storage` **exits 0** (measured 2026-08-05 against `stack-demo/platform`, against
+> `ps cms` / `ps jobsimulation` → rc 1 "no such service"). It is dropped from `backend`'s `depends_on`
+> — *"storage removed at v9.0: served in-process by this container now"* (`docker-compose.yml:93`) — and
+> out of the default selection, which is **not** the same thing as removed from the file. Running it
+> alongside `backend` is the two-writers-on-one-bucket hazard compose warns about at `:131-132`; see
+> [`platform-migration-status.md`](./platform-migration-status.md).
 
 **Schema outdated**:
 ```bash

@@ -31,8 +31,9 @@
 >   Measured: **0** occurrences in Go source across the clone set and no `skillpath…v1connect` import; the
 >   platform's own M506 record says so — *"**No in-app RPC handler is served**"* / *"the client is simply
 >   deleted"*. Callers read sessions **in-process**, and `SKILLPATH_RPC_ADDR` was dropped from terraform.
->   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:72` and
->   `app/knowledge/architecture.md:28` still list the service — Trap C, *the platform's planning docs lag its
+>   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:80` and
+>   `app/knowledge/architecture.md:28` still list the service — measured at `app` origin/main `7177374`, and
+>   identical at the checked-out `b948604`. Trap C, *the platform's planning docs lag its
 >   own code*. Grade against `main.go`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
 >   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations

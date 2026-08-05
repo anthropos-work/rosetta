@@ -92,7 +92,7 @@ Why HTTPS, not SSH: the `Makefile` and every service Dockerfile uses `GH_ACCESS_
 - Docker Engine + `docker compose` v2.20+.
 - `psql` client (`apt install postgresql-client-16`).
 - ≥30 GB free disk (12 GB dump + restored DB + docker images).
-- ≥16 GB RAM is ample. (The earlier "~10-12 GB" figure was an unmeasured over-estimate — the `graphql`-profile dev stack idles at **~0.9 GB measured**; `--profile all` adds only a handful more services. RAM is not the constraint it was once assumed to be — see [`rosetta_demo.md`](rosetta_demo.md) § Resource budget.)
+- ≥16 GB RAM is ample. (The earlier "~10-12 GB" figure was an unmeasured over-estimate — the default-profile dev stack idles at **~0.9 GB measured** (measured under the profile then named `graphql`, renamed to `core` at platform `0dab54d`); `--profile all` adds only a handful more services. RAM is not the constraint it was once assumed to be — see [`rosetta_demo.md`](rosetta_demo.md) § Resource budget.)
 - `node` + `npm` 20+ on the host (only for running the Playwright smoke script outside Docker).
 
 ### Group membership

@@ -1057,20 +1057,28 @@ Rules, in order of how often they actually catch something:
     measurement, not a report.** Rule 19 says *repair by claim, not by file*; `D-M257x-59-1` extended
     it to *repair by predicate, not by claim*. Both settle **what you work on**. Neither says **when
     you are done**, and M257x iter-81 paid for the gap: it repaired eleven predicates across 33 files
-    and reported all eleven **discharged**, while the sentence *"the `graphql` profile name survives
-    in compose and is now simply the default profile"* — a member of P4, booked as **B1** by *both*
+    and reported all eleven **discharged**, while a sentence asserting that the retired profile token
+    had *survived the rename* and *become the default* — a member of P4, booked as **B1** by *both*
     blind readings and **upheld** by the adjudication — stood untouched in
     `corpus/services/graphql-wundergraph.md` (at `:13` as of rosetta `8d6bb6c`; the line moves when
     the claim is repaired, which is the point).
+
+    > **The false sentence is described here, not quoted.** It was reproduced verbatim in this rule
+    > until M257x iter-86, when the first full-family guard run measured what that cost: the
+    > quotation is itself a published site of P4, and `platform_predicate_guard` booked **this
+    > document** for it — the protocol doc tripping the fence it exists to teach, for the second
+    > time (`:1305` was the first, iter-84). The rule this file already states about retired
+    > compose tokens applies to the file stating it: **do not spell a dead claim in a form that
+    > reads as a live one.** A worked example does not need a copy-pasteable copy of the defect.
 
     **Measured at iter-83, against the repair's own input ledger:** of 147 gradeable booked findings,
     **109 landed inside a repair hunk (74.1 %)** and **38 did not** — of which **35 were in files the
     repair opened and edited**. So it was not a partition gap (only 3 misses were in unopened files,
     all 3 outside the read's own file set) and not estimated membership (the misses fall on predicates
     whose site counts were *exact* as readily as on the ones marked `~`). The single case that names
-    the mechanism: in **one file**, the repair rewrote the *"`make up` starts the `graphql` profile"*
-    passage — a finding the adjudication had **REJECTED** — and left the *"survives in compose"*
-    passage 164 lines above it, which the adjudication had **UPHELD**.
+    the mechanism: in **one file**, the repair rewrote the passage claiming that `make up` starts the
+    retired token's profile — a finding the adjudication had **REJECTED** — and left the
+    *"survives in compose"* passage 164 lines above it, which the adjudication had **UPHELD**.
 
     > **The discharge criterion was *"I have swept this file for this predicate."*** Not *"no member
     > survives"*, and not even *"every booked member is fixed."* Nothing anywhere could report the

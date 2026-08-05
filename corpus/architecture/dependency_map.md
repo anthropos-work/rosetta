@@ -22,7 +22,7 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and enviro
 | **CustomerIO Sync** (opt-in profile) | Postgres | **Customer.io** |
 | ~~**Graphql (Cosmo Router)**~~ | **Not in a local stack** — platform `2adcf71` deleted the compose service and the `repos.yml` entry; the frontends call `backend` directly at `:8082/graphql/query`. Still declared in production terraform; repo archived 2026-07-30. Composed `backend` alone (1 subgraph) | *(no local service)* |
 | **Studio-Desk** (opt-in profile) | `backend`'s GraphQL endpoint directly (`:8082/graphql/query`) — the router it used to depend on is gone locally. Compose `depends_on` is **`backend`, and only `backend`** (`docker-compose.yml:223-225`) — the cms edge went with the cms container at `d11a403`, so this is now a one-edge block, not a two-edge one | **Clerk**, **OpenAI / Azure OpenAI / Anthropic** (Copilot, via `AI_PROVIDER_CHAIN`) |
-| **Studio-Room** | (runs inside the `app` container; depends on the backend process) | **OpenAI**, **Anthropic**, **Mistral** |
+| **Studio-Room** | (runs inside the `app` container; depends on the backend process) | **OpenAI**, **Azure OpenAI**, **Anthropic** — **not Mistral** (`services/ai.py:705-708`; the `mistralai` requirements line is imported nowhere) |
 
 > **Skiller merged into app (July 2026):** the standalone skiller service is gone from the compose file. Its RPC surface is now served by **backend** — consumers keep the `SKILLER_RPC_ADDR` env var, re-pointed at `http://backend:8083` (production terraform: `skiller_rpc_addr = http://backend:8081`). See [Backend](../services/backend.md) and the [skiller stub](../services/skiller.md).
 >
@@ -55,10 +55,10 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 
 | Stream Name | Producer | Consumer(s) | Events |
 | :--- | :--- | :--- | :--- |
-| `backend` | App | App (cms **domain** in `app`) — **and nothing else**: the `cms` husk container that used to subscribe alongside it was deleted from compose by `d11a403`, so there is no second subscriber on this stream locally | User/org updates |
+| `backend` | App | App (cms **domain** in `app`) — **and two more; the old "and nothing else / no second subscriber locally" here was refuted twice.** (a) `messenger` subscribes to this same stream whenever its profile is up — `messenger/internal/flow/flow.go:72` is a literal `AddSubscriber("backend", …)` over 21 live handlers. (b) Since the v9.0 messenger-in-app fold (`app` `9d00a313`), **`app` itself runs a second subscriber server** on messenger's *own* Redis consumer group and attaches it to this stream by name — `app/main.go:1442` guards the takeover against `StreamBackend`, which is the literal `"backend"` (`app/internal/messenger/flow/streams.go:65`). That one is not opt-in: it is the stock `core` selection. What `d11a403` removed was only the `cms` husk container, and that was never the whole answer | User/org updates |
 | `skiller` | App | App | Skill score changes — both producer and consumer live inside app since the skiller→app merge (stream name retained) |
-| `jobsimulation` | App | App (the jobsim engine + the skill-path engine, on ONE subscriber), Messenger (if running) | Session completed, insights generated |
-| `cms` | App (+ **Directus webhooks** → `POST /api/webhook/directus`, now authenticated via `DIRECTUS_WEBHOOK_SECRET`) | App (the cms similarity/Studio handlers + the jobsim handlers, merged onto ONE subscriber) | Content published/updated, translation & clone requests |
+| `jobsimulation` | App | App (the jobsim engine + the skill-path engine, on ONE subscriber), Messenger (if running — `messenger/internal/flow/flow.go:105`), **and app's messenger-in-app subscriber**: the same takeover as the `backend` row attaches to `StreamJobSimulation` too | Session completed, insights generated |
+| `cms` | App (+ **Directus webhooks** → `POST /api/webhook/directus`, now authenticated via `DIRECTUS_WEBHOOK_SECRET`) | App (the cms similarity/Studio handlers + the jobsim handlers, merged onto ONE subscriber), Messenger (if running — `messenger/internal/flow/flow.go:109`), **and app's messenger-in-app subscriber**: the takeover names all three of messenger's streams, this one included | Content published/updated, translation & clone requests |
 | `skillpath` | App | App | Session updated, chapters completed — both producer and consumer live inside app since the skillpath→app merge (stream name retained) |
 | ~~`roadrunner`~~ | — | **no producer or consumer** — roadrunner is merged into app, which calls Judge0 synchronously | ~~`RoadrunnerSubmissionCompleted`~~ |
 | `AI` | (multiple) | (multiple) | AI usage / cost telemetry — see `AI_USAGE_STREAM=AI` env var |
@@ -88,7 +88,7 @@ Services communicate asynchronously through named Redis Streams. Stream names co
     over `backend`'s GraphQL endpoint (`:8082/graphql/query`).
 *   The **cms domain** (Go, `app/internal/cms/`) creates `StudioTask` records and dispatches generation work —
     an in-process hop since cms-in-app v8.0, not a service call. Consistent with :9/:15/:31 above.
-*   **Studio-Room** (Python, embedded inside the **`app`** container since cms-in-app) executes the generation pipeline against AI providers (OpenAI, Anthropic, Mistral).
+*   **Studio-Room** (Python, embedded inside the **`app`** container since cms-in-app) executes the generation pipeline against AI providers (OpenAI, Azure OpenAI, Anthropic — **not** Mistral; see the table above).
 *   Final content is persisted via the **cms domain** (in `app`); **Directus** is the underlying storage backend.
 
 ### 5. Skill Path Progress (Event-Driven)

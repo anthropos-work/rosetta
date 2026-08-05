@@ -19,7 +19,8 @@ and scoped to the **services actually brought up**. So when a bring-up says "UP"
 > authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform
 > repo is modified.**
 >
-> **In scope:** the backend `graphql`-profile services (what exists today). **Out of scope:** the
+> **In scope:** the backend services the **default** profile starts — `core` at platform `0dab54d`
+> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis`/`sentinel` floor). **Out of scope:** the
 > frontend tier — the frontends don't exist in the stack yet; **M19** adds them and extends the verify
 > service list. Deep behavioural / e2e flows remain the operator-driven `/test-platform` job; this
 > auto-run is the always-on *smoke net*.

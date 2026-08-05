@@ -212,12 +212,11 @@ reads **exactly one table**, and decodes its `report` JSONB:
   from nobody;
 - the **five** usage KPIs — `avg_adoption` · `avg_depth` · `avg_ownership` · `avg_transformation` ·
   `avg_originality`, the set `aiReadinessUsageKPIs` returns at
-  `stack-seeding/seeders/ai_readiness_interview_report.go:181-185`, whose own comment at `:145` reads *"All
+  `stack-seeding/seeders/ai_readiness_interview_report.go:185-189`, whose own comment at `:149` reads *"All
   five are always emitted here"* — are **DERIVED from the org's own seeded Step-3 session scores** (the same
   raw numbers the frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented.
   (This bullet said *"four"* until M257x; it is the same five ids the `catalog_kpis[]` row above enumerates
-  and the same five *part 5* of § *The FILLED-ness contract* re-derives. The rext source's own prose at
-  `:137` and `:139` still says *"four"* — stale on that side too, and out of this corpus's edit scope.);
+  and the same five *part 5* of § *The FILLED-ness contract* re-derives.);
 - `session_count` is the true number of seeded interviews;
 - an org with **zero** seeded Step-3 interviews writes **no row** (nothing to aggregate — honest degradation).
 
@@ -319,7 +318,8 @@ checkable evidence rather than history:
 dashboard gates purely on the GraphQL `aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
 
 **Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
-**hard-gated off** — `AIReadinessClient.tsx:69` `const SHOW_SECONDARY_TABS = false;` strips it from the tab list.
+**hard-gated off** — `AIReadinessClient.tsx:78` `const SHOW_SECONDARY_TABS: boolean = false;`, read by the tab
+filter at `:599`, strips it from the tab list.
 `/ai-readiness?tab=compare` renders no panel. It is neither current nor legacy: complete-but-disabled.
 
 **The demo's pointers** (all repointed at the current surfaces in M219, and a legacy target is now a **hard
@@ -462,9 +462,9 @@ decision):**
   > The retracted claim: *"the demo FE fires the data GET WITHOUT `?cycle=` … and never fires the `/cycles` list
   > that supplies `latestClosedCycle.id`"*, concluded to be **platform-bound**.
   >
-  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:137-138`) computes
+  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:153-154`) computes
   > `effectiveCycleId = selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id` and gates the data GET on
-  > `cyclesQ.isFetched` (`:150-154`) — i.e. it **waits for `/cycles`, then passes `?cycle=`**. Verified live
+  > `cyclesQ.isFetched` (`:166-170`) — i.e. it **waits for `/cycles`, then passes `?cycle=`**. Verified live
   > against a running demo (authenticated as the manager hero): `/cycles` returns the seeded cycle, and the
   > frozen read answers **HTTP 200 in 24 ms**.
   >

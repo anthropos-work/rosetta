@@ -6,7 +6,10 @@ Storage is the **centralized file/blob service** for the platform.
 
 > **⚠️ MERGED INTO `app` — storage is served in-process since the v9.0 fold (2026-08-04), and there is no live RPC caller at all.** The jobsimulation and cms domains run
 > **in-process inside `backend`** (`app/internal/jobsimulation/recording/recording.go:12`,
-> `anticheat.go:34`, `app/main.go:1048` `internalstorage.NewClient(storageManager, storagens.CMS)` @ `app`
+> `app/internal/jobsimulation/anticheat/anticheat.go:30` — spelled in full because there is **no** `anticheat.go`
+> beside `recording.go`; the storage-SDK import lives in the sibling `anticheat/` package, so reading the bare
+> filename against `recording/` resolves to nothing — `app/main.go:1048`
+> `internalstorage.NewClient(storageManager, storagens.CMS)` @ `app`
 > `9d00a313` v1.367.0); at platform `0dab54d` they have **no compose containers at all** — the local
 > husks are gone, along with the `cms` and `jobsimulation` `repos.yml` entries. (Local compose only;
 > the production **M810** rollback-path teardown was not measured here.) Since v9.0 the object-storage
@@ -23,7 +26,7 @@ Storage is the **centralized file/blob service** for the platform.
 > | **config** | `STORAGE_RPC_ADDR` is set by **no** compose file and is **absent from `.env_example`** — 0 occurrences across `docker-compose.yml`, `common.yml`, `.env_example` |
 > | **compose** | the `storage` service moved to `profiles: [storage-legacy]` (`docker-compose.yml:134`), so a default bring-up never starts it — rationale in-comment at `:131-133` (two writers on one bucket) |
 > | **`repos.yml`** | `storage` is **still an entry** (`repos.yml:18-20`) — still cloned, and the standalone stays startable. The rollback path, exactly as `cms` and `jobsimulation` are kept |
-> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472`, consumed at `:494` and `:1048`; bucket names are constants in `app/internal/storage/service.go:22`, `:24`. `STORAGE_RPC_ADDR` is read by **nothing** at this ref: `git grep -n STORAGE_RPC_ADDR 9d00a313 -- '*.go'` returns **3 hits, all of them comments** — `app/main.go:451` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
+> | **consumer** | `app` serves object storage **in-process**: `internalstorage.NewManager` / `NewPublicManager` at `app/main.go:471`, `:472`, consumed at `:494` and `:1048`; the constants at `app/internal/storage/service.go:22`, `:24` are the bucket **env-var NAMES** (`EnvBucket = "STORAGE_S3_BUCKET"`, `EnvPublicBucket = "STORAGE_S3_PUBLIC_BUCKET"`), not the bucket names — those are still read from the environment, at `app/main.go:463`, `:464`. `STORAGE_RPC_ADDR` is read by **nothing** at this ref: `git grep -n STORAGE_RPC_ADDR 9d00a313 -- '*.go'` returns **3 hits, all of them comments** — `app/main.go:451` (*"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"*), `app/internal/jobsimwiring/wiring.go:101` and `app/internal/storagens/callsites_test.go:189`. (Those three paths are in the **`app`** repo, not this one; a bare `main.go` here resolves to `storage`'s own 18-line `main.go`.) **Zero** `os.Getenv` sites, in `main.go` or in any of the three `cmd/` tools |
 >
 > The mid-fold hazard this block used to describe — a client built against an empty address, failing
 > at call time rather than boot time, and two `cmd/` tools hard-failing outright — **is gone**, because

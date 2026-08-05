@@ -71,7 +71,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
    `intelligence` are retired.
 2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is embedded in the **`app` (backend) image** since cms-in-app — it was in the cms container before the merge.
 3. **External Services**: Clerk, Directus, GraphQL (**prod only**), AI providers, LiveKit, AWS Chime
-4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
+4. **Shared Libraries**: **four** imported private modules — colony, proto, ai, taxonomy (not deployed; pulled at Docker build). **`authn` is not a fifth**: it ships inside colony as `colony/authn`, and no service's `go.mod` requires the standalone module — 0 hits for `github.com/anthropos-work/authn` across all seven Go clones, against a positive control of `colony` required by all seven
 5. **Production-only / not in local compose**: db-backup, archived Chronos/Intelligence
 
 Services communicate via **Connect-RPC/HTTP** for synchronous operations and **Redis Streams** (via Watermill) for asynchronous messaging.
@@ -118,7 +118,7 @@ graph TD
     %% Studio connections
     Desk --> Clerk
     Desk -->|local: :8082/graphql/query| Gateway
-    Room -.->|generates from| Desk
+    Gateway -.->|spawns studio/gen.py in-process| Room
     
     %% Router aggregation — PROD ONLY. ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation
     %% entries in one commit (a 3 → 1 step) — the jobsimulation subgraph outlived jobsim-in-app.

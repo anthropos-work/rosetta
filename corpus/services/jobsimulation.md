@@ -180,13 +180,28 @@ cobra print `Error: …` **followed by the full usage/help block**, then exit 1.
 **That usage block is a symptom of a failed init, not of a wrong command.** It was misread as "the container
 needs a subcommand" for an entire release cycle, and the proposed fix would have broken the service.
 
-**Always read the FIRST line of `docker logs`, never the help block** — from the container that actually runs
-the engine, which since the fold is `backend` (there is no `…-jobsimulation-1` container to inspect):
+**Always read the FIRST line of `docker logs`, never the help block.** That rule is for the frozen binary.
+
+> ⚠️ **The signature did NOT survive the fold — do not go looking for a help block in `backend`.** `app` has
+> **no cobra root command**: `app/main.go:216` (@ `origin/main` `7177374`, identical at `9d00a313`
+> v1.367.0; `:212` at the older `b948604` v1.366.0) is a plain
+> `func main()`, and the only `spf13/cobra` import in the whole repo is `cmd/createTaxonomy/main.go`. There is
+> no `RunE`, so there is nothing to print `Error: …` and nothing to print a usage block. A failed init in
+> `backend` is a single stdlib `log.Fatalf` line — timestamped, no `Error:` prefix, no help — and the container
+> exits 1. The jobsim wiring is fatal by design at `app/main.go:670` (`:614` @ `b948604`).
+
+So on the container that actually runs the engine since the fold — `backend`; there is no `…-jobsimulation-1`
+container to inspect — the same underlying failure reads like this instead:
 
 ```bash
 docker logs demo-<N>-backend-1 2>&1 | head -3
-# Error: can't init AI: can't load AWS config: failed to load shared config file, ...
+# <date time> jobsim-in-app: engine wiring failed (is jobsim env provisioned?): can't load AWS config: failed to load shared config file, ...
+#   ^ stdlib log's LstdFlags prefix. No `Error:`, no usage block, nothing after it.
 ```
+
+That line is assembled from the source strings, not pasted from a capture — but its **shape** is the point:
+one line, naming the wiring stage rather than a command. `head -3` is still right (the first line is still the
+whole story), but "it printed the CLI help" is, on `backend`, a report of something that cannot happen.
 
 ### The `$HOME/.aws/credentials` landmine (why it died in every demo) — now a `backend` bug
 
@@ -198,8 +213,12 @@ Measured at platform `0dab54d`. **When the host path does not exist, Docker auto
 DIRECTORY.** The container then sees a *directory* where a file belongs, and `aws-sdk-go-v2`'s
 `config.LoadDefaultConfig()` **opens it successfully** (opening a directory succeeds!) before failing `EISDIR`
 on the read — so it is *not* skipped as an unreadable file. In the standalone binary that error propagated out
-of `ai.NewAIManager` → the root `RunE` → cobra's usage block → `exit 1`; **the failure mode is inherited, only
-the container name changed.**
+of `ai.NewAIManager` → the root `RunE` → cobra's usage block → `exit 1`. **The CAUSE is inherited; the
+SIGNATURE is not, and the container name is not the only thing that changed.** In `backend` the identical
+`config.LoadDefaultConfig` failure comes out of `jsai.NewAIManager` (`app/internal/jobsimulation/ai/ai.go:90`,
+`can't load AWS config: %w`), is returned unwrapped by `jobsimwiring.Wire`
+(`app/internal/jobsimwiring/wiring.go:147-148`) and dies at `log.Fatalf` in `app/main.go:670` — one timestamped
+line, no `Error:` prefix, no usage block (`app` `9d00a313` v1.367.0; the fatal is `:614` @ `b948604`).
 
 **With the path simply absent, `LoadDefaultConfig` returns `nil`.** The mount is the bug.
 

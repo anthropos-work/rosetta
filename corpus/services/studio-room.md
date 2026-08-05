@@ -346,7 +346,7 @@ pip install -r requirements.txt
 ```
 openai          # AI provider
 anthropic       # AI provider
-mistralai       # AI provider
+mistralai       # DECLARED BUT IMPORTED NOWHERE — see below
 rich            # console output
 pyyaml
 requests        # taxonomy client
@@ -355,6 +355,15 @@ pytest          # tests
 pytest-asyncio  # tests
 ```
 (`asyncio` is part of the standard library; no `aiohttp` dependency.)
+
+> **⚠️ `mistralai` is a declared dependency with no code behind it** (measured M257x iter-86 @
+> `anthropos-studio-room` `aeec036`). `grep -rni mistral` over the whole repo returns **exactly one
+> hit — this `requirements.txt` line**. The provider registry at `services/ai.py:705-708` is
+> `{'openai', 'azure', 'anthropic'}`, and `ai.py`'s imports are `openai` and `anthropic` only. **The
+> Python pipeline has no Mistral path.** Mistral in this platform is **Go-side and OCR-only**
+> (`app/internal/cms/studio/markdownManager.go` → `OCRProcess`). The line was previously annotated
+> *"# AI provider"* here, which is how the Python-side Mistral claim propagated into
+> `service_taxonomy.md` and `dependency_map.md`.
 
 #### Configuration
 

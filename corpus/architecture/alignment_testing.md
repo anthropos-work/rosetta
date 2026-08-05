@@ -467,14 +467,18 @@ The snapshot dimension extends the **same** data-DNA harness (`rosetta-extension
   waived (the snapshot/shared-store hard line) becomes `snapshot-seeded` once a snapshot fills it, so the fleet
   reads **100% coverage with nothing left waived** — the v1.2 thesis (M7c's two waived surfaces lifted to real,
   measured coverage). `Coverage()` counts seeded **OR** snapshot-seeded over the non-waived denominator;
-- a **snapshot-fidelity gene class** (`dna/snapshot.go`) — five two-sided operators over a `FidelityProbe` (the
-  replayed stack) compared to the captured manifest: **`snapshot-row-count`** (source-vs-replay parity),
-  **`snapshot-structural`** (every captured column present after replay), **`snapshot-referential`** (the captured
-  surface is referentially closed — every FK's parent table is in the captured set), **`snapshot-embedding-dim`**
+- a **snapshot-fidelity gene class** (`stack-seeding/dna/snapshot.go:62`) — **six** two-sided operators over a
+  `FidelityProbe` (the replayed stack) compared to the captured manifest: **`snapshot-row-count`**
+  (source-vs-replay parity), **`snapshot-structural`** (every captured column present after replay),
+  **`snapshot-referential`** (the captured surface is referentially closed — every FK's parent table is in the
+  captured set), **`snapshot-embedding-dim`**
   (pgvector columns replayed at the captured dimension — the index was rebuilt, the vectors must carry the same
-  width), and **`snapshot-public-only`** (the **provenance gene** — zero tenant-scoped rows after replay, the
-  firewall's measured counterpart). A snapshot gene names **snapshot** operators; a structural gene names
-  **structural** operators — `Validate` rejects a cross-wire so the two classes never mix.
+  width), **`snapshot-public-only`** (the **provenance gene** — zero tenant-scoped rows after replay, the
+  firewall's measured counterpart), and — added at M23, which is why the count reads five in older passes —
+  **`snapshot-cross-surface-closure`**, closure that spans *two* surfaces: every taxonomy node-id the replayed
+  content references must resolve to a skill present in the replayed taxonomy. `snapshot-referential` works
+  **within** one surface and cannot see that dangle. A snapshot gene names **snapshot** operators; a structural
+  gene names **structural** operators — `Validate` rejects a cross-wire so the two classes never mix.
 
 **Where it breaks from M7b (and why it's a separate gene class, not new structural operators):** the comparison is
 captured-vs-replayed (two-sided), the public-only gene asserts a **safety provenance** (no customer data) rather
@@ -484,9 +488,11 @@ its data reproduces the captured public source — row-for-row, structurally, re
 dimension, and with zero tenant leakage — and that fidelity is enumerable and measurable, just like behaviour.**
 
 **Wired to real surfaces (M9b + M10).** The dimension stops being theoretical at M9b: the **taxonomy** surface (the
-public skills-taxonomy catalog — formerly the skiller service's; the domain now lives in `app`'s `public` schema) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries all five
-fidelity operators. **M10** promotes the **content** surface (the public Directus template library)
-`waived-m7c → snapshot-seeded-m10`, carrying four operators (no `embedding-dim` — content has no vectors) with the
+public skills-taxonomy catalog — formerly the skiller service's; the domain now lives in `app`'s `public` schema) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries **five of the six**
+fidelity operators (`stack-seeding/dna/data-dna.json:410` — all but `cross-surface-closure`, which is the *content*
+surface's gene). **M10** promotes the **content** surface (the public Directus template library)
+`waived-m7c → snapshot-seeded-m10`, carrying **five** operators too (`stack-seeding/dna/data-dna.json:439`) — no
+`embedding-dim`, since content has no vectors, but M23's `cross-surface-closure` in its place — with the
 **public-only gene measured against the per-surface directus predicate** (`private=false AND tenant_id IS NULL AND
 status='published'`), not `organization_id`. The two-sided measure is driven by `datadna measure-snapshot`:
 `dna.CapturedFromManifest` derives the **source** side from the real snapshot `manifest.json` (per-surface

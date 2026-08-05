@@ -1009,9 +1009,18 @@ read side, bounded by the (text-only) scrub + the VPN scope; for the video facet
 > (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`) being provisioned into the demo — and those
 > key **values are absent from this authoring box's entire dev-stack** as of 2026-07-21 (no populated value in any
 > real `.env`, in the `.agentspace/secrets` provisioning source, or in the compose; only key-name templates exist).
-> *This supersedes the earlier reading that the blocker was eu-west-1 S3 / `DEF-M10-01`:* the served media is a
-> **Bunny CDN reference**, not an S3 blob, so S3 read access is neither necessary nor sufficient — the **Bunny
-> recording signing keys are** the dependency. Until an operator provisions those keys (from a real source — prod /
+> *This supersedes the earlier reading that the blocker was eu-west-1 S3 / `DEF-M10-01`:* **what the demo serves**
+> is a **Bunny CDN reference**, so S3 read access is neither necessary (the demo streams by reference and never
+> touches S3) nor sufficient (S3 bytes carry no `bunny_video_id` and no `chime_status`, and the render gate reads
+> both) — the **Bunny recording signing keys are** the dependency.
+>
+> ⚠️ **Scoping tightened at M257x iter-86, and the reason matters.** This sentence used to read *"not an S3
+> blob"* full stop, which is **false about the platform**: `jobsimulation` writes the composited MP4 to a prod S3
+> bucket and reads it back before uploading to Bunny (`internal/recording/chime.go` — capture + concatenation
+> sinks, the SNS handler, `getMediaFromS3`; no delete, no lifecycle expiry). **S3 is the origin; Bunny is the
+> delivery copy.** The claim survives only as a statement about *what this demo serves*, which is what it was
+> always meant to say — and the conclusion it supports is unchanged. What it can no longer be used for is the
+> stronger reading *"the bytes aren't there"*, which was never true. Until an operator provisions those keys (from a real source — prod /
 > vault), a content-story demo ships **without** an exhibited recording (`chime_status` stays `not_available`) —
 > exactly the pre-v2.6 state, degraded honestly, **never a broken "play" button over a recording the demo cannot
 > sign for**. The posture is documented **ahead of** the capability, by design (the gate ordering above). See

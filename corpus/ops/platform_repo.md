@@ -36,9 +36,9 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make init` | Clone every repo in `repos.yml` not yet present in `../` from `git@github.com:anthropos-work/<name>.git` |
 | `make pull` | Checkout + rebase `main` on all repos, auto-stashing dirty trees |
 | `make status` | Per-repo branch / dirty / behind table |
-| `make up [PROFILE=…]` | `docker compose --profile $(PROFILE) up --build -d` — **`PROFILE` defaults to `graphql`** |
+| `make up [PROFILE=…]` | `docker compose --profile $(PROFILE) up --build -d` — **`PROFILE` defaults to `core`** (`Makefile:10`, `PROFILE ?= core`) |
 | `make up-all` | Start every service (profile `all`) |
-| `make up-frontend` | Start `next-web-app` together with the graphql backend stack |
+| `make up-frontend` | Start `next-web-app` together with whatever the default profile selects — `Makefile:120` passes `--profile core --profile frontend`, i.e. `backend` + `gotenberg` + the always-on floor, plus the frontend container |
 | `make down` / `make ps` | Stop all services / list containers |
 | `make logs [S=svc]` | Tail compose logs, optionally one service |
 | `make migrate [S=svc]` | `atlas migrate apply --env local`. **`app` is the only migration repo now** — the cms and jobsim tables were re-created in `public` under `app/terraform/migrations/`, so `repos.yml` drops both to `migrations: false` |
@@ -89,7 +89,7 @@ always-on floor. Deliberately not spelled above in runnable form.
 
 > **Gotchas:**
 > * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
-> * **There is no `graphql` gateway service any more.** Platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from `docker-compose.yml` outright — service, `repos.yml` entry and clone. GraphQL is served by **`backend` itself at `:8082/graphql/query`** (the `/graphql` path serves the Apollo Sandbox UI). The `graphql` **profile name survives** and still selects the seven-service set, so nothing about the profile wiring warns you. `make up PROFILE=backend` therefore *does* give you a usable GraphQL endpoint — on `:8082`, not the retired `:5050`.
+> * **There is no `graphql` gateway service any more.** Platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from `docker-compose.yml` outright — service, `repos.yml` entry and clone. GraphQL is served by **`backend` itself at `:8082/graphql/query`** (the `/graphql` path serves the Apollo Sandbox UI). The `graphql` **profile name did not survive either** — `0dab54d` renamed it to `core` — and asking for the retired token **exits 0**, starting only the always-on floor (`postgresql`, `redis`, `sentinel`), so nothing about the profile wiring warns you. `make up PROFILE=backend` therefore *does* give you a usable GraphQL endpoint — on `:8082`, not the retired `:5050`.
 > * `customerio-sync` is **built from a GitHub URL** (`context: git@github.com:anthropos-work/customerio-sync.git#main`) and is **not** in `repos.yml`, so `make init` never clones it.
 > * Every Go service hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it.
 > * All app builds use BuildKit SSH forwarding (`ssh: ["default"]`) + `GH_ACCESS_TOKEN=$GH_PAT` to pull private Go modules — needs a loaded SSH agent **and** `GH_PAT` in `.env`.

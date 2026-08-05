@@ -40,7 +40,7 @@
 
   **There is no `SkillPathSessionService`** — measured: **0** occurrences in Go source, and no `skillpath…v1connect` package is imported. Skill-path session state lives in `public.skill_path_sessions` and is reached through the GraphQL subgraph and in-process calls, not over RPC.
 
-  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:72`, `app/knowledge/architecture.md:28`), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
+  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:80`, `app/knowledge/architecture.md:28` — measured at `app` origin/main `7177374`, and identical at the checked-out `b948604`), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
 * **HTTP** endpoints on port 8082 (local; 8080 in production) for webhooks and miscellaneous integrations — including `POST /api/webhook/directus`, which **fails closed** without `DIRECTUS_WEBHOOK_SECRET`
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
@@ -76,7 +76,11 @@ containerized bring-up + migrate, and read-only prod.
   floors, not totals** — a public-only measurement cannot see org-private rows.
 - **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
-  locally (all four occurrences in the merged `docker-compose.yml`), `http://backend:8081` in prod terraform.
+  locally — **all four occurrences** in `docker-compose.yml` **@ platform `0808b92`**, the ref this fact-sheet
+  grades against (`backend:89`, `jobsimulation:151`, `cms:204`, `messenger:334`). **That count is
+  ref-relative, not a constant:** @ `0dab54d` only **one** is left (`docker-compose.yml:183`, messenger's) —
+  the `jobsimulation` and `cms` blocks were deleted outright at `d11a403`, and `backend` no longer addresses
+  the surface it now serves itself. In prod terraform the address is `http://backend:8081`.
 - **Federation is now 1 subgraph**: **backend**. The skiller subgraph was removed at the skiller merge
   (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@749dc86`, "remove skiller subgraph and update
   related configurations", 2026-06-24), which left **4** — backend, jobsimulation, cms, skillpath. The

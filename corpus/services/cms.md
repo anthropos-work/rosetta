@@ -68,7 +68,7 @@ The CMS service is the **content layer of the platform** — it owns the authore
 
 1. **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — **skill paths** (title, description, cover/video, curators a.k.a. "Meet the Experts", library categories, **chapters → steps**, the job-simulation steps inside a chapter, skills-to-verify, settings, versioning — the `skill_paths` Directus collection), **job-simulation blueprints** (the `simulations` collection + `sequences`, roles, tasks, validation criteria), and the **content library** (`library_categories`, `library_macro_categories`, `resource`) — all proxied through Directus with Anthropos-specific business logic on top.
 2. **Owns the Studio data model** — `StudioDocument` (simulation blueprints), `StudioTask` (generation jobs), and related entities for the content-authoring workflow.
-3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against OpenAI / Anthropic / Mistral.
+3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against **OpenAI, Azure OpenAI or Anthropic** — those three and no others. The provider registry is a three-entry dict: `{'openai': OpenAIProvider, 'azure': AzureProvider, 'anthropic': AnthropicProvider}` (`services/ai.py:705-708` @ `anthropos-studio-room` `aeec036` v0.51.1), and `services/ai.py:1-2` imports only `openai`/`anthropic`. **There is no Mistral path in the Python engine.** `mistralai` is declared in `requirements.txt` and imported nowhere — that declaration is the string's *only* occurrence in the whole repo. Mistral is a **Go-side, OCR-only** dependency (see the Downstream-dependencies bullet below).
 
 This last point was the first structural shift: **studio-room is not a standalone deployable**. Since cms-in-app it rides in the **`app`** image rather than the cms one.
 
@@ -185,7 +185,12 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 * PostgreSQL (Ent ORM, **`public` schema** — the cms tables were re-created there at cms-in-app v8.0; the
   legacy `cms` schema is non-authoritative. Consistent with the **Data** bullet, :28-31 above)
 * Redis (cache, Watermill streams)
-* AI providers (Anthropic, OpenAI, Mistral — used by `cms/studio/` Python pipeline)
+* AI providers — **OpenAI / Azure OpenAI / Anthropic** for the `studio/` Python generation pipeline
+  (`services/ai.py:705-708`). **Mistral is NOT one of them**: it is a Go-side, **OCR-only** dependency —
+  `app/internal/cms/studio/markdownManager.go:11`, `:19` build a `mistral.NewMistral(nil, MISTRAL_API_KEY)`
+  client whose single use is `OCRProcess` (document → markdown) on the studio attachment path
+  (`studioManager.go:531` *"supported ocr content types for mistral ocr"*, `:583`, and `xlsx.go:13` — xlsx is
+  rendered locally precisely because Mistral OCR rejects it). Nothing generates through it
 
 ## Local Development
 

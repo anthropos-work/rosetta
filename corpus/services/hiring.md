@@ -48,9 +48,16 @@
 **org-type** that re-skins the **Workforce** app (`apps/web`) for a recruiting buyer. The demo cares about the
 **org-type**, not the standalone Hiring app: an `is_hiring` organization runs its members through
 **`SIMULATION_TYPE_HIRING`** job simulations and reads a **candidate-comparison scoreboard** — the recruiter's core
-value: *"line up every candidate who took this hiring simulation, ranked by score."* That scoreboard lives in the
-**dockerized `apps/web`** (`/enterprise/activity-dashboard`), renders **from seedable data alone**, and **survives
-the `is_hiring` flip** — so the demo can show it **without a platform edit** (M222 D1, the release go/no-go).
+value: *"line up every candidate who took this hiring simulation, ranked by score."* That scoreboard renders **from
+seedable data alone**, so the demo can show it **without a platform edit** (M222 D1, the release go/no-go) — but
+**not in `apps/web`**. M222's dockerized-`apps/web` (`/enterprise/activity-dashboard`) premise was **falsified at
+M224**: a user whose Clerk memberships are **all** hiring orgs is **ejected out of `apps/web`** to the standalone
+Hiring product (`apps/web/src/context/UserStatusContext.tsx:141-173` — `userHasAllHiringOrgs` over
+`publicMetadata.isHiring`, then `buildSwitchHandoffUrl({ targetProduct: 'hiring' })`), so *"the org genuinely reads
+as hiring"* and *"the scoreboard is reachable in `apps/web`"* are **mutually exclusive**. The demo therefore runs the
+untouched **`apps/hiring`** as a second UI container — still zero platform edits. See § *The render path*. (This
+paragraph asserted the scoreboard *"lives in the dockerized `apps/web` … and survives the `is_hiring` flip"* from
+M222 until M257x, while three later sections already said the opposite.)
 
 There is **no `hiring` microservice**. The feature is a composition: an org-type flag on `app`, the
 jobsimulation runtime (**itself now a domain inside `app`**, `app/internal/jobsimulation/` — no container
@@ -178,7 +185,7 @@ schema, read directly by the resolver.
 
 | Step | Location | What it does |
 |------|----------|--------------|
-| 1 | `apps/web/.../simulationScoreColumn.tsx:54,95-97` | renders `row.score` (the visible number) |
+| 1 | `apps/{web,hiring}/.../simulationScoreColumn.tsx:54,95-97` | renders `row.score` (the visible number). The two copies are **byte-identical**, same line numbers — but a *genuine* hiring org renders the `apps/hiring` one (§ *The render path*) |
 | 2 | `packages/graphql/src/query/insights.ts:31-82` | query `insightsJobSimulationByMemberships` |
 | 3 | `app/.../resolver_queries.go:1034,1080` | resolver `InsightsJobSimulationByMemberships` (decl `:1034`) → `IntelligenceManager.InsightsJobSimulationByMemberships` (`:1080`) |
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
@@ -296,15 +303,16 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 
 ## Interface
 
-- **GraphQL** (the single `backend` subgraph, read by `apps/web`): `insightsJobSimulationByMemberships` (`packages/graphql/src/query/insights.ts`)
+- **GraphQL** (the single `backend` subgraph, read by **both** `apps/web` and `apps/hiring` — the query lives in the shared `packages/graphql`): `insightsJobSimulationByMemberships` (`packages/graphql/src/query/insights.ts`)
   → `app` subgraph resolver `resolver_queries.go` → `IntelligenceManager.InsightsJobSimulationByMemberships`
   (`app/internal/organization/intelligence.go`). Gated on the `OrgFeatureInsights` Casbin permission.
 - **The `Session!` field** resolves from the **same** subgraph and the **same** row — there is only one subgraph
   now, and only one session table. (Before the merges it resolved from `jobsimulation.sessions` in a *different*
   subgraph, joined on the mirror's `jobsimulation_session_id`, and a missing twin NULL-bubbled the row out of the
   list. **No join key, no NULL-bubble hazard, no twin to forget.**)
-- **Surface:** `apps/web` route `/enterprise/activity-dashboard → AI-Simulations → [simId]` (list) +
-  `.../[simId]/[userId]` (the per-candidate drill-down, reads the `public.validation_*` tables).
+- **Surface:** route `/enterprise/activity-dashboard → AI-Simulations → [simId]` (list) + `.../[simId]/[userId]`
+  (the per-candidate drill-down, reads the `public.validation_*` tables) — present in **both** `apps/web` and
+  `apps/hiring`, but for a *genuine* hiring org only the `apps/hiring` copy is reachable (§ *The render path*).
 
 ## Local development
 

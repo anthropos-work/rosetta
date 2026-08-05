@@ -617,7 +617,9 @@ landed at `storytelling-postfix-2`:
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
-  `profiles:!override [graphql]`); `--no-ui` clears the tier. Also sets `CORS_EXTRA_ORIGINS` on the **backend**
+  `profiles:!override [<profile>]` — the profile is **derived** from the platform clone via `profile_for()`
+  (`gen_injected_override.py:420`), never a literal: `core` at platform `0dab54d`); `--no-ui` clears the
+  tier. Also sets `CORS_EXTRA_ORIGINS` on the **backend**
   service to the offset frontend origins (see §"Offset-origin CORS"), and **strips the inherited prod
   `DIRECTUS_TOKEN`** (`DIRECTUS_TOKEN=`) on **every** emitted service + both frontends — no prod credential rides
   in a demo container, and studio-desk's prod-Directus *write* path is disarmed (fix16/fix17; see

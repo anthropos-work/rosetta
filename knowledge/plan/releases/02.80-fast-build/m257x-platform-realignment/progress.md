@@ -1086,3 +1086,50 @@ defect and would also explain why no amount of accessor work has helped.
   COMPLETE**; the ≥16 P4 members outside it are a **corpus-quality** finding, not an instrument defect,
   and every denominator now carries its command. `stack-core` **843**, only the known perishable
   fixture. Gate **4 of 5**, unchanged — see iter-85/progress.md
+- iter-86 (tik): **the guard family ran as a family for the first time, and two of its sixteen members
+  were RED.** `platform_predicate_guard` had **never been green since it was authored at iter-60** —
+  25 iterations, across every record saying *"5 corpus guards GREEN"* / *"6 corpus guards exit 0"*,
+  including the one that used that sentence to declare **clause 3 MET**. The reason is the sharper half:
+  **G1 could not reach zero on a CORRECT corpus.** Its negation discriminator read only the text
+  *before* the noun phrase, so the corpus's own correcting sentence — *"The `graphql` profile **is
+  gone** too"* — read as a fresh claim that it lives. **A fence whose floor is above zero gets un-run,
+  and it was.** iter-83's kind-filter diagnosis was one layer short: the census over iters 77–85 shows
+  iters 77–79 captured a transcript of **one** guard beside an unenumerated count of 5; the count moved
+  **5 → 6 with no record of what joined**; iters 83/84/85 assert *"6 exit 0"* with **no captured
+  output**, and re-measurement with each iter's declared guard version and refs gives **rc=1 at all six
+  of those points** — iter-85's own repair took the site count 2 → 3. **9 of 15 guards are covered by no
+  green claim at all**, including `value_change_guard` (absent from the milestone outside iter-49) and
+  **`derived_value_guard`, which is a `postcondition` guard** — so the filter cannot explain it. **§2's
+  deleted 4-tuple returned as a human's remembered list, which a diff cannot catch.** Answer:
+  **`guard_family.py`** — census DERIVED from disk, invocation map DECLARED and **reconciled both ways**
+  (a guard with no entry exits 2 naming itself; a stale entry exits 2 too), refusing to read a guard's
+  own *"Nothing was checked; this is not GREEN"* as a pass. **Both REDs adjudicated to opposite sides of
+  the line:** 2 of the 3 G1 sites were a **CORPUS** defect — rule 40 **quoted the false sentence
+  verbatim**, the protocol doc publishing a live-reading copy of the claim it kills (2nd occurrence) —
+  repaired in the corpus, because `CLAUDE.md` already states the rule and rule 40 is the passage that
+  teaches it; the 3rd was a **GUARD** defect, repaired in the guard, because contorting correct English
+  to dodge a regex taxes every correct sentence after it. `_NEGATED_AFTER` denies **existence only** —
+  never a bare *"is not"*, since *"is **not** started by default"* denies DEFAULTNESS — and **both false
+  claims the guard was holding open survive it and stay RED**, which is the evidence it was fitted to
+  English rather than to the answer key. **3 mutants, 3 kills, 3 signatures**; +7 tests (160 → **167**),
+  +9 for the runner. **The seat-ref escalation settled by measurement, not preference** (`D-M257x-86-2`):
+  the ground-truth sheet **already varies between the readings being compared**, so it cannot be the
+  invariant that makes 140 → 43 comparable; and the class has contributed **zero to the graded count, 5
+  times out of 5**, because adjudication was already filtering it. Adopted with an `origin/main` column
+  (**6 of 14 clones are behind**; `app` by 60), and the **raw** series **declared discontinuous** at
+  iter-86 while the adjudicated series is untouched — the third of the three honest options, taken out
+  loud. **The repair: 30 enumerated predicate rows + the P4 sweep** (16 corpus/skills + 15 rext comment
+  sites), seven disjoint file-partitioned packets, each re-deriving against the clones.
+  **Adjudicate-before-repair earned itself FIVE more times** — B2's proposed range was the `return` and
+  its brace (re-anchoring would have silently changed what the citation denotes); B11+B12 and B5+B6 were
+  each **one** site double-counted; Q5's three supporting anchors landed on no S3 code (the conclusion
+  held, every anchor had to be re-derived); and B23 was **two** switchers and **wrong when written**,
+  not stale. **Two induced defects caught at COMMIT TIME by the new runner** — a repair re-anchored
+  `app/main.go:212`, correct at the 60-behind checkout and a **closing brace** at origin/main (the
+  seat-ref class arriving inside a *repair*, caught by an instrument instead of an adjudicator); and one
+  packet's comment edits shifted another's re-derived anchor onto a blank line, which the postcondition
+  ratchet refused. **Reach: raw 40/46 = 87.0 %** (iter-85: 11/11), 0 findings left unrepaired — **all
+  six misses were defects in MY OWN LEDGER**: 4 already discharged by iter-85 (§5 rule 32, unapplied to
+  my own input) and 2 anchor-drift inside iter-84's adjudication. **The fence graded the ledger, not the
+  repair** — the first time it has said something about its own input, and the reason iter-85's 100 % is
+  the weaker reading. Guard family **16/16 GREEN**. Gate **4 of 5**, unchanged — see iter-86/progress.md

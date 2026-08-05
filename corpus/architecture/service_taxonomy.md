@@ -35,11 +35,21 @@ graph TB
     
     Desk -->|GraphQL| Backend
     Academy -->|GraphQL - academy subgraph| Backend
-    Room --> Desk
+    Backend -->|spawns studio/gen.py in-process| Room
     Core --> Directus
     Studio --> Clerk
     Core --> Clerk
 ```
+
+> **Read the generation edge in that direction.** Until this pass the diagram drew `Room --> Desk`, which
+> is backwards: Studio-Desk never receives anything from Studio-Room, and Studio-Room never calls
+> Studio-Desk. Generation flows **Desk → Backend → Room** — Desk submits/polls `StudioTask` over GraphQL
+> (`studio-desk/.env.example:45` bakes `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`; the
+> `studioTask` / `studioTasks` / `archiveStudioTask` operations are `app`'s, in
+> `app/internal/web/backend/graphql/graph/schemas/cms_queries.graphqls:106`), and the cms domain in `app`
+> then runs the pipeline as a **subprocess of its own container** —
+> `app/internal/cms/studio/studioManager.go:119` execs `studio/gen.py`. Same correction as
+> [`dependency_map.md`](./dependency_map.md)'s content-generation flow, which had it right all along.
 
 ## Technical Deep Dive (For Engineers)
 
@@ -183,7 +193,7 @@ npm run dev  # Starts both frontend (9100) and backend (9000)
 
 | Property | Value |
 |:---------|:------|
-| **Technology** | Python 3.11, asyncio, OpenAI/Anthropic/Mistral APIs |
+| **Technology** | Python 3.11, asyncio, OpenAI / Azure OpenAI / Anthropic APIs — **no Mistral path** (`services/ai.py:705-708` is the whole provider registry; `mistralai` is declared in `requirements.txt` and imported nowhere). Mistral in this platform is Go-side and **OCR-only** |
 | **Purpose** | AI-powered content generation pipeline |
 | **Input** | Blueprints (StudioDocuments) created in Studio-Desk and stored via CMS |
 | **Output** | Generated simulations and learning content; CMS persists results |
@@ -451,7 +461,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 |:-----|:------|:-----------|:-----------|:-----------|
 | **Core Backend (the default `core` selection)** | **5 containers** — `backend` + `gotenberg` + the three always-on base services (`postgresql`, `redis`, `sentinel`). No Cosmo Router (deleted at `2adcf71`), no cms / jobsimulation / roadrunner (deleted at `d11a403`) | Go (+ embedded Python — Studio-Room, in the **`app`** image) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Storage (`storage-legacy`), Messenger, CustomerIO Sync, Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
-| **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
+| **Shared Libraries** | **5 libraries, 4 imported** — colony, proto, ai, taxonomy (none of them in `repos.yml`; they are pulled at Docker build). `authn` is a library but not a dependency: it ships inside colony as `colony/authn` and no service's `go.mod` requires the standalone module (0 hits across all seven Go clones; control — `colony` is required by all seven) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in the **`app`** image, orchestrated from `app/internal/cms/studio/` (it was `cms/studio/` before cms-in-app) | Local directories |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |

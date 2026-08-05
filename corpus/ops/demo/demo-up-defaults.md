@@ -151,7 +151,7 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | `DEMO_VM_MIN_GIB` | `12` | Docker-VM RAM floor asserted by the pre-flight | `up-injected.sh:288` |
 | `DEMO_DISK_MIN_GIB` | `25` | free-disk floor asserted by the pre-flight. **Re-sized from `20` at v2.8 M255** — the old value was reasoned from a "~3.7 GB frontend build / ~3.7 GB build cache" that is stale by an order of magnitude. It is now **derived from measurement**: one cold-images cycle peaks at **18 GiB** of consumption and leaves ~2 GiB behind, + a 7 GiB reserve. Same arithmetic as `stack-core/hostprofiles/billion.json` (`projected_image_gib` 18 + `disk_floor_gib` 7), fenced by a test. Still **non-fatal** — the hard-failing twin lives in `buildbench` (see [`build-budget.md`](build-budget.md)) | `up-injected.sh:369` |
 | `DEMO_CERT_RENEW_DAYS` | `30` | the FAPI TLS cert is **re-minted when it expires inside this window** (also when absent, or minted for a different host). **Net-new at v2.8 M255:** `$STACK/certs` survives `--purge` and the mint used to be guarded on file-absence alone, so the first bring-up on a host was the only one that ever minted — a 90-day Let's Encrypt cert then silently expired and only a *remote* browser noticed. See [`../safety.md`](../safety.md) §3.5.4 | `up-injected.sh:1406` |
-| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:2670` |
+| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:2671` |
 
 ---
 
