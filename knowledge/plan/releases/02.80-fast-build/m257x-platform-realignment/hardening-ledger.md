@@ -1844,3 +1844,83 @@ during it). The remainder is therefore **routed forward, disclosed, not silently
 **The instrument as frozen**, run end-to-end after every change in this session:
 `14 GREEN · 0 RED · 0 could-not-check · 3 not-run` over 17 members, corpus `8ef3906`, platform `0c91421df`
 (origin/main in sync), summary line `OK with gaps — 14 of 17 … This is NOT a whole-family green.`
+
+## Pass 23 — 2026-08-06 — incremental
+
+**Iters hardened this pass:** iter-105 … iter-109 (the TOK-06 fence-build window)
+**Tiks covered since prior pass:** 15
+
+**The scope, stated before the numbers.** Pass 22 closed at iter-94. The unhardened *code* surface of
+iters 105–109 is entirely in `rosetta-extensions/stack-core`: three brand-new guards
+(`fence_provenance.py` 152 lines, `clone_drift_guard.py` 314, `anchor_offset_guard.py` 361), a provenance
+banner threaded through 16 existing guards, and `guard_family`'s grading changes. **iter-109 shipped no
+production code and no tooling** — it is the clause-5 reading — so it contributes no surface, exactly as
+the milestone brief said.
+
+**Coverage delta on touched files:** not a line-coverage story — there is no `coverage` module on this
+host's Python 3.9.6 and none of these sections has ever been instrumented, so this ledger's established
+measure applies: test count plus fault injection.
+
+`python3 -m pytest tests/test_fence_provenance.py tests/test_clone_drift_guard.py
+tests/test_anchor_offset_guard.py tests/test_guard_family.py tests/test_test_collection_fence.py -q`
+in `stack-core`: **105 → 121 passed** (+16). The same five-module invocation is the one every count below
+is taken with.
+
+**Bugs surfaced + fixed inline: 4.**
+
+**1. An ordinary APPEND was a false RED** (`68587e3`). `anchor_offset_guard.line_map` took a pure
+insertion's shift boundary as `old_start + old_len` — which for a pure insertion *is* `old_start`. git
+writes `@@ -10,0 +11,2 @@` for *insert AFTER old line 10*, so old line 10 does not move; the guard
+declared the line immediately above every insertion to have moved. Measured: a citation to the last line
+of a file, plus a two-line append touching nothing that already existed, graded `what was line 10 is now
+line 12`.
+
+This is a **false RED on the shape the guard exists for** — both booked incidents (iter-100, iter-102)
+inserted prose — and it is precisely the failure `test_append_BELOW_every_citation_is_GREEN` names in its
+own assertion message (*"cries wolf on ordinary appends and gets suppressed"*) while being unable to catch
+it. **Off-by-one and correct agree everywhere except ON the boundary**, and not one of the four existing
+fixtures cited there: the RED fixture inserts at the file TOP (`@@ -0,0 +1,2 @@`, where boundary 0 and 1
+are indistinguishable), the GREEN fixture appends at the END while citing line 3. The pinned iter-102
+answer key is unaffected for the same reason — its insertion sits above `:321`, never on it — and still
+asserts `321 → 331` after the fix, which is the check that the correction did not move a real measurement.
+
+**2. A clone whose HEAD could not be read was graded as DRIFT** (`be269b0`). `clone_drift_guard`'s
+`reconciled` compares against `self.head`; an unreadable HEAD is `""`, which starts with nothing, so the
+repo failed that test for a reason unrelated to drift and was printed as a verdict:
+`[D1 advanced] beta is at , which the corpus never cites — None commit(s) past …`. An empty sha and a
+`None` count, asserting an advance about a repo it could not read at all — the substitution `ab107b1`
+fixed elsewhere in this family. **Reachable, not contrived:** it is the state `ensure-clones.sh` leaves a
+bootstrap clone in (objects fetched, HEAD unborn), so `cat-file` answers — which is what puts the repo in
+the cited set — while `rev-parse HEAD` does not. Now UNMEASURED on D2's existing three-verdicts footing,
+named on its own line and **disclosed on the OK line**, since an accepted gap is still a gap.
+
+**3. The provenance caveat reached the two OK lines and no others** (`0aac9fa`). iter-105 computed it
+after the `red` / `blocked` / fatal-`not_run` branches had already returned. **The branch it missed is the
+one the fence was written for: iter-103's incident was a misread RED.** A run from a dirty authoring copy
+reproduces that condition exactly, and the line quoted forward out of a RED run said nothing about it.
+Also named the third state — `dirty is None` (HEAD read, `status` did not), which fell through both
+branches and let the summary imply a clean tree it had never checked.
+
+**4. A test class hidden from direct execution since iter-107** (`be269b0`). `adcf689` appended
+`TestKnownWeakness` **after** `if __name__ == "__main__"`, so `python3 test_clone_drift_guard.py` skipped
+it and printed OK. `test_test_collection_fence` has been **RED on this file for three iters** with nobody
+seeing it — because the full `stack-core` suite does not complete on this host and no scoped run in that
+window included the fence. The hidden test is the one pinning the drift fence's documented weakness *"in
+the suite rather than only in prose"*; it was in neither. Found because the fence fired on **this pass's
+own append**, then named the older violation beside it.
+
+**Mutation controls:** 3 mutants applied by fault injection into scratch copies (the live tree was never
+modified) — the pre-fix boundary expression, the caveat dropped from the RED/could-not-check lines, and
+the third-state branch disabled. **All 3 killed** (9 test failures across them). The surviving tests in
+each case are the deliberate negative controls, which must hold under both versions: a REPLACEMENT hunk
+unperturbed, a top-of-file insert still shifting line 1, a clean tree adding nothing to the RED line, and
+a genuinely advanced clone still RED beside an unreadable one.
+
+**Adjacent-module regression check:** `python3 -m pytest tests/test_repair_postcondition.py
+tests/test_repair_postcondition_audit_mode.py tests/test_test_collection_fence.py
+tests/test_m257x_mechanical_fences_mutation_battery.py tests/test_iter45_mechanical_fences.py -q` →
+**147 passed, 1 failed in 481 s**, the single failure being finding 4 above; green after the fix.
+
+**Stop condition:** continue-to-next-pass — four live defects in the first dimension pass is not a
+stabilized surface, and `fence_provenance.py` itself plus the 16-guard stamp threading have not yet had a
+dimension scan of their own.
