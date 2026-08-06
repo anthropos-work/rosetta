@@ -1278,6 +1278,46 @@ dropped as a rename completed) and *inverted* the risk assessment that had been 
     above publishes **22** — the corrected form returns **22**. A recipe that disagrees with its own
     worked example is the §5-rule-8 failure in executable form.
 
+45. **Name the TREE that settles a claim, not just the trees that exist — an audit briefing that names the
+    wrong one manufactures false bookings by construction.** (M257x iter-100.) `rosetta-extensions` has two
+    clone roles: the **authoring copy** at `.agentspace/rosetta-extensions` (current, on `main`) and the
+    **per-stack consumption copy** pinned at a tag. A corpus claim about what the tooling *does on a stack*
+    is settled by the **pinned per-stack clone**, because that is the code the stack runs — the authoring
+    copy is where the next tag is written, not what any stack executes.
+
+    The measured cost of leaving this implicit: M257x reading #21 and #22 each booked
+    `external_services.md:208-211` as a defect, from **two independent blind seats**, and both bookings were
+    rejected — the anchors resolve byte-exact in the pinned clone `ab81527a`. The seats were not careless.
+    Their briefing's clone table named `.agentspace/rosetta-extensions` as *"rosetta-extensions (the
+    tooling)"* and they graded what they were pointed at. **Two seats making the same error is an instrument
+    finding, not seat noise** — and here the instrument told them to make it.
+
+    So a briefing's clone table must carry, per repo, **which tree adjudicates** — not merely which trees are
+    checked out and at what sha. Listing both rext clones (as M257x iter-99's ground-truth sheet did) is
+    necessary and not sufficient; the sheet said which was which and never said which one *counts*.
+
+46. **A fence's REACH is part of its verdict — read a green as "green over its reach", and make the reach
+    gradeable.** (M257x iter-100.) `anchor_construct_guard` reported *"every **resolvable** anchor names a
+    construct"* while resolving **360 of 555** citations, and at least seven upheld audit findings were
+    citations landing on the wrong construct. The sentence was true. The coverage was 65 %. Nothing in the
+    output let a reader turn one into the other, and the load-bearing word was doing its work in silence.
+
+    Three consequences, each of which cost this milestone something:
+
+    - **Set a pre-registration band against the fence's CLAIMED subject, not its measured reach.** The band
+      that caught this (*wrong-construct intra-corpus citations ≤ 1*) worked precisely because an upheld
+      member would mean a blind spot. It failed by ~7×, and that failure was the finding.
+    - **A finding must carry the ref it was graded at.** A run-level *"adjudicated at …"* line names every
+      ref the pass touched and cannot attribute one to a finding. `app/main.go:1450` is a closing brace at
+      `9d00a313` and a constructor call at `2035f9a`; without per-finding provenance, deciding which one the
+      fence meant costs a full re-derivation.
+    - **Widening a fence is the easy half — the NARROWING is the deliverable.** The widened resolver went
+      360 → 511 anchors and 0 → 23 findings, of which more than half were the guard's own documented
+      failure mode returning in a new costume (ports resolving as anchors). Narrow on a **construct the
+      corpus demonstrably uses**, never on which findings the narrowing removes — and give every narrowing
+      a mutant, because a mutant that is a named kill is what separates *narrowed for a reason* from
+      [Trap A](#trap-a--migrations-false-entails-nothing-on-its-own).
+
 ### Trap E — the tooling's own host preconditions are invisible until a clean host
 
 Everything above is about the platform moving. This one is about *us*: a tooling path that quietly depends on

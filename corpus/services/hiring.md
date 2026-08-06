@@ -77,8 +77,8 @@ and an `apps/web` surface gated client-side on a Clerk org flag.
    controls: `OrgFeatureInsights` ×8, `JobSimulationSession` ×44). **But "no read path reads it" would be a second false claim:** the CONTENT-LIBRARY read path does —
    `PrivateJobSimulations` branches its result set on `GetOrganizationIsHiring`
    (`resolver_cms_queries.go:95,210,258,295` — `isHiring` picks `hiringLibraryTypes()` over
-   `workforceLibraryTypes()` at `:99-103`), as do `organization/manager.go:448` (a forced Clerk membership
-   is created with role `candidate` instead of `member`) and `:485` + `siminvitationlink.go:62` (both
+   `workforceLibraryTypes()` at `:99-103`), as do `organization/manager.go:450` (a forced Clerk membership
+   is created with role `candidate` instead of `member`, `:453`) and `:537` + `siminvitationlink.go:63` (both
    **hard-error `"organization is not hiring"`** — the latter is `CreateOrganizationSimInvitationLink`. Note
    the `HiringConfigSeeder` does **not** go through that RPC: it writes the 5 positions straight into
    `public.organization_sim_invitation_links` with `CopyRowsIdempotent` (`hiring_config.go:99`), so this

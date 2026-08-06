@@ -1442,3 +1442,4 @@ defect and would also explain why no amount of accessor work has helped.
   is a genuinely growing residual. Routed as **`FIX-M257x-iter99-read-union`** plus three CHECKs, of which
   `CHECK-M257x-iter99-anchor-guard-blindspot` is the highest-value item in the reading — see
   `iter-99/progress.md`
+- iter-100 (tik): the anchor fence was GREEN over 65% of its subject — blind spot closed + mutant-proven, 8 wrong-construct citations repaired (6 never named by any reading) — see iter-100/progress.md

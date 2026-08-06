@@ -220,7 +220,7 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
 > CloudFront distribution and their `prevent_destroy` guards in configuration
 > (`storage/terraform/main.tf`, 18 lines). `app` serves object storage in-process
 > (`app/main.go:524`, `:525`) and has **taken over messenger's own Redis consumer group**
-> (`:1384`, `:1450`). All of it is cited on both sides in the fenced map —
+> (`:1384`, `:1450` — every anchor here is at `app` origin/main `2035f9a`). All of it is cited on both sides in the fenced map —
 > `corpus/architecture/platform-migration-status.md`, the `storage`, `messenger` **and
 > `customerio-sync`** rows (the last one net-new at iter-87: it was never in `repos.yml`, so no
 > membership assertion could have caught its state change).

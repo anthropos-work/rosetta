@@ -127,8 +127,10 @@ Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:80
 > on this host and the repos are private, so even the anonymous REST path is closed. Each date below was true
 > when taken and **carries an expiry**; the `Jobsimulation` row is the live proof that they expire (its flat
 > archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:89`).
-> **Read every date here as "asserted on", never as "is".** This note exists because rows `:137`/`:138`
-> published the flat form two rows above `:139`, a cell retracting exactly that predicate.
+> **Read every date here as "asserted on", never as "is".** This note exists because rows
+> `service_taxonomy.md:137`/`:138` published the flat form two rows above `:139`, a cell retracting
+> exactly that predicate. (The file is named explicitly as of M257x iter-100: a bare `rows :137/:138`
+> reads as an anchor into the document cited immediately before it, which is a different file.)
 
 | Service | Why removed | Local container? | Reference |
 |:--------|:------------|:-----------------|:----------|

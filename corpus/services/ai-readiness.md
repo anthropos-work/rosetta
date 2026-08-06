@@ -43,7 +43,7 @@
 > drift-ledger's **D-07** item originally assigned it to: the manifest reads `path:
 > internal/aireadiness/readiness.go` (`app-aireadiness-snapshot-loadmembers.yaml:42`) and its own header says
 > *"v2.7 M254 RE-POINT"* (`:33`), with `demo-stack/tests/test_aireadiness_snapshot_loadmembers_m254.py`
-> fencing it. This paragraph stated completed work as outstanding and contradicted `:458` of this same file,
+> fencing it. This paragraph stated completed work as outstanding and contradicted `:459` of this same file,
 > which is already in the past tense; corrected M257x iter-46.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
@@ -592,7 +592,7 @@ interaction, so the field was a hard **0**. The funnel now writes each stage-3 i
 > `{/* ===== C · Handled for you this cycle ===== */}` block, label `:1903`, then exactly three cells —
 > `skillsMapped` `:1915`, `handsOnMinutes` `:1921`, `interviewMinutes` `:1927`; `grep -c interviewQuestions`
 > over that 1,989-line file returns **0**. The field exists in the API and in the FE's TypeScript type,
-> `apps/web/src/hooks/useAIReadiness.ts:274`, and is drawn by nothing). So its zero was a
+> `apps/web/src/hooks/useAIReadiness.ts:326`, and is drawn by nothing). So its zero was a
 > **payload** zero, not a visible empty cell. Filled regardless — an interview with no questions is not real
 > data — but the honest claim is that this tile's *visible* zero-risk lives in the three cells that do render,
 > which the coverage sweep now fences with a **non-zero-value** assert rather than a label assert (a section
