@@ -1030,3 +1030,151 @@ numbers real; TOK-05 changes what the numbers are counting.
 iter-58** after pass 15 closed `STABILIZED`, so it stands at **1 tik against a threshold of 10 — NOT due.**
 When it comes due it owns the new sibling guard's assertions, which are exactly the AST/call-site shape the
 three standing `HARDEN-CAP-ACCEPTED` entries said the residue needs.
+
+---
+
+## iter-101 decisions — 2026-08-06
+
+### D-M257x-101-1 — the `app` clone is NOT advanced, and its precondition is measurably UNMET
+
+**Decision (user's, proceeded on):** do not advance `stack-demo/app`. Two grounds, both re-derived here
+rather than inherited:
+
+1. **The exit gate names *platform* @ origin HEAD, and `app` is a different repo.** Verified against the
+   milestone's own `exit_gate` string: *"Against platform @ **origin HEAD**…"*. `stack-demo/platform` is at
+   `0c91421d` and `git ls-remote origin HEAD` returns the same sha — **the gate's named subject is level.**
+2. **A fetched clone is already graded at origin HEAD wherever its own HEAD sits.** Re-derived in
+   `stack-core/anchor_construct_guard.py:267` and `:664`: the ref ladder is
+   `("origin/main", "HEAD") if ref == "auto"`, i.e. **origin/main first**. So advancing the working tree buys
+   little and would move every `app:file:line` citation in the corpus (33 in-scope files reference `app/`).
+
+**The measurement contradicts the decision's PRECONDITION, and that is recorded rather than smoothed:**
+the decision rests on the clone being *kept fetched*. It is not.
+
+| clone | local `origin/main` | real remote `main` | |
+|---|---|---|---|
+| **app** | `2035f9a4` | **`ad9f3c49`** | **STALE** |
+| rosetta-extensions (per-stack) | `6130bfd8` | `09d06070` | STALE (re-pinned this iter) |
+| the other 11 clones | — | — | **all LEVEL** |
+
+11 of 13 clones are level; `app` — **the single most-cited repo in the corpus** — is one of the two that are
+not. The consequence is precise and it is not the flattering one: **the citation guards are currently
+grading `app` anchors at `2035f9a4`, which is itself no longer origin/main.** The reassurance that "a fetched
+clone is graded at origin HEAD" therefore **does not presently apply to `app`**.
+
+**The fetch was NOT performed in this run, deliberately.** A fetch moves `origin/main`, which is the ref the
+citation guards resolve against — doing it while four adjudicators were mid-re-derivation would have changed
+the grading basis of a reading in flight, which is the precise failure this milestone exists to prevent.
+Routed as **`FIX-M257x-iter101-app-clone-unfetched`**, to be taken BETWEEN readings, never during one.
+
+**Decision stands: do not advance. Amended with: keeping it fetched is an ACTION, not a state, and nobody
+had been performing it.**
+
+### D-M257x-101-2 — a zero reading gets a planted-defect positive control before the gate is declared met
+
+**Decision (user's, recorded):** at the moment any reading returns `N = 0`, clause 5 is **not** declared met
+on that reading alone. A **planted-defect positive control** is authored first: seed *k* known defects into
+the tree, run the reading blind, and measure recall against a **known** denominator.
+
+**Why this is honouring clause 5, not re-cutting it.** Clause 5 still requires a reading that returns zero
+and nothing else. The control changes **no** threshold, **no** scope, and **no** part of the reading. It
+establishes only whether the instrument that returned the zero **can see anything at all**. The four user
+rulings are untouched.
+
+**The gap it closes.** Every recall figure in this milestone — 43–51 % per pass, 62–78 % union — is
+**within-reading overlap between two simultaneous passes sharing briefing, file set, partition and model**.
+Shared inputs inflate overlap and therefore flatter recall. **There is no measurement of what this instrument
+actually sees against a known denominator.** A zero from a blind instrument satisfies the letter of clause 5
+while proving nothing — and this milestone has already found ~20 instruments that reported a state without
+measuring it. This decision exists so this is not the twenty-first.
+
+**Cost:** 1 iter to author the plant, 1 cycle at the moment of the zero. **Not** payable in advance of a
+zero, because a plant authored early leaks into the pool it is meant to measure.
+
+### D-M257x-101-3 — the rext pin is cut at authoring HEAD, and pushed in the same breath
+
+The pin (`.agentspace/rext.tag`) named `fast-build-m257x-iter-67` while the per-stack consumption clone sat
+at `fast-build-m257x-iter-58` (`ab81527a`) — a mismatch `demo-stack/ensure-clones.sh:94-101` treats as
+**FATAL** (`exit 1`), so `/demo-up` aborted outright. Both tags are on origin; the mismatch was the defect.
+
+The sharper half: the authoring copy was **43 commits ahead of the pin**, and those 43 include **`7844e97`**,
+which keys the demo override's volumes reset on a **derived** property instead of the deleted service name.
+Measured: `7844e97` is an ancestor of authoring HEAD and is in **neither** `fast-build-m257x-iter-67` **nor**
+`fast-build-m257x-iter-68`. It existed **only in the authoring copy** — unreachable to any stack.
+
+That fix is not incidental to this milestone; it is the fix for the platform advance clause 1 must now be
+proven against. Platform `838d907` moved the `$HOME/.aws/credentials` bind **off the deleted `jobsimulation`
+service and onto `backend`** — re-derived here: `docker-compose.yml:100` at `0c91421` carries that bind under
+`backend`, and the mitigation keyed on the literal `"jobsimulation"` had silently gone dead.
+
+**Cut `fast-build-m257x-iter-101` at authoring HEAD `09d06070`, pushed, and verified on origin by
+`git ls-remote --tags origin` before being treated as done** — rung zero, *tagging is not publishing*.
+Origin now returns `0011c10a refs/tags/fast-build-m257x-iter-101` dereferencing to `09d06070`.
+
+**HANDED OFF MID-ITER — read this before acting on the above.** A concurrent lane was given end-to-end
+ownership of the rext tag / pin / per-stack-clone job **after** the tag had already been cut and pushed.
+The split at the moment of handoff was:
+
+| step | state | owner |
+|---|---|---|
+| tag cut at `09d06070` | **DONE** | this lane |
+| tag pushed + verified on origin | **DONE** | this lane |
+| `.agentspace/rext.tag` updated `iter-67` → `iter-101` | **NOT DONE** | the other lane |
+| `stack-demo/rosetta-extensions` brought level | **NOT DONE** | the other lane |
+
+The two remaining steps were deliberately **not** taken by this lane even before the handoff, for a reason
+that outlives it: the sealed ground truth pins `stack-demo/rosetta-extensions` at `ab81527a`, and four
+adjudicators were re-deriving rext claims **in that tree** at the time. Moving it — or the pin file a seat
+may consult — mid-adjudication would have changed the subject of a reading in flight.
+**Sequencing rule, generalised: move a clone or a pin BETWEEN readings, never during one.**
+
+`fast-build-m257x-iter-101` already exists on origin; the other lane should **re-pin to it rather than cut a
+second tag**, or the two tags will disagree about which tooling the release means.
+
+### D-M257x-101-4 — the gate is re-graded **2 of 5 PROVEN**, and the booked "4 of 5" is withdrawn
+
+The milestone has carried **4 of 5** since iter-37. It is not defensible, and the reason is the gate's own
+first clause of text: *"Against platform @ **origin HEAD**, never a pinned pre-drift commit."*
+
+**Re-derived, not inherited** (`stack-demo/platform`, all shas verified this iter):
+
+| clause | booked | **honest** | why |
+|---|---|---|---|
+| 1 — 3× cold green cycles | MET (iter-18, **2026-08-01**) | **UNPROVEN at origin HEAD** | proven at `2adcf71`; **6 platform commits** and **281 changed lines of `docker-compose.yml`** behind current HEAD |
+| 2 — full Playthrough suite | MET (iter-37, **2026-08-02**) | **UNPROVEN at origin HEAD** | same stack, same drift; proven one day after clause 1 |
+| 3 — migration-status map | MET | **MET** | re-verified at `0c91421`; fenced both ways by `platform_alignment_guard` |
+| 4 — zero rext writes to dropped schemas | MET | **MET** | re-verified at `0c91421`; fence watched RED |
+| 5 — KB-fidelity GREEN / YELLOW-0-blockers | NOT MET | **NOT MET** | this iter: **N = 24**, a floor |
+
+**The drift is not cosmetic, and it is larger than the 107-line figure in circulation.** 107 lines is the
+diff from `0dab54d`; the clauses were proven *before* that commit. From the actual proof ref:
+
+```
+git log --oneline 2adcf71..HEAD   ->  6 commits
+git diff --stat 2adcf71..HEAD     ->  docker-compose.yml | 281 ++-----  · repos.yml | 29 ·  Makefile | 20
+```
+
+Measured across that span: **3 compose services deleted** (`storage`, `messenger`, `customerio-sync`),
+**2 `repos.yml` entries removed** (`messenger`, `storage`), and the default profile **renamed
+`graphql` → `core`**.
+
+**The mechanical proof that clause 1 cannot be carried, not merely an argument from drift.** Platform
+`838d907` moved the `$HOME/.aws/credentials` bind **off the deleted `jobsimulation` service and onto
+`backend`** — re-derived: `docker-compose.yml:100` at `0c91421` carries that bind under `backend`. The demo
+override's mitigation was keyed on the literal `"jobsimulation"`, so it silently went dead, **and its
+tripwire test skipped**, which reads exactly like a pass (§5 rule 8). The fix (`7844e97`) is in **neither**
+`fast-build-m257x-iter-67` (the pin) **nor** `fast-build-m257x-iter-68` — it existed **only in the authoring
+copy**, unreachable to any stack, until this iter's tag. **The tooling that would have run clause 1 today
+predates the fix for the platform change clause 1 must be proven against.**
+
+**UNPROVEN is not REFUTED.** Nothing here shows clauses 1 and 2 would fail — only that the evidence for them
+was taken against a platform that no longer exists, which is precisely what the gate's own wording forbids.
+On this host the EISDIR hazard is additionally **latent**: `$HOME/.aws/credentials` exists as a 0-byte file,
+so the failure mode that fires on a fresh box does not fire here.
+
+**Grade: 2 of 5 proven, 2 unproven-pending-re-run, 1 not met.** Re-running clauses 1 and 2 at `0c91421` with
+tooling that includes `7844e97` is the work; a concurrent lane owns it.
+
+**The generalisable rule — this is the milestone's own recurring class turned on itself:** *a gate clause is
+proven at a REF, and it decays when that ref moves.* Booking a clause MET without re-anchoring it is the same
+defect as a corpus claim pinned to a stale sha, and M257x has now found it in its **own** exit gate.

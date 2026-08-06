@@ -1443,3 +1443,51 @@ defect and would also explain why no amount of accessor work has helped.
   `CHECK-M257x-iter99-anchor-guard-blindspot` is the highest-value item in the reading — see
   `iter-99/progress.md`
 - iter-100 (tik): the anchor fence was GREEN over 65% of its subject — blind spot closed + mutant-proven, 8 wrong-construct citations repaired (6 never named by any reading) — see iter-100/progress.md
+- iter-101 (tik, the MEASURING pass — **no repair inside it**): **THE FIRST TRUE REPLICATE RETURNS N = 24, AND
+  ITS ESTIMATOR BAND SAYS `N̂ = 45.1` WAS A FLOOR, NOT A CEILING.** Taken at platform `0c91421` (`== git
+  ls-remote origin HEAD`, re-verified at the open) / corpus `8f04d3a`, over a pool iter-100 moved by **+2 net
+  lines**, so the recomputed 7-seat partition came out **identical** — the instrument run twice over
+  materially the same subject for the first time. **Ground truth re-derived, not inherited:** all 13 clone
+  shas re-measured and matching the sealed sheet, instrument sha `3858ec53…` with `git log --follow` showing
+  **exactly one commit ever** (`012edd2`) and the delivered copy proven a pure append (`diff` → `171a172`,
+  nothing above the line edited). **Graded on 13 of 14 seats, disclosed rather than smoothed:** the fan-out
+  died on a spend limit with `r24-D` unwritten; the 13 surviving reports were committed **verbatim,
+  pre-adjudication** (`8b6d80f`) because untracked evidence is the defect class `evidence_visibility_guard`
+  exists to catch. **`r24-D` was NOT re-run** — re-dealing it perturbs the replicate — so **reading #23 is a
+  7-seat count (25 booked) and reading #24 a 6-seat count (11 booked), and `n₂` is never compared to `n₁`
+  without that being said.** Four adjudicators re-deriving from the clones: **36 booked → 28 upheld / 8
+  rejected**. **The upheld rate is reported TWICE as bound: 77.8 % raw, 80.0 % with the `wrong-tree`
+  briefing-defect class separated** — against 92.1 / 93.0 / 92.7 / 93.1 and iter-99's 78.3 %. **That settles
+  the question iter-99 could not at n=1: the ~15-point precision drop is STRUCTURAL, not adjudicator
+  variance** — two readings, different adjudicators, same break. **`N` = 24 in-scope upheld anchors / 22
+  predicates** (`n₁=20 · n₂=8 · m=4`), **a floor twice over** (13-seat union; a 14th seat can only add).
+  **Clause 5 is NOT met.** **The headline is band #3, the first band on this milestone able to move the
+  ESTIMATOR:** blind overlap with iter-99's published 28, matched on predicate, came out **6** against a band
+  of **[14, 22]** — **FAILED LOW**, and the pre-registration pre-committed to what that means: the readings
+  are **more independent than Chapman assumes**, so **`N̂ = 45.1` is a FLOOR**. Cross-reading Chapman over
+  iter-99 × iter-101 (`28 · 24 · m=6`) gives **N̂ ≈ 102.6**, and heterogeneous catchability biases Chapman
+  **downward**, so ~103 is itself a floor — **the residual is on the order of ~100, not ~45, and a zero
+  reading is not near.** Stated with its assumptions (closed population: well supported; independence: now
+  *better* supported; equal catchability: **dubious, direction of bias known**), never banked.
+  Pre-registration graded **5 of 9 held, 4 failed** — #1 split (`n₁=20` held; `n₂=8` failed low, and the
+  6-seat caveat does **not** rescue it: normalized 9.3 < 10), #2 held (24), **#3 failed low (6)**, #4 held
+  (77.8/80.0 %), #5 failed in an unpredicted direction (**83.3 % / 33.3 %** — the passes are wildly
+  asymmetric, band #3's fact seen from the other side), #6 held at its bottom edge (**1** wrong-tree, vs
+  iter-99's 4 — the unfixed briefing defect measured at n=2 readings and it is CHEAP), #7 held at **exactly 4**
+  (iter-100's fence repair predicted ≤4 and the mechanical half really was ~half the class), #8 held (1–2 of
+  24), #9 held (per-seat spread **4**, max 5 min 1 — the partition is not the variance source). **Three
+  findings outrank the defect list:** (1) **iter-100 induced a defect inside the prose it rewrote** —
+  `service_taxonomy.md:130-133` was exactly correct at `a229f8d^` until iter-100's own two-line parenthetical
+  pushed the table down two rows and left the numbers unmoved, so the note now cites Chronos and Intelligence;
+  found by **both** readings, and the ~2/cycle repair-induction rate held again while every magnitude band
+  failed; (2) **seat D's entire in-scope yield is ONE predicate at three anchors in three files** — *"sentinel
+  is the only cross-process edge"* — refuted by `GOTENBERG_URL=http://gotenberg:3200` at
+  `docker-compose.yml:57` with `gotenberg` in the default `core` profile; the corpus already carries the
+  correct qualified wording at `architecture_overview.md:321` and contradicts itself three more times, so it
+  is **one repair propagated, not three fixes** — and it is **`CLAUDE.md`'s claim verbatim**; (3) the single
+  wrong-tree rejection **inverts** iter-99's class, yielding a rule worth carrying: **the settling tree
+  follows the claim's SUBJECT** — a local-stack claim is settled by the demo's build pin, a **production**
+  claim by that repo's `origin/main`. **The ref-discipline class fired ZERO times** after 17 occurrences over
+  five readings — three adjudicators reported it *structurally* absent. Routed as
+  **`FIX-M257x-iter101-read-union`** (repair by PREDICATE, not by anchor; re-read after). **Gate re-graded
+  honestly this iter: 2 of 5 proven, NOT 4 of 5** (`D-M257x-101-4`) — see `iter-101/adjudication.md`
