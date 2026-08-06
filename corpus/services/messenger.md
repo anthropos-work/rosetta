@@ -25,7 +25,10 @@ Callers don't talk to Brevo directly — they **publish Redis Stream events that
 > `-S 'SKILLER_RPC'` returns **7**; add `--all` and both become 8-and-0, the 8th being `464dfe3` on a
 > non-main branch — so state the scope). The earlier control figure here was **3**, which is reproducible
 > at no repo, ref, spelling or scope; corrected M257x iter-96. The RPC traffic ran the other way — messenger
-> called **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`).
+> called **out** to `backend` on four addresses, all `http://backend:8083` (`messenger/cmd/root.go:118-142`)
+> — an **end-state** claim, and the true one. Not to be restated as *"`d11a403` re-pointed all four"*: that
+> commit moved **two** (`CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`); the other two already held that value at
+> `d11a403^` (M257x iter-115).
 > **Compose set those four on the `messenger` service block and nowhere else**, so deleting the block
 > deleted them: since `838d907` **no compose file sets any `*_RPC_ADDR` at all**, and there is no
 > messenger process left to hold a client. Corrected M257x iter-85, re-derived at iter-87; the same
@@ -117,7 +120,7 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
 
 ## Dependencies
 
-* **RPC clients**: the binary still constructs four Connect-RPC clients — CMS, backend users + organizations, skiller, and jobsimulation (`cmd/root.go:118-142`) — each reading its address from the environment. At `0dab54d` compose supplied all four, and all four resolved to the one `backend` mux (`http://backend:8083`); `838d907` deleted the service block, and with it **every `*_RPC_ADDR` compose ever set** — there are now zero across `docker-compose.yml`, `common.yml` and `.env_example`. So on a stack today those clients are neither constructed nor addressed: the process does not run. The `cms` and `jobsimulation` services they were named for went earlier, at `d11a403`; their surfaces are registered on `app`'s RPC server. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:74-78`), not via a direct Skillpath RPC.
+* **RPC clients**: the binary still constructs four Connect-RPC clients — CMS, backend users + organizations, skiller, and jobsimulation (`cmd/root.go:118-142`) — each reading its address from the environment. At `0dab54d` compose supplied all four, and all four resolved to the one `backend` mux (`http://backend:8083`) — **two of them because `d11a403` re-pointed them, two because they had always read `backend`**; `838d907` deleted the service block, and with it **every `*_RPC_ADDR` compose ever set** — there are now zero across `docker-compose.yml`, `common.yml` and `.env_example`. So on a stack today those clients are neither constructed nor addressed: the process does not run. The `cms` and `jobsimulation` services they were named for went earlier, at `d11a403`; their surfaces are registered on `app`'s RPC server. Skill-path notifications arrive as Redis Streams events on the `backend` subscriber (`OrgSkillPath*` handlers in `internal/flow/flow.go:74-78`), not via a direct Skillpath RPC.
 * **Downstream**:
   * **Brevo API** — outbound email delivery (`BREVO_KEY`)
   * **PostgreSQL** — read-only `public` schema access for org / whitelabel lookups
@@ -179,10 +182,10 @@ at `:296`. Ref re-stated M257x iter-102 — the citation was previously unpinned
 | `REDIS_ADDR` | `redis:6379` | Redis address |
 | `REDIS_STREAMS_INDEX` | `4` | Redis DB index for streams |
 | `REDIS_WORKER_INDEX` | `0` | Was set in docker-compose (=0) but NOT read by the code — there is no worker pool / separate worker Redis index; only `REDIS_STREAMS_INDEX` is consumed (`cmd/root.go:107`). |
-| `BACKEND_USERS_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Backend RPC for user lookups |
+| `BACKEND_USERS_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Backend RPC for user lookups. **Never re-pointed by anything**: `git log -S` back to its introduction at `3e85fce` shows it addressed `backend` from birth and only ever moved ports (M257x iter-115) |
 | `CMS_RPC_ADDR` | *(unset — was `http://backend:8083`)* | CMS RPC. M809 re-pointed it off the standalone `cms` onto the `backend` mux at `d11a403`; `838d907` then removed the variable altogether. The earlier `http://cms:8091` was true at `2adcf71` only. `app`'s own comment at `app/main.go:1205-1211` (@ `b948604` v1.366.0) still says *"additive + DORMANT … until the M809 re-point"* and is **stale in `app`** |
 | `JOBSIMULATION_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Jobsimulation RPC, same history as the row above. The earlier `http://jobsimulation:8401` was true at `2adcf71` only; the husk container went at `d11a403` |
-| `SKILLER_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Skiller RPC surface — served by `backend` since the skiller→app merge, and reached in-process now that no consumer runs outside it |
+| `SKILLER_RPC_ADDR` | *(unset — was `http://backend:8083`)* | Skiller RPC surface — served by `backend` since the skiller→app merge, and reached in-process now that no consumer runs outside it. **Already `http://backend:8083` at `d11a403^`**, so `d11a403` did not move this one either — it moved the two rows above (M257x iter-115) |
 | ~~`SKILLPATH_RPC_ADDR`~~ | *(removed earlier)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains, on `backend`. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:828`, in `getSkillPath`). |
 
 > The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).

@@ -1470,11 +1470,15 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 > standing. Fenced by `platform_predicate_guard.py` G4.
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was a corpus line
-asserting messenger points *all four* addresses at `backend:8083` — **`corpus/services/backend.md:302`
-today**; the `:187` this passage cited until M257x iter-98 drifted onto a directory listing
-(`bootstrap/ First-run / new-org provisioning`), and the `:241` that replaced it drifted again, onto
-`askengine/ "Talk to Data"`. **That is the same anchor rotting three times in three readings** — §5 rule 22's
-failure *inside the rule that teaches it*, now with a measured recurrence rate rather than an anecdote.
+asserting messenger points *all four* addresses at `backend:8083` — the **`**Connect-RPC**` bullet under
+*Interface Discovery*** in [`corpus/services/backend.md`](../services/backend.md). **This passage no longer
+carries a line number for it, because the number has now rotted FOUR times** (M257x iter-115). The generations,
+each recorded without a live-looking anchor so the count itself cannot rot: the first drifted onto a directory
+listing (`bootstrap/ First-run / new-org provisioning`); its replacement drifted onto `askengine/ "Talk to
+Data"`; iter-98 and iter-102 re-derived it again; and iter-115's own repair of that very bullet moved it a
+fourth time, onto a blank line. **The same anchor rotting four times across four readings** is §5 rule 22's
+failure *inside the rule that teaches it*, now with a measured recurrence rate rather than an anecdote — and
+the fourth generation was produced by a repair whose whole subject was this class.
 Cite the *claim* here, not the line: the sentence to look for is the `**Connect-RPC**` bullet under
 *Interface Discovery*, whichever line it currently occupies. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
 premature, not permanently wrong, which is its own lesson). **One false corpus line, cited as authority, produced two false corrections in

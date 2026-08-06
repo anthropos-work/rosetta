@@ -16,7 +16,9 @@
 >   no longer authoritative**.
 > * **RPC** — the skiller Connect-RPC surface (`SkillerService`) is now served by `app`
 >   (`app/internal/rpc/skillerrpc/`). Consumers kept the same env var, re-pointed at
->   `http://backend:8083` locally. **The production value is NOT ASSERTED here in either direction** — this
+>   `http://backend:8083` locally — **and it already did before `d11a403`**, which re-pointed `CMS_RPC_ADDR`
+>   and `JOBSIMULATION_RPC_ADDR` and left this one alone (measured at `d11a403^`, M257x iter-115).
+>   **The production value is NOT ASSERTED here in either direction** — this
 >   line used to state `skiller_rpc_addr = http://backend.internal.anthropos:8081` flatly, in the present
 >   tense and unpinned, while four other docs declared the same value unmeasurable; it was the last site
 >   still asserting it. No `.tf` file in any clone names that literal (0 hits over all 44 tracked `.tf`
