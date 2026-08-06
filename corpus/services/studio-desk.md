@@ -35,7 +35,20 @@ Studio-Desk is a **full-stack TypeScript application** with:
 
 2. **Backend**: Express.js API server
    - Clerk middleware for route protection
-   - GraphQL integration with the **cms domain** (in-process inside `backend`, `app/internal/cms` — there is no `cms` service)
+   - ⚠️ **NOT a GraphQL client — corrected M257x iter-115.** At `studio-desk` `41ee3575`,
+     `git grep -in graphql -- 'src/*'` returns exactly **two** lines, both comments saying the opposite
+     (`src/routes/skillpath.ts:374` *"We do NOT route this through the platform's `privateSkillPaths`
+     GraphQL"*, and `:405`); `git grep -n 8082 -- 'src/*'` returns **0**; and `src/index.ts` mounts four
+     API routers — `/api/dev` (`:150`), `/api/ai` (`:158`), `/api/skillpath` (`:161`), `/api/youtube`
+     (`:164`) — none of them GraphQL. **The Express backend's real remote dependency is Directus over
+     REST** (`DIRECTUS_BASE_URL`/`DIRECTUS_TOKEN`, read at `src/routes/skillpath.ts:44-47` and
+     `src/index.ts:303-310`). Every `new GraphQLClient(...)` in the repo is in the **frontend**
+     (`app/services/{userService.ts:20, taxonomyService.ts:43, userPreferencesService.js:13,
+     content/simulationContentService.js:325}`), fed by `app/services/config.ts:6` reading the
+     **`VITE_`-prefixed, browser-baked** `VITE_GRAPHQL_ENDPOINT`. This file states it correctly in four
+     other places — the Directus integration note, the `app/services/graphql/` example, the
+     `VITE_GRAPHQL_ENDPOINT` config line and the env table — so this was a live self-contradiction,
+     not a stale leftover
    - Multi-provider AI integration (Azure OpenAI / OpenAI / Anthropic) for Studio Copilot
    - File upload handling
 
@@ -43,7 +56,8 @@ Studio-Desk is a **full-stack TypeScript application** with:
 graph LR
     User[Content Creator] --> Frontend[Vite multi-page frontend :9100]
     Frontend --> Backend[Express Backend :9000]
-    Backend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is prod-only]
+    Frontend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is prod-only]
+    Backend --> DirectusREST[(Directus REST — Bearer DIRECTUS_TOKEN)]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
     GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>there is NO cms container"]
@@ -104,7 +118,7 @@ studio-desk/
 
 #### 2. Skill Path Builder
 
-A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 through a `YouTubePicker` — the route reads **`YOUTUBE_API_KEY` only** (`src/routes/youtube.ts:43`; with no key it serves a `_mock: true` fallback list). `GCLOUD_SERVICE_ACCOUNT` is declared in `.env.example:120` and injected by `terraform/main.tf:129`, but **no code in `src/` reads it** — treat it as vestigial, not a second YouTube credential.
+A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 through a `YouTubePicker` — the route reads **`YOUTUBE_API_KEY` only** (`src/routes/youtube.ts:43`; with no key it serves a `_mock: true` fallback list). `GCLOUD_SERVICE_ACCOUNT` is declared in `.env.example:**119**` (@ `studio-desk` `41ee3575`) and injected by `terraform/main.tf:129`, but **no code in `src/` reads it** — treat it as vestigial, not a second YouTube credential. (This cited `.env.example:120` until M257x iter-115. The file is 131 lines, so `:120` is **in range and resolves — to a blank line**, which is the failure mode a range check cannot catch: `:117` is `YOUTUBE_API_KEY=`, `:118` the comment, `:119` the declaration, `:120` empty. The other two thirds of the sentence verified exactly.)
 
 > **Demo/dev set-dressing (v1.5 "prop room", M23):** on a `--local-content` stack (demo default; dev opt-in) studio-desk is pointed at the **per-stack Directus** (`DIRECTUS_BASE_URL=http://directus:8055`, the in-network compose service) with a **locally-minted static admin token** (`DIRECTUS_TOKEN=local-directus-token-<stack>`). The token is stamped on the bootstrapped admin via Directus's `ADMIN_TOKEN` bootstrap env (a Bearer-usable static token — `bootstrap/index.js:81` in the pinned `directus/directus:11.6.1`; #M23-D2), so studio-desk's skill-path **writes target the per-stack instance, never prod**. On a non-`--local-content` stack the prod token is stripped to empty (the prod-write **disarm**) and studio-desk has no local instance to write to. (The cms `PostMultipart` hardcoded-prod-upload-URL is a separate upstream **platform** bug — disarmed by the token strip, owned as a user PR; cannot be fixed without a platform edit.)
 

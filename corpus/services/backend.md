@@ -143,7 +143,8 @@ containerized bring-up + migrate, and read-only prod.
   floors, not totals** — a public-only measurement cannot see org-private rows.
 - **RPC re-pointed, then un-set** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers kept the env var `SKILLER_RPC_ADDR`, re-pointed at
-  `http://backend:8083`. **That count was always ref-relative, and it has now reached zero:** four
+  `http://backend:8083` — a value it held **before** `d11a403` as well as after, which is why that commit
+  did not re-point it (M257x iter-115). **That count was always ref-relative, and it has now reached zero:** four
   occurrences in `docker-compose.yml` @ platform `0808b92` (the ref this fact-sheet was first ground
   against — `backend`, `jobsimulation`, `cms` and `messenger` each carried one); **one** @ `0dab54d`,
   messenger's, after `d11a403` deleted the `jobsimulation` and `cms` blocks and dropped it from
