@@ -1695,3 +1695,40 @@ defect and would also explain why no amount of accessor work has helped.
   and iter-102's *"four corrections to an underestimate, not a growing pool"* survives intact. Clause 5 **not**
   re-cut, narrowed, reinterpreted or argued; gate unchanged at **4 of 5**; zero code, zero platform edits —
   see iter-104/progress.md
+- iter-105 (tik, `iter_shape: fence`, **`TOK-06` step 0**): **a guard verdict now states the TREE its
+  configuration lives in — and the measured cost of it never having done so is 52 recorded family verdicts
+  across 26 milestone artifacts, 0 of which name that tree.** `guard_family.py` printed the corpus sha and
+  the platform sha and **not its own**, which is not cosmetic: the fence tree is the input that DECIDES the
+  verdict. iter-103 ran the family from the pinned per-stack clone instead of the authoring copy, read **2
+  RED** against its own sheet of **14 GREEN**, and drafted two conclusions from it — *"the sheet asserted a
+  verdict it did not have"* and *"a fence names 8 sites the reading missed, so `N ≥ 41`"* — **both false**;
+  the whole difference was `claim_twin_waivers.json` (+40 lines) and the 8 RED sites were exactly the 8
+  waived sites. Neither the corpus nor the platform had moved, **so nothing in the transcript could have told
+  the reader which verdict they held.** Shipped: net-new `stack-core/fence_provenance.py` (path · sha · dirty
+  · describe, read from **where Python loaded the module** — a flag, a cwd or an env var each reintroduce the
+  defect, `D-M257x-105-1`); `guard_family` states it **first**, refuses **`EXIT 2 — UNMEASURED`** when it
+  cannot determine its own tree (`--allow-unknown-provenance` **records** the gap as `--allow-not-run` does),
+  and puts the **DIRTY** caveat on the **summary** line because harden pass-20 measured that the summary line
+  is what gets quoted forward; **all 17 members stamp on direct execution** so a standalone verdict carries it
+  too, printed **first** so `run_one`'s `lines[-1]` reporting and `headline()`'s finding-shaped cut are both
+  untouched (the iter-87 shape, checked not assumed). **TOK-06's binding control clause discharged:** the
+  conformance check is **derived from `guard_family.census()`** so a new guard that does not stamp goes RED
+  unbidden, **asserted over the parsed `__main__` AST** per §8, with **4 mutation shapes a grep would pass**
+  (no stamp · imports-never-calls · mentions-in-a-comment · stamps-at-import-time) **plus a control on the
+  controls**, and an anti-vacuity test written against the **subject** — the discovered set must be *exactly*
+  the census, not merely non-empty. **19/19 new tests green.** `corpus/ops/platform-alignment.md` gains **§5
+  rule 50** and **§8 rider 3** (*the reference is THREE trees, not two*). **The fence disclosed its own
+  weakness on its first run** — every family run in this iter printed `fence tree 944fc4a21 is DIRTY`,
+  because its own edits were uncommitted. **The 52 prior verdicts are re-graded provenance-UNSTATED, not
+  void** — none is wrong, all are unre-checkable, and the re-grade is stated **once** in rule 50 as a reading
+  instruction rather than stamped onto 26 artifacts, because inventing evidence to fix a lack of evidence is
+  this milestone's class, not its cure (`D-M257x-105-5`). **`stack-core` 937 passed · 1 failed**, and the
+  failure is **PROVEN pre-existing** — reproduced three ways by read-only `git archive` (pre-change rext vs
+  live corpus; pre-change rext vs run-open corpus `22eaac4`; changed rext vs `22eaac4`), identical each time.
+  It is `claim_twin_guard`'s **green-twin discrimination control**, not the guard: two fixtures fire from
+  `iter-49/raw/C.md:57`, and the likely cause is **iter-102's 134 → 264 ledger growth** — repair-induction in
+  the fence layer, one layer below where TOK-06 was looking. **Routed, not silenced**, as
+  `FIX-M257x-iter105-claimtwin-green-twin-refire` to TOK-06 step 2. Guard family at close **14 GREEN · 0 RED ·
+  0 could-not-check · 3 not-run — and for the first time the transcript says which fence tree said so.**
+  Gate **unchanged at 4 of 5**; no `N` movement claimed (clause 3's instrument, never clause 5's); zero
+  platform edits, no clone fetched, no tag cut — see iter-105/progress.md

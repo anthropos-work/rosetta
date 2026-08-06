@@ -1611,6 +1611,47 @@ defect, it was arguing for it.*
       is the first hypothesis — not observer error. The move is usually the more interesting finding, and
       here it was: a lane was cutting and deleting tags mid-milestone with nothing recording it.
 
+50. **A guard VERDICT is settled by the tree its CONFIGURATION lives in — print that tree, or you do not
+    have a verdict.** *(M257x iter-103 / iter-105.)*
+
+    Rule 45 says *the settling tree follows the claim's SUBJECT*: a claim about what the tooling **does on a
+    stack** is settled by that stack's pinned clone. **A guard verdict is not stack behaviour.** It is a
+    measurement taken with a fence's *configuration* — its waiver files, its baselines, its assertion set —
+    so it is settled by the tree that configuration lives in.
+
+    iter-103 ran the guard family after its edits and got **2 RED**, against its own ground-truth sheet of
+    `14 GREEN · 0 RED`. It reproduced at the same corpus commit via a read-only `git archive`, so it was not
+    the edit. Two quotable conclusions were drafted — *"the sheet asserted a verdict it did not have"* and
+    *"a fence names 8 in-scope sites the double reading missed, so `N ≥ 41`"* — **and both were false.**
+
+    The fence had been run from the **pinned per-stack clone**, not the **authoring copy**. The entire
+    difference was one file, `claim_twin_waivers.json` (+40 lines), and the 8 RED sites were **exactly** the
+    8 waived sites. Run a fence from last release's pin and you measure **last release's fence**: every
+    waiver, baseline row and assertion added since reads as a fresh RED at sites nobody touched.
+
+    > **Rule.** Every verdict carries the fence tree's **path + sha + dirty state**, beside — not instead of
+    > — the subject's refs. A verdict whose deciding input is unstated is not re-checkable, and a
+    > measurement nobody can re-check is not a measurement.
+
+    **Three details that are the difference between a stamp and a fence:**
+
+    - **DIRTY is a disclosure, not a refusal.** An uncommitted fence tree means the sha names a tree that is
+      not the tree that ran — iter-103's failure mode in a subtler form. It is stated and the run proceeds,
+      because refusing it would make the family unrunnable during exactly the iters that ship fences.
+      *Undeterminable* is different and IS a refusal (`EXIT 2 — UNMEASURED`), with an escape that **records**
+      the gap the way `--allow-not-run` does.
+    - **Print it FIRST.** A family runner that reports each member's last output line would have every
+      guard's own summary silently replaced by a trailing stamp — the iter-87 `headline()` defect exactly.
+    - **State it once per run, not once per member**, when the runner executes every member from its own
+      directory: the tree is then the same *by construction*, and seventeen repetitions are noise rather
+      than evidence.
+
+    **The retroactive half, and it is the expensive one.** Measured at iter-105: **52 recorded family
+    verdicts across 26 milestone artifacts, and 0 of them state the fence tree.** None is thereby *wrong* —
+    but every one is **provenance-unstated**, which is a weaker thing than a green and should be quoted as
+    such until re-run. Treat a guard verdict recorded before its runner printed its own tree the way you
+    would treat a search whose stderr nobody read.
+
 ---
 
 ## 6. Classification — the map
@@ -2275,6 +2316,15 @@ Two riders:
 2. **Print the REFERENCE with every verdict.** The runner named a *directory* and never a *commit*, so every
    `13 GREEN` transcript in this milestone is unre-checkable after the fact — which is exactly how a green
    reading gets quoted forward into a brief. A verdict without its refs is an anecdote.
+3. **And "the reference" is THREE trees, not two — the third is the fence's own** *(M257x iter-105)*. Rider 2
+   was implemented for the corpus and the platform; the runner still could not say which
+   `rosetta-extensions` tree it had loaded, which is the tree that actually decides the verdict. §5 rule 50
+   has the incident and the design; the mechanism is `stack-core/fence_provenance.py`, and what keeps it from
+   rotting is that **the conformance check is derived from `guard_family.census()` rather than from a list**
+   — a new `*_guard.py` that does not state its tree turns `tests/test_fence_provenance.py` RED without
+   anyone remembering to add it. Asserted over the **parsed** `if __name__ == "__main__"` block, per the
+   *parsed construct, never a whole-file substring* rule above: a `grep` would pass a guard that mentions
+   the module in a comment or imports it and never calls it, and both are the shapes a stamp regresses into.
 
 ### Guards must be tested in PAIRS — a green suite proves each guard, not the specification (M257x iter-90)
 
