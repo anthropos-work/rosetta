@@ -2034,3 +2034,32 @@ defect and would also explain why no amount of accessor work has helped.
   UNMEASURED rather than unmoved. **`TOK-07` step 2 is now UNBLOCKED.** Gate unchanged at **4 of 5**.
   Zero platform edits, no clone fetched, no stack touched, no tag cut — see `iter-113/progress.md` +
   `decisions.md` + `enumeration.txt` + `predicate-ledger.json`
+
+- iter-114 (tik, `iter_shape: tooling`, **`TOK-07` step 2, first half**): **the reach metric names its
+  DENOMINATOR, or prints no percentage** — rule 4 implemented rather than quoted. `repair_reach_guard`
+  took one input, a `raw/` dir of seat reports — *what one reading DETECTED*, at a per-pass recall this
+  milestone measured at **33–83 %** — and printed `reach t/N = P%` over it unconditionally. That is the
+  instrument that graded **iter-108 at 46/46 = 100 %** while the same propositions stood false one file
+  away. Now **exactly one declared denominator, named in the report** (`D-M257x-114-1`):
+  `--enumeration` → `corpus-derived-per-predicate`, **may** carry a ratio; `--ledger` →
+  `prior-reading-detections`, **may not**. **The refusal is the ABSENCE of the number, never a caveat
+  beside it** — a percentage is what gets quoted in a close and a warning next to it is not — and in
+  `--json` the **`reach_pct` key is OMITTED rather than nulled**, so a consumer raises instead of
+  formatting a figure the run was not entitled to. Refused at exit 2: both inputs at once, neither, an
+  empty enumeration, and a **malformed site (refused, not dropped** — a silently shrinking denominator is
+  the one direction a reach number flatters itself). **And an UNSETTLED enumeration is not a denominator
+  either** (`D-M257x-114-2`): a run reporting `seed_recall_failures` or `unsettled_headroom` is refused,
+  because iter-113's ceiling makes "candidate list" and "population" distinguishable and grading against
+  the former is the same defect one step earlier. **Measured live, both paths:** the detections path
+  prints `reach 109/147 reached — NO PERCENTAGE IS AVAILABLE`; the corpus path prints
+  `71 enumerated site(s) over 24 predicate(s) … reach 0/71 = 0.0%` — **step 2's pre-repair baseline,
+  measured before the repair rather than assumed after it.** **The iter-81/76 known-answer fixture is
+  UNCHANGED** (109 touched · 35 line-unreached · 3 file-unreached · 4 no-anchor · 1 out-of-tree = 152,
+  exit 1, `graphql-wundergraph.md:13` named from both readings) — the control proving the extension did
+  not soften the fence it extended. Ships with **both** halves of the pair: a positive control (an
+  enumeration denominator DOES print a percentage — without it the refusal is satisfiable by a tool that
+  never prints one) and an anti-vacuity control that loads **the artifact iter-113 actually checked in**
+  (24 predicates / 71 sites), per §8's iter-94 rule. **21 → 30 tests in the file; 60 passed with the
+  enumerator's suite, 46 passed for the reach mutation battery + `guard_family`, invocations stated.**
+  **No reading taken and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits,
+  no clone fetched, no stack touched, no tag cut — see `iter-114/progress.md` + `decisions.md`
