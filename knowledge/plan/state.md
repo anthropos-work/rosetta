@@ -1,9 +1,9 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. **5** milestones M255 (HARD barrier) → M256 → **M257x** → M257 → M258, strictly serial. **M257x was INSERTED 2026-07-31** — the platform is migrating its microservices back into `app`, and both rosetta and rosetta-extensions must be re-aligned before a bring-up can be honestly measured; **M257 is PAUSED behind it**. Tooling + docs only, 0 platform-repo edits."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 99 iters + 22 harden passes closed (branch m257x/platform-realignment). Find where the microservices→app consolidation actually stands, then make BOTH rosetta (corpus) and rosetta-extensions (tooling) work against platform @ origin HEAD. M257 is PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 100 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only open one. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5.** Clauses 1–4 HOLD. **Clause 5 (KB-fidelity) is the only open one** and the user has ruled FOUR times it is met ONLY by a reading returning zero — never re-cut, reinterpreted or argued. **iter-98 REPAIRED by predicate; iter-99 RE-READ and it returned `N` = 28**, from 46 booked across 14 seats, 36 upheld by 4 independent adjudicators. **THE HEADLINE IS NOT `N` — IT IS THAT THE INSTRUMENT MOVED.** Upheld rate fell **93.1 % → 78.3 %**, the FIRST break of a band four readings had held inside 1.0 points (92.1 / 93.0 / 92.7 / 93.1), so **`N` 13 → 20 → 28 is NO LONGER A COMPARABLE SERIES** and iter-99 explicitly declines to call it a rise: *a narrowing pool measured by a degrading instrument produces exactly this signature*, and this reading cannot separate that from a genuinely growing residual. Three mechanisms fit the precision drop, all recorded UNRESOLVED: the residual got harder (bookings FELL 58 → 46 while rejections rose 4 → 10); a briefing gap (two independent seats made the identical wrong-rext-clone error); adjudicator variance (`hiring.md:80-82` REJECTED by Adj2, UPHELD by Adj4 — one disagreement in 46, but non-zero for the first time). Chapman **N̂ ≈ 45.1**, per-pass **39.9/35.4 %**, union **62 %** → **~17 still unfound**. **THE HIGHEST-VALUE ITEM IS AN INSTRUMENT DEFECT:** `anchor_construct_guard` was **GREEN at the audited commit** while ≥7 upheld findings are citations resolving to the WRONG CONSTRUCT — the load-bearing word in its own green is *'resolvable'* (a self-citation offered AS evidence lands on a **blank line**; another names a closing brace). Take `CHECK-M257x-iter99-anchor-guard-blindspot` FIRST — it changes how every prior and future `N` should be graded. **DISCOVERY POOL, MEASURED (not impressioned):** predicate WIDTH is collapsing — mean sites/predicate **3.64 → 1.76**, max **11 → 4**, width≥6 **four → zero**, width-1 **29 % → 52 %**. Classes split two ways: **draining-and-enumerable** (platform-drift **7/13 → 1/20 → ~1/28**; citation-resolution now mechanizable) vs **open-ended** (scoping errors, model-drift induced by our own tooling, self-contradiction). iter-98's pre-registered §3 prediction that recall would FALL as the pool narrowed HELD. **It does not license 'convergence'.** **iter-98 repaired 37 SITES across 22 files from 20 booked anchors (multiplier 3.9× → 1.85×)** and deliberately did NOT run twin expansion ahead of the read — measured, not preferred: iter-96's string-twin pass already ran at ~0 escape and iter-97 measured the real escape at **3 of 51, all PARAPHRASES**, so the effort went to a paraphrase axis instead. The fence still caught what the sweep missed (publishing the ledger turned `claim_twin_guard` RED on a second `s3-private` site). **Exactly 2 of the 28 were INDUCED by iter-98, both inside prose it rewrote, and 0 are TRUE RECURRENCES** — the paraphrase axis worked. Pre-registration **4 of 9 HELD, sealed in its own commit before any seat reported**; the same split as iter-97 — **every mechanism claim held, every magnitude guess failed**. Guard family **14 GREEN · 0 RED · 3 not-run** (input-gated; `guard_family` exits 2 to say so). **`DEF-M257x-iter80` NOT resolved** — the false present-tense claim was WITHDRAWN rather than made true, because re-classing that store is the user's open question. **TWO INSTRUMENTS, AND CONFLATING THEM HAS COST THIS MILESTONE REPEATEDLY:** clause 3's is the GUARD FAMILY; clause 5's is the graded READ (frozen, sha `3858ec53…`, one commit ever). **STANDING SEARCH RULE (rule 44):** no single tool is safe — gitignored-but-tracked files, NUL-bearing source, and nested untracked repos each blind a different instrument. Use the mechanized path (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where it publishes 22**. **RE-SCOPE TRIGGER:** occurrence 3, **NOT firing** (fired at iter-53, remedy shipped as TOK-04; 35+ clean iters since, so 'two CONSECUTIVE invalidated attempts' is false on its own words)."
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5** — clauses 1–4 HOLD; **clause 5 (KB-fidelity) is the only open one**, and the user has ruled FOUR times it is met ONLY by a reading that returns zero — never re-cut, reinterpreted or argued. iter-99's re-read returned **N = 28** at a **78.3 %** upheld rate: the first break of a band four readings had held inside 1.0 points, so **13 → 20 → 28 is NOT a comparable series** and no trend may be read from it in either direction. The highest-value open item is an INSTRUMENT defect, not a corpus one — `anchor_construct_guard` was GREEN while ≥7 upheld findings cite the wrong construct. **Live detail — readings, discovery-pool measurement, comparability mechanisms, carried items — lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back.**"
 last_updated: "2026-08-06"
 ---
 
@@ -39,12 +39,32 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **99 iters closed**. Gate **4 of 5**; clause 5 open — the iter-99 re-read returned
+M257x iter loop, **100 iters closed**. Gate **4 of 5**; clause 5 open — the iter-99 re-read returned
 **N = 28**, but at a **78.3 %** upheld rate that broke a four-reading band, so the `N` series is **no longer
-comparable**. See the `phase:` field above for the live detail; the reading is
-[`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md)
-and the pool measurement is
-[`iter-98/discovery-pool.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-98/discovery-pool.md).
+comparable** and no trend may be read from it in either direction.
+
+**The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
+(`context.md` § state.md contract):
+
+- [`m257x…/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — authoritative
+  live status, every iter's findings, the carried items
+- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the reading
+- [`iter-98/discovery-pool.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-98/discovery-pool.md) — the pool measurement
+
+## Standing rules (outlive the milestone — do NOT move these into `phase:`)
+
+- **Rule 44 — no single search tool is safe.** Gitignored-but-tracked files, NUL-bearing source, and nested
+  untracked repos each blind a *different* instrument. Use the mechanized per-tree path
+  (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where it
+  publishes 22.** Three mechanisms, no single tool.
+- **TWO INSTRUMENTS, and conflating them has cost this milestone repeatedly.** Clause 3's instrument is the
+  **guard family**; clause 5's is the **graded read** (frozen, sha `3858ec53…`, one commit ever). A guard
+  going green says nothing about clause 5, and a reading says nothing about clause 3.
+- **A guard's green is only as strong as its own load-bearing word.** `anchor_construct_guard` reported
+  *"every **resolvable** anchor names a construct"* and was GREEN while ≥7 upheld findings resolved to the
+  wrong construct. When a guard qualifies its own claim, the qualifier is the blind spot — read it first.
+- **RE-SCOPE TRIGGER: occurrence 3, NOT firing.** It fired at iter-53 and the remedy shipped as TOK-04;
+  35+ clean iters since, so *"two CONSECUTIVE invalidated attempts"* is false on its own words.
 
 ## v2.8 shape
 
