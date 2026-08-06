@@ -1994,3 +1994,103 @@ recurs): dropping `force=True` fails 2 tests; making `force` unconditional fails
 **Stop condition:** continue-to-next-pass — one live defect on the second dimension is fewer than the
 four on the first, but a scan that still surfaces a defect in the fence family's own primitive has not
 come up empty.
+
+## Pass 25 — 2026-08-06 — incremental
+
+**Iters hardened this pass:** iter-105 … iter-109 (same window; third and last dimension — the incremental cap is 3)
+**Tiks covered since prior pass:** 0 (third pass of the same session)
+
+**The dimension: what the tooling SAYS about itself, graded against what it does.** Passes 23 and 24 read
+the code; this one took every quotable number and stated property in the three new guards and re-measured
+it. That is the milestone's own subject applied to the instrument, and it is where both findings came
+from.
+
+**6. The answer key's own rationale quoted a total under one part's name** (`7dd5148`).
+`normalize_range`'s docstring — the rationale for iter-108's bare-rev fix — records
+`cd16967^..cd16967` as *"53 changed files, 17 graded, **10 findings**."* Re-measured: **17 graded, 5
+findings plus 5 CANNOT-TELL.** Ten is the **sum of the two classes this module goes to some length to
+keep apart**: `findings`, which sets the exit code, and `review`, which is reported, counted, and
+deliberately does not. Quoting the total under the name of one of its parts is the §5 rule 11/12
+substitution — and it had landed *inside the rationale of a fix for the same class.*
+
+The answer key could not catch it: `test_iter102s_commit_is_RED` asserts only that `findings` is
+non-empty. Now pinned **per class** — 5 findings / 5 review / 17 graded / 53 changed.
+
+**7. `--json` is unparseable across the family — ROUTED, not fixed**
+(`FIX-M257x-harden23-json-polluted-by-provenance-stamp`). iter-105 put `stamp()` on **stdout** in every
+guard's `__main__`; **12 of those guards also offer `--json`**, so the provenance line precedes the JSON
+document and any machine consumer dies at char 0. **The suite does not see it because the suite works
+around it** — every existing test that parses a guard's `--json` sets `FENCE_PROVENANCE_STAMPED=1` first
+(`test_anchor_offset_guard.py:224`, `test_clone_drift_guard.py:265/276/284`). An undocumented,
+load-bearing workaround is how a live defect stays invisible while the tests stay green.
+
+**Why routed rather than taken.** The fix is one line — default `stamp()`'s stream to `sys.stderr` — but
+it retires the *printed-FIRST-on-stdout* property iter-105 designed deliberately and documented in
+`fence_provenance.py`'s docstring **plus sixteen per-guard `__main__` comments**, and it changes what
+`test_a_standalone_guard_run_prints_the_tree` asserts. That is a design decision about where provenance
+belongs, not a corollary of a regression test. **No production consumer of `--json` exists today** (12
+guards offer it; the only parsers are the tests), which is why it is a routing and not an escalation.
+**+2 known-limitation tests pin both the defect and the workaround**, on the `TestKnownWeakness` pattern
+this suite already uses — the assertion has an expiry date, and when the fix lands those tests are the
+ones to rewrite.
+
+### Did the append fix change any real verdict? No — and this ledger says so.
+
+The pass-23 boundary correction was re-run against **seven real ranges** (the five in-scope iter commits
+plus `22eaac4`, `e6aed2e`, and the pinned iter-102 answer key `cd16967`), fixed versus a fault-injected
+pre-fix copy:
+
+| range | fixed (findings/graded) | pre-fix |
+|---|---|---|
+| the five iter-105…109 commits | 0/0 each | 0/0 each |
+| `22eaac4`, `e6aed2e` | 0/0 | 0/0 |
+| `cd16967^..cd16967` | **5/17** (+5 CANNOT-TELL) | **5/17** (+5 CANNOT-TELL) |
+
+**Identical everywhere.** The false RED is real, reproducible, and pinned by six tests — and it **has not
+yet fired on this corpus's history**. Recorded that way deliberately: the temptation is to report five
+repaired REDs, and the honest reading is that the defect was caught before it cost anything. The same
+table is the check that the correction moved **no real measurement**.
+
+### The instrument, run end-to-end after every change this session
+
+```
+guard-family: 15 GREEN · 0 RED · 0 could-not-check · 4 not-run
+guard-family: 4 guard(s) NOT RUN and accepted: anchor_offset_guard, repair_leak_guard,
+              repair_reach_guard, value_change_guard
+guard-family: OK with gaps — 15 of 19 member(s) ran and returned green; 4 was/were NOT RUN and
+              accepted. This is NOT a whole-family green.
+```
+
+over **19 members** (17 at pass 22; iter-106 and iter-107 added two), corpus `4ede6495b`, platform
+`0c91421df` (origin/main in sync), fence tree `9dfd717f2`. The four NOT-RUN are the commit- and
+input-scoped members with no `--range` / `--ledger` supplied; **not a whole-family green, and the
+summary line says so.**
+
+**Coverage delta on touched files:** `python3 -m pytest tests/test_fence_provenance.py
+tests/test_clone_drift_guard.py tests/test_anchor_offset_guard.py tests/test_guard_family.py
+tests/test_test_collection_fence.py -q` in `stack-core`: **125 → 128 passed**. Session total across the
+three passes: **105 → 128 (+23 tests)**, every count from that one invocation.
+
+**Flake gate:** the 24 newly added tests, 3 consecutive runs — `24 passed` at 22.82 s / 23.07 s / 22.75 s.
+Invocation: the four-module set with
+`-k "PureInsertion or UnreadableHead or ProvenanceCaveatReaches or NotSuppressibleByAnybody or KnownWeaknessJson or CARDINALITY"`.
+
+**Suite-completion gap, restated because it must not read as a pass:** `stack-core`'s full `pytest tests/`
+**does not complete on this host** (`FIX-M257x-iter108-stackcore-suite-hangs`, open). **No whole-suite
+total is quoted anywhere in this entry** — every number above names the invocation that produced it. The
+one known pre-existing failure (`test_claim_twin_guard_iter48_answer_key::test_02`) was not run by any
+scoped invocation this session and is therefore **not re-attested here** — unchanged, not re-verified.
+
+**Scoped around, deliberately:** `repair_reach_guard`'s ledger-derivation path (`read_ledger()`) was left
+untouched. iter-109 booked `FIX-M257x-iter109-repair-scope-is-detection-bounded`, whose binding change is
+that the anchor set must in future be re-derived **from the corpus per predicate**, never from a
+`raw/` ledger dir. Deepening tests against the current derivation would pin behaviour that is known to be
+changing and would make the fix harder to land. No test was added to that path this session.
+
+**Stop condition:** cap reached without stabilization — the 3-pass incremental cap fired and the third
+pass still surfaced two items, so the dimension scan did not come up empty. That is the honest reading and
+it is **not** a request for a fourth pass: the two remaining items are **one routed with a named handler
+and two pinning tests, and one corrected in place**. What is left standing is the routed `--json` defect
+plus pass 22's still-open queue (waiver staleness, the crash-rendered-as-RED class — to which
+`clone_drift_guard` is now a **new member**, sharing the uncaught-`read_text()` shape, and
+`demo_knob_guard`'s absent vacuity control).
