@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 107 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; CLAUSE 5 — met only by a reading that returns zero — is the only open one. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 108 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; CLAUSE 5 — met only by a reading that returns zero — is the only open one. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5.** Clauses 1–4 hold; **CLAUSE 5 is the only open one**, met ONLY by a reading that returns zero — ruled FOUR times, never re-cut or narrowed. iter-103's 14-seat double reading returned **`N = 33`** against a pre-sealed rule → **THE BURN-DOWN LEG DOES NOT REACH THE RESIDUAL**; by predicate the pool did not move (22 → 22). Active strategy **`TOK-06` — fence the inflows before repairing again**: (0) provenance → (1) drift fence → (2) induction checks → (3) repair the 33 → (4) read LAST. **Steps 0–2 LANDED (iters 105–107). Next: step 3, and it must clear BOTH new fences.** Detail: milestone `progress.md`, `decisions.md` § TOK-06, `gate-clauses-1-2/README.md`. POINTER field per `context.md` § state.md contract; do not grow it back."
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5.** Clauses 1–4 hold; **CLAUSE 5 is the only open one**, met ONLY by a reading that returns zero — ruled FOUR times, never re-cut or narrowed. iter-103's 14-seat double reading returned **`N = 33`** against a pre-sealed rule → **THE BURN-DOWN LEG DOES NOT REACH THE RESIDUAL**; by predicate the pool did not move (22 → 22). Active strategy **`TOK-06` — fence the inflows before repairing again**: (0) provenance → (1) drift fence → (2) induction checks → (3) repair → (4) read LAST. **Steps 0–3 LANDED (iters 105–108)**; iter-108 paid the union by predicate, reach **100 % of the upheld union**, both fences cleared. **ONLY STEP 4 REMAINS — the read**, deliberately unstarted. Detail: milestone `progress.md` + `decisions.md`. POINTER field per `context.md` § state.md contract; do not grow it back."
 last_updated: "2026-08-06"
 ---
 
@@ -39,7 +39,7 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **107 iters closed**. Gate **4 of 5**.
+M257x iter loop, **108 iters closed**. Gate **4 of 5**.
 
 - **Clauses 1–2 — CLOSED** by the concurrent lane at platform `0c91421`. **Clause 2 is MET WITH DISCLOSURE
   and the disclosure travels with it forever: a freshly built stack failed the first full run in 2 of 2
@@ -56,9 +56,11 @@ M257x iter loop, **107 iters closed**. Gate **4 of 5**.
 **Active strategy — `TOK-06: fence the inflows before repairing again`** (iter-104, a **deliberate**,
 non-terminating tok). It changes the ORDER of the loop, not the instrument and not the unit of repair:
 **(0) guard-tree provenance → (1) the drift fence → (2) the induction checks → (3) repair the 33 →
-(4) read LAST.** **Steps 0–2 LANDED in iters 105–107** — three net-new rext modules, 58 net-new tests, each
-fence carrying a mutation control and an anti-vacuity control that can actually fire. **Next: step 3, and it
-must clear both new fences** (`anchor_offset_guard` runs on the repair's own commit).
+(4) read LAST.** **Steps 0–3 LANDED in iters 105–108** — three net-new rext fence modules, each with a
+mutation control and an anti-vacuity control that can fire, then **the union paid BY PREDICATE** (iter-108:
+22 predicates / 23 files; machine reach **46/46 = 100 % of the upheld union**, raw 46/47 — the single miss a
+**REJECTED `wrong-tree`** finding, iter-102's residue result reproduced). **Both fences fired ON that repair
+and were cleared.** **Only step 4 remains: the read**, deliberately unstarted.
 
 **Chapman is RETIRED for this milestone.** Its independence assumption measured **17 %** then **61 %** on
 one byte-identical instrument, so every point estimate derived from it is unusable. **Only the floor
