@@ -132,3 +132,58 @@ file, so no seat can see a prior audit's answer key or another seat's report.
 
 **Dealt in two batches of 7**, as at iter-103. **Every seat is committed verbatim the moment it lands**, before
 adjudication — the discipline that has now bounded the cost of a mid-flight death three times.
+
+---
+
+## CORRECTION, disclosed rather than silently rewritten — the corpus HEAD moved during this open
+
+**Written after the seal (`ac48e5b`), before adjudication. The sheet above said `rosetta HEAD = 2e3443d`
+and `tree at the open: clean`. Both were true when measured at 20:10 and neither was true when the seats
+were dealt.** A concurrent lane — the previous run, still closing iter-108 — committed **`08cfbd8`** in this
+same working tree between the two. `ac48e5b`'s parent is therefore `08cfbd8`, not `2e3443d`.
+
+**This milestone's own class, landing on this milestone's own apparatus for the sixth time**: an evidence
+sentence stated more precisely than what was measured, in the direction that made the sheet cleaner. The
+conclusion survives; the sentence did not, so the sentence is corrected here rather than quietly patched.
+
+### What the subject actually did — measured, with a firing control
+
+| ref | `corpus/services` tree | `corpus/architecture` tree |
+|---|---|---|
+| `2e3443d` (sheet's stated HEAD) | `b8d5df873…` | `35953fb68…` |
+| `08cfbd8` (the concurrent commit) | `b8d5df873…` | `35953fb68…` |
+| `ac48e5b` (the seal — what the seats read) | `b8d5df873…` | `35953fb68…` |
+| *negative control* — `e6aed2e` (iter-103's subject) | `1d9da74ac…` — **differs** | — |
+
+`git diff 2e3443d..ac48e5b -- corpus/` is **empty**. `08cfbd8` is +72/−0 across three files, all under
+`knowledge/plan/**` (`iter-108/decisions.md`, `iter-108/progress.md`, milestone `progress.md`) — **zero
+corpus files**, and `knowledge/plan/**` is barred to every seat.
+
+> **The read scope is byte-identical at all three refs, and the control proves the comparison discriminates
+> rather than passing vacuously.** The reading's subject did not move. **The corpus under audit is
+> `ac48e5b`**, and the 40-file / 10,694-line partition is unaffected.
+
+### Seal provenance — asked, and answered from evidence
+
+A coordinator flagged that a journal line reading *"an untracked `iter-109/` … NOT mine"* might mean this
+seal adopted another lane's artifacts, which would invalidate it. **It does not, and the line is not mine.**
+It was written by the *other* lane, about *my* files, and it names them correctly as belonging to "a
+concurrent lane preparing TOK-06 step 4" — which is this iter. The file mtimes reconstruct my own tool-call
+order exactly: briefing copied 20:14:45 (the same shell call as my 20:14 heartbeat), `ground-truth.md`
+20:15:34, `pre-registration.md` 20:16:47, `overview.md` 20:17:11 — authored in that sequence, by me, before
+the 20:18 seal. **Case (a): I wrote them; a second observer correctly saw them as not-its-own; the
+attribution inverted on the way through.** The seal stands on its own derivation.
+
+**And it is `D-M257x-103-1` / §5 rule 49 again, exactly**: a disagreement between two observers of a
+concurrently-mutated surface is *first* evidence that the two observers saw different surfaces — not
+evidence that either lied. Third worked example in four days.
+
+## Test-suite state — a GAP, recorded, not a pass
+
+This is a measuring pass: **no rext code changed, so no suite was run for it.** Separately, the `stack-core`
+suite is known **not to complete on this host** — a plain `pytest tests/` blocks indefinitely inside
+`test_m220_mutation_battery.py::DevWiringMutationBattery`, reproduced twice and proven pre-existing via a
+read-only `git archive` of an earlier rext ref. **No full-suite total for `stack-core` exists on this host,
+and none is quoted anywhere in this iter** (§5 rule 50 — state the invocation with every count). Routed as
+`FIX-M257x-iter108-stackcore-suite-hangs`; second instance of `FIX-M257x-iter100-suite-stall`'s class, now
+localised to a named test.
