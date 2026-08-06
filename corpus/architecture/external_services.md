@@ -551,7 +551,7 @@ When backend services add new GraphQL types or operations:
 
 ## AI Providers (External Intelligence)
 
-The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. All Go services access AI through the shared `ai` library, which provides **unified provider access** behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). **Provider selection and cost tracking are implemented in the consuming services, not in the `ai` library itself** — see [Shared Libraries → ai](./shared_libraries.md#ai). What that selection actually does is **not** an ordered EU-first ladder; see *Routing: what is actually implemented* below before relying on it for a residency argument.
+The platform relies on multiple AI providers across backend services, Studio tools, and the simulation engine. Go services access AI behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral) — but ⚠️ **that interface is no longer a shared private module for any service a stack builds, and this sentence said "the shared `ai` library" until M257x iter-115.** `app` folded the library into its own tree at `1e457fa70` (2026-08-04, *"refactor(ai): fold the ai library into app as internal/ai"*): at `app` `ad9f3c49` neither `app/go.mod` nor `sentinel/go.mod` requires `github.com/anthropos-work/ai` — `app/go.mod:14-18` requires `analytics-go`, `colony`, `proto`, `storage`, `taxonomy` and nothing else — and the code lives at `app/internal/ai/`, imported by 67 `.go` files as `github.com/anthropos-work/app/internal/ai`. The only repos that still *require* the module are the frozen `cms` and `jobsimulation` husks, which `repos.yml` @ `0c91421d` does not list and `make init` does not clone. **This was the unrepaired half of a pair for four readings** — *Unified AI Library* in [`ai_architecture.md`](./ai_architecture.md), [`shared_libraries.md`](./shared_libraries.md#ai) and [`architecture/README.md`](./README.md) all already carried the correction, so a reader who arrived here first got the pre-fold answer with three siblings silently contradicting it. **Provider selection and cost tracking are implemented in the consuming services, not in the `ai` library itself** — see [Shared Libraries → ai](./shared_libraries.md#ai). What that selection actually does is **not** an ordered EU-first ladder; see *Routing: what is actually implemented* below before relying on it for a residency argument.
 
 For full details on models, routing, voice engines, and recording architecture, see [AI Architecture](./ai_architecture.md).
 
@@ -669,8 +669,12 @@ Re-derive with `command grep -rho '\b<NAME>\b' --include='*.go'` in `app` (`5ba1
 return **5 / 26 / 13 / 13**. `OPENAI_ORG_ID`, `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT` return
 **0** and were removed; `OPENAI_API_KEY` returns 2, both the studio subprocess remap. Use `command grep` —
 a `grep` aliased to a `.gitignore`-honouring wrapper undercounts, which is how iter-52 first published
-12 / 12. **This block covers `app`'s Go only**; `app/studio/gen.py:45-47` reads the separate bare names
-`AZURE_API_KEY` / `AZURE_ENDPOINT` / `OPENAI_ENDPOINT`. (Corrected M257x iter-52.)
+12 / 12. **This block covers `app`'s Go only**; `app/studio/gen.py:45-48` reads a separate list of **six**
+bare names — `AZURE_API_KEY`, `AZURE_ENDPOINT`, `OPENAI_API_KEY`, `OPENAI_ENDPOINT`, `ANTHROPIC_API_KEY`,
+`ANTHROPIC_ENDPOINT` — and **state the tree with the range**: the studio tree is a *nested* checkout at
+**`aeec036a`**, not `app` `ad9f3c49`, so `git show ad9f3c49:studio/gen.py` reads the host ref and is the
+wrong grep. (Corrected M257x iter-52; the range and the enumeration corrected again at iter-115, which
+measured `:45-47` as three of six and cut the list one line short of `ANTHROPIC_*`.)
 
 ### Usage Patterns
 
@@ -720,7 +724,7 @@ a `grep` aliased to a `.gitignore`-honouring wrapper undercounts, which is how i
 | **Purpose** | Real-time voice conversations in AI Simulations |
 | **Integration** | Jobsimulation service |
 
-LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** inside LiveKit rooms, enabling AI actors to hold voice conversations with players. **The EU agent is the bare `anthropos-agent`** (`calls/livekit.go:110,120`); the US one is suffixed `anthropos-agent-us` (`:126`), and the voice-chain engine dispatches `anthropos-agent-chain` (`:115`). There is no `anthropos-agent-eu` — the name appears nowhere in the platform, and the eu/us split lives on the **endpoint** (`azure-eu` / `azure-us`), not on the agent name. (Corrected M257x iter-49; the `-eu` form had stood since 2026-03-02.)
+LiveKit provides the real-time voice infrastructure for simulation voice calls. The platform runs **GPT Realtime agents** inside LiveKit rooms, enabling AI actors to hold voice conversations with players. **The EU agent is the bare `anthropos-agent`** (`calls/livekit.go:110,120`); the US one is suffixed `anthropos-agent-us` (`:126`), and the voice-chain engine dispatches `anthropos-agent-chain` (`:115`). There is no `anthropos-agent-eu` — the name appears nowhere in the platform (0 hits across all 15 trees at their own refs, and 0 in a `.gitignore`-blind filesystem grep). ⚠️ **But the sentence then said the eu/us split lives on the endpoint "not on the agent name", and that is false — this same sentence had already contradicted it eleven words earlier.** At `app` `ad9f3c49`, `calls/livekit.go:118-128` assigns `agentName` **differently on the two branches**: `:120` `agentName = "anthropos-agent"` on `LocationEu`, `:126` `agentName = fmt.Sprintf("anthropos-agent-%s", *location)` otherwise. The split is on **both**. The endpoint half is also wrong in the parenthetical: **EU does not resolve to `azure-eu`** — `:122-123` picks a **random** member of `euAgentEndpoints = {"azure-eu", "azure-eu-fr"}` (`:101-104`); `azure-eu` is only the pre-branch default at `:111`. (Corrected M257x iter-49 for the `-eu` form, which had stood since 2026-03-02; the "not on the agent name" clause and the endpoint set corrected at **iter-115**.)
 
 - **Audio**: Recorded as MP3
 - **Transcripts**: Generated from conversation events

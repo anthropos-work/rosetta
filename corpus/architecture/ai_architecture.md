@@ -31,7 +31,12 @@ What is actually implemented, in `app/internal/jobsimulation/ai/ai.go` (and mirr
    retry attempt — i.e. **direct US OpenAI**. Nothing else (timeout, 5xx, region outage) moves a
    request off its vendor.
 5. **Mistral is nowhere in this path.** *Every* use of it in `app` is **OCR**, never generation: Go-side
-   in the cms domain (`internal/cms/studio/markdownManager.go:19`, `studioManager.go:583`), and Python-side
+   in the cms domain (`internal/cms/studio/markdownManager.go:30` — the constructor body
+   `return &MarkdownManager{ocr: mistralocr.New(aiKey)}, nil` inside `func NewMarkdownManager` at `:29`,
+   **@ `app` `ad9f3c49`**; this row cited **`:19`** until M257x iter-115, and `:19` is a **doc-comment**
+   line — *"It used to take aiKey and then IGNORE it"* — not code, exactly as
+   the *AI Providers* section of [`external_services.md`](external_services.md) already said while this line went on asserting it —
+   and `studioManager.go:583`), and Python-side
    in the in-image studio tree at `studio/tools/pdf2md.py:24` (`mistral-ocr-latest`) — a standalone CLI on
    neither the AI manager's path nor the generation pipeline's
    (`git -C app/studio grep -i mistral aeec036a`, 22 hits / 3 files).
@@ -84,16 +89,21 @@ fallback order (there is none; see above).
 | Provider | Models | Default client |
 |:---------|:-------|:---------------|
 | **OpenAI (Azure EU + Direct US)** | GPT-5.4, GPT-5.4-mini, GPT-5.2, GPT-5.1, GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, O3, O4-mini | Azure **EU** (US via `flag_use_azure_us`). **Direct US OpenAI is NOT only a 429 retry target**: a simulation sequence with `ai_vendor` unset or set to `Openai` reaches it on the first attempt with no error condition, via `case simulation.Openai:` at `simulator/ai/ai.go:58-59` (the `default:` arm at `:114-115` is the separate *unrecognised-vendor* door, not the unset one). Corrected M257x iter-46, mechanism corrected iter-48 |
-| **Anthropic (Bedrock EU + Direct US)** | Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` — for **Course Builder** it is the selector (key set → first-party API); for **Studio-Room**, which was never on Bedrock, it is only the credential the `anthropic` `TARGET SERVICE` needs ([`external_services.md:567`](external_services.md)) |
+| **Anthropic (Bedrock EU + Direct US)** | **Claude 4.6 Sonnet**, Claude 4.5 Sonnet, Claude 4 Sonnet, Claude 3.7 Sonnet, Claude 3.5 Sonnet — **five families over six consts** (3.5 has both a Bedrock-EU and a direct-API const), enumerated from `app/internal/ai/anthropic/completion.go:20-30` **@ `app` `ad9f3c49`**; plus **Claude Opus 4.8** (`eu.anthropic.claude-opus-4-8`), which is not in that block — it is Course Builder's `DefaultAuthorModelID` at `internal/coursebuilder/bedrock.go:23`. **This row listed four families until M257x iter-115**, omitting 4.6 — and 4.6 (`eu.anthropic.claude-sonnet-4-6`, `completion.go:29`) is not dormant: it is the current production pin at `internal/askengine/bedrock.go:25`, `internal/jobsimulation/agent/report_agent.go:31` and `internal/coursebuilder/bedrock.go:29`. The row's construction rule is *enumerate the constants* (its OpenAI sibling at `:86` is an exact enumeration of `internal/ai/openai/config.go:8-26`), so an omission here is a defect and not an editorial cut | Bedrock `eu-west-1` — both `anthropic-aws` and `anthropic` map here. Direct US is reachable only *outside* this manager, by setting `ANTHROPIC_API_KEY` — for **Course Builder** it is the selector (key set → first-party API); for **Studio-Room**, which was never on Bedrock, it is only the credential the `anthropic` `TARGET SERVICE` needs ([`external_services.md:567`](external_services.md)) |
 | **Mistral (EU)** | Mistral OCR (`mistral-ocr-latest`) | **OCR only** — the cms domain's Go client plus the in-image `studio/tools/pdf2md.py` CLI; reachable from neither the AI manager nor the generation pipeline |
-| **Speech** | GPT-4o Mini TTS, TTS v2 HD, TTS v2 | Azure voice client (`CreateSpeech` is Azure-only) |
+| **Speech** | GPT-4o Mini TTS (`gpt-4o-mini-tts`) — **the whole set**, and it is also `DefaultModel` | Azure voice client (`CreateSpeech` is Azure-only). Enumerated from `app/internal/ai/speech.go:9-12` **@ `app` `ad9f3c49`**, which is the entire `SpeechModel` const block. **This row also listed "TTS v2 HD, TTS v2" until M257x iter-115.** Those two consts are real, but they belong to the **standalone** `github.com/anthropos-work/ai` module (`speech.go:12-13` @ `v1.40.1`, `TTSV2 = "tts-2"` / `TTSV2HD = "tts-2-hd"`) — a module **no repo a stack builds requires** since the fold at `1e457fa70` (see `:95` below); they were dropped in the fold and no caller in the clone set ever referenced them. Both live call sites use `ai.GPT4oMiniTTSS` |
 | **Transcription** | GPT-4o Transcribe | Azure EU (US via `flag_use_azure_us`) |
 | **Embeddings** | Text Embedding 3 Small | OpenAI |
 
 ### Unified AI Library
 
 Go services access AI through one `ai.AI` interface — but **it is no longer a shared private module for any
-service a stack builds.** `app` **folded the library into its own tree** at `1e457fa70` (2026-08-04,
+service a stack builds.** ⚠️ **This paragraph was the repaired half of a pair for four readings.** The same
+proposition stood unrepaired in the opening sentence of *AI Providers (External Intelligence)* in
+[`external_services.md`](external_services.md) — *"All Go services access
+AI through the shared `ai` module"* — until M257x iter-115 closed it; a reader who met that sentence first
+got the pre-fold answer with no indication a correction existed. **When you repair this predicate, repair
+both sites or neither** (`TOK-07` rule 3). `app` **folded the library into its own tree** at `1e457fa70` (2026-08-04,
 *"refactor(ai): fold the ai library into app as internal/ai"*): at `app` `ad9f3c49` neither `app/go.mod` nor
 `sentinel/go.mod` requires `github.com/anthropos-work/ai`, and the library lives at `app/internal/ai/`.
 The only repos that still *require* the module are the frozen `cms` and `jobsimulation` husks, which nothing
@@ -209,13 +219,27 @@ Player → LiveKit Room → GPT Realtime Agent (anthropos-agent [EU] / anthropos
 
 **Engine choice is per SEQUENCE, from the CMS `voice_engine` field** — a 4-member enum on the authored
 simulation (`app/internal/cms/directus/collections/jobsimulation.go:1079-1085`); when it is nil the content
-layer supplies `gptrealtime` (`:1594-1600`). **ElevenLabs remains the active default** for the call/reply
+layer supplies `gptrealtime` — **`app/internal/cms/directus/collections/jobsimulation.go:1594-1597` @ `app`
+`ad9f3c49`**, the whole of `func voiceEngineFromDirectus` down to the closing brace of its nil branch
+(`:1595-1596` is `if directusVoiceEngine == nil { return simulation.SimulationVoiceEngineGptrealtime }`).
+**Pinned in full, and to `:1597` rather than `:1600`, deliberately (M257x iter-115):** this is one half of a
+same-fact-different-pin pair with the **ElevenLabs** bullet under *External Dependencies* in
+[`jobsimulation.md`](../services/jobsimulation.md), whose half spelled
+the path `cms/directus/collections/…` — a path that exists in **no** clone. Fixing one side and leaving the
+other is how the corpus acquires a self-contradiction, so both halves now carry the same path and the same
+range. **ElevenLabs remains the active default** for the call/reply
 pipeline and transcript improvement, so it is not yet fully replaced.
 
 ⚠️ **`flag_use_realtime_openai` does NOT select LiveKit over ElevenLabs, and gates no "new sessions"** —
 this paragraph said so from 2026-06-01 until M257x iter-49. The flag is read **inside** `CreateAgentDispatch`,
 i.e. on the LiveKit path the request has *already* entered (`calls/livekit.go:131-135` read, `:140-144`
-effect), and all it does is swap the dispatched **endpoint** to `openai-hosted`. **This is
+effect). ⚠️ **The effect block does TWO things, and this sentence claimed one until M257x iter-115.** At
+`app` `ad9f3c49` the block is four lines: `:142` `agentName = "anthropos-agent"` **and** `:143`
+`agentEndpoint = "openai-hosted"`. The endpoint swap is the one the paragraph was written for; the
+**agent-name reset is a real behavioural change on a US-located session** — `:126` has just set
+`anthropos-agent-us`, and flipping the flag silently re-dispatches to the bare `anthropos-agent`. *"All it
+does is swap the endpoint"* is an explicit completeness assertion about a block the sentence cites **by
+line**, which is what made it checkable and what made it false. **This is
 residency-relevant:** flipping it moves a live voice session off an Azure-EU endpoint — a path the routing
 section above does not otherwise cover.
 
@@ -261,8 +285,14 @@ Two further details the old one-liner erased:
   string therefore leaves the EU-resident default (Azure EU) for a US endpoint, so it is a
   data-residency-relevant fallback, not a cosmetic one
 - **The `gpt-4.1` model default only holds inside the OpenAI/Azure/unmatched arms.** The Anthropic arms have
-  their own: `anthropic-aws` falls back to Claude 3.7 Sonnet on Bedrock (`:98-99`) and `anthropic` to
-  Claude 3.5 Sonnet (`:110-111`)
+  their own: `anthropic-aws` falls back to Claude 3.7 Sonnet on Bedrock and `anthropic` to
+  Claude 3.5 Sonnet. **Both anchors named the file nowhere in this bullet until M257x iter-115** — they
+  read as bare `:98-99` / `:110-111`, which is §5 rule 22's failure mode (an unowned line number rots
+  silently). The file is `app/internal/jobsimulation/simulator/ai/ai.go` **@ `app` `ad9f3c49`**, where
+  `:98-99` is `default: aiModel = anthropic.Anthropic37SonnetAWS20250219` and `:110-111` is
+  `default: aiModel = anthropic.Anthropic35Sonnet20241022` — both re-derived and both true at that ref.
+  **NB this bullet is not a claim about the platform's Anthropic model SET** (that is the table row at
+  `:87`, which is where the 4.6/Opus-4.8 omission lived); these two are *fallback* arms and nothing more
 
 ### Evaluation System
 
