@@ -1370,3 +1370,39 @@ defect and would also explain why no amount of accessor work has helped.
   mattered was whether it had reached its SUBJECT.** Generalised into the protocol doc §8. Gate **4 of 5**,
   unchanged — see iter-94/progress.md
 - iter-95 (tik, MEASURING pass — **no repair inside it, deliberately**): **THE READING, TAKEN AT LAST — and at a platform ref no reading had ever used.** Preconditions **re-derived rather than inherited**: platform clone `== origin HEAD` by `ls-remote` (`0c91421`), guard family **14 GREEN · 0 RED** over 17 members (the run brief said 15; **the pass-22 ledger itself records 14**, so the brief carried a transcription slip and the instrument, the ledger and this re-derivation all agree), and the READ instrument **byte-identical** at sha256 `3858ec53…` with `git log --follow` showing **exactly one commit ever** (`012edd2`, iter-76). **The instrument was not touched**: the briefing went to the seats as a verbatim copy whose sha was re-checked *after* copying, with the stale ground-truth shas superseded by a **marked addendum** — only `platform` moved (`0dab54d → 0c91421`), every other checkout identical to iter-86's sheet. Partition re-executed by the fixed method: **40 files / 10,108 lines**, dealing a different hand than #13–#16 because the corpus grew, which is the method working rather than drifting. **14 blind seats, 55 blockers booked** (27 in #17, 28 in #18), **four independent adjudicators re-deriving from the clones: 51 upheld, 4 rejected — 92.7 %**, against iter-80's 92.1 % and iter-84's 93.0 %. **The graded number is `N` = 13 in-scope upheld BLOCKER anchors / 12 predicates** (`n₁=10 · n₂=7 · m=4` → Chapman **N̂ ≈ 16.6**, per-pass **60 %/42 %**, union **≈78 %**) — so **~4 more are estimated unfound**, and adjudicators named **≥8 unbooked propagation sites of already-upheld predicates**. **Clause 5 is NOT met; the gate stays 4 of 5.** All 4 rejections are the **ref-discipline class**, which has now run 9 occurrences across three readings and still contributes **zero** to a graded count. **The two findings that outrank the defect list:** (1) the environment's recursive `grep` is `ugrep --ignore-files`, so a `.gitignore` entry **silently hides tracked files** — `grep -rn mistralai app/studio/` returns 1 where `git grep` at the ref returns 2, verified independently; it produced a **false clearance in this reading** and very likely authored the false corpus claim originally, which makes **N a floor twice over** and yields the new rule *an absence is established only by `git grep` at a named ref*; and (2) `messenger.md:22`'s stated positive control measures **7**, not the 3 it claims — graded MINOR because the guarded claim is true, but a control that does not reproduce manufactures exactly the doubt it exists to remove. **Comparability stated rather than implied:** continuous in **instrument** and in **upheld rate**, a **declared re-baseline of the count** on two independent grounds (the gate-scoped basis, and the first-ever reading at `0c91421`); the raw series was already discontinuous at iter-86 and that stands. **`storage.md:58` is counted in `N`** — re-derivation found `:55` correct and `:156`/`:181` historically fenced, so `:58` is a **fourth anchor not among the three held lines**; `N = 12` is stated explicitly for the reading where the user extends the hold to the hazard class (**the user's item, the user's call**). Pre-registration graded **6 of 6 — recorded as a warning, not a win**: iter-76 and iter-53 each graded 2 of 5 and learned more, so the bands are to be tightened. Routed as **`FIX-M257x-iter95-read-union`** with iter-76's binding conditions inherited — **repair by PREDICATE, not by anchor**, and re-read after — see `iter-95/progress.md`
+- iter-98 (tik): **the REPAIR of the iter-97 reading, by predicate + PARAPHRASE — 20 anchors / 21 predicates
+  → 37 sites across 22 files, and 5 induced citation moves caught INSIDE the iter** (iter-96 caught 0 and
+  shipped 2). The run brief asked whether to run twin expansion *ahead* of the read; answered **no, on
+  measurement**: iter-96's string-twin pass already ran at ~0 escape and iter-97 measured what actually got
+  through — **3 of 51, all paraphrases**, because `claim_twin_guard` matches quoted verbatim forms. So the
+  effort went to the paraphrase axis, and it paid three times over. It found an unbooked third site of the
+  messenger predicate; it found `frontend-tier.md` holding **both** readings of the demo-academy auth model
+  nine lines apart; and it found that the booked anchor had named a **symptom** — the cockpit *does* still
+  set `e2e_persona` at two live paths, and the real change is that the **bypass left the academy launch env**
+  when the demo went Clerkenstein-wired, so the cookie is now **set and not honoured**. Rule 44's own recipe
+  was corrected against its own worked example (it returned **2** where the prose publishes **22** — a file
+  count labelled `hits=`, `-i` dropped, and its last line outside the loop with `$d` unbound), and its
+  *"1,178 NULs"* is **1**; 1,178 is the file's line count. **The fence then caught what the repairer had
+  not:** publishing the ledger turned `claim_twin_guard` RED on `seeding-spec.md:102`, a second site of the
+  `s3-private` claim no sweep had reached — recorded plainly, because it is the whole argument for writing
+  ledgers in the derived shape. Two guard interactions were resolved the hard way rather than the quiet one:
+  a waiver **did not take** because the retraction said *"are both FALSE"* and `RETRACTION_MARKERS` knows
+  `"is false"` — **the prose moved, not the marker list**, since widening it is "the direction that can
+  hollow a fence out"; and the answer-key **green** fixture `claim_twin/green/17.md` was found to contain a
+  sentence refuted 57 iters after its capture — repaired, with `test_01` (*all 18 known-bad must still fire*)
+  untouched and still passing as the control that separates maintenance from tuning-to-green. Both are now
+  §8 rules. **`DEF-M257x-iter80-storage-prod-bucket` was NOT resolved**: `safety.md:207` asserted the
+  `s3-private` registry entry had been removed and `isolation.go:106` still carries it — the assertion is
+  **withdrawn rather than made true**, because re-classing that store *is* the user's open question.
+  **The discovery-pool question, answered with a measurement:** predicate WIDTH is collapsing — mean sites
+  per predicate **3.64 → 1.76**, max width **11 → 4**, predicates of width ≥6 **4 → 0**, width-1 **29 % →
+  52 %** — and width is a property of the corpus, not of the reading's recall. The classes split: draining
+  and enumerable (platform-drift **7/13 → 1/20 → 0/17 predicates**, wrong-construct citations now a scan
+  rather than a search, counts with a derivable source, currency pins) versus **open-ended** (scoping
+  errors, model-changed-underneath from our *own* rext development, intra-document self-contradiction) —
+  and **two of the three widest predicates this iter were open-ended**. **What it does not establish:** that
+  `N` will fall. `N` counts what a ~68 %-recall instrument surfaces; two readings on different trees are not
+  a series; and — the new point — **the shift from wide to narrow predicates should itself depress recall**,
+  so a shrinking pool measured by a degrading instrument looks exactly like a growing one. Guard family
+  **14 GREEN · 0 RED**; 21 new refuted forms fenced. Gate **4 of 5**, unchanged — no reading taken, and a
+  measuring pass may not contain a repair — see iter-98/progress.md

@@ -17,7 +17,9 @@
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —
 >   when the FE started reading the DB catalog; the backend domain's labels are its own "v1.0/v1.05" line, distinct
->   from `app` SemVer, currently **`v1.363.2`** @ `5ba17044`.)
+>   from `app` SemVer, which runs in the `v1.3xx` range — **`v1.369.0`** @ origin/main `2035f9a4`, measured
+>   2026-08-06. **A version is a reading at a ref, never a standing "current"**: this line said `v1.363.2` while
+>   `:57` below cited `v1.367.0`, one document disagreeing with itself.)
 
 ## Role & Responsibility
 

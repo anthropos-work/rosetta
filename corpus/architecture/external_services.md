@@ -141,7 +141,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 >
 > **That retraction over-corrected, and this corrects the correction (M257x iter-48).** The twin of this
 > paragraph said *"all of that is false; that service **has never existed**"* — repaired at
-> [`service_taxonomy.md:321-330`](./service_taxonomy.md) and left standing here. The service **did** exist,
+> [`service_taxonomy.md:332-339`](./service_taxonomy.md) and left standing here. The service **did** exist,
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. And a check
@@ -562,7 +562,7 @@ For full details on models, routing, voice engines, and recording architecture, 
 | **Azure OpenAI (EU)** | `vendor = Azure` from the caller | Jobsimulation domain, Backend (app — merged skiller domain), cms domain, Studio | GPT-5.x, GPT-4.1 for simulations and content |
 | **Azure OpenAI (US)** | `vendor = Azure` **+ PostHog `flag_use_azure_us`** | same as above | The EU deployment's US twin — a flag flip, not a failure fallback |
 | **AWS Bedrock (EU)** | `vendor = AnthropicAws` **or** `Anthropic` — both resolve to the *same* Bedrock client | Jobsimulation domain, Backend (app) | `eu.anthropic.claude-sonnet-4-6` (simulation report agent, `app/internal/jobsimulation/agent/report_agent.go:31`; ask-engine, `app/internal/askengine/bedrock.go:25`) and `eu.anthropic.claude-opus-4-8` / `eu.anthropic.claude-sonnet-4-6` (course-builder author/grader, `app/internal/coursebuilder/bedrock.go:23,29`) |
-| **Mistral (EU)** | direct client, not via the AI manager | cms domain (Go) + the in-image `studio/tools/` CLI — **never** the generation pipeline | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19` for studio attachment → markdown; and `from mistralai import Mistral` at `app/studio/tools/pdf2md.py:24` (`mistral-ocr-latest`), a standalone PDF→markdown utility nothing dispatches (`git -C app/studio grep -i mistral aeec036a`) |
+| **Mistral (EU)** | direct client, not via the AI manager | cms domain (Go) + the in-image `studio/tools/` CLI — **never** the generation pipeline | **OCR only** — `mistral.NewMistral(...)` in `app/internal/cms/studio/markdownManager.go:19` for studio attachment → markdown; and `from mistralai import Mistral` at `app/studio/tools/pdf2md.py:24` (`mistral-ocr-latest`), a standalone PDF→markdown utility **the generation pipeline never reaches** — `tools/r3.py` DOES dispatch it, as step 2 of the offline chain (`r3.py:139`, `:190`, `:199-206`), so *"nothing dispatches it"* is false; what holds is that no Go caller and no `gen.py` path does (`git -C app/studio grep -i mistral aeec036a`) |
 | **OpenAI Direct (US)** | **two ways in**: (a) `vendor = Openai` from the caller — including the case where the caller never chose, since a simulation sequence with **`ai_vendor` unset defaults to `openai`** in the cms content layer (`internal/cms/directus/collections/jobsimulation.go:1302`); (b) automatic on **HTTP 429** | (a) any sequence authored without an explicit vendor; (b) the jobsimulation AI manager's retry loop | The 429 retry is the only *automatic fallback* — but it is **not** the only route to US OpenAI. Path (a) gets there on the first attempt. See *Routing* below |
 | **Anthropic Direct (first-party API)** | **presence of `ANTHROPIC_API_KEY`**, not a failure fallback | Course Builder (`app/internal/coursebuilder/bedrock.go:106-113` — key set → first-party API with the model id stripped to its bare form, key unset → Bedrock); Studio-Room (`app/studio/services/ai.py:627-664` `AnthropicProvider`, which `TARGET SERVICE = anthropic` would select — but **no shipped `configs/*.ini` does**: all 30 `*_AI_*_MODEL` lines pin `azure`, so this arm is latent, M257x iter-52) | An either/or **backend switch** for authoring/grading, logged at boot (`app/main.go:770` @ `app` `b948604` v1.366.0, `coursebuilder.ModelBackendName()`) |
 
@@ -611,7 +611,10 @@ config change would arm it, not because it is live):
 3. setting `ANTHROPIC_API_KEY`, which flips **Course Builder** off Bedrock onto Anthropic's
    first-party API (`coursebuilder/bedrock.go:106-113`) and supplies **Studio-Room** the credential
    its `anthropic` `TARGET SERVICE` needs — *Studio-Room was never on Bedrock*, so nothing is flipped
-   off it there (`:543` above; 0 hits for `bedrock|boto3` under `app/studio/`; corrected M257x iter-48).
+   off it there (`:567` above — the **Anthropic Direct** row; `:543` is the *"When backend services add new
+   GraphQL types"* heading, this doc's own in-file anchor left behind when M257x iter-96 moved the construct
+   543 → 567 and re-pointed only the three CROSS-FILE citations; 0 hits for `bedrock|boto3` under
+   `app/studio/`; corrected M257x iter-48, re-anchored iter-98).
    **This item is live on the Course Builder half only.** Its Studio-Room half is latent for exactly the
    reason item 5 is: no shipped `configs/*.ini` selects `anthropic` either — all 30 `*_AI_*_MODEL` lines
    pin `azure`. Symmetry noted M257x iter-52, after two pre-commit readers caught the same evidence being

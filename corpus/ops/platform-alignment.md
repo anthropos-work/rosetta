@@ -1233,8 +1233,16 @@ dropped as a rename completed) and *inverted* the risk assessment that had been 
       mechanism it was measuring.
     - **NUL-bearing source.** `grep -I` and `git grep` **both** skip a file containing NUL bytes, and
       `file(1)` calls it "data". Two exist: `next-web-app/apps/web/src/hooks/useCoursebuilder.ts`
-      (50,433 bytes, 1,178 NULs) and `ant-academy/code/src/time/store.js`. A zero over a tree containing
-      one is not a proven zero — it is a zero with a hole in it, and no tool will tell you.
+      (50,433 bytes, **1** NUL) and `ant-academy/code/src/time/store.js` (15,307 bytes, **1** NUL).
+      **ONE byte is enough** — that is the point, and it is why this is a trap rather than a curiosity.
+      ⚠ This bullet read *"1,178 NULs"* until M257x iter-98. **1,178 is the file's LINE count**: it was
+      produced by `grep -c $'\x00' <file>`, where `grep -c` counts matching *lines*, not bytes, and the
+      zsh `$'\x00'` pattern degenerates to the empty string and so matches every line. **The rule about
+      lying instruments was itself written with a lying instrument**, and the adversarial seat caught it
+      in two independent readings. Count NUL **bytes**, and only this way:
+      ```bash
+      tr -dc '\000' < FILE | wc -c      # bytes. `grep -c` here counts LINES and the pattern matches all of them
+      ```
     - **Nested untracked repos — where the naive fix is worse than no fix.** `stack-demo/app/studio` and
       `stack-demo/cms/studio` are each the `anthropos-studio-room` repo (177 files, own HEAD `aeec036`),
       hidden from their hosts by `app/.gitignore:79` and `cms/.gitignore:129`. `git -C app grep <anything>
@@ -1250,15 +1258,25 @@ dropped as a rename completed) and *inverted* the risk assessment that had been 
     ```bash
     # 0. enumerate every git tree, nested ones included — this is the search set
     find stack-demo -name .git -maxdepth 4 | sed 's|/\.git$||' | sort
-    # 1. grep each at ITS OWN ref (never the host's), with a positive control in the same pass
+    # 1. grep each at ITS OWN ref (never the host's). `grep -ci` prints `file:count`, so SUM the counts
+    #    for lines and pipe to `wc -l` only when you want FILES. Keep -i: casing is not the predicate.
     for d in $(find stack-demo -name .git -maxdepth 4 | sed 's|/\.git$||'); do
-      printf '%-34s hits=%-4s ref=%s\n' "$d" \
-        "$(git -C "$d" grep -c "$TERM" HEAD 2>/dev/null | wc -l | tr -d ' ')" \
+      printf '%-34s lines=%-4s files=%-3s ref=%s\n' "$d" \
+        "$(git -C "$d" grep -ci "$TERM" HEAD 2>/dev/null | awk -F: '{s+=$NF} END{print s+0}')" \
+        "$(git -C "$d" grep -cil "$TERM" HEAD 2>/dev/null | wc -l | tr -d ' ')" \
         "$(git -C "$d" rev-parse --short HEAD)"
+      # 2. name the holes the tools cannot see, then read them by hand — INSIDE the loop, where $d is bound
+      git -C "$d" ls-files | git -C "$d" check-ignore --stdin --no-index   # mechanism 1
     done
-    # 2. name the holes the tools cannot see, then read them by hand
-    git -C "$d" ls-files | git -C "$d" check-ignore --stdin --no-index     # mechanism 1
     ```
+
+    ⚠ **This recipe was wrong in three ways until M257x iter-98, and each way flatters the result.** It
+    labelled a **file** count as `hits=` (`grep -c … | wc -l` counts lines of `file:count` output, i.e.
+    files); it **dropped `-i`**; and its last line sat **after `done`**, where `$d` is unbound or holds
+    whatever the loop left. Run against this rule's own worked example (`TERM=mistral`,
+    `stack-demo/app/studio` @ `aeec036`) the printed form returned **2** where the prose two paragraphs
+    above publishes **22** — the corrected form returns **22**. A recipe that disagrees with its own
+    worked example is the §5-rule-8 failure in executable form.
 
 ### Trap E — the tooling's own host preconditions are invisible until a clean host
 
@@ -1341,9 +1359,11 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 > Pin it (this passage names its ref in every sentence that depends on it) or it will be read as
 > standing. Fenced by `platform_predicate_guard.py` G4.
 
-**Where it came from is the whole lesson.** The refuting citation iter-21 trusted was
-`corpus/services/backend.md:187` — a corpus line asserting messenger points *all four* addresses at
-`backend:8083`. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
+**Where it came from is the whole lesson.** The refuting citation iter-21 trusted was a corpus line
+asserting messenger points *all four* addresses at `backend:8083` — **`corpus/services/backend.md:241`
+today**; the `:187` this passage cited until M257x iter-98 has since drifted onto a directory listing
+(`bootstrap/ First-run / new-org provisioning`), which is the §5 rule-22 failure *inside the rule that
+teaches it*. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
 premature, not permanently wrong, which is its own lesson). **One false corpus line, cited as authority, produced two false corrections in
 a hand-off designed to be applied mechanically.** An audit that reads the corpus to correct the corpus is
 circular; the citation must terminate in platform source.
@@ -1988,6 +2008,40 @@ must carry an unmeasurable marker **in its own paragraph**, because a reader lan
 on a file). The guard **re-measures its own premise on every run** and **retires itself** the moment an
 `infrastructure` clone appears — a fence that kept demanding a hedge after the hedge became unnecessary
 would be pinning the current shape of our ignorance, which is rule 3 above turned on the fence itself.
+
+### Write the RETRACTION in the vocabulary the fence enumerates (M257x iter-98)
+
+A corpus that documents its own corrections **quotes the refuted sentence verbatim** — that is good writing,
+and `claim_twin_guard` accommodates it: a site may be acknowledged in `claim_twin_waivers.json`. But the
+waiver is deliberately **half a key**. It is honoured only while `_looks_retracted` independently finds a
+retraction marker within 320 characters of the match, so deleting the retraction and leaving the sentence
+standing silently re-arms the fence. That is rule 3 applied to waivers.
+
+The consequence is easy to miss until it bites. iter-98 repaired `roadrunner.md` and wrote:
+
+> The old parenthetical *"zero hits outside CHANGELOG"* … **are both FALSE** and are withdrawn
+
+The waiver **did not take**, and the site stayed RED. `RETRACTION_MARKERS` contains `"is false"` and
+`"was false"`; it does not contain `"are both false"`. Two ways to close that gap, and **only one is safe**:
+
+- **Widen `RETRACTION_MARKERS`** — in the guard's own recorded words, *"the direction that can hollow a
+  fence out."* You would be teaching the fence to accept a phrasing you invented a minute ago.
+- **Move the prose** — the sentence became *"is RETRACTED — each is false"*, using a marker the guard
+  already knew. Cost: eight words.
+
+**The rule: a retraction a fence cannot recognise is, to every automated reader, an unretracted falsehood.**
+When the fence disagrees with your retraction, the default repair is the sentence, not the marker list —
+and if you genuinely need a new marker, that is a change to the *specification*, argued and tested against
+the answer keys, not a quiet edit to make today's commit green.
+
+**The same asymmetry governs answer-key fixtures.** iter-98's ledger turned `test_02` (*"the green twin of
+every site stays SILENT"*) RED, because the **green** fixture `claim_twin/green/17.md` still contained a
+sentence refuted 57 iters after that fixture was captured. The fixture was green **only with respect to the
+blocker it was built for**. Repairing it was correct — it was violating its own stated contract — and the
+control that makes that safe is `test_01`: *all 18 known-bad sites must still fire*, untouched and still
+passing. **Editing a GREEN fixture to match a newly-proven truth is maintenance; weakening a ledger quote so
+a stale fixture stays quiet is tuning-to-green.** The test that separates them is the positive control, so
+never repair a fixture without re-running it.
 
 ### A PARTIAL skip is worse than a total one — grade the cannot-tell (M257x iter-91)
 

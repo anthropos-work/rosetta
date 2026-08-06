@@ -127,9 +127,10 @@ tools.
     client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — a clean 404, never a half-wired
     endpoint. Per-sub-feature kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`,
     `COURSEBUILDER_EMAILS_ENABLED`.
-*   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines); current app
-    **`v1.363.2`** @ `5ba17044` (2026-07-31). The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is
-    the only path now.
+*   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines), measured at app
+    **`v1.363.2`** @ `5ba17044` (2026-07-31). **That is a reading at a ref, not a standing "current"** — `app` is
+    **`v1.369.0`** @ origin/main `2035f9a4` as of 2026-08-06, six releases on, and the wave count is not re-derived here.
+    The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is the only path now.
 
 ## Related Documentation
 

@@ -201,13 +201,29 @@ only works if it is *visible*, which is why it is stated here rather than left i
 |---|---|
 | `in repos.yml` membership, both directions | **derived + fenced** (A/B/E) — tracked the storage/messenger move with no human action |
 | the state vocabulary | **fenced** (C) |
-| `docker-compose.yml` citations — 23 of them | **fenced** (F) |
-| every other `file:line` — terraform, `repos.yml`, `common.yml`, `app/…` (66 citations) | **resolution + range only.** No derivable notion of *whose* line it is, so F does not pretend |
+| `docker-compose.yml` citations — **22** of them | **fenced** (F) |
+| every other `file:line` — terraform, `repos.yml`, `common.yml`, `app/…` (**69** citations, + **1** outside any service block) | **resolution + range only.** No derivable notion of *whose* line it is, so F does not pretend |
 | the prod column, PR/rollback narrative, §5's ordering | **prose-under-review.** Neither derived nor fenced. Re-check at each platform ref bump |
 
 F's reach is printed on **every** run, GREEN or RED — a fence whose coverage shrinks in silence is the
 failure this milestone has now found four times. A run that subject-checks nothing **refuses (exit 2)**
 rather than reporting the map clean.
+
+**Take those three numbers from the run, never from this table.** They are a reading, and the reading
+moves whenever the map gains a citation. M257x iter-98 found the row above saying 23/66 while the guard
+said 22/69 — the coverage figure had drifted from the coverage. The run prints it in one line:
+
+```bash
+# from the rosetta repo root. Swap .agentspace/ for stack-<role>/ to use a stack's pinned clone.
+python3 .agentspace/rosetta-extensions/stack-core/platform_alignment_guard.py \
+    corpus/architecture/platform-migration-status.md stack-demo/platform/repos.yml
+# assertion F resolved 92 citation(s) — 22 subject-checked, 69 range-only,
+# 1 outside any service block; 0 unresolvable; 0 read from the WORKTREE (no ref resolved)
+```
+
+**Both paths are relative to the same root on purpose** — the recipe this replaced named the guard
+relative to a stack workspace and its two arguments relative to the rosetta root, so pasting it
+anywhere resolved at most one of the three.
 
 ```bash
 # from a rosetta checkout, against any stack's platform clone

@@ -121,6 +121,15 @@ Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:80
 > converged. Keep the distinction in mind anyway: it is a *phase*, and the next fold will pass through
 > it too.
 
+> **Every `ARCHIVED <date>` in this table is a DATED SNAPSHOT, not a derived fact.** Archive state lives in
+> the **GitHub org API** (`gh api repos/anthropos-work/<repo> --jq .archived`), never in the git objects, so
+> **no clone can measure it and neither can this corpus** — re-checked M257x iter-98: `gh` is not installed
+> on this host and the repos are private, so even the anonymous REST path is closed. Each date below was true
+> when taken and **carries an expiry**; the `Jobsimulation` row is the live proof that they expire (its flat
+> archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:89`).
+> **Read every date here as "asserted on", never as "is".** This note exists because rows `:137`/`:138`
+> published the flat form two rows above `:139`, a cell retracting exactly that predicate.
+
 | Service | Why removed | Local container? | Reference |
 |:--------|:------------|:-----------------|:----------|
 | **Chronos** | Removed from local dev orchestration | **no** | Platform commit `045857c` |
@@ -361,7 +370,8 @@ baked against `backend`.)
 #### GraphQL/Cosmo Router — **HISTORICAL / PROD-ONLY**
 
 > **⚠️ Not a local service.** Platform `2adcf71` (2026-07-31) deleted the `graphql` compose service **and** the
-> `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30**. **There is no `:5050` on
+> `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30** (a dated snapshot — see
+> the archive-state note at `:124`; the clone is consistent with it, no commit after that date). **There is no `:5050` on
 > a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
 > describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
 > and in the archived repo; **do not follow it as a local-development instruction.** Consistent with `:67-68` above

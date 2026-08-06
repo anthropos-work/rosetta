@@ -10,7 +10,7 @@
 > | [skillpath](./skillpath.md) | skillpath-in-app (M502→M507) | skill-path progression engine, session state |
 > | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
 > | [jobsimulation](./jobsimulation.md) | jobsim-in-app (prod ECS teardown **M810 — LANDED**, `6092c6d2`) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
-> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (prod teardown **M810 — still pending**) | content layer + Directus edge + Studio — `internal/cms/` |
+> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (prod teardown **M810 — NOT MEASURABLE here**; report both, assert neither — see `:36`) | content layer + Directus edge + Studio — `internal/cms/` |
 > | [storage](./storage.md) | v9.0 "support-in-app", 2026-08-04 | the private + public object-storage managers — `internal/storage/`, `internal/storagens/`, `internal/publicstorage/` |
 > | [messenger](./messenger.md) | v9.0 "support-in-app", 2026-08-04 | transactional email (Brevo + Liquid) and messenger's **own** Redis consumer group — `internal/messenger/`; switch-gated by `MESSENGER_ENABLED` |
 > | [customerio-sync](./customerio-sync.md) | v9.0 "support-in-app" | the one-way Brevo marketing-contact push — `internal/customeriosync/`; switch-gated by `CUSTOMERIO_SYNC_ENABLED` |
@@ -30,9 +30,9 @@
 >   process calls them.** `messenger` was the last external caller; `838d907` deleted its container and
 >   the four `*_RPC_ADDR` values that addressed the mux, so compose sets **none**. The one cross-process
 >   edge left on a local stack is `backend → sentinel`.
-> * **`app` owns the `skiller`, `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both
->   producer and consumer are in-process. Merge new handlers onto the existing subscriber with
->   `.AddHandler(...)`; a second `AddSubscriber` for the same stream silently overwrites the first.
+> * **`app` owns the `skillpath`, `jobsimulation`, `cms` and `ai_usage` Redis Streams** — both producer and
+>   consumer in-process. **`skiller` is NOT a fifth member: it is consumer-only** (`:136`, `:264` below).
+>   Merge handlers with `.AddHandler(...)`; a second `AddSubscriber` on one stream overwrites the first.
 > * **The M810 prod teardown is UNEVEN — do not state the two together.** `cms`'s **terraform module block
 >   has not moved**: it is still declared and takes no traffic (`cms/terraform/main.tf:39`
 >   `service_desired_count = 0`, re-measured at `f38c0c4`). **But `cms` HAS taken an M810 step since, and
@@ -296,7 +296,7 @@ cd platform
 make migrate S=app
 ```
 
-Versioned Atlas migrations live in `terraform/migrations/` (per `atlas.hcl`: `dir = "file://terraform/migrations"`, source `ent://internal/data/ent/schema`), not in the top-level `migrations/` dir (which holds only `atlas.sum`). Generate a new migration after an Ent schema change with `make migrations` (`atlas migrate diff --env local`); apply with `atlas migrate apply --env local` (or `make migrate S=app`).
+Versioned Atlas migrations live in `terraform/migrations/` (per `atlas.hcl`: `dir = "file://terraform/migrations"`, source `ent://internal/data/ent/schema`). **There is no top-level `migrations/` dir** — it held only `atlas.sum` and `6a46e8445` (2026-06-18, *"chore(migrations): remove obsolete atlas.sum file"*) deleted it; `git ls-tree b948604f migrations/` is empty, as it is at origin/main `2035f9a4`. Generate a new migration after an Ent schema change with `make migrations` (`atlas migrate diff --env local`); apply with `atlas migrate apply --env local` (or `make migrate S=app`).
 
 The `public` schema is the largest in the platform; the most recent set of migrations (May 2026) touched simulation-type definitions and content JSON defaults.
 

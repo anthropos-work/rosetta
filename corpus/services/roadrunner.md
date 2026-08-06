@@ -22,8 +22,14 @@
 > calls it), not *absent*. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > It is not part of the *logical* platform stack. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
-> / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** (M247 re-grepped `app` + `jobsimulation`
-> on the consolidated clones — zero hits outside CHANGELOG), and no other platform repo references roadrunner at all.
+> / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** — re-measured M257x iter-98 at
+> `app b948604f` / `jobsimulation 462343b0`: **0 Go hits for all three strings at both repos**. **The old
+> parenthetical "zero hits outside CHANGELOG" and "no other platform repo references roadrunner at all" is
+> RETRACTED** — each is false: outside Go the name is widespread — `jobsimulation/knowledge/operational.md:68`
+> tabulates `ROADRUNNER_RPC_ADDR`, `app/knowledge/plan/releases/07.00-jobsim-in-app/RE-PORT-CHECKLIST.md:10`
+> names `RoadRunnerService`, and a case-insensitive sweep of every clone at its own ref returns hits in
+> **app (25 files), jobsimulation (8), platform (3), studio-desk (3), next-web-app (1)**. **The claim that
+> holds is scoped to Go source; the repo-wide form never did.**
 >
 > **ORPHANED *and* de-orchestrated — M247's "still in `repos.yml`" no longer holds (corrected v2.8 M257x).**
 > That line said roadrunner was *"still in `repos.yml` (1 of the 9 repos)"* — a claim about `2adcf71`, and
@@ -111,7 +117,7 @@ internal/
 
 Every submission enqueues exactly one poll task on the `roadrunner:default` queue (MaxRetry 3) from `runner.CreateSubmission`; the worker (10 concurrent, `internal/worker/worker.go`) runs `HandleSubmissionResultTask`, which polls Judge0 up to 15 times at 1s intervals, then publishes a `RoadrunnerSubmissionCompleted` event. The RPC handlers call the runner directly and never invoke the Asynq client; there are no HTTP handlers.
 
-On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the whole repo contains one `roadrunner` mention (`internal/runner/runner.go:3`, a parenthetical), with no handler and no event reference; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with `:118` below (*"Upstream consumers: none (orphaned)"*).
+On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the repo's **Go source** contains exactly one `roadrunner` mention (`internal/runner/runner.go:3`, a comment), with no handler and no event reference — **scope that to Go, not to the repo**: `git -C stack-demo/jobsimulation grep -in roadrunner 462343b0` returns **14 lines across 8 files** (5 exact-case across 3), the rest being CHANGELOG and `knowledge/*.md`; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with `:124` below (*"Upstream consumers: none (orphaned)"*).
 
 ## Dependencies
 

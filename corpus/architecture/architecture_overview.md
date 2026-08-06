@@ -333,7 +333,11 @@ entirely**, and says so in-comment — at `9f8cb53` `storage/terraform/main.tf` 
 buckets, CloudFront distribution and media DNS record keep their `prevent_destroy` guards (`:13-16`). It
 read `service_desired_count = 0` at the intermediate `63bffc8`. And `STORAGE_RPC_ADDR` has **zero** reads
 anywhere in `app`
-(3 hits repo-wide at `9d00a313`, every one a comment). The earlier wording scoped this retraction to
+(**3 hits in Go source** at `9d00a313`, every one a comment — `main.go:451`,
+`internal/jobsimwiring/wiring.go:101`, `internal/storagens/callsites_test.go:189`. **Not 3 repo-wide**:
+`git -C stack-demo/app grep -n STORAGE_RPC_ADDR 9d00a313` returns **29 lines across 18 files**, the rest
+being CHANGELOG and `knowledge/*.md`. The Go scope is what carries the claim; the repo-wide form was a
+mis-transcription of it). The earlier wording scoped this retraction to
 *"locally"*, which left the prod edge affirmatively standing (corrected M257x iter-85). Platform
 **`0dab54d`** ("storage-in-app,
 > v9.0") deleted `STORAGE_RPC_ADDR` from `backend`'s env, dropped `storage` from `backend`'s `depends_on`

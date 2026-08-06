@@ -368,7 +368,8 @@ pytest-asyncio  # tests
 > (`any2pdf.py` → `pdf2md.py` → `md2cleanMd.py`), whose step 2 hard-requires `MISTRAL_API_KEY`
 > (`r3.py:194`). **Nothing dispatches it from the pipeline:** `gen.py` imports only
 > `console`/`format`/`agents`/`services.ai`/`postgen`, a reference sweep outside `tools/` finds no code
-> reference, and no Go caller exists (Go execs only `studio/gen.py`, `studioManager.go:119`). The package
+> reference, and no Go caller exists (Go execs **two** studio scripts, neither of them this one:
+> `studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045` @ `app b948604f`). The package
 > **is** installed in the shipped image (`app/Dockerfile:45-46` copies the whole `studio/` tree and
 > pip-installs this file).
 >

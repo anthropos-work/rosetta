@@ -422,28 +422,29 @@ offset frontends would still be CORS-blocked if you ran them (a known gap, not y
 CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
 and the REST-backed dashboards load.
 
-## ant-academy — native, keyless, session-detached, with a documented fallback
+## ant-academy — native, Clerkenstein-wired, session-detached, with a documented fallback
 
 ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
-launches it natively on `:3077+offset` **keyless** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
-`NODE_ENV=development` flag that opens `/` and `/chapters/*` without a Clerk session), paired with
-`REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip the org gate. The per-demo env is a **gitignored `code/.env.local`**
-overlay (zero academy-repo edits). Launching it natively (vs only documenting the step) resolved the overview's
-open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
-and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo edits (#M19-D6).
+launches it natively on `:3077+offset` **Clerkenstein-wired** — the demo's minted publishable key + the
+disarmed fake BAPI, read from `<stack>/.env.demo-N` — paired with `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip
+the org gate. The per-demo env is a **gitignored `code/.env.local`** overlay (zero academy-repo edits).
+Launching it natively (vs only documenting the step) resolved the overview's open question toward "launch it,
+fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable) and Clerk-only (#M19-D6).
 
-> **The demo academy is AUTHENTICATED, not anonymous (v1.10b "fit-up" M53 F6 — the field-review gap close).**
-> The launcher now sets **both** halves of the academy's own `e2e_persona` cookie bypass: the **server** gate
-> `BENCHMARK_VISUAL_BYPASS=1` **and** the **client** gate `NEXT_PUBLIC_E2E_AUTH=1`. With those two set, an
-> `e2e_persona=member` cookie drives a **signed-in** context end-to-end — the server RSC resolves
-> `anonymous=false` + entitlement, and the client Clerk hooks resolve a named **`E2E Member`** identity
-> (progress / certificates / sidebar all active) — with **no real Clerk keys** (the box runs keyless; the client
-> hooks are mocked).
-> > ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's [Academy] link was REMOVED** — the cockpit is now
-> > **login-only** (one `[Log in as]` CTA per hero, per user request). So the cockpit **no longer sets the
-> > `e2e_persona` cookie**; the paragraph below describes how the academy behaved when reached *via* that
-> > (now-removed) link. Reaching the demo academy as a signed-in member now requires the cookie set by other
-> > means, or it lands anonymous. (The academy grid rendering **empty** in a demo is the v2.4 **F4** carry — **NOT** a
+> **The demo academy is AUTHENTICATED via real Clerkenstein keys (v2.3 M220 S5/i).**
+> ⚠ **This section described the superseded KEYLESS model until M257x iter-98**, three paragraphs after `:48`
+> and `:84` of this same file had already recorded its removal — one document holding both readings.
+> Measured at rext `main`, the launcher sets **neither** `BENCHMARK_VISUAL_BYPASS=1` **nor**
+> `NEXT_PUBLIC_E2E_AUTH=1` (`demo-stack/ant-academy.sh:576-583`, fenced by two tests). A hero who clicks
+> through from next-web arrives **signed in as herself**, not as a synthetic `E2E Member` — which is the
+> whole point of the change: `proxy.js` short-circuits on the persona cookie *before* resolving the real
+> session, so keeping the bypass alongside real keys would render "E2E Member" over a presenter logged in as
+> Maya.
+> > **The cockpit still SETS the cookie, at two paths** (`demo-stack/cockpit.py:812` client-side and `:1496`
+> > as a `Set-Cookie` on the `/go` 302) for the content-stories academy deep-link — but with the launch-env
+> > bypass gone it is **inert** on a stock demo. The retracted claim that the cockpit "no longer sets" it was
+> > false in both directions: the cookie is set, and it is not honoured. (The academy grid rendering **empty**
+> > in a demo is the v2.4 **F4** carry — **NOT** a
 > > client-side render defect: the catalog is **DB-authoritative** [read from the platform academy subgraph over
 > > GraphQL], and a demo neither sets `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`
 > > = 0 cards. Root-cause + read-chain: [`../../services/ant-academy.md` § The Content Model](../../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7).

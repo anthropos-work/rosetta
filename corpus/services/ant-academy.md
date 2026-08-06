@@ -252,7 +252,7 @@ used to dismiss it on a premise that was never true). It decomposes into:
 | **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate (`REQUIRE_ORGANIZATION_MEMBERSHIP`, default ON, fail-closed); `@anthropos.work` domain restriction is enforced in the Clerk app. **The public surface is much wider than "a few auth pages"** — it includes the catalog root `/`, `/courses/*` and `/chapters/*`, and three `/api/*` routes. Full enumeration below the table. |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
-| **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
+| **Fonts** | **Work Sans + Instrument Serif** — and those two only (`code/app/layout.jsx:1` imports exactly `{ Work_Sans, Instrument_Serif }` from `next/font/google`; `:41`, `:51`). **Neither DM Sans nor JetBrains Mono is loaded** — this row named both until M257x iter-98; `code/academy.css:1` says display + mono usages *"fall back to system fonts."* Plus Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
 | **PWA** | **manifest only** (`public/academy-manifest.json`, `display: standalone`, wired at `code/app/layout.jsx:132`) — installable but online-only. The Serwist 9 service worker was removed at v0.5 M1 and is regression-fenced against |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
 | **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
@@ -315,21 +315,30 @@ cd stack-dev
 git clone git@github.com:anthropos-work/ant-academy.git
 ```
 
-> **In a demo the academy is AUTHENTICATED-as-a-member, keyless (v1.10b "fit-up" M53 F6).** `/demo-up` launches
-> the academy with **both** halves of its own `e2e_persona` cookie bypass set — the server gate
-> `BENCHMARK_VISUAL_BYPASS=1` **and** the client gate `NEXT_PUBLIC_E2E_AUTH=1` — so an `e2e_persona=member`
-> cookie drives a **signed-in** context (server RSC `anonymous=false` + entitlement; client Clerk hooks resolve a
-> synthetic **`E2E Member`**) with **no real Clerk keys**. ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's
-> per-hero [Academy] link was REMOVED — the cockpit is now login-only** (per user request), so it **no longer
-> sets the `e2e_persona` cookie**. Formerly, that link set the cookie browser-side (cookies on `localhost` are
-> port-agnostic, so the cockpit origin's cookie was read by the academy origin) then navigated in, and a hero
-> landed **authenticated**; reaching the demo academy as a member now needs the cookie set by other means (and
+> **In a demo the academy is AUTHENTICATED-as-a-member via real Clerkenstein keys (v2.3 M220 S5/i).**
+> ⚠ **This block described the OPPOSITE model until M257x iter-98, and was self-contradictory besides** — it
+> opened by saying the cockpit sets the `e2e_persona` cookie, denied it mid-paragraph, then asserted it again
+> in the closing line. Measured at rext `main`, both halves are now the other way round:
+>
+> * **The `e2e_persona` BYPASS is gone from the academy's launch env.** `/demo-up` sets **neither**
+>   `BENCHMARK_VISUAL_BYPASS=1` nor `NEXT_PUBLIC_E2E_AUTH=1` (`demo-stack/ant-academy.sh:576-583`), because the
+>   demo academy now gets real Clerkenstein keys. Keeping both would be *worse* than either: `proxy.js`
+>   short-circuits on the persona cookie **before** it resolves the real session, so a presenter logged in as
+>   Maya would be rendered a generic **"E2E Member"**. Fenced by two tests
+>   (`test_the_e2e_persona_bypass_is_gone_from_the_launch_env`, `test_e2e_persona_bypass_is_not_in_the_launch_env`).
+> * **The cockpit DOES still set the cookie — at two live paths**, contrary to the retracted sentence:
+>   client-side on click (`demo-stack/cockpit.py:812`, `_ACADEMY_JS`) and as a `Set-Cookie` on the `/go` 302
+>   (`:1496`); `:327` names both. It is the content-stories academy deep-link that uses them. With the launch-env
+>   bypass gone the cookie is **inert** on a stock demo — set, and not honoured.
+>
+> The historical keyless model (server RSC `anonymous=false` + a synthetic **`E2E Member`**, no real Clerk keys)
+> is what v1.10b M53 F6 shipped and is **no longer how a demo runs**. (Separately, and still true:
 > the academy grid renders **empty** in a demo — the v2.4 **F4** carry, **NOT** a client-side render defect: the
 > catalog is [DB-authoritative](#the-content-model--db-authoritative-catalog-v051-m7) and the demo neither sets
 > `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`. v2.5 **M230** fills it
 > production-faithfully, zero academy-repo edits). The **Cosmo AI assistant stays absent** in a demo (its flag +
-> OpenAI key are deliberately not provisioned — the AI-keys policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
-> standalone cockpit panel. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
+> OpenAI key are deliberately not provisioned — the AI-keys policy). Zero academy-repo edits: the keys live in
+> the gitignored `code/.env.local`. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
 
 #### 2. Configure env
 

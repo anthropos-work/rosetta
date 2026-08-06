@@ -83,8 +83,9 @@
 * **Database**: none — stateless gateway (no DB, no Redis)
 * **Ports**: **8080 → 8080** (router `listen_addr 0.0.0.0:8080`, `graphql_path /graphql`). **There is no
   `5050` at platform HEAD** — `grep -c 5050 docker-compose.yml` returns 0. The host-`5050` mapping was
-  published here in the present tense while `:174-176` of this same doc already said `localhost:5050`
-  refuses the connection; corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
+  published here in the present tense while **`:193`** of this same doc already said `localhost:5050`
+  refuses the connection (this cited `:174-176` until M257x iter-98 — that is the compose line-number
+  caveat, a different construct); corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
 
 > **There is no application source here.** `package.json` is a stub
 > (`{"name":"graphql-wundegraph"}` — note the misspelling, carried in the repo).

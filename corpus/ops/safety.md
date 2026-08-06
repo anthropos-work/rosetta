@@ -204,7 +204,7 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
 | **coresignal** | `External` | enrichment source — safe to read, **never write** on non-prod |
-| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and has been REMOVED** — it is not per-stack-isolated at platform `0c91421`; see its own row above |
+| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and is removed FROM THIS TABLE** — it is not per-stack-isolated at platform `0c91421`; see its own row above. ⚠ **The CODE still classes it `PerStackIsolated`** (`stack-seeding/isolation/isolation.go:106`, *"falls back to local /tmp on demo"*). This row asserted the registry had been changed; **it has not been**, and M257x iter-98 withdraws that assertion rather than making it true — re-classing the store is part of the open escalation `DEF-M257x-iter80-storage-prod-bucket`, which is the user's call and is deliberately unresolved. **Until it is decided, the doc and the registry disagree, and that disagreement is stated here rather than hidden.** |
 
 > **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
 > `jobsimulation.{sessions, validation_attempt_results, validation_attempt_skill_results,

@@ -264,9 +264,10 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 > `public.local_jobsimulation_sessions` (score) + a co-written `jobsimulation.sessions` twin (so the federated
 > non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). The mirror table is
 > dropped and there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.**
-> (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of `:157-159` above, which is
-> the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was not, and no local stack creates
-> that schema either way.) The old
+> (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of **`:170-175`** above, which
+> is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was not, and no local stack creates
+> that schema either way. It cited `:157-159` until M257x iter-98 — that is the `job_position` bullet, a
+> different construct entirely.) The old
 > "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
 
 **Org prerequisites:** `public.organizations.is_hiring = true` (§ *the gate*) + Clerk `publicMetadata.isHiring =
