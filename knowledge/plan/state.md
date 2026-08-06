@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 100 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only open one. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 101 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 2 of 5 PROVEN (the booked '4 of 5' withdrawn at iter-101, D-M257x-101-4): clauses 3–4 hold, clauses 1–2 UNPROVEN at origin HEAD pending re-run, clause 5 open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5** — clauses 1–4 HOLD; **clause 5 (KB-fidelity) is the only open one**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut or argued). `N = 28` at a **78.3 %** upheld rate, so **13 → 20 → 28 is NOT a comparable series** — read no trend from it either way. iter-100 repaired the INSTRUMENT behind that: `anchor_construct_guard` was GREEN over **360 of 555** citations, now resolves **528**, re-grades 2 of the 7 upheld wrong-construct findings and exposed 6 no reading had named. **Next action is the reading.** **Live detail — readings, comparability mechanisms, the not-fenceable verdict on intra-document self-contradiction, carried items — lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back.**"
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 2 of 5 PROVEN** — the booked \"4 of 5\" is WITHDRAWN (`D-M257x-101-4`): clauses 3–4 hold at `0c91421`; **clauses 1–2 are UNPROVEN at origin HEAD** (proven at `2adcf71`, now 6 commits / 281 changed compose lines behind — the gate forbids a pinned pre-drift commit); **clause 5 open**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut or argued). iter-101 (the first true REPLICATE) returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, graded on **13 of 14 seats** — so `n₂` is a SIX-seat count. **Band #3 decided the estimator: blind overlap with iter-99's 28 was 6 against [14,22], so the readings are MORE independent than Chapman assumes and `N̂ = 45.1` is a FLOOR — cross-reading Chapman puts the residual near ~103.** Read **no** trend from 13 → 20 → 28 → 24; the upheld rate is non-constant and the last union is 13-seat. **Next action: pay down `FIX-M257x-iter101-read-union` by PREDICATE, and re-run clauses 1–2 at origin HEAD.** **Live detail lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back."
 last_updated: "2026-08-06"
 ---
 
@@ -39,16 +39,26 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **100 iters closed**. Gate **4 of 5**; clause 5 open — the iter-99 re-read returned
-**N = 28**, but at a **78.3 %** upheld rate that broke a four-reading band, so the `N` series is **no longer
-comparable** and no trend may be read from it in either direction.
+M257x iter loop, **101 iters closed**. Gate **2 of 5 PROVEN** — the booked *"4 of 5"* is **WITHDRAWN**
+(`D-M257x-101-4`): clauses 3 and 4 hold at `0c91421`, but clauses **1 and 2 are UNPROVEN at origin HEAD**
+(proven 2026-08-01/02 at platform `2adcf71`, now **6 commits / 281 changed lines of `docker-compose.yml`**
+behind, against the gate's own *"never a pinned pre-drift commit"*). **UNPROVEN is not refuted** — it is
+a re-run, and a concurrent lane owns it.
+
+Clause 5 open: the iter-101 **replicate** returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, confirming
+iter-99's precision break is **structural, not variance**. **Band #3 is the result that matters:** blind
+overlap with iter-99's 28 came out **6** against **[14, 22]** — the readings are **more independent than
+Chapman assumes**, so **`N̂ = 45.1` is a FLOOR**; cross-reading Chapman puts the residual near **~103**.
+**A zero reading is not near, and no schedule may assume it is.** Graded on **13 of 14 seats** (`r24-D` lost
+to a spend limit, not re-run) — `n₂` is a **6-seat** count and is never compared to a 7-seat one.
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):
 
 - [`m257x…/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — authoritative
   live status, every iter's findings, the carried items
-- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the reading
+- [`iter-101/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-101/adjudication.md) — **the current reading** (the replicate; band #3 and the floor/ceiling verdict)
+- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the prior reading, whose 28 iter-101 measures overlap against
 - [`iter-98/discovery-pool.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-98/discovery-pool.md) — the pool measurement
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
