@@ -2063,3 +2063,34 @@ defect and would also explain why no amount of accessor work has helped.
   enumerator's suite, 46 passed for the reach mutation battery + `guard_family`, invocations stated.**
   **No reading taken and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits,
   no clone fetched, no stack touched, no tag cut — see `iter-114/progress.md` + `decisions.md`
+- iter-115 (tik, **`TOK-07` step 2, second half**): **the repair — 71/71 enumerated sites, and the
+  claim that matters is the other one: 24 of 24 predicates closed at EVERY enumerated instance.**
+  Baseline reproduced at `0/71` before a line was written; corpus verified unmoved since the
+  enumeration (`git diff --stat 461b547 HEAD -- corpus/` empty); all 14 clones re-verified against
+  iter-109's ground-truth table, no fetch. **Seven incremental commits**, so an abandoned run would
+  have cost one predicate rather than ~20 files of stranded edits. Both promoted pair-halves landed
+  **with** their twins (P10 `cms.md:171`+`:287`; P12 `ai_architecture.md:212`+`jobsimulation.md:160`,
+  now the same path AND the same range) — the whole reason they were promoted. The three queued
+  findings resolved against source: **P08's pin was off by two and the pin is DELETED, not moved to
+  `:498`** (third generation of one same-file anchor; the construct was already named beside it);
+  **P13's superlative fell to 18 distinct git-URL contexts** — it was the platform DEFAULT until
+  `a2a3ee6` and `customerio-sync` was the LAST, never the only, with the corpus refuting it one file
+  away; **P24 was one survivor against ten witnesses**, two of them in `sentinel.md` itself. Substantive
+  corrections beyond citations: the `bash -c` claim **inverted a shipped security property** (P10 —
+  right about the frozen `cms` repo, wrong about the shipped code); `d11a403` moved **two** of
+  messenger's four `*_RPC_ADDR`, not four (P21, 22 sites over 9 files, the end-state claim true
+  everywhere and only the agentive form false); storage's env block declares **seven** variables, the
+  eight being the cardinality of the cited line RANGE (P16); studio-desk's Express backend holds **no**
+  GraphQL client at all (P18); ant-academy **sells a $399/yr subscription to anonymous visitors** and
+  calls itself a storefront 213 lines above the denial (P23). **Three sites publishing an enumerated
+  predicate were NOT in the enumerated set** — P02's third instance, P22's second anchor (which an
+  adjudicator had **booked** and the ceiling pass then excluded), P10's twin — all repaired anyway
+  under rule 3 and all booked as **measured** evidence for
+  `FIX-M257x-iter113-adjudication-is-judgement`, while the denominator was deliberately **not**
+  renegotiated (D-M257x-115-2). **The repair induced anchor rot four times and the fence caught every
+  one** — including §5 rule 22's own worked example, rotted a **FOURTH** time by the repair whose
+  subject is that class; net-new `FIX-M257x-iter115-anchor-guard-resolves-fixture-paths-live` (a guard
+  resolving a frozen fixture's path against the live tree). Tests **1 failed / 183 passed / 118.47 s**,
+  invocation stated, the failure the **known pre-existing** iter-48 answer-key one over its own
+  synthetic fixtures. **No reading was taken; `P` is UNMEASURED, not unmoved** — `TOK-07` step 3 is
+  iter-116's entire content and is unblocked. Gate unchanged at **4 of 5** — see iter-115/progress.md
