@@ -1993,3 +1993,44 @@ defect and would also explain why no amount of accessor work has helped.
   some are vocabulary would be worse than repairing 46. **No reading taken and no `N` movement is
   claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone fetched, no stack touched, no
   tag cut — see `iter-112/progress.md` + `decisions.md` + `enumeration.txt`
+
+- iter-113 (tik, `iter_shape: tooling`, **`TOK-07` step 1, second pass**): **the ceiling —
+  `NO-EXPANSION` stops being an assertion**, and the routed blocker
+  `FIX-M257x-iter112-forms-need-a-second-pass` is CLOSED. iter-112's report obeyed `TOK-07` rule 2 and
+  then had nowhere to go, because **"the form is too narrow" and "the class really is that small"
+  produce the identical number** (`D-M257x-113-1`). The fix is a **second, broader form tier** — the
+  SUBJECT — from which the ceiling falls out: `headroom` = subject sites − predicate sites, **named by
+  `file:line`, never counted**; zero headroom settles the class, non-zero headroom is **RED until every
+  candidate is folded in or excluded WITH A REASON**. A predicate with no subject tier is **exit 2
+  UNMEASURED**, never a verdict — defaulting it to the predicate tier is the single cheapest way to make
+  everything read SATURATED. **Four controls, each shown firing**: lexical refusal of an inverted tier,
+  the file-granularity coverage invariant, the **aggregate** anti-vacuity RED (a subject tier that widens
+  nothing anywhere was copied, not authored), and the stale-exclusion RED. Plus the paragraph rule
+  (`D-M257x-113-2`): prose wraps at ~110 columns so a subject token routinely sits one line above its own
+  claim — **one publication seen twice** — and the suppression's own risk is pinned in the same test,
+  because the `ai`-fold twin at `external_services.md:554`/`:565` is **eleven lines apart** and must
+  survive; a mutation control widens the paragraph to the whole file and watches the twin vanish.
+  **30 tests (was 18); 64 passed with `test_fence_provenance.py` alongside, 82.83 s, invocation stated.**
+  **The measurement, and it moved DOWN** (`D-M257x-113-3`): **29 seeds → 71 sites, 2.45×** against
+  iter-112's 7.28× — because **162 of those 211 sites were four vocabulary forms** (P16 48, P18 58,
+  P22 37, P24 19) which now enumerate **5 between them**. The expansion that was real surfaced where the
+  flat forms hid it — **P21 6 → 22**, P10 10 → **11** (a **within-file** twin at `cms.md:171`), P15 4→5,
+  P02 1→2, and **P12 1→2, a same-fact-different-pin pair (`:1594-1597` vs `:1594-1600`) whose one-sided
+  repair would have manufactured exactly the self-contradiction `TOK-07` rule 3 forbids.** **The
+  deliverable is the DENOMINATOR — 71 sites — not the multiplier.** **All 16 surviving `NO-EXPANSION`
+  predicates are settled, and the verdict is SPLIT in the output because only part of it is mechanical**
+  (`D-M257x-113-4`): **1 `SMALL-CLASS-PROVEN`** (zero headroom, nothing judged) and **15
+  `SMALL-CLASS-ADJUDICATED`** (**368 candidates enumerated · 254 read and excluded by named reason · 2
+  promoted into the enumerated set**). The fence warrants that the candidate set is complete and nothing
+  went unexamined; **it does not warrant that the 254 reasons are right, and the close says so** —
+  routed as `FIX-M257x-iter113-adjudication-is-judgement`. Three findings step 2 must not repair blind:
+  **P08's pin is off by two** (`:496` → the block opens at `:498` — re-derive, never copy), **P13's
+  "only" has a counter-example inside the corpus** (`external_services.md:495` records the router built
+  from a `git+url` context too), and **P24 is one survivor against ten witnesses**. ⚠ **Two REDs, both
+  this iter's own** (`D-M257x-113-5`), caught by controls written before the ledger existed: the coverage
+  invariant fired when a subject-form tightening blinded two tiers to their own document (**the repair
+  was the form, not the invariant**), and the stale-exclusion RED fired on three rows left behind by the
+  two promotions. **No reading taken and no `N` movement is claimed** — §9's refinement applies, `P` is
+  UNMEASURED rather than unmoved. **`TOK-07` step 2 is now UNBLOCKED.** Gate unchanged at **4 of 5**.
+  Zero platform edits, no clone fetched, no stack touched, no tag cut — see `iter-113/progress.md` +
+  `decisions.md` + `enumeration.txt` + `predicate-ledger.json`

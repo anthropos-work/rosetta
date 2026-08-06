@@ -2714,6 +2714,43 @@ note the last row precisely: iter-108 did not report a *low* multiplier, it repo
 there was no expansion step to produce one. An absent step is easier to miss in a close than a bad number,
 which is why the multiplier is worth printing even when it is boring.
 
+### But "rare" still has to be EARNED — against a ceiling (M257x iter-113)
+
+The rule above is only half a procedure, and iter-112 walked straight into the missing half. It reported
+**12 of 24 predicates at `NO-EXPANSION`**, obeyed the rule, refused to bank its 7.28× headline — and could
+go no further, because **"the form is too narrow" and "the class really is that small" produce the
+identical number.** A rule that tells you to distrust a number without telling you how to settle it just
+relocates the guess.
+
+> **Give every predicate a SECOND, BROADER form tier — the SUBJECT — and the ceiling falls out.**
+> `ceiling` = every site that so much as mentions the topic. `headroom` = subject sites − predicate sites,
+> **named by `file:line`, never merely counted**. Zero headroom settles `NO-EXPANSION` as a small class;
+> non-zero headroom is **RED until every candidate is either folded in or excluded with a reason**.
+
+Four things this bought, all measured on the real ledger:
+
+1. **It fixes the opposite failure with the same lever.** iter-112's four *vocabulary* forms — `Cosmo
+   Router` ×37 for a claim about VPC public subnets — were never bad forms; they were forms **on the wrong
+   tier**. Moved down, those four predicates enumerate **5 sites between them instead of 162**.
+2. **The multiplier went 7.28× → 2.45×, and DOWN was the honest direction.** Report the number that
+   indicts the previous one; a figure that mostly counts how often the corpus writes a component's name is
+   not a reach measurement.
+3. **The real twins surfaced where the flat forms had hidden them** — `P21` 6 → 22 sites, and a
+   same-fact-different-pin pair (`:1594-1597` vs `:1594-1600`) whose one-sided repair would have
+   manufactured exactly the self-contradiction `TOK-07` rule 3 forbids.
+4. **The paragraph is the unit of publication.** Corpus prose wraps at ~110 columns, so a subject token
+   routinely sits a line above its own claim — one publication seen twice. Suppress *within-paragraph*
+   subject hits only; the `ai`-fold twin at `external_services.md:554`/`:565` is eleven lines apart and
+   must survive. Test both halves together, and keep the coverage invariant at **file** granularity — a
+   line-level subset test goes RED on ordinary wrapped prose, the `anchor_offset_guard` false-RED again.
+
+**And split the verdict in the OUTPUT, because only part of it is mechanical.** iter-113 settled all 16 of
+its flat predicates, but **1** had zero headroom (`SMALL-CLASS-PROVEN` — nothing was judged) and **15**
+rested on **254 candidate sites read and excluded by hand** (`SMALL-CLASS-ADJUDICATED`). The enumeration
+guarantees the candidate set is complete and that nothing was left unexamined; it does **not** guarantee
+the reasons are right. Two warranties, two tokens. Collapsing them lets a pile of judgement calls wear a
+measurement's voice — which is `fence_provenance`'s defect (§8, iter-111) one layer up.
+
 ---
 
 Detection is cheap. Run it on a schedule, not on an incident.
