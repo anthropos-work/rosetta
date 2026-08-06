@@ -146,6 +146,15 @@ passed throughout because every one of them used the explicit form. Fixed by nor
 `repair_reach_guard` already had); **+3 tests, mutation control verified firing**. Found by pre-flighting
 the fence that was about to grade this iter — Phase 0d paying for itself.
 **Routes carried forward:**
+- **`FIX-M257x-iter108-stackcore-suite-hangs`** *(net-new, `D-M257x-108-6`)* → **Fate 3** → a future iter.
+  A plain `pytest tests/` in `stack-core` **blocks indefinitely** at
+  `test_m220_mutation_battery.py::DevWiringMutationBattery::test_the_dev_fences_are_red_proven` (45 %) —
+  **blocked, not slow**: 12.6 s CPU over 3 m 43 s, frozen at 442 results, reproduced twice. **Proven
+  pre-existing by read-only `git archive` of rext `adcf689`** (verified to contain 0 `normalize_range`,
+  i.e. without this iter's fix) — it hangs identically there, and the module has **0** references to
+  `anchor_offset_guard`. Consequence worth more than the bug: **the standing "975 pass / 1 fail" figure
+  cannot come from a plain full-suite run on this host**, so *state the invocation with the count* —
+  the same class as a guard verdict with an unstated tree (§5 rule 50).
 - `FIX-M257x-iter107-drift-fence-satisfiable-by-prose` → **Fate 3** → a future iter: no derived
   discriminator found; reasoning recorded above; **no exclusion list added**.
 - `FIX-M257x-iter103-read-union` → **DISCHARGED** by this iter (100 % of the upheld union).

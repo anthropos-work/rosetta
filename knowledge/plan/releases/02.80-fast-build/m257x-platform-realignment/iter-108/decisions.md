@@ -123,3 +123,51 @@ findings / 0 graded**, so the new tests fail.
 
 **Found by Phase 0d — pre-flighting the fence that was about to grade this iter.** Without it, this iter's
 own `anchor_offset_guard` verdict would have been a false green.
+
+## `D-M257x-108-6` — the `stack-core` suite does NOT complete on this host, and it is not this iter's doing
+
+**Found while trying to report a suite total for this iter's close, which is the only reason it was found:
+nothing else in the loop runs the whole suite to completion.**
+
+A plain `python3 -m pytest tests/` in `stack-core` **blocks indefinitely** at
+
+```
+tests/test_m220_mutation_battery.py::DevWiringMutationBattery::test_the_dev_fences_are_red_proven   [45%]
+```
+
+**Blocked, not slow** — measured: **12.6 s of CPU over 3 m 43 s elapsed**, progress frozen at **442
+collected results**, with a live-but-idle child process. Reproduced in **two independent runs**, both
+stopping at the same 44–45 % point.
+
+**PROVEN PRE-EXISTING, by the milestone's own read-only method** (§5 rule 25's spirit — `git archive`, never
+a checkout of the working tree): `rosetta-extensions` @ **`adcf689`** — the rext HEAD at this run's open,
+**verified to contain 0 occurrences of `normalize_range`**, i.e. without iter-108's fix — was extracted to
+scratch and the same test run in isolation. **It hangs identically there.** The module is also causally
+unrelated: `test_m220_mutation_battery.py` contains **0** references to `anchor_offset_guard`, the only
+module this iter changed.
+
+**Mechanism (characterised, not fixed):** `ShellMutationHarness._battery` shells out to a whole **shell
+suite** per mutant via `_run_suite`, with the subject path passed in `M220_DEV_STACK`. One of those shell
+suites blocks. The dev battery's own headline invariant is *"no flag ⇒ ZERO tailscale invocations"*, and its
+stub is deliberately **a healthy `tailscale` on PATH that fails if called** — so a plausible reading is a
+subprocess waiting on something environmental. **Not diagnosed further, deliberately: that is a shell-harness
+investigation, not this iter's planned scope, and the tripwire says route it.**
+
+**Why it matters beyond hygiene.** The standing figure *"`stack-core` is 975 pass / 1 fail"* is used in this
+milestone as evidence. **That number cannot be produced by a plain `pytest tests/` run on this host**, because
+such a run never reaches the end. Whatever produced it used a different invocation (a module subset, a set
+env var, or a different host). **A suite total whose invocation is unstated is the same class of defect as a
+guard verdict whose tree is unstated** — which is exactly what iter-105 shipped `fence_provenance` for, and
+`§5 rule 50` re-graded 52 verdicts over. **State the invocation with the count.**
+
+**What this iter therefore reports, and all of it was actually run:**
+
+| scope | result |
+|---|---|
+| the 5 fence modules (incl. the one changed) | **118 passed** |
+| `tests/test_anchor_offset_guard.py` alone | **21 passed** (was 18; +3 this iter) |
+| `tests/test_claim_twin_guard_iter48_answer_key.py` | **5 passed, 1 failed** — the documented pre-existing `test_02`, reproduced verbatim |
+| full `tests/` | **DOES NOT COMPLETE** — blocks at 45 %, pre-existing |
+
+**No total is claimed for the full suite**, because none was obtained. Routed as
+**`FIX-M257x-iter108-stackcore-suite-hangs`** → a future iter.

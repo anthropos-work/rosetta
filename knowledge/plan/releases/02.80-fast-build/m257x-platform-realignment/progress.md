@@ -1864,3 +1864,18 @@ defect and would also explain why no amount of accessor work has helped.
   Gate **unchanged at 4 of 5**; **no `N` claimed** — measuring here would be repair inside the measuring
   pass. **`TOK-06` step 4 (the read) is next and is deliberately unstarted.** Zero platform edits, clones
   read but never fetched, no tag cut — see iter-108/progress.md
+  **⚠ AND A NET-NEW FINDING ABOUT THE SUITE ITSELF, found only because this close tried to report a
+  total** (`D-M257x-108-6`, routed `FIX-M257x-iter108-stackcore-suite-hangs`): a plain `pytest tests/`
+  in `stack-core` **BLOCKS INDEFINITELY** at
+  `test_m220_mutation_battery.py::DevWiringMutationBattery::test_the_dev_fences_are_red_proven` (45 %) —
+  **blocked, not slow** (12.6 s CPU over 3 m 43 s, frozen at 442 results, reproduced in two runs).
+  **PROVEN PRE-EXISTING by read-only `git archive` of rext `adcf689`**, verified to contain 0
+  `normalize_range` (i.e. without this iter's fix): it hangs identically there, and the module carries
+  **0** references to `anchor_offset_guard`, the only module this iter changed. **The consequence is
+  worth more than the bug: the standing *"975 pass / 1 fail"* figure CANNOT be produced by a plain
+  full-suite run on this host**, because such a run never reaches the end — so whatever produced it used
+  an unstated invocation. **A suite total whose invocation is unstated is the same defect class as a
+  guard verdict whose tree is unstated** (§5 rule 50 / `fence_provenance`). **State the invocation with
+  the count.** This iter therefore claims NO full-suite total: what was actually run is 118 passed over
+  the 5 fence modules, 21 passed in the changed module (+3), and the documented pre-existing
+  `claim_twin` `test_02` failure reproduced verbatim.
