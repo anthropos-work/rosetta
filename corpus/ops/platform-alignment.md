@@ -1841,8 +1841,11 @@ without a fence re-arms the class at the next clone advance, which is the mechan
 
 1. **It does not adjudicate truth-at-a-ref, and refusing to was the whole design.** The obvious rule — *a
    version the corpus states must equal the clone's* — cries wolf on the live tree, and a fence that cries
-   wolf gets suppressed. `shared_libraries.md:85` states `sentinel v1.200.0` and cites
-   `sentinel/go.mod:9 @ 88bc5592`; **at that ref it was true.** §5 rules 41/44 make it a ref-scoped claim,
+   wolf gets suppressed. The worked example, **as the corpus stood at `e6aed2e`**: `shared_libraries.md`'s
+   proto row stated `sentinel v1.200.0` and cited `sentinel/go.mod:9 @ 88bc5592`; **at that ref it was
+   true.** (**Repaired at iter-108** — that row now reads `v1.210.0` @ `f2c46190`, so the example is
+   history; it is kept because the *design* argument does not depend on the claim still being live.)
+   §5 rules 41/44 make it a ref-scoped claim,
    so the fence reports the ADVANCE — *this repo moved past everything you cite, by N commits, and here are
    the citing sites* — which is mechanically true and accuses no sentence. A site pinned to a ref the clone
    is not at is **UNMEASURED and named**, never graded false.
@@ -1860,10 +1863,12 @@ without a fence re-arms the class at the next clone advance, which is the mechan
 **What it caught on its first committed run, which is also the evidence it works.** One RED, zero false
 positives: `sentinel` at `f2c46190`, **2 commits past** the newest sha the corpus cites, 5 citing sites. Those
 two commits are `chore(deps): update dependencies to latest versions` and a version bump — moving colony
-`v0.34.3 → v0.35.2` and proto `v1.200.0 → v1.210.0`. **Both of iter-103's booked pin-drift predicates**
-(`clerkenstein.md:275`'s *"sentinel is still on `v0.34.3`"* and `shared_libraries.md:85`'s *"the live skew is
-two … `sentinel v1.200.0`"*) are downstream of that single advance, and the fence found it **without parsing
-one sentence**.
+`v0.34.3 → v0.35.2` and proto `v1.200.0 → v1.210.0`. **Both of iter-103's booked pin-drift predicates** —
+clerkenstein's *"sentinel is still on `v0.34.3`"* and shared_libraries' *"the live skew is two …
+`sentinel v1.200.0`"*, **both quoted as they stood at `e6aed2e`** — are downstream of that single advance,
+and the fence found it **without parsing one sentence**. **Both were repaired at iter-108** (colony split
+CLOSED, proto skew ZERO); the two claims are quoted here as the fence's evidence, not as live corpus text,
+which is why they carry a ref and no line number.
 
 **The limit it also measured, and it is a corpus-side finding.** The conservative pin rule graded exactly
 **1** pin, because the corpus writes pins as `<repo> <version>` with the module implied by a table heading —
