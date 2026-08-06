@@ -424,7 +424,7 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 ### Infrastructure & Deployment
 
 *   **Cloud**: AWS ECS EC2 (EU-West-1 primary); Vercel for frontend
-*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; public subnets (ALB, Cosmo Router), private subnets (all microservices)
+*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; **public subnets (ALB only)**, private subnets (all microservices — **including the Cosmo Router**, whose terraform passes `private_subnets_ids` and names no public subnet; corrected M257x iter-115 together with its twin in [`security_compliance.md`](security_compliance.md), which carries the derivation. **This site was NOT in iter-113's enumerated set** and is repaired anyway, because repairing one half of a pair manufactures a self-contradiction — recorded against `FIX-M257x-iter113-adjudication-is-judgement`)
 *   **IaC**: Terraform for all infrastructure provisioning
 *   **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private subnet access; Git tags trigger deployments
 *   **Monitoring**: CloudWatch (metrics, dashboards, alarms), Sentry (errors, performance, cron monitoring), PostHog (analytics), Better Stack (incident escalation, uptime)

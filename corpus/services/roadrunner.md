@@ -11,7 +11,17 @@
 >
 > **⚠️ Precision, because the declarations disagree (v2.8 M257x).** *"There is no roadrunner service in
 > production"* overstates it: `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` and has
-> not been touched since `87d8d44` (2026-06-19, before the fold), while the platform has removed it from its own
+> has **not been touched since `84a4b4f` (2025-12-15)** — the commit that first added `terraform/main.tf`,
+> seven months before the fold. ⚠️ **This said "`87d8d44` (2026-06-19)" until M257x iter-115, and that is not
+> the line's provenance**: `87d8d44` is the repo's HEAD and touches exactly one file,
+> `.github/workflows/bump-version.yml` (3 insertions) — it never goes near terraform, so *"not touched since
+> it"* is vacuous by construction while the parenthetical presented it as the date of the last touch. The
+> subject of *"has not been touched"* is the **line**, not the repo. `git blame -L 19,19 87d8d443 --
+> terraform/main.tf` names `84a4b4f`; a file-level `git log` is not line provenance (the file's own most recent
+> touch is `e45eb61`, 2026-05-27, a line-11 module-source swap). The corpus's own fenced authority,
+> [`platform-migration-status.md`](../architecture/platform-migration-status.md), had this right all along and
+> this document never named `84a4b4f` anywhere. The conclusion — *before the fold* — survives; the sha did not.
+> Meanwhile the platform has removed it from its own
 > clone set: `roadrunner` had a `repos.yml` entry reading *"legacy — folded into app"* as late as `2adcf71`
 > (`repos.yml:29-31` **at that ref**), and platform `d11a403` (2026-08-03) **deleted the entry outright** —
 > **grade that commit by its diff, not its message.** Its message asserts roadrunner's *"repos.yml clone entry

@@ -19,7 +19,19 @@ Key guarantees:
 
 ### VPC Architecture
 - **VPC CIDR**: 10.0.0.0/16 with Multi-AZ deployment
-- **Public subnets**: Application Load Balancer (ALB), Cosmo Router
+- **Public subnets**: Application Load Balancer (ALB). ⚠️ **The Cosmo Router was listed here until M257x
+  iter-115 and the only readable evidence contradicts it.** Re-derived across **all eight** service terraform
+  trees in the clone set (`app`, `sentinel`, `graphql-wundergraph`, `messenger`, `cms`, `roadrunner`,
+  `storage`, `jobsimulation`): the token `public_subnet` occurs **0 times**, and **every one of the eight**
+  passes `private_subnets_ids = var.platform_private_subnets_ids` — the router at
+  `graphql-wundergraph@60c229f3:terraform/main.tf:31`, with **no public-subnet argument of any kind**. The
+  router uses the same `base_service` module as `app` (`:11`) and `app` passes the same private ids, so these
+  two bullets singled the router out for a placement it shares with `backend`, which the next bullet files as
+  private. **Residual, stated rather than hidden:** `infrastructure` (which *defines* `base_service`) has never
+  been in a clone set and `use_fargate = false` (`:13`) puts tasks on cluster instances this corpus cannot see —
+  so the module could in principle place them elsewhere. What is measurable says private; what was published
+  said public, with no ref. **Also note the router is gone from local dev entirely** (platform `2adcf71`) and
+  the repo is archived on GitHub
 - **Private subnets**: All microservices (no direct internet access)
 - **Data subnets**: PostgreSQL RDS, Redis ElastiCache
 - **Controls**: Network ACLs, Security Groups, least-privilege rules

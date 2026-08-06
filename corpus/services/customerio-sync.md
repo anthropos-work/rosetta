@@ -61,7 +61,7 @@ ten minutes does not earn a standing allocation against the platform's connectio
 
 ### Compose definition — **HISTORICAL**
 
-This block was deleted at `838d907`. It is kept because the build pattern was unique in the platform
+This block was deleted at `838d907`. It is kept because the build pattern was **the LAST of its kind** in the platform
 and a reader will meet it in older runbooks and in `git log`:
 
 ```yaml
@@ -82,7 +82,7 @@ customerio-sync:
 
 Note `context: git@github.com:...#main` — Docker BuildKit cloned the repo at build time, no local
 checkout needed, which worked because the build ran inside an SSH-agent-forwarded context
-(`ssh: ["default"]`) with `$GH_PAT` available. **It was the only service built that way, and the
+(`ssh: ["default"]`) with `$GH_PAT` available. ⚠️ **CORRECTED M257x iter-115 — it was the LAST service built that way, never the only one.** Re-derived over the whole history of `platform`, every `context:` line matching a git URL in every commit touching `docker-compose.yml`, de-duplicated: **18 distinct repo URLs** — app, chronos, cms, customerio-sync, graphql, graphql-wundergraph, graphqltmp, intelligence, jobsimulation, messenger, realtime, roadrunner, sentinel, simulator, skiller, skillpath, storage, studio-desk. Building from `git@github.com:anthropos-work/<repo>.git#main` was the platform **default** until `a2a3ee6` (2026-02-27, *"add Makefile, repos.yml, and switch to local Dockerfile.dev builds"*), and even after it **two** services kept a git URL — `customerio-sync` and `realtime`, the latter until `c17cc9a` (2026-04-15). Only from that date was customerio-sync the sole one, and at `838d907^` it is indeed the only git-URL context among seven. **The corpus refutes the superlative one file away**: [`external_services.md`](../architecture/external_services.md)'s *Build Context* note records that the router *"was changed from the old 'git+url' build"* too. **The
 pattern died with it**: every remaining compose build takes a local sibling directory as its context.
 
 ### Dependencies
@@ -161,5 +161,5 @@ facts. Do not read them as the production teardown.
 
 The "build from GitHub URL" pattern was intentional while it lasted: the service was operationally
 simple and rarely changed, so day-to-day developers did not need it cloned. It was the **only**
-compose service built that way, and `838d907` took the pattern with it — do not reach for it as a
+compose service built that way **at the end** — the pattern was once the platform default across 18 repos (corrected M257x iter-115; see the derivation above) — and `838d907` took it with it. Do not reach for it as a
 precedent when adding a service.
