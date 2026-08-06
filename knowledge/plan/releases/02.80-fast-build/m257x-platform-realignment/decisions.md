@@ -1541,3 +1541,199 @@ retired and the honest answer is a floor.
 
 **Next-tik direction:** iter-105 lands step 0 — `FIX-M257x-iter103-guard-tree-provenance` — and reports how
 many prior verdicts it re-grades.
+
+---
+
+## TOK-07: enumerate the predicate, not the anchor — 2026-08-06
+
+**Tok type:** **deliberate** — author-initiated, and **not session-terminating**.
+
+Both preconditions are graded out loud, because both have been got wrong in this milestone before.
+
+**It is not the streak, and the streak could not have fired.** The last three tiks are iter-107
+(`TOK-06` step 2 — no reading), iter-108 (step 3, the repair — no reading, stated in §9's mandated words)
+and iter-109 (the read). §9's iter-type refinement is explicit: an iter that took **no reading** has an
+**UNMEASURED** metric, not an unmoved one. **Exactly one of the last three tiks measured.** The trigger's
+precondition — three tiks that DID measure and did not move — is unestablished, and Phase 0 rule 2 falls
+through to tik. Same precedent as `TOK-04`, `TOK-05` and `TOK-06`, none of which was fired by the streak
+either.
+
+**It does not terminate the call**, for `TOK-06`'s reason and not as a licence. A *triggered* tok exits so
+the user can review a revision before the next tik commits to it — there, the revision is the new thing.
+Here there is nothing unreviewed to commit to: **iter-109 produced the measurement and named the
+replacement in the same close**, and every element of the sequence below is an item iter-109 already
+routed (`FIX-M257x-iter109-read-union` with its binding change of scope,
+`FIX-M257x-iter109-repair-scope-is-detection-bounded`, and the re-rank of
+`FIX-M257x-iter107-drift-fence-satisfiable-by-prose`). This tok **sequences routed work**. It opens no new
+territory, so it closes and the loop continues into tiks in the same call.
+
+**Prior strategy:** [`TOK-06: fence the inflows before repairing again`](#tok-06-fence-the-inflows-before-repairing-again--2026-08-06), on the
+[`TOK-05`](#tok-05-stop-repairing-claims-fence-the-predicates-under-them--2026-08-04) predicate-unit spine.
+
+### What iter-109 refuted, and what it KEPT — both matter, and the second one more
+
+**Refuted — `TOK-06`'s premise, and the mechanism is exact** (`D-M257x-109-3`). `TOK-06` was authored on
+*"inflow is comparable to outflow"*, from iter-103's decomposition: clone advance **61 %**, induction
+**21 %**. iter-109 froze the subject — **all 14 platform clones held at one sha, verified identical at open
+and close, no fetch** — so **no drift could arrive**. Drift is still **~33 %** of the upheld residual. Band
+#8 cut at `≤ 25 %` on the reasoning that a frozen subject cannot arrive new drift; it **FAILED, and the
+failure is the finding**. iter-103's 61 % measured the **composition of what a reading detects**, and it
+was read as the **rate at which defects arrive**. Arrival-vs-detection resolves to **DETECTION**. Fencing
+the taps could not drain the pool because the taps were never what kept it full.
+
+**Kept, and this half is not to be reverted.** The induction leg **worked**: band #10 measured **2 of 36**
+anchors inside prose iters 104–108 wrote — **21 % → 5.6 %**, the lowest in the series, against a rate that
+had held ~2 per cycle for six cycles with a far smaller repair. `anchor_offset_guard` and
+`fence_provenance` stay in production. `wrong-tree` is extinct in practice — **4 → 1 → 1 → 0** — and the
+upheld rate came back **91.4 % raw and 91.4 % `wrong-tree`-separated, identical for the first time**.
+**Steps 0–2 of `TOK-06` are RE-RANKED, not reverted.** A strategy whose premise was wrong can still have
+built the right instruments, and this one did.
+
+### Why it stopped being enough — the binding constraint is a MEASURED multiplier collapse
+
+`D-M257x-109-4`. iter-108 was graded **46/46 = 100 % of the upheld union** by `repair_reach_guard`, and
+**that grade is correct**. It repaired **by predicate** — `TOK-05`'s unit, the right unit. But its anchor
+list was derived from **`iter-103/raw/`** — from *what the previous reading detected* — so it closed every
+site iter-103 **saw**, and where the same predicate was published at a site iter-103 never booked, the
+repair had no reason to visit it. The falsehood survived at full strength, one file away. Two were
+measured directly, and **one is now a self-contradiction because the repair fixed one side of a pair**:
+
+- the `ai`-fold predicate — iter-108 repaired `external_services.md:565`; the same proposition sits
+  **eleven lines above at `:554`**, unrepaired, booked by seat A;
+- the Mistral call-site anchor — iter-108 repaired `ai_architecture.md:95` and `:99`; the twin at
+  `ai_architecture.md:34` still cites `markdownManager.go:19`, **while the repaired
+  `external_services.md:560` now states that the `:19` this row used to cite is a doc-comment line, not
+  code.** The corpus now contradicts itself, and the repair is what put it there.
+
+The series says the same thing arithmetically, and it is the sentence this revision turns on:
+
+| repair pass | where its site list came from | booked | sites | multiplier |
+|---|---|---|---|---|
+| **iter-96** | **the corpus, per predicate** | 13 anchors | **51** across 23 files | **3.92×** — and it recorded that an anchor-wise repair *would have left **38** standing* |
+| iter-98 | the corpus, per predicate + paraphrase | 20 anchors / 21 predicates | **37** across 22 files | 1.85× |
+| iter-102 | 76 anchor assignments | 52 anchors | **98** found → 94 repaired | 1.88× |
+| **iter-108** | **`iter-103/raw/` — a prior reading's detections** | 46 | **46 reached of 46** | **no site-expansion figure was reported at all** |
+
+**iter-108 did not report a low multiplier. It reported no multiplier, because there was no expansion
+step to report.** The step existed at iter-96, was still there at iter-102, and was gone by iter-108 —
+and losing it is sufficient on its own to explain a pool that does not drain. Per-pass detection recall
+on this instrument has run **33–83 %**; a loop that repairs only what was seen cannot drain a pool it
+only ever samples.
+
+### New strategy — enumerate the predicate, then repair the predicate, then read
+
+**Four rules. The fourth is the milestone's own signature defect arriving in the reach metric.**
+
+**1. A reading's job is to discover PREDICATES, not to enumerate anchors.** Treat iter-109's **24
+predicates as the finding** and its **36 anchors as an incomplete sample of each**. `P` is the primary
+metric and always was; `N` is a by-product of one instrument's recall.
+
+**2. For every predicate, enumerate its instances mechanically across the whole corpus BEFORE repairing
+any of them.** The class is the unit of work, not the citation. `claim_ledger` and `claim_twin_guard`
+already derive in this shape, so the tooling half is a restoration rather than an invention. **Report the
+multiplier per predicate.** And the guard-rail, stated now so it cannot be rationalised later: **a
+multiplier that comes back near 1.0× is evidence the ENUMERATION is not working — not that the predicate
+is rare.** iter-96 measured **3.92×** on a smaller, less-repaired corpus and named the 38 sites an
+anchor-wise repair would have left standing.
+
+**3. Never fix one side of a pair.** A predicate is **closed when every enumerated instance is closed, or
+it is not closed.** A repair that closes one instance and leaves its twin **manufactures a
+self-contradiction**, which is strictly worse than the defect it started from — measured twice above.
+
+**4. Grade reach against the ENUMERATED set, never the detected union.** iter-108's 100 % was against the
+wrong denominator, which is precisely why it read as success while twins survived. **This is
+`fence_provenance`'s defect wearing different clothes** — *a check reporting a state it did not measure* —
+and it takes the same fix: **the denominator must state where it came from.**
+`repair_reach_guard`'s output must name its site set as corpus-derived-per-predicate, and a run whose
+denominator came from a `raw/` ledger dir must be unable to print a reach percentage at all.
+
+**Sequence: enumerate → repair whole predicates → THEN read.** Read **last**, as `TOK-06` correctly had
+it. That part was right and it stays: read first and the reading measures a pool nobody has finished
+repairing, and costs a full cycle to say so.
+
+### Steps, in dependency order
+
+**0. The two hardening items with teeth — first, because both are the same class as this strategy's own
+rule 4, and both would corrupt step 1's reporting.**
+
+  - **`FIX-M257x-harden23-json-polluted-by-provenance-stamp`.** iter-105 put `stamp()` on **stdout** in
+    every guard's `__main__`; **12 of those guards also offer `--json`**, so a machine consumer dies at
+    char 0 — **and the suite only passes because every JSON test sets an undocumented env var**
+    (`FENCE_PROVENANCE_STAMPED=1`). That is a green bought with a hidden condition, arriving in the fix
+    for §5 rule 50 itself. The routed question is a real design question — stdout-first was iter-105's
+    deliberate choice, documented in `fence_provenance.py`'s docstring plus 16 per-guard `__main__`
+    comments — so **decide it**, and do not leave an undocumented env var as the mechanism that makes the
+    suite green. Step 1 ships a tool whose whole output is machine-read; it must not inherit this.
+  - **`FIX-M257x-iter108-stackcore-suite-hangs`.** The hang has a **measured cost**, not just
+    inconvenience: a test class had been **hidden and RED since iter-107**, invisible precisely because
+    the full run never completes on this host. Routed against
+    `test_m220_mutation_battery.py::DevWiringMutationBattery::test_the_dev_fences_are_red_proven`
+    (blocks at 45 %, 12.6 s CPU over 3 m 43 s, proven pre-existing by read-only `git archive`).
+    **Either make the suite complete, or make every count state its invocation.** A scoped pass must not
+    read as a whole-suite pass.
+  - **Record the second 3-pass-cap-without-stabilization** (harden pass 22, now pass 25) as the standing
+    signal it is. Do not paper over it.
+
+**1. The enumerator** — `FIX-M257x-iter109-repair-scope-is-detection-bounded`'s named mechanism: a
+per-predicate, corpus-wide site sweep that runs **before** any repair and produces the repair's
+denominator. Per-predicate multiplier reported. **Binding, as on every fence in this milestone: a mutation
+control AND an anti-vacuity control that can actually fire.** Eight vacuous fences have been caught here;
+`anchor_offset_guard` had two designs killed by its own controls and then false-REDed an ordinary append.
+That is the standard, and an enumerator that silently under-enumerates is exactly the failure this whole
+tok is about.
+
+**2. Repair whole predicates** — `FIX-M257x-iter109-read-union`, the 24, against the **enumerated** set.
+`repair_reach_guard` graded on the enumerated denominator with its provenance printed (rule 4).
+
+**3. Read LAST**, once the predicates are closed rather than sampled.
+
+**Re-ranked, not reverted:** `FIX-M257x-iter107-drift-fence-satisfiable-by-prose` stays open and drops in
+priority — with drift shown to be **standing rather than arriving**, a drift *fence* is not the lever it
+was ranked as. It is still worth having; it is not worth having first.
+
+### Pre-registered falsification of THIS strategy, sealed before the number exists
+
+This milestone books its rules before the seats are dealt, and a strategy should be held to the same
+standard as a reading.
+
+> **If a full enumerate-then-repair cycle is followed by a reading that again returns `P ≥ 15`, then
+> repair-and-read is REFUTED as a path to clause 5 under this instrument**, and the next tok is a
+> **re-scope conversation with the user** — not an eighth strategy revision. Three consecutive readings
+> at 22 · 22 · 24 have already been paid for with two full repair cycles; a fourth flat reading after
+> the expansion step is restored would mean the loop's shape is wrong, not its tuning.
+
+Clause 5 is **not** touched by this. It is met only by a reading that returns **zero** — four user
+rulings — and a tok revises strategy, never the gate.
+
+**Strategy class:** **`retry-with-evidence`**, and the honesty of that label is the point. This is not a
+new idea. It is **iter-96's own method** — corpus-derived-per-predicate enumeration, 3.92×, with the 38
+would-have-been-left sites counted — restored after it was silently dropped, and the new evidence is the
+measured multiplier collapse plus two twins, one of which the repair turned into a self-contradiction.
+`TOK-01` built instruments · `TOK-02` fenced a mechanizable prose class · `TOK-03` attacked coverage ·
+`TOK-04` pinned the target · `TOK-05` changed the unit of repair from the claim to the predicate ·
+`TOK-06` changed the order of the loop. **`TOK-07` changes the repair's DENOMINATOR** — from what a
+reading detected to what the corpus contains. It is the first revision authored on a *reach-denominator*
+measurement, and it restores a step rather than inventing one.
+
+**Cross-refs to prior TOKs:** `TOK-06` put the read last (**kept**) and fenced the inflows (**premise
+refuted by iter-109; the induction fences kept and re-ranked, the drift fence de-ranked**). `TOK-05`'s
+predicate unit is **vindicated twice** — by iter-103's band #3 and again by iter-109's band #3 — and is
+untouched; what changes is the *set* the predicate is repaired over. `TOK-04`'s ref-discipline spine and
+`TOK-02`'s prose fences stand unchanged.
+
+### What is NOT changed
+
+Clause 5 is not re-cut, narrowed, reinterpreted or argued. **Chapman stays retired** — no point estimate
+is quoted here or anywhere, including `state.md`; **only floors survive: ≥ 24 at `8f04d3a`, ≥ 33 at
+`e6aed2e`, ≥ 36 at `ac48e5b`**, and a floor is not a pool size. The read instrument is untouched. The
+union-of-two discipline, the blind second reading and the pre-adjudication verbatim commit all stand.
+§5 rule 41a holds: **no clone fetching while a reading is in flight.** Zero platform-repo edits;
+`stack-demo/**` untouched; `rosetta-extensions` stays on `main`.
+
+**Distance to gate:** **4 of 5**. Clauses 1 and 2 closed at platform `0c91421` (clause 2 **MET WITH
+DISCLOSURE**); 3 and 4 hold; **5 open at `P = 24` / `N = 36`, corpus `ac48e5b`.** No estimate of the
+distance to zero is offered — the estimator that used to offer one is retired and the honest answer is a
+floor.
+
+**Next-tik direction:** iter-111 lands step 0 — the two hardening items with teeth — and **decides** where
+provenance belongs rather than leaving an undocumented env var holding the suite green.

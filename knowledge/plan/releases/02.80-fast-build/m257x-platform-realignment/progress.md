@@ -1900,3 +1900,29 @@ defect and would also explain why no amount of accessor work has helped.
   rejected a **second** time, by a different adjudicator two readings apart (`wrong-tree` → `ref-discipline`)
   — third independent confirmation the claim is TRUE. Clause 5 **not re-cut**; `P = 24` leaves it open.
   Gate unchanged at **4 of 5**. — see `iter-109/progress.md` + `iter-109/adjudication.md`
+
+- iter-110 (tok, **deliberate** — non-terminating): **`TOK-07` authored — the repair's DENOMINATOR moves
+  from a prior reading's detections to the corpus, per predicate.** The streak was graded out loud first
+  and **could not** have fired (`D-M257x-110-1`): of the last three tiks only iter-109 measured, and §9's
+  refinement reads UNMEASURED as UNMEASURED. **What iter-109 refuted is recorded, and so is what it
+  KEPT** — `TOK-06`'s premise is gone (a frozen 14-clone subject still yields ~33 % drift, so the 61 %
+  was composition read as flow) but its **induction leg took repair-induction 21 % → 5.6 %**, so steps
+  0–2 are **re-ranked, not reverted**, and the one leg whose ranking rested entirely on the refuted
+  premise — the drift fence — is **de-ranked and left open** rather than cancelled. The binding
+  constraint is stated as a **verified** multiplier series, each figure re-opened at its source rather
+  than quoted forward (`D-M257x-110-2`): iter-96 13 → **51 sites** (**3.92×**, and it counted the **38**
+  an anchor-wise repair would have left) · iter-98 20 → 37 · iter-102 52 → 98 · **iter-108: no
+  site-expansion figure at all.** That last row is the finding, and it is stronger than the framing this
+  iter was handed — iter-108 did not report a *low* multiplier, it reported **none**, because the
+  expansion step was absent, not poor. Four rules: a reading discovers **predicates**, not anchors ·
+  enumerate every instance corpus-wide **before** repairing any · **never fix one side of a pair** ·
+  **grade reach against the ENUMERATED set** — `100 % of the wrong set` being this milestone's signature
+  defect arriving in the check meant to catch it. Order: enumerate → repair whole predicates → **read
+  last** (`TOK-06`'s one correct half, kept). Step 0 is the two hardening items with teeth. **A
+  falsification of the strategy itself is pre-registered before the next number exists**: another
+  `P ≥ 15` after a full enumerate-then-repair cycle refutes repair-and-read as a path to clause 5 and the
+  next tok is a **re-scope conversation**, not an eighth revision. Strategy class **`retry-with-evidence`**
+  — the method is **iter-96's own**, restored after being silently dropped. Two lessons generalised into
+  §9 in the same commit. Clause 5 **not** re-cut; Chapman stays retired, floors only. **No reading taken
+  and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone fetched,
+  no stack touched, no tag cut — see `iter-110/progress.md` + `decisions.md` § TOK-07

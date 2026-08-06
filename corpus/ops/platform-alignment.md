@@ -2565,6 +2565,69 @@ had run** — revising it from evidence that step 4 exists to produce. It would 
 multi-step strategy longer than three non-metric steps could ever complete**, since the tok terminates the
 call.
 
+### Grade a refuted strategy LEG BY LEG, against what each leg measured (M257x iter-110)
+
+A strategy that turns out to rest on a wrong premise is not thereby wrong in all its parts, and the reflex
+to revert it wholesale destroys work that measurement says was earning.
+
+**The worked case.** `TOK-06` was authored on iter-103's decomposition — *"inflow is comparable to
+outflow"* — and put two fences ahead of the next repair: one on **clone-advance drift** (61 % of the
+residual) and one on the **repair's own induction** (21 %). iter-109 froze all 14 platform clones at one
+sha, verified identical at open and close, and read the residual again. **Drift was still ~33 %** over a
+subject in which literally nothing moved. The premise is refuted: the 61 % had measured the *composition of
+what a reading detects*, not the *rate at which defects arrive*. The pool is standing, not flowing.
+
+**And the induction leg worked anyway.** Repair-induced anchors went **21 % → 5.6 %** of the residual — the
+lowest in the series, against a rate that had held steady for six prior cycles at a far smaller repair
+size. The fences that produced that are in production and earning.
+
+**The rule:**
+
+> When a strategy's premise is refuted, **do not grade the strategy. Grade each leg against the number that
+> leg moved.** A leg with its own measurement survives on that measurement. A leg whose only justification
+> was the refuted premise is **de-ranked, not cancelled** — the work may still be worth doing, just not
+> first.
+
+Applied at iter-110: the induction fences were **kept**; the drift fence (`FIX-M257x-iter107-...`) was
+**de-ranked and left open**, because drift that is *standing* rather than *arriving* still wants a fence —
+it is simply no longer the lever it was ranked as.
+
+**Why this is not special pleading.** The test is whether the leg has a measurement of its **own**,
+recorded **before** the premise fell. Induction did (band #10, pre-registered in iter-109's sealed rule).
+A leg whose defence is assembled after the refutation is the flattering reading, and this protocol refuses
+those on principle (§5).
+
+### A reach metric is settled by its DENOMINATOR's provenance (M257x iter-110)
+
+The same sentence as §5 rule 50 (*a guard verdict is settled by the tree its configuration lives in*), one
+layer up, and it cost this milestone a full repair cycle to learn twice.
+
+iter-108 was machine-graded **46/46 = 100 % of the upheld union** by `repair_reach_guard`, and **the grade
+was correct**. Its anchor list was derived — never hand-assembled — from `iter-103/raw/`, i.e. from *what
+the previous reading detected*. **A predicate's site list and a reading's detection list are not the same
+set.** Per-pass detection recall on that instrument has run **33–83 %**, so the repair closed every site
+the reading saw and left the same falsehood standing wherever the reading had not looked. Two survivors
+were measured directly at the next reading, and **one had become a self-contradiction, because the repair
+fixed one side of a pair.**
+
+> **A reach percentage whose denominator came from a prior detection is a check reporting a state it did
+> not measure.** State the denominator's provenance with the number, and make a run that cannot state it
+> unable to print a percentage at all.
+
+**The multiplier is the cheap tell, and it should be reported per predicate:**
+
+| repair pass | site list derived from | booked | sites | multiplier |
+|---|---|---|---|---|
+| M257x iter-96 | the corpus, per predicate | 13 | **51** | **3.92×** (it also counted the **38** an anchor-wise repair would have left) |
+| M257x iter-98 | the corpus, per predicate + paraphrase | 20 | 37 | 1.85× |
+| M257x iter-102 | 76 anchor assignments | 52 | 98 | 1.88× |
+| M257x iter-108 | **a prior reading's `raw/` ledger** | 46 | 46 reached | **no expansion figure reported at all** |
+
+**A multiplier near 1.0× is evidence the ENUMERATION is not working — not that the predicate is rare.** And
+note the last row precisely: iter-108 did not report a *low* multiplier, it reported **none**, because
+there was no expansion step to produce one. An absent step is easier to miss in a close than a bad number,
+which is why the multiplier is worth printing even when it is boring.
+
 ---
 
 Detection is cheap. Run it on a schedule, not on an incident.
