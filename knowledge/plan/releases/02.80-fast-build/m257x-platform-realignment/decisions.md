@@ -1389,3 +1389,155 @@ will recur. Any future count of tags takes `| grep -v '\^{}'` first, or counts `
 
 **Corrected in `deferrals-audit.md`:** F18 is struck, and §10's *"F18 is the urgent one"* handoff to the
 rext lane is withdrawn.
+
+---
+
+## TOK-06: fence the inflows before repairing again — 2026-08-06
+
+**Tok type:** **deliberate** — author-initiated, and **not session-terminating**.
+
+Two things need saying before the strategy, because both have been got wrong in this milestone before.
+
+**It is not the streak.** The clause was checked before this was written. The last three tiks are
+iter-101 (reading, `N` **28 → 24** — progress), iter-102 (repair, 52 anchors / 98 sites, no reading inside
+it) and iter-103 (reading, `N` **24 → 33**). iter-101 moved the metric, so the window never reached three
+consecutive no-progress tiks and Phase 0 rule 2 falls through to tik. Same precedent as TOK-04 and TOK-05,
+both fired by something other than the streak.
+
+**It does not terminate the call**, and the reason is the bootstrap tok's reason rather than a licence.
+A *triggered* tok exits so the user can review a revision before the next tik commits to it — the user has
+watched a strategy run and stall, and the revision is the new thing. Here there is nothing unreviewed to
+commit to: iter-103 produced the measurement **and** the replacement, and **every element of the sequence
+below is an item already routed in iter-103's own close.** This tok *sequences* routed work. It opens no new
+territory, so it closes and the loop continues into tiks in the same call.
+
+**Prior strategy:** [`TOK-05: stop repairing claims; fence the predicates under them`](#tok-05-stop-repairing-claims-fence-the-predicates-under-them--2026-08-04), on the
+[`TOK-04`](#tok-04-pin-the-target-or-stop-calling-it-a-measurement--2026-08-03) ref-discipline spine.
+**Neither is discarded and neither failed.** TOK-05's unit of repair — the predicate — is *vindicated* by
+iter-103's band #3, and that measurement is the reason this revision is about sequencing and not about
+repair.
+
+### Why it stopped being enough — the burn-down leg does not reach the residual
+
+iter-103 read `N = 33` against a rule sealed in its own commit (`04cbcfc`) **before the first seat was
+dealt**: `≤16` works · `17–22` ambiguous · **`≥23` DOES NOT REACH**. The `≥23` branch fired, graded exactly
+as written, with nothing re-cut once the number was known.
+
+The composition inverts what that appears to mean:
+
+| | iter-101 | iter-103 |
+|---|---|---|
+| distinct false **predicates** | **22** | **22** |
+| distinct **anchors** | 24 | **33** |
+| anchors per predicate | 1.09 | **1.50** |
+
+**By predicate the pool did not move.** After a 52-anchor / 98-site repair the corpus carries the same
+number of distinct false propositions — in more places.
+
+**And the repair is exonerated, blind.** 21 of iter-101's 22 predicates are CLOSED. The single survivor,
+`prod-terraform-8081` at `skiller.md:19`, is one **iter-102's own repair map flagged `SEAT 9 (?)` and left**.
+The repair leg reaches what it aims at; an independent instrument says so.
+
+So the loop is not failing to converge because repair is weak. **`N` held up because two inflows feed the
+residual and nothing watches either of them:**
+
+| inflow | share of `N` | fenced by |
+|---|---|---|
+| **clone advance** — version literals, `go.mod` pins, symbol names, line offsets | 20 anchors — **61 %** | *nothing* |
+| **the repair's own induction** — prose iter-102 wrote | 7 anchors — **21 %** | *nothing* |
+| never-true | 4 — 12 % | the reading |
+| unclassified | 2 | — |
+
+**Inflow is comparable to outflow. A loop with that property does not converge, and running it faster does
+not help.** That is the sentence the revision turns on. It is iter-103's, and it is measured.
+
+### New strategy — fence the inflows before repairing again
+
+**Repair-then-read is the wrong loop while 82 % of the residual arrives from sources nothing watches.**
+Five steps, in dependency order, each one an item iter-103 already routed:
+
+**0. `FIX-M257x-iter103-guard-tree-provenance` — first, because every guard verdict in this milestone has
+unstated provenance.** At iter-103's close the family came back **2 RED** and two quotable conclusions were
+drafted — *"the sheet asserted a verdict it didn't have"* and *"a fence names 8 sites the reading missed, so
+`N ≥ 41`"* — **and both were false.** The fence had been run from the **pinned** rext clone rather than the
+**authoring** copy; the whole difference was `claim_twin_waivers.json` (+40 lines) and the 8 RED sites were
+exactly the 8 waived sites. `guard_family.py` prints the corpus sha and the platform sha **and not its own**
+— the one input that decides the verdict is the one the output does not state. A guard verdict is a
+measurement taken with a fence's *configuration*, so it is settled by the tree that configuration lives in.
+Until this lands, **every prior guard green in this milestone is provenance-unstated**, and steps 1–3 would
+be shipping fences whose verdicts inherit that.
+
+**1. `FIX-M257x-iter103-drift-fence-gap` — the drift fence, and it outranks the repair.** 61 % of `N` is a
+**mechanically checkable** class: a version literal, a `go.mod` pin, a symbol name, a line offset. That is
+precisely the class a fence *can* reach — unlike intra-document self-contradiction, which this milestone has
+already ruled unboundable. Neither platform guard covers it: `platform_alignment_guard` fences `repos.yml`
+membership, `platform_predicate_guard` fences compose profile tokens. **Repairing 20 drift anchors without a
+fence just re-arms them at the next clone advance**, which is the mechanism that produced them.
+
+**2. The induction checks.** Both shapes are mechanical and **both are repeats**:
+   - **A canonical wording multiplies its own defects.** iter-102's replacement sentence asserts the
+     `backend.internal.anthropos:8081` literal has *"one occurrence anywhere in the clone set."* **It has
+     six**, five of them inside a repo the sentence's own 13-repo / 44-`.tf` denominator counts. It is
+     **self-refuting against its own stated denominator**, and it shipped to 5 anchors. Centralising a
+     wording centralises its defects — now twice.
+   - **A repair rotted an anchor by inserting prose above it.** `architecture_overview.md:321` was correct
+     at `8f04d3a`; iter-102 inserted a block above it, the wording moved to `:331`, and all 4 citers stayed
+     put — now naming the **opposite topology**. This is **the identical mechanism iter-101 booked against
+     iter-100, one cycle later**, and §5 rule 34 already names it without fencing it.
+
+   A post-repair line-offset check and a control on any centralised wording close most of this. **Design
+   both from the MEASURED shapes above, not from the general idea.**
+
+**3. `FIX-M257x-iter103-read-union`** — the 33, by predicate, with iter-103's two riders: a canonical
+sentence published to ≥3 sites is verified **against its own stated denominator** before it is multiplied,
+and a repair that inserts lines above a cited anchor **re-points the citers**.
+
+**4. Read LAST**, once the inflows are watched. Read first and the next reading measures the same inflow
+again and costs a full cycle to say so.
+
+**Binding on every fence in steps 1–2:** a **mutation control AND an anti-vacuity control that can actually
+fire**. This milestone has found **six** fences green over universes they never examined, and one whose
+anti-vacuity test compared a string to itself. A fence without a firing control is not shipped.
+
+**Strategy class:** `new-direction`. TOK-01 built instruments, TOK-02 fenced a mechanizable prose class,
+TOK-03 attacked coverage, TOK-04 pinned the target and metered the flow, TOK-05 changed the unit of repair
+from the claim to the predicate. **TOK-06 changes the ORDER OF THE LOOP** — it is the first revision that
+touches neither the instrument nor the unit, but what runs before what. It is authored on a composition
+measurement, which is a term none of the five touched.
+
+### What is retired, and must stop being quoted
+
+**Chapman is retired for this milestone.** `m`/union measured **17 %** at iter-101 and **61 %** at iter-103
+on a **byte-identical** instrument. Independence is therefore not a property of the instrument — it is a
+property of *what is left to find*: subtle residual → independent passes → large `N̂`; mechanical residual →
+correlated passes → small `N̂`. **Both `N̂ ≈ 103` and `N̂ ≈ 35` are unusable, neither corroborated nor
+refuted.**
+
+**Only floors survive: ≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`.** Both are two-pass unions; a floor is not a
+pool size. The series 16.7 → 29.4 → 45.2 → ~103 remains four **corrections to an underestimate** — that
+reading is unchanged and still right — but **stop quoting a point estimate from it.** Track `N` and the
+predicate count directly; they need no assumption at all. Swept at this iter: `state.md` already carried the
+retirement; two standing point estimates survived in the milestone ledger (iter-101's *"the residual is on
+the order of ~100"* and iter-102's *"the pool was probably always ~100"*) and are now **marked in place**,
+per the ledger's own correction convention rather than rewritten.
+
+Four bands (#3b, #4, #5, #8) failed for that one reason — iter-102 repaired the subtle half, and
+mechanically checkable drift is found by every competent pass and leaves a seat almost no room to be wrong.
+The upheld rate went to **97.9 % raw / 100 % with `wrong-tree` separated**, past even the "surprising"
+threshold, **for the same reason**. Three of those four numbers moved in the direction that *flatters* the
+reading. **None of them is evidence the reading got better.**
+
+### What is NOT changed
+
+Clause 5 is **not** re-cut, narrowed, reinterpreted or argued — it is met only by a reading that returns
+**zero**, ruled four times. A tok revises *strategy*, never the gate. The read instrument is untouched (one
+commit ever, `012edd2`). The union-of-two discipline, the blind second reading, the pre-adjudication verbatim
+commit and every TOK-01…TOK-05 fence all stand. Zero platform-repo edits; `stack-demo/**` untouched.
+
+**Distance to gate:** **4 of 5**. Clauses 1 and 2 closed at platform `0c91421` (clause 2 **MET WITH
+DISCLOSURE** — 29/1 on 2 of 2 fresh-stack first runs, never a clean pass); 3 and 4 hold; **5 open at
+`N = 33`.** No estimate of the distance to zero is offered, because the estimator that used to offer one is
+retired and the honest answer is a floor.
+
+**Next-tik direction:** iter-105 lands step 0 — `FIX-M257x-iter103-guard-tree-provenance` — and reports how
+many prior verdicts it re-grades.

@@ -1469,6 +1469,12 @@ defect and would also explain why no amount of accessor work has helped.
   **downward**, so ~103 is itself a floor — **the residual is on the order of ~100, not ~45, and a zero
   reading is not near.** Stated with its assumptions (closed population: well supported; independence: now
   *better* supported; equal catchability: **dubious, direction of bias known**), never banked.
+  ⚠ **RETIRED at iter-103, marked here at iter-104 (TOK-06).** The independence assumption this rests on was
+  measured at **both extremes on one byte-identical instrument** — `m`/union **17 %** here, **61 %** at
+  iter-103 — so independence is a property of *what is left to find*, not of the instrument. **`N̂ ≈ 102.6`
+  is neither corroborated nor refuted; it is unestimable by this method.** The *conclusion* that a zero
+  reading is not near survives on the floors alone (**≥ 24** at `8f04d3a`, **≥ 33** at `e6aed2e`); the point
+  estimate does not, and must not be quoted forward.
   Pre-registration graded **5 of 9 held, 4 failed** — #1 split (`n₁=20` held; `n₂=8` failed low, and the
   6-seat caveat does **not** rescue it: normalized 9.3 < 10), #2 held (24), **#3 failed low (6)**, #4 held
   (77.8/80.0 %), #5 failed in an unpredicted direction (**83.3 % / 33.3 %** — the passes are wildly
@@ -1502,7 +1508,12 @@ defect and would also explain why no amount of accessor work has helped.
   **Read the estimator correctly and do not let the record drift: the pool was probably always ~100. It is
   not growing — the estimator was wrong and iter-101's replicate fixed it.** The series
   16.7 → 29.4 → 45.2 → ~103 is four successive **corrections to an underestimate**, not four measurements of
-  growth. **Five findings outrank the defect list. (1) The `app` clone move injected almost NOTHING, and
+  growth. ⚠ **HALF-CORRECTED at iter-103, marked here at iter-104 (TOK-06).** The second sentence survives —
+  the series is still four corrections to an underestimate, not a growing pool. **The first does not:**
+  *"the pool was probably always ~100"* quotes a point estimate from an estimator now **retired for this
+  milestone**, on measured grounds (independence read 17 % then 61 % on one unchanged instrument).
+  **Only floors survive** — ≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e` — and a floor is not a pool size. Track
+  `N` and the predicate count directly; they need no assumption at all. **Five findings outrank the defect list. (1) The `app` clone move injected almost NOTHING, and
   that number is load-bearing for the ETA:** `origin/main` went `2035f9a4 → ad9f3c49` (5 commits) and
   `main.go` is **byte-identical** (1639 lines both refs, all five cited anchors identical). ⚠ **CORRECTED
   at iter-103 (`DEF-4`) — the two words that followed were false and they were MINE.** This sentence
@@ -1655,3 +1666,32 @@ defect and would also explain why no amount of accessor work has helped.
   evidence sentence, `D-M257x-103-1`'s single-instant snapshot, and this — **and each time the thing that
   caught it was re-measuring rather than reasoning.** No corpus defect; `N` unchanged at 33; no band moves —
   see `iter-103/progress.md` and `iter-103/adjudication.md`
+- iter-104 (tok, **DELIBERATE** — author-initiated, non-terminating): **`TOK-06: fence the inflows before
+  repairing again`.** The streak was checked first and does **not** apply (iter-101 moved `N` 28 → 24), so
+  this is an author-initiated revision on the TOK-04/TOK-05 precedent, and it does not terminate the call
+  because **every element of its sequence is an item iter-103 already routed** — it orders routed work rather
+  than opening territory (`D-M257x-104-2`, which also states the bound that keeps that reasoning from
+  becoming a general escape). **The revision rests on iter-103's COMPOSITION, not on its number.** `N = 33`
+  is the trigger; the finding is that **by predicate the pool did not move at all — 22 then, 22 now** — while
+  **21 of iter-101's 22 predicates are CLOSED**, blind, so the repair leg demonstrably reaches what it aims
+  at. `N` held up because two inflows feed the residual and nothing watches either: **clone advance, 61 % of
+  `N`** (version literals, `go.mod` pins, symbol names, line offsets — the class a fence *can* reach, unlike
+  intra-document self-contradiction) and **the repair's own induction, 21 %**, in two mechanical shapes that
+  are **both repeats** (a canonical sentence self-refuting against its own stated denominator, shipped to 5
+  anchors; and a repair inserting prose above a cited anchor so all 4 citers now name the opposite topology —
+  the identical mechanism iter-101 booked against iter-100, one cycle later). **Inflow ≈ outflow: a loop with
+  that property does not converge, and running it faster does not help.** So the sequence changes:
+  **(0) guard-tree provenance → (1) the drift fence → (2) the induction checks → (3) repair the 33 → (4) read
+  LAST.** Provenance goes first because steps 1–2 ship fences and a fence's verdict is settled by the tree its
+  configuration lives in — ship the fence first and its founding green is unre-checkable in exactly the way
+  that produced iter-103's two false quotable conclusions (`D-M257x-104-4`). Binding on every new fence: a
+  mutation control **and** an anti-vacuity control that can actually fire — six fences in this milestone have
+  been green over universes they never examined and one compared a string to itself. **Strategy class
+  `new-direction`** — the first revision touching neither the instrument nor the unit of repair, but the ORDER
+  of the loop. **Chapman sweep landed** (`D-M257x-104-3`): `state.md` was already clean; the two standing point
+  estimates surviving in this ledger — iter-101's *"the residual is on the order of ~100"* and iter-102's *"the
+  pool was probably always ~100"* — are **marked in place, not rewritten**, and the corrections are
+  **asymmetric**, because iter-101's conclusion survives on the floors (≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`)
+  and iter-102's *"four corrections to an underestimate, not a growing pool"* survives intact. Clause 5 **not**
+  re-cut, narrowed, reinterpreted or argued; gate unchanged at **4 of 5**; zero code, zero platform edits —
+  see iter-104/progress.md
