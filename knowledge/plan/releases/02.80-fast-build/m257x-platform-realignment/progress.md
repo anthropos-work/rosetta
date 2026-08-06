@@ -1504,11 +1504,19 @@ defect and would also explain why no amount of accessor work has helped.
   16.7 → 29.4 → 45.2 → ~103 is four successive **corrections to an underestimate**, not four measurements of
   growth. **Five findings outrank the defect list. (1) The `app` clone move injected almost NOTHING, and
   that number is load-bearing for the ETA:** `origin/main` went `2035f9a4 → ad9f3c49` (5 commits) and
-  `main.go` is **byte-identical** (1639 lines both refs, all five cited anchors identical), as is
-  `terraform/main.tf` (786 lines, `:181` identical) — the 5 commits touched **no Go source and no cited
-  terraform construct**. The entire residual is a **LABEL**: **17 sites** call `2035f9a` *"origin/main"*
-  (15 in `corpus/`, **2 in `CLAUDE.md`** that no reading is scoped to see). **A pin is a pin; only the
-  labelled citations rot** — which is exactly why the label is the defect, and it confirms §5 rule 41's
+  `main.go` is **byte-identical** (1639 lines both refs, all five cited anchors identical). ⚠ **CORRECTED
+  at iter-103 (`DEF-4`) — the two words that followed were false and they were MINE.** This sentence
+  originally read *"as is `terraform/main.tf`"* and *"the entire residual is a LABEL"*. Re-measured
+  `2035f9a4..ad9f3c49`: `terraform/main.tf` is **1 insertion / 1 deletion** (786 → 786; the changed line is
+  the `atlas_sentinel_dev_url` `error_message` **prose string**, rewritten and lengthened), and
+  `terraform/variables.tf` is **37 insertions / 12 deletions** (738 → **763**) — 49 lines that were never in
+  the residual accounting at all. **The CONCLUSION survives and was re-verified** — `main.tf:181` is
+  `service_desired_count = 1` at **both** refs, so the 5 commits still touched **no Go source and no cited
+  terraform construct**, and the label really is where the defect lives. **The evidence sentence was stronger
+  than the evidence, in the direction that made the conclusion cleaner** — this milestone's own class, in
+  this milestone's own records. Read the residual as: **17 sites** call `2035f9a` *"origin/main"*
+  (15 in `corpus/`, **2 in `CLAUDE.md`** that no reading is scoped to see), and that is the *cited* residual,
+  not the whole diff. **A pin is a pin; only the labelled citations rot** — which is exactly why the label is the defect, and it confirms §5 rule 41's
   own corollary that *a large "behind" count is not a large repair.* **(2) `DEF-M257x-iter101-crosslane-fetch`,
   and it is MY defect:** I gave `stack-demo/**` exclusively to one lane while another lane's adjudicators
   were grading claims against the clones inside it. Measured: the fetch window was **11:18:16–11:20:51**,
@@ -1551,7 +1559,11 @@ defect and would also explain why no amount of accessor work has helped.
   (F18, *"three iter-101 tags on origin"*) is a **FALSE POSITIVE** — re-derived, there is **exactly one**,
   no tag points at `4cb920a`, and the pin matches — recorded with **both** candidate mechanisms because a
   peeled-ref line-shape miscount cannot manufacture the specific names, so it is **not a complete
-  explanation on its own** (`D-M257x-102-6`). F16/F17 closed: register entry landed, and `roadmap.md`
+  explanation on its own** (`D-M257x-102-6`). ⚠ **THIS RULING IS REVERSED — see `D-M257x-103-1`. Lane D was
+  RIGHT: three tags existed (`-101b`/`-101c` were cut and deleted between the two observations), and the
+  refutation measured a concurrently-mutated surface at one instant and treated it as a standing fact. The
+  peeled-`^{}` mechanism is real, was never the cause, and is demoted to a caveat. `D-M257x-102-6` is
+  SUPERSEDED, not edited; Lane D's finding is restored as UPHELD; the lesson is now `§5 rule 49`.** F16/F17 closed: register entry landed, and `roadmap.md`
   § M257x was **`planned` at 101 iters** with **exit clause 1 still naming the retired `odysseus`** — this
   milestone's own class, in its own gate, for the second time. **REACH GRADED BY MACHINE, not claimed** (`repair_reach_guard` vs each reading's own raw seat reports,
   `iter-102/evidence/reach-grade.md`): **37/46 = 80.4 %** against iter-99's ledger and **29/36 = 80.6 %**
@@ -1564,3 +1576,82 @@ defect and would also explain why no amount of accessor work has helped.
   **So: 80.4/80.6 % against the FULL booked set, effectively 100 % against the UPHELD set — both published,
   the first not adjusted away.** **Gate: no clause moved in this pass and none could** — a repair pass
   contains no reading — see `iter-102/progress.md`
+
+- iter-103 (tik, the MEASURING pass — **no repair inside it**): **`N = 33` — THE BURN-DOWN LEG DOES NOT
+  REACH THE RESIDUAL**, on the `≥ 23` branch of a rule **sealed in its own commit (`04cbcfc`) before the
+  first seat was dealt** and graded here exactly as written. 14 blind seats (readings **#25: 7 of 7** and
+  **#26: 7 of 7** — `n₂` is a **SEVEN**-seat count, unlike iter-101's), identical recomputed partition,
+  48 bookings → **47 upheld / 1 rejected**, 4 adjudicators grouped by seat LETTER so both readings of one
+  file set land with one grader. **The number underneath the number is the finding: by PREDICATE the pool
+  did not move at all — 22 at iter-101, 22 here — while anchors went 24 → 33 (1.09 → 1.50 per predicate).
+  After a 52-anchor / 98-site repair the corpus carries the same count of false propositions in more
+  places.** **Bands 4 HELD of 10.** **#3 HELD at 1 and it EXONERATES the repair**: exactly one of iter-101's
+  22 predicates survives (`prod-terraform-8081` at `skiller.md:19` — an anchor iter-102's own repair map
+  listed as a twin and flagged **`SEAT 9 (?)`**), so **21 of 22 closed, confirmed blind**, corroborating
+  `repair_reach_guard`'s ~100 % upheld-set reach with an independent instrument. **#3b (m = 20 vs [1,7]),
+  #4 (97.9 % raw / 100.0 % separated vs [74,88]), #5 (9.1 pts vs ≥15) and #8 (61 % vs ≤10 %) failed
+  TOGETHER and are ONE finding: the instrument was byte-identical across the two readings and only the
+  SUBJECT moved.** iter-102 repaired the residual's *subtle* half; what is left is **mechanically checkable
+  drift** — a version literal, a `go.mod` pin, a symbol name, a line offset — which every competent pass
+  finds (overlap explodes, recall spread collapses) and about which a seat has almost no room to be wrong
+  (precision goes to 98 %). **Precision, overlap and inter-pass independence are properties of the
+  RESIDUAL'S COMPOSITION, not of the instrument; three of those four moved in the direction that FLATTERS
+  the reading and none is evidence it got better.** **#10 failed high by one (7/33 anchors in prose
+  iter-102 wrote), and the count understates two shapes worth naming. (a) A canonical wording multiplies
+  its own defects:** iter-102 closed `prod-terraform-8081` with a sentence saying the
+  `backend.internal.anthropos:8081` literal has *"one occurrence anywhere in the clone set"* — **it has
+  six**, five inside `rosetta-extensions`, which the same sentence's own 13-repo / 44-`.tf` denominator
+  counts as one of its repos. **The replacement is self-refuting against its own stated denominator and it
+  shipped to five anchors**, found independently by six seats. **(b) A repair rotted an anchor by inserting
+  prose above it — the exact mechanism iter-101 booked against iter-100, one cycle later:**
+  `architecture_overview.md:321` **was** the correct local-stack line at `8f04d3a`; iter-102 inserted a
+  production-topology block above it, the wording moved to **`:331`**, and every citer stayed put, so
+  `:321` now names the **production Cosmo Router** — the opposite topology. Measured corpus-wide: **4 sites
+  cite `:321`, 0 cite `:331`**, and the reading found 2 of the 3 in-scope sites while **missing
+  `backend.md:54` in both readings** — a detection miss inside its own file set. **Why `N` did not fall,
+  as a mechanism: repair reaches its targets, but two inflows feed the residual that repair does not
+  touch** — **clone advance** (61 % of `N`; neither platform guard fences version literals, `go.mod` pins
+  or line offsets, since `platform_alignment_guard` fences `repos.yml` membership and
+  `platform_predicate_guard` fences profile tokens) and **the repair's own induction**. **Inflow ≈ outflow;
+  a loop with that property does not converge and running it faster does not help.** **CHAPMAN IS RETIRED
+  for this milestone**: its independence assumption has now been measured at both extremes on one unchanged
+  instrument — `m`/union **17 %** (iter-101) then **61 %** (here) — so `N̂ ≈ 103` and `N̂ ≈ 35` are both
+  unusable, and **only the FLOOR survives (≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`)**. The series
+  16.7 → 29.4 → 45.2 → ~103 stays **four corrections to an underestimate, not four measurements of a
+  growing pool** — but stop quoting a point estimate from it. **#6 third measurement: 4 → 1 → 1**, so an
+  ADDENDUM can carry ground truth a frozen instrument gets wrong **without editing it**; all fourteen seats
+  stated which rext tree they read. **#7 HELD at 3** on a tree that grew +214 anchors, so the repair's new
+  citations are as good as the old ones. **#9 HELD at 5**, clearing the recomputed partition. **§5 rule 41a
+  PROVEN rather than asserted** — every clone HEAD, `origin/main` and fetch timestamp re-read at the close
+  is identical to the open; nothing was fetched, no stack touched, no tag cut. **Landed at the close** (both
+  deferred by `D-M257x-103-0` precisely because the frozen instrument tells every seat to read §5 in full,
+  so editing it mid-read would have split the seats across two rule sets): **§5 rule 49** — *a measurement
+  of a concurrently-mutated surface is timestamped, not standing; refuting another observer's report needs
+  THEIR timestamp or the surface's HISTORY, never your own later snapshot* — and a **§5 rule 41a
+  subsection** stating what it can and cannot enforce (`ensure-clones.sh` fetches unconditionally and moves
+  `refs/remotes/*`, the exact surface a citation guard resolves against). **`DEF-4` corrected in this very
+  file**: `terraform/main.tf` was NOT byte-identical across the `app` advance and *"the entire residual is
+  a label"* was false as stated — the **conclusion** survives and was re-verified, the **evidence sentence**
+  was stronger than its evidence. **Gate unchanged at 4 of 5; clause 5 is the only open one and was not
+  re-cut, narrowed, reinterpreted or argued.** Routed: `FIX-M257x-iter103-read-union` (22 predicates / 33
+  anchors, by CLAIM) and — outranking it — **`FIX-M257x-iter103-drift-fence-gap`**, because repairing 20
+  drift anchors without a fence re-arms the class at the next clone advance. **Also `D-M257x-103-7`, found
+  at the close and worth the space because the FALSE version was one commit from the record:** the guard
+  family came back **2 RED**, contradicting this iter's own ground-truth sheet, reproducibly at `e6aed2e` —
+  and the quotable conclusions (*"the sheet asserted a verdict it did not have"*, *"a fence names 8 in-scope
+  sites the double reading missed, so `N ≥ 41`"*) were **both false**. The fence had been run from the
+  **pinned per-stack clone** (`09d06070`); from the **authoring copy** (`944fc4a2`) both guards are GREEN at
+  both subjects, the entire difference being `claim_twin_waivers.json` **+40 lines** (rext `944fc4a`, *"the 8
+  acknowledged-site waivers"*) — **the 8 RED sites ARE the 8 waived sites**, and the family re-confirms
+  **14 GREEN · 0 RED · 0 could-not-check · 3 not-run**. **A guard VERDICT is not stack behaviour**: §5 rule
+  45 sends a claim about what the tooling *does on a stack* to the pinned clone, but a fence's verdict is a
+  measurement taken with that fence's **configuration**, so it is settled by the tree the configuration lives
+  in — run from the pinned clone you measure **last release's fence**, and every waiver added since reads as
+  a fresh RED at sites nobody touched. `guard_family.py` prints the corpus sha and the platform sha and **not
+  its own**, so the one input that decides the verdict is the one the output omits — routed as
+  **`FIX-M257x-iter103-guard-tree-provenance`**. This is `DEF-M257x-iter101-briefing-rext-tree` **inverted**,
+  the coordinator-facing half of the class band #6 measures at 4 → 1 → 1 seat-side. **Three times in one
+  iteration the milestone's own class landed on the milestone's own apparatus** — `DEF-4`'s over-strong
+  evidence sentence, `D-M257x-103-1`'s single-instant snapshot, and this — **and each time the thing that
+  caught it was re-measuring rather than reasoning.** No corpus defect; `N` unchanged at 33; no band moves —
+  see `iter-103/progress.md` and `iter-103/adjudication.md`

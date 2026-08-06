@@ -1204,6 +1204,31 @@ Rules, in order of how often they actually catch something:
       retro-fit the old reading. Retro-fitting a reading to refs it never saw is the same error as
       re-anchoring a deleted fact (§5 Trap A).
 
+    #### What 41a CAN and CANNOT enforce — a rule believed enforced is worse than a disclosed gap (M257x iter-103)
+
+    41a binds **lanes**. It does not, and cannot, bind the tooling: **`ensure-clones.sh` runs
+    `git fetch` on every bring-up as a freshness assertion, and there is no flag that suppresses it.**
+
+    What that fetch moves is bounded, and it is the bad half: **`refs/remotes/*` only, never a working
+    tree** (`DEMO_ADVANCE_CLONES` defaults to `0`). But `refs/remotes/*` is exactly what a citation
+    guard resolves against — `CITE_REF=auto`'s ladder is `origin/main` first — so the one thing the
+    fetch *does* move is the one thing 41a exists to freeze. Measured: one such fetch caught
+    `next-web-app`'s `origin/main` advancing **4 commits** past the frozen ref mid-run.
+
+    > **So state 41a honestly.** A reading may forbid *lanes* from fetching. It may **not** assume no
+    > fetch occurred. **If a reading overlaps a bring-up, the reading RECORDS the fetch and treats the
+    > affected refs as MOVED** — it does not assert the rule held.
+
+    The corollary above — timestamp both sides — is what makes that detectable rather than merely
+    suspected, and it is therefore **not optional**. iter-103 is the worked example in the other
+    direction: every clone's HEAD, `origin/main` **and** fetch timestamp were recorded at the reading's
+    open and re-read at its close, and all three were identical for all thirteen clones. That reading's
+    ground truth is not *believed* frozen, it is **measured** frozen at both ends — which is the only
+    form of the claim worth making.
+
+    **A rule that is believed to be enforced but is structurally unenforceable is worse than a disclosed
+    gap: the belief suppresses the check that would have caught the violation.**
+
 42. **A RED summary line must name the EVENT, and "the last line of the output" does not.** The
     sibling of rule 11, found in the runner built to enforce rule 8. `guard_family.py` reported each
     guard's final output line as its headline. Guards emit findings in assertion order, so the
@@ -1544,6 +1569,47 @@ defect, it was arguing for it.*
 
     Apply it **retroactively** to an existing ledger: anything whose remaining content is a legal or policy
     *determination* rather than a *repair* gets closed or filed, never carried.
+
+49. **A measurement of a CONCURRENTLY-MUTATED surface is timestamped, not standing — and you cannot refute
+    another observer's report of one with your own later snapshot.** *(M257x iter-102 / iter-103.)*
+
+    M257x ran three lanes against one checkout. A deferral audit reported **three `iter-101` tags on
+    origin** and flagged it urgent. A second observer ran `git ls-remote --tags`, saw **one**, and ruled the
+    report a **FALSE POSITIVE** — attributing it to miscounting the peeled `^{}` lines that `ls-remote`
+    prints for every annotated tag. The ruling was recorded as a decision and shipped.
+
+    **The report was correct.** Another lane had cut `-101b` and `-101c` and deleted both, from origin and
+    locally, in the interval between the two observations. Three tags existed, two of them on one commit,
+    exactly as reported.
+
+    The peeled-`^{}` miscount is **a real mechanism and it is not what happened** — which is precisely why
+    the ruling was persuasive. It supplied a complete-sounding cause for an observation the ruling had
+    already decided was wrong. The refuting decision even recorded that the mechanism *"is not a complete
+    explanation on its own"*, and was banked anyway.
+
+    > **Rule.** To refute another observer's report of a surface a concurrent actor can write, you need
+    > **their timestamp** or **the surface's history** — never your own later snapshot. Your snapshot answers
+    > *"what is true now"*; their report answered *"what was true then"*. Those are different questions, and
+    > only one of them was asked.
+
+    **Which surfaces this covers**, and the list is longer than it first looks: git tags and remote refs, the
+    clone set, `.agentspace/*` pins, a live stack's containers and ports, `docker system df`, any registry a
+    lane writes, and **the reading's own evidence directory**. A surface qualifies whenever an actor other
+    than you can change it between two observations — which, under any concurrent-lane protocol, is most of
+    them.
+
+    **The generalisable half.** Rule 41a froze the clone refs a *reading* resolves against, because a
+    reading's ground truth includes them. This is the same idea one level out: **the evidentiary STATUS of
+    any concurrently-writable surface is itself time-scoped.** 41a protects a measurement from a mid-flight
+    move; this protects a *report* from being overturned by one.
+
+    Two practical consequences:
+
+    - **Report the instant, not just the value.** *"`ls-remote` at 11:42 returns one tag"* is a fact.
+      *"There is one tag"* is a claim about a surface you do not control, and it decays.
+    - **A disagreement between two observers of a mutable surface is evidence the surface MOVED**, and that
+      is the first hypothesis — not observer error. The move is usually the more interesting finding, and
+      here it was: a lane was cutting and deleting tags mid-milestone with nothing recording it.
 
 ---
 

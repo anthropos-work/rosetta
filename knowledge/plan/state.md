@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 102 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 2 of 5 PROVEN (the booked '4 of 5' withdrawn at iter-101, D-M257x-101-4): clauses 3–4 hold, clauses 1–2 UNPROVEN at origin HEAD and are a CLOSE BLOCKER (D-M257x-102-3) — a concurrent lane has cycle 1 green + the Playthrough suite 30/0/0; clause 5 open. iter-102 paid BOTH read unions (52 anchors → 98 sites). M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 103 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5: clauses 1–2 CLOSED by the concurrent lane at 0c91421 (clause 2 is MET WITH DISCLOSURE — a fresh stack failed the first full run 29/1 in 2 of 2, never a clean pass), clauses 3–4 hold, CLAUSE 5 is the only open one and is met ONLY by a reading that returns zero. iter-103's 14-seat double reading returned N = 33 against a pre-sealed rule whose ≥23 branch reads THE BURN-DOWN LEG DOES NOT REACH THE RESIDUAL — 22 predicates then, 22 now. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 2 of 5 PROVEN** — the booked \"4 of 5\" is WITHDRAWN (`D-M257x-101-4`): clauses 3–4 hold at `0c91421`; **clauses 1–2 are UNPROVEN at origin HEAD** (proven at `2adcf71`, now 6 commits / 281 changed compose lines behind — the gate forbids a pinned pre-drift commit); **clause 5 open**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut or argued). iter-101 (the first true REPLICATE) returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, graded on **13 of 14 seats** — so `n₂` is a SIX-seat count. **Band #3 decided the estimator: blind overlap with iter-99's 28 was 6 against [14,22], so the readings are MORE independent than Chapman assumes and `N̂ = 45.1` is a FLOOR — cross-reading Chapman puts the residual near ~103.** Read **no** trend from 13 → 20 → 28 → 24; the upheld rate is non-constant and the last union is 13-seat. **iter-102 PAID BOTH unions** (iter-99's 28 + iter-101's 24 = 52 anchors → 76 assignments → **98 sites found, 94 repaired**, 10-seat fan-out); `claim_twin_guard`'s fenced claim set **134 → 264**. **The pool was probably always ~100 — it is NOT growing; the estimator was wrong and the replicate fixed it.** **Next action: RE-READ (a fresh graded reading over the repaired tree), and finish clauses 1–2 at origin HEAD.** **Live detail lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back."
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 4 of 5.** Clauses 1–2 were closed by the CONCURRENT LANE at platform `0c91421` — clause 1 on five consecutive cold cycles (green:true / 0 warnings, 621/402/370/370/371 s, refs proven from the reflog); **clause 2 is MET WITH DISCLOSURE and the disclosure is part of the claim: a freshly built stack failed the first full run 29/1 in 2 of 2 attempts, so it is NEVER recorded as a clean pass.** Clauses 3–4 hold. **CLAUSE 5 is the only open one**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut, narrowed or argued). **iter-103 returned `N = 33`** on a 14-seat double reading over the repaired tree, against a rule SEALED before any seat was dealt (`≤16` works · `17–22` ambiguous · **`≥23` DOES NOT REACH**) → **THE BURN-DOWN LEG DOES NOT REACH THE RESIDUAL.** **By predicate the pool did not move: 22 then, 22 now**; by anchor 24 → 33. Repair efficacy is nonetheless CONFIRMED (21 of iter-101's 22 predicates closed). `N` held up because two inflows feed the residual that repair does not touch: **clone advance** (61 % of `N` is drift — version literals, `go.mod` pins, line offsets — which NO guard fences) and **the repair's own induction** (7/33 anchors in prose iter-102 wrote, incl. a false canonical sentence multiplied to 5 sites). **Inflow ≈ outflow: running the loop faster does not close clause 5. CHAPMAN IS RETIRED** — its independence assumption measured 17 % then 61 % on one byte-identical instrument, so `N̂ ≈ 103` and `≈ 35` are both unusable; only the FLOOR survives (≥24 at `8f04d3a`, ≥33 at `e6aed2e`). **Next action: a repair iter that pays `FIX-M257x-iter103-read-union` AND lands `FIX-M257x-iter103-drift-fence-gap`, because repairing 20 drift anchors without a fence re-arms the class at the next clone advance.** **Live detail lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back."
 last_updated: "2026-08-06"
 ---
 
@@ -39,30 +39,37 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **102 iters closed**. Gate **2 of 5 PROVEN** — the booked *"4 of 5"* is **WITHDRAWN**
-(`D-M257x-101-4`): clauses 3 and 4 hold at `0c91421`, but clauses **1 and 2 are UNPROVEN at origin HEAD**
-(proven 2026-08-01/02 at platform `2adcf71`, now **6 commits / 281 changed lines of `docker-compose.yml`**
-behind, against the gate's own *"never a pinned pre-drift commit"*). **UNPROVEN is not refuted** — it is
-a re-run, and a concurrent lane owns it.
+M257x iter loop, **103 iters closed**. Gate **4 of 5**. Clauses **1 and 2 were closed by the concurrent
+lane at platform `0c91421`** — clause 1 on five consecutive cold cycles (`green:true` / 0 warnings,
+621/402/370/370/371 s, refs proven from the reflog); clause 2 **MET WITH DISCLOSURE**
+(`{passing:30, failing:0, unimplementable:0, unimplemented:1}`, `binding:true, scoped:false`, two stacks) —
+**and the disclosure travels with it forever: a freshly built stack failed the first full run 29/1 in 2 of 2
+attempts. It is never recorded as a clean pass.** Clauses 3 and 4 hold. **Clause 5 is the only open one.**
 
-Clause 5 open. iter-101's **replicate** returned **N = 24**, and band #3 (overlap **6** vs **[14, 22]**)
-settled the estimator: the readings are **more independent than Chapman assumes**, so **`N̂ = 45.1` is a
-FLOOR** and cross-reading puts the residual near **~103**. **Read it correctly: the pool was probably always
-~100. It is NOT growing — the estimator was wrong and the replicate fixed it.** 16.7 → 29.4 → 45.2 → ~103 is
-four **corrections to an underestimate**, not four measurements of growth. **A zero reading is not near.**
+**iter-103 answered the burn-down question and the answer is no.** A fresh 14-seat double reading over the
+repaired tree returned **`N = 33`** against a **pre-registered, pre-sealed** rule (`≤16` works · `17–22`
+ambiguous · **`≥23` DOES NOT REACH**). **The burn-down leg does not reach the residual.**
+By **predicate** the pool did not move at all — **22 then, 22 now**; by anchor it rose **24 → 33**. Repair
+efficacy is nonetheless **confirmed**: 21 of iter-101's 22 predicates are closed (band #3 held at 1). `N`
+stayed up because two inflows feed the residual that repair does not touch — **clone advance** (61 % of `N`
+is drift no guard fences: version literals, `go.mod` pins, line offsets) and **the repair's own induction**
+(7 of 33 anchors sit in prose iter-102 wrote, incl. a false canonical sentence multiplied to 5 sites).
+**Inflow ≈ outflow; running the loop faster does not close clause 5.**
 
-**iter-102 paid BOTH unions** — 28 + 24 = **52 anchors**, by PREDICATE, **10-seat** fan-out: **76
-assignments → 98 sites found → 94 repaired**. `claim_twin_guard`'s fenced set **134 → 264**, so completeness
-is **fenced, not claimed**. The `app` move injected **almost nothing** (`main.go` and `terraform/main.tf`
-byte-identical across it); the residual was **17 sites labelling `2035f9a` "origin/main."**
+**Chapman is RETIRED for this milestone.** Its independence assumption has now been measured at both
+extremes on one byte-identical instrument — `m`/union **17 %** (iter-101) then **61 %** (iter-103) — so
+`N̂ ≈ 103` and `N̂ ≈ 35` are both unusable. **Only the floor survives: ≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`.**
+The series 16.7 → 29.4 → 45.2 → ~103 stays four **corrections to an underestimate**, not four measurements
+of growth — but stop quoting a point estimate from it. **A zero reading is not near.**
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):
 
 - [`m257x…/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — authoritative
   live status, every iter's findings, the carried items
-- [`iter-101/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-101/adjudication.md) — **the current reading** (the replicate; band #3 and the floor/ceiling verdict)
-- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the prior reading, whose 28 iter-101 measures overlap against
+- [`iter-103/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-103/adjudication.md) — **the current reading** (`N = 33`; the burn-down verdict, the composition finding, the Chapman retirement)
+- [`iter-101/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-101/adjudication.md) — the replicate, whose 24 iter-103 measures overlap against
+- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the reading before that
 - [`iter-98/discovery-pool.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-98/discovery-pool.md) — the pool measurement
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)

@@ -1,8 +1,10 @@
 ---
 iteration_type: tik
 iter_shape: reading
-status: in-progress
+status: closed
 opened: 2026-08-06
+closed: 2026-08-06
+outcome: "N = 33 — the pre-sealed rule's >=23 branch: THE BURN-DOWN LEG DOES NOT REACH THE RESIDUAL. 22 predicates then, 22 now; anchors 24 -> 33. Bands 4 HELD of 10. Gate unchanged at 4 of 5; clause 5 open."
 active_strategy: TOK-04
 ---
 

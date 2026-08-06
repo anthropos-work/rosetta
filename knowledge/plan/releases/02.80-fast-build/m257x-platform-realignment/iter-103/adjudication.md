@@ -370,3 +370,18 @@ at this close with `rev-parse` + `stat` and **no fetch**:
 **Not one ref and not one fetch timestamp moved between the open and the close.** The reading's ground truth
 is therefore not merely believed frozen — it is measured frozen, at both ends, and that is the corollary
 `D-M257x-103-4` exists to make load-bearing rather than decorative.
+
+### Guard family at the close — and the tree it was run from, which is the point
+
+**`14 GREEN · 0 RED · 0 could-not-check · 3 not-run`** over 17 members, corpus `48a6520`, platform
+`0c91421df` — identical to this reading's open and to iter-101's and iter-102's. The 3 need `--range` /
+`--ledger`, which a tree-state run cannot supply; `guard_family` exits 2 to record the gap rather than hide it.
+
+**Run from `.agentspace/rosetta-extensions` @ `944fc4a2` (the AUTHORING copy), and that clause is not
+decoration.** The same family run from the pinned per-stack clone `09d06070` returns **2 RED / 8 sites** on
+the same corpus — the 8 sites `claim_twin_waivers.json` waives at `944fc4a` and the pinned clone predates.
+**A guard verdict is a measurement taken with a fence's configuration, so it is settled by the tree that
+configuration lives in — not by the tree a stack executes.** `guard_family.py` prints the corpus sha and the
+platform sha and **not its own**, so the input that decides the verdict is the one the output omits. Booked
+`D-M257x-103-7`, routed `FIX-M257x-iter103-guard-tree-provenance`. **No band above moves and `N` is
+unchanged at 33** — the 8 sites are acknowledged waivers, not findings.
