@@ -1961,3 +1961,35 @@ defect and would also explain why no amount of accessor work has helped.
   request for a fourth pass (`D-M257x-111-7`). Three §8 sections added in the same commit. **No reading
   taken and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone
   fetched, no stack touched, no tag cut — see `iter-111/progress.md` + `decisions.md`
+
+- iter-112 (tik, `iter_shape: tooling`, **`TOK-07` step 1**): **the enumerator — `FENCE-M257x-iter112`,
+  `stack-core/predicate_enumerator.py` — the mechanism `FIX-M257x-iter109-repair-scope-is-detection-bounded`
+  asked for.** The judgement/mechanism boundary is drawn OUT LOUD and the judgement half fenced
+  (`D-M257x-112-1`): choosing a form is judgement (derived by default), enumerating it is mechanical
+  and complete over raw lines **and** re-flowed prose; **seed recall is FAIL-CLOSED** — a form that
+  cannot find the site it came from is a RED; **an underivable predicate is exit 2, never 0 sites**;
+  and the **multiplier is printed per predicate with `NO-EXPANSION` NAMED**, because iter-108's whole
+  failure was an absent step reading as a satisfied one. 18 tests, every control shown firing against a
+  mutated copy — including one that restricts the scan to the seed's own file, i.e. **injects exactly
+  what a detection-bounded repair does**, and watches the multiplier collapse to 1.0.
+  **⚠ The fence caught its OWN derivation twice before any number shipped** (`D-M257x-112-2`): run 1
+  padded each seed by a neighbouring line and pulled tokens off *adjacent* propositions (a speech-model
+  claim derived `studio/tools/pdf2md.py`) → 1 refusal + 5 seed-recall REDs → fixed by reading **the
+  booked range and not one line more**, with range seeds made first-class because collapsing a booked
+  range is a narrowing; run 2 reported **36.07×**, *a number about the English language*, because an
+  uncapped derivation enumerates a seed line's whole vocabulary → fixed by specificity ranking + a
+  4-form cap. **Measured reach, and it decides how step 2 must be done** (`D-M257x-112-3`): **22 of 24
+  predicates needed an AUTHORED form — a large share of this residual is PROSE, not citations**
+  (`TTS v2 HD`, `Cosmo Router`, *"on the endpoint only, not on the agent name"*). That is the same
+  boundary `claim_twin_guard` already draws, now **measured** for this residual rather than assumed.
+  **The first per-predicate multiplier in this milestone: 29 seeds → 211 sites → 7.28×, seed recall
+  100 %** — and it is **explicitly NOT yet trustworthy** (`D-M257x-112-4`): **12 of 24 read
+  `NO-EXPANSION`**, which by `TOK-07`'s own guard-rail scores against **the forms**, not the
+  predicates; 4 read as vocabulary (`Cosmo Router` ×37 is 37 mentions of a deleted component). The
+  credible middle **is** real — `P10` ×10, `P09` ×6, `P21` ×6, `P15` ×4 — and **every one of those is a
+  site iter-109 did not book**, the twin population `D-M257x-109-4` predicted and nothing had ever
+  enumerated. **The instrument lands; the measurement does not**, and it is named per predicate rather
+  than averaged into a headline. **Step 2 is BLOCKED on a form review** — repairing 211 sites of which
+  some are vocabulary would be worse than repairing 46. **No reading taken and no `N` movement is
+  claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone fetched, no stack touched, no
+  tag cut — see `iter-112/progress.md` + `decisions.md` + `enumeration.txt`
