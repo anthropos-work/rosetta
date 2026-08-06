@@ -1406,3 +1406,39 @@ defect and would also explain why no amount of accessor work has helped.
   so a shrinking pool measured by a degrading instrument looks exactly like a growing one. Guard family
   **14 GREEN · 0 RED**; 21 new refuted forms fenced. Gate **4 of 5**, unchanged — no reading taken, and a
   measuring pass may not contain a repair — see iter-98/progress.md
+- iter-99 (tik, the MEASURING pass — **no repair inside it**): **THE RE-READ RETURNS N = 28. Clause 5 is NOT
+  met; the gate stays 4 of 5.** Taken at platform `0c91421` / corpus `e858fd4`, the tree iter-98's repair
+  produced. Instrument **untouched and proven so** (sha256 `3858ec53…` re-checked AFTER copying, `git
+  log --follow` on the file showing exactly one commit ever), the moved platform sha superseded by a
+  **marked addendum** rather than an edit. Partition recomputed from current sizes — **40 files / 10,276
+  lines**, 7 seats balanced 1431–1506 — dealing a different hand than iter-97 because the corpus grew, which
+  is the method working. 14 blind seats booked **46**; four independent adjudicators re-deriving from the
+  clones upheld **36 — 78.3 %**. `n₁=18 · n₂=16 · m=6` → union **28**, Chapman **N̂ ≈ 45.1**, per-pass recall
+  **39.9 %/35.4 %**, union **62 %**, **≈17 estimated still unfound**. **The pre-registration was sealed in
+  its own commit (`964b7a3`) BEFORE any seat reported** — that is what makes it a pre-registration — and
+  graded **4 of 9**. **Three findings outrank the defect list. (1) Band #9 failed by ~7× and it indicts the
+  INSTRUMENT, not the corpus:** `anchor_construct_guard` was **GREEN at the audited commit** — *"every
+  **resolvable** anchor names a construct"* — while ≥7 upheld findings are citations resolving to the wrong
+  construct, including a self-citation offered AS evidence that lands on a **blank line** and a
+  `manager.go:485` that is a closing brace. The band was set at ≤1 precisely so an upheld member would mean
+  a blind spot; the load-bearing word in the guard's green turned out to be *"resolvable."* **(2) Precision
+  fell 93.1 % → 78.3 %, the first break in five readings** (92.1/93.0/92.7/93.1), with rejections rising
+  4 → 10 while bookings *fell* 58 → 46. Three mechanisms fit and **this reading cannot separate them**: the
+  residual genuinely hardened (iter-98 measured max predicate width collapsing 11 → 4); a **briefing gap** —
+  **two independent seats made the identical wrong-tree error**, grading rext's authoring copy where the
+  pinned per-stack clone was correct, and both bookings were rejected; and **adjudicator variance** —
+  `hiring.md:80-82` was REJECTED by one panel and UPHELD by another, one disagreement in 46 but the first
+  non-zero. Recorded, not resolved, because asserting the flattering explanation is the failure this
+  milestone exists to prevent. **(3) Exactly 2 of the 28 were INDUCED by iter-98, both inside prose it
+  rewrote** — `dependency_map.md:59` (the repair wrote *"6 occurrences across **4** files"*; both readings
+  measured **3**) and `backend.md:33-34` (the repair removed `skiller` from the both-ends set and left it
+  asserting exhaustiveness while **omitting `backend` itself**). Prediction #7 forecast [0,3] and got 2:
+  **the mechanism model holds while the magnitude model fails**, the same split iter-97 recorded, and **0
+  true recurrences of iter-98's 21 predicates** says the paraphrase axis worked. **What it does NOT
+  establish: that `N` is rising.** 13 → 20 → 28 was measured at upheld rates of 92.7/93.1/**78.3 %**, so the
+  series is no longer comparable on the axis iter-97 relied on; iter-98's discovery-pool §3 predicted recall
+  would fall as the pool narrowed and it did (union 68 % → 62 %, both passes below 41 %, band #5 held). **A
+  narrowing pool measured by a degrading instrument yields a rising `N`** — consistent with this data, and so
+  is a genuinely growing residual. Routed as **`FIX-M257x-iter99-read-union`** plus three CHECKs, of which
+  `CHECK-M257x-iter99-anchor-guard-blindspot` is the highest-value item in the reading — see
+  `iter-99/progress.md`
