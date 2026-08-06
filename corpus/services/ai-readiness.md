@@ -49,7 +49,16 @@
 > ⚠️ **The bare line number was itself the defect.** That cross-reference read `:458` when iter-46 wrote it and
 > `:459` after iter-100 mechanically re-pointed it, and **neither line has ever carried the statement** — `:459`
 > merely opens the `> **✅ CORRECTED M219 …**` blockquote, which is about an unrelated claim. The target is
-> therefore named by construct above and pinned at **`:496`** (M257x iter-102); when the two disagree, the name wins.
+> therefore named by construct above — the **`⚠⚠ M51 iter-08/09`** block, identified by the quoted
+> parenthetical *"(now `aireadiness/readiness.go`, formerly `workforce/ai_readiness.go:512`)"*.
+> ⚠️ **And the third generation rotted too, which is why this passage no longer carries a line pin at all
+> (M257x iter-115).** iter-102 replaced `:459` with **`:496`**; re-derived at iter-115, `:496` is the
+> **closing line of the `> **✅ CORRECTED M219 …**` blockquote** (`:476-496`) — the very blockquote the two
+> sentences above name as the *wrong* target for the previous generation. The block opens at `:498` and the
+> quoted parenthetical is at `:500`. **The pin is deleted rather than re-derived to `:498`**: three
+> generations of one anchor in one file, each off by a handful of lines, is not three accidents — a
+> same-file line pin in a document that grows will rot again, and the self-heal clause (*"when the two
+> disagree, the name wins"*) lowers a reader's cost without making the number true. **Search the construct.**
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -81,7 +90,13 @@ surface**, and assuming they do sends you hunting for a PostHog problem the mana
 > **⚠️ The MANAGER dashboard does NOT check the flag.**
 > `apps/web/src/app/(authenticated)/(verified)/ai-readiness/AIReadinessClient.tsx` contains **no PostHog
 > reference at all** — measured: 0 occurrences of `posthog` and 0 of `flag_ai_readiness`. It gates on
-> `orgEnabled` alone (`:133-134`, `const { orgEnabled } = useAiReadinessEnabled(true)`). So **gate 1 alone**
+> `orgEnabled` alone — `const { orgEnabled } = useAiReadinessEnabled(true);` at **`:135`**, **@ `next-web-app`
+> `8297c684`** (byte-identical at `origin/main` `f97ba659`, so no ref resolves it away). ⚠️ **This cited
+> `:133-134` until M257x iter-115**, which is the tail of the `// Feature gate:` comment, not the construct.
+> **All four of this document's `AIReadinessClient.tsx` anchors were off by the same one-construct drift**
+> and are corrected together (`:135` · `:155-156` · `:171` · `:601`); the one anchor *above* the drift point,
+> `:78` `const SHOW_SECONDARY_TABS: boolean = false;`, is exact — which is what let the block read as
+> verified. So **gate 1 alone**
 > renders the admin dashboard; gate 2 applies to the member/onboarding surface. A blank manager dashboard is
 > a gate-1 (org-setting) problem, never a PostHog one.
 
@@ -108,6 +123,15 @@ surface**, and assuming they do sends you hunting for a PostHog problem the mana
 > const { orgEnabled } = useAiReadinessEnabled(flagEnabled);     // queried ONLY when the flag is on
 > active = flagEnabled && orgEnabled === true;                   // → never active
 > ```
+>
+> **The construct this paraphrases, named (M257x iter-115).** It is `useAiReadinessActive()` in
+> `apps/web/src/components/ai-readiness/data/useAiReadinessActive.ts:19-32`, **@ `next-web-app`
+> `8297c684`** — `:22` `rawFlag`, `:25` `flagEnabled`, `:29` `useAiReadinessEnabled(flagEnabled)`,
+> `:32` `active: flagEnabled && orgEnabled === true`. **This block carried no file and no ref until
+> iter-115**, which is the same defect the four `AIReadinessClient.tsx` anchors in this document carried
+> — a citation-free paraphrase cannot be re-derived, and cannot be caught when it drifts. **Distinct
+> surface from the manager dashboard**: this is the *member* gate (gate 2); the manager dashboard
+> calls `useAiReadinessEnabled(true)` directly and never reaches this hook.
 >
 > `Analytics.provider.tsx` initializes PostHog only when **both** `NEXT_PUBLIC_POSTHOG_KEY` and
 > `NEXT_PUBLIC_POSTHOG_HOST` are present; a demo supplies neither. So on a demo the **member** AI-readiness
@@ -267,7 +291,17 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
   unsubscribe, launch confirmation, the weekly manager digest), backed by the `ai_readiness_notification_logs` +
   `ai_readiness_notification_optouts` tables, emitting proto events consumed by the messenger **domain** — in-process inside `backend` since the v9.0 fold and switch-gated by `MESSENGER_ENABLED`, not a separate service (its container went at `838d907`).
 - **Email overrides + preview** (M407/M408) — `aireadiness/emailoverride/` + `emailpreview/`: per-org email-copy
-  overrides (`ai_readiness_email_overrides`) validated against `messenger/pkg/aireadinessemail` placeholders, with
+  overrides (`ai_readiness_email_overrides`) validated against **`app/internal/messenger/aireadinessemail`**
+  placeholders — imported under exactly that path at `aireadiness/emailoverride/emailoverride.go:29`, **@ `app`
+  `ad9f3c49`**, where `git ls-tree ad9f3c49 internal/messenger/aireadinessemail/` lists 9 files. ⚠️ **This read
+  `messenger/pkg/aireadinessemail` until M257x iter-115**, with **no `internal/` and no `app/`** — a path that
+  resolves only in the standalone `messenger` repo @ `fa47850d`, which `838d907` removed from `repos.yml`, so
+  `make init` does not clone it and the citation resolves to nothing on a stack. It is also the odd one out in
+  its own bullet list, every sibling of which is `app/internal/`-relative under a heading that scopes the list
+  to the live app packages — and two bullets above, this document has just said messenger is *"in-process
+  inside `backend` since the v9.0 fold … not a separate service."* (The platform's own comment at
+  `emailoverride.go:33` uses the same `pkg/` shorthand, which is where the error came from; it does not make
+  it resolve.) With
   an admin preview renderer.
 - **Cross-cycle Compare is a fully-built backend** — `aireadiness/compare.go` `CompareCycles` → a 6-section
   `AIReadinessCompareResponse` (Topline / Archetypes / a 4×4 Transitions matrix / TeamDelta / SkillCoverage /
@@ -331,8 +365,10 @@ label is what let the first anchor below rot through four readings:
 dashboard gates purely on the GraphQL `aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
 
 **Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
-**hard-gated off** — `AIReadinessClient.tsx:78` `const SHOW_SECONDARY_TABS: boolean = false;`, read by the tab
-filter at `:599`, strips it from the tab list.
+**hard-gated off** — `AIReadinessClient.tsx:78` `const SHOW_SECONDARY_TABS: boolean = false;` (exact), read by
+the tab filter at **`:601`** — `(SHOW_SECONDARY_TABS && tab.key === 'compare')` — which strips it from the tab
+list. **@ `next-web-app` `8297c684`.** (This cited `:599` until M257x iter-115; `:599` is `tab.key === 'how' ||`,
+two lines above the read.)
 `/ai-readiness?tab=compare` renders no panel. It is neither current nor legacy: complete-but-disabled.
 
 **The demo's pointers** (all repointed at the current surfaces in M219, and a legacy target is now a **hard
@@ -479,9 +515,13 @@ decision):**
   > The retracted claim: *"the demo FE fires the data GET WITHOUT `?cycle=` … and never fires the `/cycles` list
   > that supplies `latestClosedCycle.id`"*, concluded to be **platform-bound**.
   >
-  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:153-154`) computes
+  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:155-156`, **@ `next-web-app`
+  > `8297c684`**) computes
   > `effectiveCycleId = selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id` and gates the data GET on
-  > `cyclesQ.isFetched` (`:166-170`) — i.e. it **waits for `/cycles`, then passes `?cycle=`**. Verified live
+  > `enabled: featureOn && cyclesQ.isFetched` at **`:171`** — i.e. it **waits for `/cycles`, then passes
+  > `?cycle=`**. (These read `:153-154` and `:166-170` until M257x iter-115: the first is the comment above
+  > the const, and the second is a range that stops **one line short** of the gate it is offered as evidence
+  > for — `:168-170` is the `useAIReadiness({` call and its first two options.) Verified live
   > against a running demo (authenticated as the manager hero): `/cycles` returns the seeded cycle, and the
   > frozen read answers **HTTP 200 in 24 ms**.
   >
