@@ -1879,3 +1879,24 @@ defect and would also explain why no amount of accessor work has helped.
   the count.** This iter therefore claims NO full-suite total: what was actually run is 118 passed over
   the 5 fence modules, 21 passed in the changed module (+3), and the documented pre-existing
   `claim_twin` `test_02` failure reproduced verbatim.
+
+- iter-109 (tik, `reading`): **`TOK-06` step 4 — the read.** `P = 24` predicates / `N = 36` anchors against
+  a rule sealed in `ac48e5b` before the first seat. **The pre-registered `P ≥ 15` branch fired: THE POOL
+  DOES NOT DRAIN** (secondary `N ≥ 20` fired with it — both metrics agree). Series by predicate: **22 → 22
+  → 24**; by anchor **24 → 33 → 36**. 14/14 blind seats, **zero lost**, all committed verbatim before
+  adjudication; 35 booked → 32 upheld / 3 rejected; upheld **91.4 % raw and 91.4 % `wrong-tree`-separated**
+  (they coincide because `wrong-tree` was **0** — that series is now 4 → 1 → 1 → 0). **7 of 13 bands held.**
+  **The reading answers `TOK-06`'s own question and refutes its premise:** all 14 platform clones were held
+  at the **identical sha**, so no drift could arrive — and drift is **still ~33 %** of the upheld residual
+  (band #8, cut at ≤ 25 % on purpose, FAILED). iter-103's 61 % was a measurement of the residual's
+  **composition** read as a measurement of its **flow**; only freezing the subject could separate
+  **ARRIVAL** from **DETECTION**, and the answer is **DETECTION**. What *did* work is the induction half:
+  band #10 measured **2 of 36** anchors in prose iters 104–108 wrote — **21 % → 5.6 %**, the lowest in the
+  series. **Steps 0–2 are vindicated where they apply and re-ranked, not reverted.** The binding constraint
+  is net-new and structural: **a repair scoped to a prior reading's DETECTIONS cannot close a predicate**
+  — iter-108's 46/46 = 100 % reach is correct, but its ledger came from `iter-103/raw/`, and with per-pass
+  recall at 33–83 % that leaves twins standing. Two measured directly, and **one is now a
+  self-contradiction because the repair fixed one side of a pair**. Also: `shared_libraries.md:128`
+  rejected a **second** time, by a different adjudicator two readings apart (`wrong-tree` → `ref-discipline`)
+  — third independent confirmation the claim is TRUE. Clause 5 **not re-cut**; `P = 24` leaves it open.
+  Gate unchanged at **4 of 5**. — see `iter-109/progress.md` + `iter-109/adjudication.md`
