@@ -1,0 +1,35 @@
+/**
+ * THROWAWAY DIAGNOSTIC (M257x lane-B) — not a Playthrough, never committed to the stack clone.
+ * Samples the assignable-affordance count on the manager assign surface over 30 s so the
+ * "baseline over-read by exactly one" can be attributed instead of guessed.
+ */
+import { test, expect } from '@playwright/test';
+import { resolveStackEnv } from '../lib/stack-env';
+import { loginAsHero } from '../lib/hero-login';
+import { AssignmentsPage } from '../lib/assignments-page';
+
+test.describe('@probe:assign-settle', () => {
+  test('sample the assignable count over time', async ({ page }) => {
+    test.setTimeout(240_000);
+    const env = resolveStackEnv();
+    await loginAsHero(page, {
+      appBaseUrl: env.appBaseUrl,
+      fapiBaseUrl: env.fapiBaseUrl,
+      identityKey: 'pt-manager',
+      landingPath: '/enterprise/assignments',
+      waitUntil: 'domcontentloaded',
+    });
+    const a = new AssignmentsPage(page, env.appBaseUrl);
+    await a.openSkillPathsTab();
+    const t0 = Date.now();
+    const samples: string[] = [];
+    for (let i = 0; i < 60; i++) {
+      const rows = await a.main().locator('table tbody tr').count();
+      const assignable = await a.assignableCount();
+      samples.push(`t=${((Date.now() - t0) / 1000).toFixed(1)}s rows=${rows} assignable=${assignable}`);
+      await page.waitForTimeout(500);
+    }
+    console.log('PROBE-SAMPLES\n' + samples.join('\n'));
+    expect(true).toBe(true);
+  });
+});
