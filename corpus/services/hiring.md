@@ -215,11 +215,11 @@ in the dockerized `apps/web` `/enterprise` and concluded it was reachable by the
 **Resolution — run the genuine `apps/hiring` as a second UI container (TOK-02).** The real candidate-comparison
 Results screen ships in `apps/hiring`
 (`.../enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx` → `InsightsByMembersContainer`), and it
-federates the **same** `insightsJobSimulationByMemberships` field (in the **app** subgraph SDL, **no feature
-gate**) over the **same** Cosmo router the demo already bakes, reading the **same** seeded
+reads the **same** `insightsJobSimulationByMemberships` field (in the **app** GraphQL SDL, **no feature
+gate**) over the **same** GraphQL endpoint the demo already bakes, reading the **same** seeded
 `public.local_jobsimulation_sessions` M223 wrote. So the demo builds `apps/hiring` from the **untouched clone** as
-a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI + Cosmo
-+ Postgres — **no re-skin, no new resolver, no data migration, zero platform-repo edits.** The recruiter logs in
+a second offset-port UI container (same recipe as `apps/web` + `studio-desk`), wired to the same fake FAPI +
+`backend` + Postgres — **no re-skin, no new resolver, no data migration, zero platform-repo edits.** The recruiter logs in
 straight onto the hiring Results page (the cockpit's `CockpitHero.IsHiring` routes her to the hiring base); the
 platform's own symmetric guard keeps her *in*.
 

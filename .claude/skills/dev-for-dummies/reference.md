@@ -30,8 +30,8 @@ N=0 is the main dev stack (base ports). `demo-N` / `dev-N` add `N×10000`.
 | **next-web-app** (frontend) | **3000** (hiring 3001) | **13000** | **browser** ← smooth target |
 | **studio-desk** | **9000** | **19000** | **browser** ← smooth target |
 | **ant-academy** (native) | **3077** | **13077** | **browser** ← smooth target |
-| cosmo / graphql router | 5050 | 15050 | browser + subgraph fan-out |
-| **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | router, other services |
+| ~~cosmo / graphql router~~ | ~~5050~~ | — | **GONE — retired 2026-07-31.** No container binds `5050+OFF` |
+| **backend (`app`)** REST **+ GraphQL** | **8082** (RPC 8081/8083) | **18082** | **browser** (GraphQL at `/graphql/query`) + other services |
 | cms | 8090 (RPC 8091) | 18090 | router, other services |
 | jobsimulation | 8400 (RPC 8401) | 18400 | router, other services |
 | skillpath | 8100 (RPC 8101) | 18100 | router, other services |
@@ -41,13 +41,14 @@ N=0 is the main dev stack (base ports). `demo-N` / `dev-N` add `N×10000`.
 | fake-FAPI (Clerkenstein) | 5400 | 15400 | browser (own TLS) |
 
 > **Frontend/UI targets are the smooth path** — only the *browser* talks to them, so a native process on the
-> host serves them directly. **Backend targets** (app/cms/jobsimulation/skillpath) are consumed by *other
-> containers* (the router) by Docker service name, which a host-native process can't provide — see § *Backend
-> targets* for the two caveats (infra endpoints + router federation).
+> host serves them directly. **Backend targets** are also consumed by *other containers* by Docker service name,
+> which a host-native process can't provide — see § *Backend targets* for the caveats.
 
 **Valid TARGET repos** (must exist as `stack-demo/<repo>`):
-`app cms jobsimulation skillpath next-web-app studio-desk ant-academy messenger storage sentinel roadrunner
-graphql-wundergraph`. **`hiring` is NOT a repo** — it's `apps/hiring` inside `next-web-app` (run `pnpm
+`app next-web-app studio-desk ant-academy messenger storage sentinel`. **`graphql-wundergraph` is NOT a valid
+target** — the router was retired 2026-07-31 and the repo is archived; `ensure-clones.sh` does not clone it.
+(`cms`, `jobsimulation`, `skillpath` and `roadrunner` are folded into `app` — target `app` instead.)
+**`hiring` is NOT a repo** — it's `apps/hiring` inside `next-web-app` (run `pnpm
 dev:hiring` on `3001+OFF`). Always `test -d stack-demo/<repo>` first; if it fails, reject with this list
 (FATAL for that target).
 
@@ -111,14 +112,15 @@ $DC stop next-web-app
 tailscale serve --https=$((3000+OFF)) off
 
 # 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> the TAILNET HTTPS host:offset (router/backend are F12'd +
-#    tailscale-served on :$((5050+OFF))/$((8082+OFF))). Mirror the container's server-side Clerk keys. Point
+#    tailscale-served on :$((8082+OFF)) — one port now, backend serves REST *and* GraphQL). Mirror the
+#    container's server-side Clerk keys. Point
 #    CLERK_API_URL at the fake-bapi's REACHABLE IP — the host /etc/hosts `api.clerk.com` alias goes STALE on
 #    re-bring-up (new docker IP) => the #1 login failure (`resolve handshake: fetch failed ECONNREFUSED`).
 PK=$(grep -E '^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=' "$STACK/.env.demo-$N" | cut -d= -f2-)
 BIP=$(docker inspect demo-$N-fake-bapi-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 { echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK"
   echo "NEXT_PUBLIC_HOSTING_URL=https://$HOST:$((3000+OFF))"
-  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((5050+OFF))/graphql"
+  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((8082+OFF))/graphql/query"  # backend, not a router
   echo "NEXT_PUBLIC_BACKEND_API_URL=https://$HOST:$((8082+OFF))"
   echo "DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work"
   grep -E '^CLERK_SECRET_KEY=|^CLERK_JWT_KEY=|^CLERK_PUBLISHABLE_KEY=|^CLERK_WEBHOOK_SECRET=' /tmp/cenv.txt  # values-blind
@@ -147,7 +149,7 @@ Clerk — serve HTTPS with the tailscale cert on the offset port, never `tailsca
 
 ---
 
-## Run a target live — **backend Go targets** (app / cms / jobsimulation / skillpath) — TWO caveats
+## Run a target live — **backend Go targets** (`app`) — TWO caveats
 
 This is the **harder, more caveated path** — be honest with the user. Two separate problems:
 
@@ -155,12 +157,23 @@ This is the **harder, more caveated path** — be honest with the user. Two sepa
    are injected per-service in `docker-compose.yml` and point at **Docker service names** (`postgresql:5432`,
    `redis:6379`) a host process can't resolve. A native `go run .` therefore reaches **nothing** unless you
    **rewrite** them to the demo's offset host ports.
-2. **Router federation.** The cosmo router (a container) fans out to subgraphs by service name
-   (`http://backend:8082/...`). A host-native process can't answer that. Reaching a host process needs
-   `extra_hosts: ["host.docker.internal:host-gateway"]` on the router — **a demo-tooling change we do NOT
-   improvise** (SKILL Phase 7). So: **direct-to-service dev works** (hit the native service's own REST/RPC on its
-   offset port); **full browser→router→native-subgraph federation** needs that wiring — **flag it as a tooling
-   gap to raise, don't hack the stack.**
+2. **Container-to-container callers.** ~~Router federation~~ — **this caveat changed shape when the
+   WunderGraph/Cosmo router was retired 2026-07-31.** There is no router container fanning out to subgraphs by
+   service name any more, so *browser* → GraphQL is now a **direct** hit on the native process at
+   `https://$HOST:$((8082+OFF))/graphql/query`, and the old "you'd need `extra_hosts` on the router" blocker is
+   simply gone for that path.
+
+   What remains is the **SSR** half: `next-web-app`'s server-side GraphQL client runs *inside* the next-web
+   container and reaches `http://backend:8082/graphql/query` **by Docker service name** (see the
+   `next-web-ssr-graphql-origin` demopatch in [`tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md)).
+   Stop the `backend` container to run `app` natively and **every authenticated SSR render loses its data
+   source**, even though the browser-side calls work.
+
+   > **Not verified from this repo:** whether the demo compose grants next-web-app
+   > `extra_hosts: ["host.docker.internal:host-gateway"]`, or whether the SSR origin can be repointed at the
+   > host. **Do not improvise it** (SKILL Phase 7). **Direct-to-service dev works** — hit the native `app`'s own
+   > REST/RPC/GraphQL on its offset port. A full browser+SSR session against a native `app` needs that wiring;
+   > **flag it as a tooling gap to raise, don't hack the stack.**
 
 ```bash
 git -C stack-demo/app worktree add -b feat/<name> ../.worktrees/app-feat-<name>   # drop -b to resume

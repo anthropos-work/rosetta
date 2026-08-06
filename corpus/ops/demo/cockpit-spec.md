@@ -257,7 +257,8 @@ redirect (`UserStatusContext`, by design) the moment her org reads as hiring (cl
 — which M224 deliberately wires, because the org must *genuinely read as hiring*). So "reads as hiring" and
 "reachable inside `apps/web`" are **mutually exclusive on the real platform**. Rather than fake it with a re-skin,
 the demo **runs the genuine `apps/hiring` as a second UI container** (built from the untouched clone, offset port,
-same fake FAPI + same Cosmo backend + same seeded Postgres). The platform's **own** symmetric guard keeps the
+same fake FAPI + same `backend` (which serves GraphQL itself since the router's retirement) + same seeded
+Postgres). The platform's **own** symmetric guard keeps the
 recruiter *in* the hiring app; she reads the **same** seeded `local_jobsimulation_sessions` the scoreboard reads.
 No forcing, no fiction — see [`../../services/hiring.md`](../../services/hiring.md) § the render path and
 [`demopatch-spec.md`](demopatch-spec.md) § the four hiring-image patches.

@@ -153,11 +153,14 @@ done
 | Service | Port |
 |---------|------|
 | Frontend | 3000 |
-| GraphQL | 5050 |
-| Backend | 8082 |
+| Backend (HTTP **+ GraphQL** at `/graphql/query`) | 8082 |
+| Backend Connect-RPC | 8083 |
 | Studio-Desk | 3100 |
 | PostgreSQL | 5432 |
 | Redis | 6379 |
+
+> **`:5050` is free.** It belonged to the WunderGraph/Cosmo router, **retired 2026-07-31**. There is
+> no gateway container and no `graphql` profile; `backend` serves the schema itself.
 
 > **No local Directus by default.** The platform compose has no directus service — content is read **live from
 > prod** (`content.anthropos.work`). A local Directus (port 8055, offset on additional stacks) exists only when

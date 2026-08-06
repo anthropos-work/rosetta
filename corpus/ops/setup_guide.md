@@ -400,7 +400,8 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY   (the Clerk publishable key)
 CLERK_SECRET_KEY
 OPENAI_API_KEY            (server-side; for /api/ai/chat)
 ANTHROPIC_API_KEY         (server-side; for /api/ai/chat)
-NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT    (the Cosmo/Wundergraph gateway URL)
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT    (the GraphQL endpoint — historical name, points at `backend`:
+                                     http://localhost:8082/graphql/query. Do NOT rename the variable.)
 FONTAWESOME_NPM_AUTH_TOKEN          (vestigial; not required — FA Pro icons are vendored/self-hosted, so npm install needs no token)
 ```
 
@@ -440,7 +441,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts **five containers**: PostgreSQL, Redis, Sentinel, Backend, Gotenberg — plus the GraphQL/Cosmo Router. That is the whole default stack. `cms`, `jobsimulation`, `roadrunner`, `skiller` and `skillpath` are folded into Backend/`app` and have no containers at all; `storage`, `messenger` and `customerio-sync` folded in at **v9.0 "support-in-app"** and survive only as opt-in rollback profiles (`storage-legacy`, `messenger`, `customerio-sync`) which you should **not** start alongside `backend`.
+    This builds from local repos and starts **five containers**: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. That is the whole default stack — **there is no GraphQL router container**; the WunderGraph/Cosmo gateway was **retired 2026-07-31** and `backend` serves GraphQL itself at `http://localhost:8082/graphql/query`. `cms`, `jobsimulation`, `roadrunner`, `skiller` and `skillpath` are folded into Backend/`app` and have no containers at all; `storage`, `messenger` and `customerio-sync` folded in at **v9.0 "support-in-app"** and survive only as opt-in rollback profiles (`storage-legacy`, `messenger`, `customerio-sync`) which you should **not** start alongside `backend`.
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 

@@ -8,12 +8,18 @@ The Anthropos platform integrates with a handful of key external services:
 
 1. **Clerk** - Handles all user authentication and organization management (SaaS)
 2. **Directus** - Stores and manages platform content (self-hosted via Docker)
-3. **GraphQL/Wundergraph** - Unifies the backend into a single API (one subgraph since cms-in-app)
-4. **AI Providers** - OpenAI, Anthropic, and Azure for intelligent features
-5. **Brevo** - Transactional email, product tracking, and the marketing-contact sync
-6. **AWS S3** - Object storage (session recordings, documents, assets), CloudFront-fronted for public media
+3. **AI Providers** - OpenAI, Anthropic, and Azure for intelligent features
+4. **Brevo** - Transactional email, product tracking, and the marketing-contact sync
+5. **AWS S3** - Object storage (session recordings, documents, assets), CloudFront-fronted for public media
 
-These services allow us to focus on core features while leveraging best-in-class solutions for authentication, content management, and API orchestration.
+These services allow us to focus on core features while leveraging best-in-class solutions for authentication, content management, and AI.
+
+> **GraphQL is no longer on this list.** The WunderGraph/Cosmo federation router — the one
+> third-party piece of API orchestration the platform ran — was **retired on 2026-07-31**. There is
+> no gateway and no supergraph; `backend` serves its own GraphQL. The
+> [GraphQL endpoint section](#graphql-endpoint--backends-own-gqlgen-server) below is kept because
+> the *integration view* (frontend wiring, codegen, troubleshooting) still needs a home — it just
+> describes a first-party endpoint now.
 
 > **Brevo and S3 moved up into this document at v9.0 "support-in-app"** (2026-08-04). They were
 > previously reached *through* the `messenger` and `storage` microservices; those folded into
@@ -302,26 +308,43 @@ Directus can trigger webhooks on content changes:
 
 ---
 
-## GraphQL Gateway — WunderGraph Cosmo Router
+## GraphQL endpoint — `backend`'s own gqlgen server
+
+> **The federation router is gone.** WunderGraph/Cosmo was **retired 2026-07-31** and the
+> `graphql-wundergraph` repo is archived. There is no gateway container, no supergraph, no
+> composition step, and **host port `:5050` is free**. Everything below describes the endpoint that
+> replaced it — which is not an external service at all, but `backend`'s own gqlgen server.
+> For the retired gateway's record see [`graphql-wundergraph.md`](../services/graphql-wundergraph.md).
 
 ### Overview
 
 | Property | Value |
 |:---------|:------|
-| **Type** | Configured third-party (Dockerized) |
-| **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
-| **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
-| **Port** | 5050 (host) → 8080 (container) |
-| **Purpose** | Federated GraphQL API gateway over a **single** subgraph (`backend`) since cms-in-app |
-| **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
+| **Type** | First-party — served by `backend` (repo `app`), not a separate process |
+| **Technology** | gqlgen (Go), inside the `app` monolith |
+| **Production URL** | `https://gql.anthropos.work/graphql/query` |
+| **Local URL** | `http://localhost:8082/graphql/query` |
+| **Container port** | `backend` HTTP `8080` (prod) / host `8082` (local compose) |
+| **Schema source** | `app/internal/web/backend/graphql/graph/schemas/*.graphqls` |
 
-### What the gateway provides
+### How the endpoint is wired in production
 
-- **Federation v2**: Composes **one** subgraph — `backend`. All four former subgraphs were folded into it in sequence: `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), `jobsimulation` ("jobsim-in-app"), and `cms` ("cms-in-app v8.0", app v1.360.0 — the 2→1 step). The supergraph config now lists a single entry pointing at `http://backend.internal.anthropos:8080/graphql/query`, and `subgraphs.conf` tracks a single `BACKEND=` pin.
-- **Subscriptions** for the jobsimulation types over SSE POST (`subscription.protocol: sse_post`) — served by `backend` now
-- **Apollo-compatibility flags** enabled for stricter validation behavior
-- **Playground** at `/graphql` for local development
-- **Introspection** enabled in dev mode
+`gql.anthropos.work` is a Route53 **alias A record** onto the platform ALB. It has its own
+DNS-validated ACM cert (`infrastructure/terraform/production/gql_endpoint.tf`), but **not** its own
+ALB rule: `base_service` exposes no target-group output, so `gql.anthropos.work` is appended to
+`backend`'s existing rule's `host_headers_condition` (priority **100**, alongside
+`api.anthropos.work`) in `locals.tf`. One rule, two hostnames, one target group.
+
+> **Security posture.** Introspection and the Apollo Sandbox playground are disabled in
+> staging/production **at the app layer**, and anonymous GraphQL is already rejected by the
+> viewer/auth layer. That hardening had to ship *before* `gql.anthropos.work` was applied, so the
+> host never served an introspectable schema.
+
+### Path matters: `/graphql/query`, not `/graphql`
+
+`backend` serves the executable endpoint at **`/graphql/query`**. The bare `/graphql` path returns
+the Apollo Sandbox UI (where enabled); CORS preflight and auth happen at `/query`. Tools and
+clients configured with a plain `/graphql` will not work.
 
 ### Architecture
 
@@ -333,87 +356,43 @@ graph TB
         Desk[Studio-Desk]
     end
 
-    subgraph Gateway
-        WG[Cosmo Router :5050]
+    subgraph Backend["backend (repo app)"]
+        GQL["gqlgen /graphql/query<br/>(users, orgs, skiller, skillpath,<br/>jobsimulation, cms, academy, labs)"]
     end
 
-    subgraph Subgraphs[1 GraphQL Subgraph]
-        Backend["backend<br/>(users, orgs, skiller, skillpath,<br/>jobsimulation, cms)"]
-    end
-
-    Web --> WG
-    Hiring --> WG
-    Desk --> WG
-    WG --> Backend
+    Web --> GQL
+    Hiring --> GQL
+    Desk --> GQL
 ```
-
-### Service Dependencies
-
-From `docker-compose.yml`, the gateway `depends_on`:
-- backend
-
-(The old `storage` entry went with the v9.0 fold — the gateway never needed it, and there is no
-standalone storage service in the default profile any more.)
-
-It starts after that service has reported "started" (not necessarily healthy — there is no subgraph healthcheck). The composed `config.json` is generated at image build time, so **any** subgraph SDL change means rebuilding the gateway.
-
-> Since cms-in-app the compose `graphql` service builds from `graphql-wundergraph/Dockerfile` (the **production** one), so it composes the **committed** `schemas/backend.graphqls` rather than regenerating the SDL from a sibling `../app` checkout.
-
-### Build-time composition
-
-The gateway's `Dockerfile.dev` does multi-stage composition with the WunderGraph CLI:
-
-```dockerfile
-RUN npm install -g wgc@0.104.0
-COPY graphql-wundergraph/supergraph-config-compose.yaml ./supergraph-config.yaml
-COPY graphql-wundergraph/config.compose.yaml ./config.yaml
-COPY app/internal/web/backend/graphql/graph/schemas/ /tmp/schemas/backend/
-COPY cms/internal/graph/schemas/ /tmp/schemas/cms/
-COPY jobsimulation/internal/graph/schemas/ /tmp/schemas/jobsimulation/
-RUN awk ... /tmp/schemas/backend/* > ./schemas/backend.graphqls && ...
-RUN wgc router compose -i supergraph-config.yaml -o config.json
-```
-
-In other words: **the gateway image is built from the platform's monorepo context with all subgraph repos as siblings**. This is why `make up` rebuilds gateway whenever any subgraph schema changes.
-
-The composed `config.json` is then served by the Cosmo router binary at runtime.
-
-### Subgraph routing URLs
-
-From `graphql-wundergraph/supergraph-config-compose.yaml`:
-
-| Subgraph | URL (Docker network) |
-|----------|----------------------|
-| backend | `http://backend:8082/graphql/query` |
-| jobsimulation | `http://jobsimulation:8400/query` (SSE POST for subscriptions) |
-| cms | `http://cms:8090/query` |
 
 ### Configuration
 
-**Environment**:
-```bash
-ENVIRONMENT=compose  # or production
-ENVIRONMENT_CONFIG=compose
-```
+The env var **names** are historical — they date from the router and were deliberately **not**
+renamed. The values point at `backend`.
 
-**Build Context**: the platform monorepo (`context: ..`) — not the upstream repo. This was changed from the old "git+url" build because the composition needs sibling repos. Composition is **build-time and static** (the supergraph `config.json` is baked into the image; the router does not live-introspect subgraphs), so adding/changing a subgraph requires a rebuild + restart.
+| Variable | Consumer | Local value |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` | `next-web-app` (`apps/web`, `apps/hiring`, `apps/integration`), `ant-academy` | `http://localhost:8082/graphql/query` |
+| `GRAPHQL_SCHEMA_FOR_GEN` | `next-web-app` codegen | `http://localhost:8082/graphql/query` |
+| `VITE_GRAPHQL_ENDPOINT` | `studio-desk` | `http://localhost:8082/graphql/query` |
 
-> **Developer/code map**: see the [GraphQL Gateway service doc](../services/graphql-wundergraph.md) for the two Dockerfiles, per-environment routing URLs, version pins, and compose profiles.
+> **Do not rename these.** Renaming is a coordinated code + deploy change across `next-web-app`,
+> `ant-academy`, `studio-desk` and their deploy configs. In production, `infrastructure`'s
+> `services.tf` also still passes a **dead** `wundergraph_endpoint = ""` to the next-web-app module
+> — the projects read `backend_gql_endpoint` instead, but the variable has no default in
+> next-web-app `v2.133.0` so it must still be supplied.
 
 ### Development Usage
 
-#### Frontend Integration
-
 **Next.js Apps**:
 ```typescript
-// Generated client from Wundergraph
 import { createClient } from '@/lib/graphql/client'
 
 const client = createClient({
-  endpoint: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT
+  // reads NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT — the name is a fossil, the value is backend
+  endpoint: process.env.NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT
 })
 
-// Type-safe queries
 const user = await client.query({
   operationName: 'GetUser',
   variables: { id: '123' }
@@ -421,36 +400,30 @@ const user = await client.query({
 ```
 
 **Studio-Desk**:
-```typescript
-// GraphQL Code Generator approach
-// Queries in app/graphql/*.graphql
-// Types in app/__generated__/
-
-// Environment
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+```bash
+# Queries in app/graphql/*.graphql, types in app/__generated__/
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
 ```
 
 #### Playground
 
-Access GraphQL playground at:
+In local compose, `backend` serves the Apollo Sandbox UI at:
 ```
-http://localhost:5050/
+http://localhost:8082/graphql
 ```
-
-**Features**:
-- Schema exploration
-- Query testing
-- Subscription testing
-- Auto-complete and validation
+(Disabled in staging/production — see the security note above.)
 
 ### Schema Updates
 
-When backend services add new GraphQL types or operations:
+Adding a GraphQL type or operation is now a **single-service** change — there is no supergraph to
+recompose and no gateway to rebuild or restart:
 
-1. **Backend service** updates its GraphQL schema
-2. **Restart Wundergraph**: `docker compose restart graphql`
-3. **Studio-Desk**: Run `npm run codegen` to regenerate types
-4. **Next.js apps**: Regenerate clients as needed
+1. **`app`** — update the Ent schema + `internal/web/backend/graphql/graph/schemas/*.graphqls`, then
+   `make gen` (and `make migrations` if the DB changed)
+2. **Rebuild `backend`** — `cd platform && make up`
+3. **`next-web-app`** — `pnpm codegen` (it introspects `GRAPHQL_SCHEMA_FOR_GEN`, so **`backend` must
+   be running**), then update the UI
+4. **Studio-Desk** — `npm run codegen`
 
 ---
 
@@ -611,8 +584,12 @@ both buckets, their versioning and SSE, the CloudFront distribution + OAI + buck
 ### Required Services (via Docker)
 ```bash
 cd platform
-docker compose up -d graphql   # Directus is NOT a local service — cms reads it live from prod
+make up                        # default profile `core`: postgres, redis, sentinel, backend, gotenberg
 ```
+> There is **no `graphql` service and no `graphql` profile** — the router was retired 2026-07-31 and
+> `backend` serves GraphQL itself. `docker compose --profile <unknown>` exits **0** and selects
+> nothing, so an old `--profile graphql` starts nothing while looking like it succeeded.
+
 > The platform compose has no `directus` service to start; `cms` points `DIRECTUS_BASE_ADDR` at
 > `content.anthropos.work`. To run content locally instead, use the v1.5 "prop room" tooling
 > ([`directus-local.md`](../ops/directus-local.md)), not `docker compose up directus`.
@@ -623,14 +600,16 @@ docker compose up -d graphql   # Directus is NOT a local service — cms reads i
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
-NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+# historical name, points at backend
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://localhost:8082/graphql/query
+GRAPHQL_SCHEMA_FOR_GEN=http://localhost:8082/graphql/query
 ```
 
 **For Studio-Desk**:
 ```bash
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 CLERK_SECRET_KEY=sk_test_xxxxx
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
 ```
 
 **For CMS Service**:
@@ -654,10 +633,12 @@ DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work
 - Set up CDN for media delivery
 - Enable HTTPS with proper SSL certificates
 
-### Wundergraph
-- Build and deploy as Docker container
-- Configure production backend service URLs
-- Enable caching and CDN if needed
+### GraphQL (`gql.anthropos.work`)
+- Nothing to deploy — it is `backend`. Retiring the router removed the only deployable piece.
+- The hostname is provisioned in `infrastructure/terraform/production/gql_endpoint.tf` (Route53
+  alias + ACM cert) and attached to `backend`'s existing ALB rule in `locals.tf`.
+- Keep introspection and the Apollo Sandbox playground **disabled** at the app layer in
+  staging/production.
 
 ---
 
@@ -697,17 +678,25 @@ See [`directus-local.md`](../ops/directus-local.md) for the container lifecycle 
 
 **"GraphQL endpoint not responding"**:
 ```bash
-# Ensure Wundergraph is running
-docker compose ps graphql
-
-# Check the one subgraph is up (cms, jobsimulation and storage are folded into it)
+# There is no gateway to check — backend IS the GraphQL server.
 docker compose ps backend
+docker compose logs backend --tail 50
+
+# Smoke-test the real path (/graphql/query, not /graphql):
+curl -s http://localhost:8082/graphql/query \
+  -H 'content-type: application/json' \
+  -d '{"query":"{ __typename }"}'
 ```
+> `docker compose ps graphql` returns nothing and exits **0** — the service no longer exists. Same
+> for `--profile graphql`. An empty result is not evidence the stack is broken; it is evidence the
+> command is from a pre-2026-07-31 runbook.
 
 **Schema outdated**:
 ```bash
-# Restart Wundergraph to reload schemas
-docker compose restart graphql
+# No supergraph to recompose and no router to restart. Rebuild backend:
+cd platform && make up
+# then regenerate the client types:
+cd ../next-web-app && pnpm codegen     # needs backend up (GRAPHQL_SCHEMA_FOR_GEN)
 ```
 
 ---

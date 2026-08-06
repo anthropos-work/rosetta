@@ -4,8 +4,9 @@
 >
 > As of the **"jobsim-in-app"** program (platform milestone **M810** tracks the final teardown), the standalone
 > `jobsimulation` Go microservice has been **merged into the `app` monolith** (the service the platform calls
-> "backend"). Jobsimulation no longer runs as a separate service — not in the local compose, not in the
-> supergraph. This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
+> "backend"). Jobsimulation no longer runs as a separate service — not in the local compose, and not in the
+> supergraph (which itself no longer exists: with `backend` the last subgraph, the WunderGraph/Cosmo router was
+> **retired 2026-07-31**). This is the same pattern as the earlier [skiller-in-app](./skiller.md) and
 > [skillpath-in-app](./skillpath.md) merges.
 >
 > Where everything went:
@@ -78,7 +79,7 @@ internal/
 
 ## Interface Discovery
 
-* **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). Federated into the platform schema by Cosmo Router.
+* **GraphQL**: schemas were at `internal/graph/schemas/` (main contract: `schema.graphqls`) and were federated into the supergraph by the Cosmo Router. Both are gone: the types are served by `backend`'s own gqlgen endpoint (`:8082/graphql/query`), and the router was **retired 2026-07-31**.
 * **RPC**: `internal/rpcsrv` — consumed by Backend (incl. the in-process skill-path engine) and Messenger via `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401`.
 
 > **Session/result READ-MODEL — this doc is not the home for it.** Two things a reader looking for "how does a

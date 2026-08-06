@@ -43,10 +43,10 @@ Studio-Desk is a **full-stack TypeScript application** with:
 graph LR
     User[Content Creator] --> Frontend[Vite multi-page frontend :9100]
     Frontend --> Backend[Express Backend :9000]
-    Backend --> GraphQL[Cosmo Router :5050]
+    Backend --> GraphQL["backend :8082 /graphql/query"]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
-    GraphQL --> CMS[CMS Service]
+    GraphQL --> CMS["cms domain (in-process)"]
     CMS --> Directus[(Directus CMS)]
 ```
 
@@ -121,7 +121,7 @@ A builder for learning skill paths, served at `/builder-skill-path` (`app/builde
 
 #### GraphQL Integration
 
-Studio-Desk connects to the platform's GraphQL gateway (Cosmo Router) for data operations:
+Studio-Desk connects to the platform's GraphQL endpoint — **`backend`'s own gqlgen server**, not a gateway (the Cosmo router was retired 2026-07-31) — for data operations:
 
 ```typescript
 // Example from app/services/graphql/
@@ -129,7 +129,7 @@ Studio-Desk connects to the platform's GraphQL gateway (Cosmo Router) for data o
 // Types auto-generated via graphql-codegen
 ```
 
-**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` (default: `http://localhost:5050/graphql`)
+**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` (default: `http://localhost:8082/graphql/query`, as set in `platform/docker-compose.yml`). **The variable name is historical** — it named the retired WunderGraph/Cosmo router — and is deliberately not renamed.
 
 **Type Generation**:
 ```bash
@@ -153,8 +153,8 @@ Studio-Desk works with these primary entities (stored via CMS → Directus):
 - Node.js v24+ (per `package.json` engines and `node:24-alpine` Docker base)
 - npm v7+
 - Clerk account (for authentication)
-- Access to platform GraphQL endpoint (Cosmo Router running)
-- Access to CMS service
+- Access to the platform GraphQL endpoint (i.e. **`backend` running** — there is no separate gateway)
+- The cms domain, which runs inside `backend`
 
 #### Environment Configuration
 
@@ -170,7 +170,7 @@ CLERK_SIGN_IN_URL=http://localhost:3000/login
 
 # Frontend
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
 VITE_WEB_APP_URL=http://localhost:3000
 
 # AI (for Copilot) — multi-provider chain
@@ -277,10 +277,15 @@ Docker images are built automatically on tag push. Deployment managed via infras
 
 ### Troubleshooting
 
-**GraphQL errors**: Ensure Cosmo Router (graphql) is running on port 5050:
+**GraphQL errors**: Ensure **`backend`** is running — it serves GraphQL itself on `:8082` at
+`/graphql/query`. There is no `graphql` service to start; the router was retired 2026-07-31, `:5050` is
+free, and `docker compose up -d graphql` now fails with "no such service".
 ```bash
 cd platform
-docker compose up -d graphql
+make up                     # default `core` profile
+docker compose ps backend
+curl -s http://localhost:8082/graphql/query \
+  -H 'content-type: application/json' -d '{"query":"{ __typename }"}'
 ```
 
 **Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match.

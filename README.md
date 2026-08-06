@@ -87,7 +87,7 @@ corpus/
 │
 ├── services/              # Individual service documentation
 │   ├── backend.md, cms.md, sentinel.md, ...     # Core services
-│   ├── graphql-wundergraph.md, next-web-app.md  # Gateway + main frontend
+│   ├── graphql-wundergraph.md, next-web-app.md  # Retired gateway + main frontend
 │   ├── studio-desk.md, studio-room.md           # Studio services
 │   └── ant-academy.md                           # Internal learning portal (standalone)
 │

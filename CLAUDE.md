@@ -180,7 +180,8 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 > **⚠️ `app` is the backend monolith.** **Eight** services below are **folded into `app`** and
 > run in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
 > ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"),
-> **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph 2→1), and
+> **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph 2→1, leaving the
+> federation router with nothing to federate), and
 > **messenger** + **storage** + **customerio-sync** (**v9.0 "support-in-app"**, 2026-08-04).
 > There is no cms / jobsimulation / skiller / skillpath / roadrunner container, profile, port
 > or subgraph; `storage` and `messenger` keep opt-in rollback profiles only. Every application
@@ -191,7 +192,18 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 > `sentinel` is the one remaining inter-process Connect-RPC edge — `backend`'s own mux lost
 > its last external caller when `messenger` folded in.
 >
-> **The default compose profile is `core`, not `graphql`** (platform `0dab54d` renamed it).
+> **The default compose profile is `core`, not `graphql`** (platform `0dab54d` renamed it). A stale profile
+> token fails **silently**: `docker compose --profile <unknown>` exits 0 and selects nothing.
+>
+> **There is no GraphQL gateway.** The WunderGraph/Cosmo federation router was **retired 2026-07-31** — ECS
+> service, target group and the `wundergraph.anthropos.work` alias destroyed, repo archived, ECR deleted
+> 2026-08-05, no `graphql` compose service, **`:5050` free**. `backend` serves GraphQL itself:
+> `http://localhost:8082/graphql/query` locally, `https://gql.anthropos.work/graphql/query` in production.
+> There is no supergraph and no composition step.
+>
+> **The env var names `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `GRAPHQL_SCHEMA_FOR_GEN` / `VITE_GRAPHQL_ENDPOINT`
+> are historical and deliberately unchanged** — they point at `backend`. Renaming them is a coordinated code +
+> deploy change across `next-web-app`, `ant-academy`, `studio-desk` and their deploy configs. Do not "fix" them.
 
 In the default local profile (`core`):
 - Backend (`app`): Main API gateway and user management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see `corpus/services/ai-readiness.md`) **and the skills domain** — taxonomy (60K skills, 18K roles), assessment, AI skill matching, and vector embeddings (RAG), absorbed from the former standalone Skiller service (its Ent models now live in `app`, data in the `public` schema; the old `skiller` DB schema is legacy). The skiller RPC surface (GetSkills, GetSkill, SearchSkill, MatchSkill, GetJobRole) is served by `app` — consumers keep the env var, re-pointed at `SKILLER_RPC_ADDR=http://backend:8083` (local; `http://backend:8081` in prod terraform); the `skiller` git repo still exists but is decommissioned. **Also hosts the skill-path progression engine** (per-user `SkillPathSession → ChapterSession → StepSession` state) — absorbed from the former standalone **Skillpath** service ("skillpath-in-app", platform M502→M507); session state now lives in `public.skill_path_sessions` (the old `skillpath` DB schema is a legacy husk), and the `SkillPathSessionService` RPC + the skill-path session GraphQL types are served by `app`'s `backend` subgraph. And the **newer app-owned domains**: course-builder (`corpus/services/coursebuilder.md`), AI Labs + credits (`corpus/services/ai-labs.md`), ask-engine / Talk-to-Data (`corpus/services/askengine.md`), and the server-owned academy store (`corpus/services/academy-backend.md`)
@@ -231,7 +243,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - Skillpath (was: per-user skill-path progression runtime engine) — **merged into `app` then decommissioned** ("skillpath-in-app", platform M502→M507); the engine now runs in `app`, session state moved to `public.skill_path_sessions` (old `skillpath` schema is a legacy husk), no skillpath container/subgraph. The skill-path *content* lives in the cms domain. See `corpus/services/skillpath.md` (redirect) + the `backend.md` fact-sheet
 - Roadrunner (was: Judge0 code-execution proxy) — **merged into `app`** with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. See `corpus/services/roadrunner.md`
 - Jobsimulation (was: the AI-simulation runtime/session engine) — **merged into `app`** ("jobsim-in-app"); the engine is `app/internal/jobsimulation/`, its 23 run-state tables moved to `public`, no container/subgraph. `module.jobsimulation_euwest1` is still declared in production terraform as the **rollback path** (no traffic) and still **owns the LiveKit/Chime recording S3 buckets** that `backend` reuses by literal name — teardown is **M810**. See `corpus/services/jobsimulation.md`
-- CMS (was: the content layer + Studio) — **merged into `app`** ("cms-in-app v8.0", app **v1.360.0**); the domain is `app/internal/cms/`, its similarity/Studio tables moved to `public`, and the supergraph went **2 → 1 subgraph**. Directus stays external. `module.cms_euwest1` is still declared as the rollback path (no traffic) — teardown is **M810**. See `corpus/services/cms.md`
+- CMS (was: the content layer + Studio) — **merged into `app`** ("cms-in-app v8.0", app **v1.360.0**); the domain is `app/internal/cms/`, its similarity/Studio tables moved to `public`, and the supergraph went **2 → 1 subgraph** — which is what made the federation router redundant (it was retired 2026-07-31). Directus stays external. `module.cms_euwest1` is still declared as the rollback path (no traffic) — teardown is **M810**. See `corpus/services/cms.md`
 - Messenger (was: the transactional-email service) — **merged into `app`** (v9.0 "support-in-app", 2026-08-04); the domain is `app/internal/messenger/`, gated by `MESSENGER_ENABLED`, running on messenger's **own** Redis consumer group. ECS module deleted; the ECR repo was preserved through the removal and is now **unmanaged** in AWS. Still in `repos.yml` + the `messenger` compose profile as the rollback path. Its Go module is still published but **imported by nothing**. See `corpus/services/messenger.md`
 - Storage (was: the file/blob service) — **merged into `app`** (v9.0); the domain is `app/internal/storage/` and `backend` reads/writes both S3 buckets directly. The ECS *service* is gone, but **`module.storage-service_euwest1` must NOT be deleted** — it now declares the platform's object-storage assets: both buckets (~92 GiB), versioning + SSE, the CloudFront distribution + OAI + bucket policy, and the `media.anthropos.work` CNAME. `prevent_destroy` will not save you, because it is read from *configuration*. Careful with the name: that module is **not** `module.storage_euwest1` (`modules/core/storage`), which is the RDS instance and the ElastiCache replication group. See `corpus/services/storage.md`
 - CustomerIO Sync (was: the marketing-contact sync) — **merged into `app`** (v9.0); the domain is `app/internal/customeriosync/`, on the asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED`, pushing to **Brevo**. Terraform module **fully deleted** and ECR destroyed — **no rollback path**. The compose entry survives and is still in `all`. See `corpus/services/customerio-sync.md`
@@ -256,7 +268,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 **External Services (Tier 3)**: Third-party integrations
 - Clerk: User authentication (SaaS)
 - Directus: Headless CMS (self-hosted)
-- GraphQL/Cosmo Router: Apollo Federation v2 gateway — **one subgraph** (`backend`). The skiller, skillpath, jobsimulation and cms subgraphs were all folded into it as those services merged into `app`; `categoryTree`/`fullCategoryTree` were dropped, not ported. Compose builds `graphql` from the **production** Dockerfile so it uses the committed `schemas/backend.graphqls`
+- ~~GraphQL/Cosmo Router~~: **retired 2026-07-31 — not an external service any more.** The skiller, skillpath, jobsimulation and cms subgraphs were all folded into `backend` as those services merged into `app`; with one subgraph left the router was a pure extra hop and was decommissioned. `categoryTree`/`fullCategoryTree` were dropped, not ported. See `corpus/services/graphql-wundergraph.md`
 - AI Providers: OpenAI, Anthropic, Mistral (EU-first routing)
 - LiveKit: Real-time voice engine for simulations
 - AWS Chime: Video/audio recording
@@ -269,7 +281,7 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 ### Communication Patterns
 
 - **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. Since v9.0 there is exactly **one** cross-process RPC edge left: **backend → sentinel**. The `skiller`, `skillpath`, `jobsimulation` and `cms` streams have `app` on **both** ends, and `backend`'s own mux has no external callers (messenger was the last)
-- **Frontend/Studio → Backend**: GraphQL via Cosmo Router (Apollo Federation v2, a single `backend` subgraph)
+- **Frontend/Studio → Backend**: GraphQL straight to `backend`'s own gqlgen endpoint (`/graphql/query`) — no gateway, no supergraph
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: EU-first routing implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library (EU Azure default → US Azure via PostHog flag `flag_use_azure_us` → direct-OpenAI on HTTP 429; Anthropic always Bedrock `eu-west-1`). Cost tracking in `app/internal/aiusage`
 - **Multi-tenancy**: Shared DB, shared schema with `organization_id` on every table; 3-layer isolation (DB, Sentinel auth, Clerk identity)
@@ -297,7 +309,7 @@ The `platform` repository provides a Makefile as the single entry point for all 
 # First-time setup
 cd stack-dev/platform
 make init              # Clone all repos defined in repos.yml
-make up                # Build from local code and start (graphql profile)
+make up                # Build from local code and start (default `core` profile)
 make migrate           # Apply all database migrations
 
 # Daily development
@@ -315,7 +327,7 @@ Docker Compose profiles control which services start:
 
 | Profile | Services |
 |---------|----------|
-| **`core`** (default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg, graphql |
+| **`core`** (default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg — **five containers; there is no `graphql` service** |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
 | `storage-legacy` | the frozen standalone `storage` (rollback comparison only) |
 | `messenger` | the frozen standalone `messenger` (needs `--profile core` too — it `depends_on: backend`) |

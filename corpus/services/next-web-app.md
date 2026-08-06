@@ -8,10 +8,10 @@
 ## Role & Responsibility
 
 * **Primary Goal**: The main user-facing frontend — a pnpm + Turborepo monorepo of
-  Next.js apps that consume the federated GraphQL gateway and authenticate with Clerk.
+  Next.js apps that consume `backend`'s GraphQL endpoint and authenticate with Clerk.
 * **Key Functions**:
   * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`). The hiring **org-type** (`is_hiring`) re-skins `apps/web` and exposes the recruiter **candidate-comparison read-model** — see [`hiring.md`](hiring.md).
-  * Talk to the backend **only** through the GraphQL gateway (`:5050/graphql`) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through the gateway → the CMS subgraph → Directus, so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
+  * Talk to the backend **only** through GraphQL (`:8082/graphql/query` — `backend`'s own gqlgen endpoint; the WunderGraph/Cosmo gateway that used to sit on `:5050` was **retired 2026-07-31**) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through GraphQL → the in-process cms domain → Directus, so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
   * Enforce auth at the edge via Clerk middleware (all routes protected by default, explicit public allowlist).
   * Deploy per-app to **Vercel**; only `apps/web` is also containerizable for local Docker.
 
@@ -44,13 +44,13 @@
 
 ## Interface Discovery
 
-* **GraphQL**: single federated endpoint `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (default `http://localhost:5050/graphql`); Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`.
+* **GraphQL**: one endpoint, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` → `http://localhost:8082/graphql/query` locally, `https://gql.anthropos.work/graphql/query` in production. **The variable name is historical** (it named the retired router) and is deliberately not renamed. Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`. Read in `packages/graphql/src/{server/server.graphql.ts,hooks/useGraphql.tsx}` plus the `labs`, `create-subscription` and `labs-export-auth` route handlers.
 * **Auth edge**: `apps/web/src/middleware.ts` — `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
 * **Observability proxies**: `/logpoint/*` → PostHog (EU); `/monitoring` tunnels Sentry/Better Stack events.
 
 ## Dependencies
 
-* **Downstream**: GraphQL gateway (`:5050/graphql`), backend `app` API (`:8082`), Clerk, PostHog (EU), Sentry/Better Stack, Stripe (billing), Bunny CDN (thumbnails + Chime recordings, token-signed), Metabase (embedded analytics), Azure OpenAI/OpenAI (server AI routes).
+* **Downstream**: backend `app` — **both** GraphQL (`:8082/graphql/query`) and the REST API (`:8082`); Clerk, PostHog (EU), Sentry/Better Stack, Stripe (billing), Bunny CDN (thumbnails + Chime recordings, token-signed), Metabase (embedded analytics), Azure OpenAI/OpenAI (server AI routes).
 * **Upstream**: end users / browsers; WordPress (embeds `apps/integration`); Vercel (prod hosting); platform compose service `next-web-app` (containerized Workforce variant).
 
 ## Local Development
@@ -65,7 +65,7 @@ cp apps/web/.env.example apps/web/.env   # fill Clerk + GraphQL endpoint; never 
 pnpm dev:web                     # Workforce on :3000  (next dev --turbopack)
 pnpm dev:hiring                  # Hiring on :3001
 pnpm dev:integration             # Integration on :3002
-pnpm codegen                     # regenerate GraphQL types (needs the gateway at :5050)
+pnpm codegen                     # regenerate GraphQL types (introspects GRAPHQL_SCHEMA_FOR_GEN — backend must be up)
 pnpm check                       # tsc --noEmit + eslint --fix across the workspace
 pnpm storybook                   # Storybook on :6006
 ```
@@ -92,9 +92,9 @@ bundle resolves the right hostname.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | — | Clerk auth (client / server) |
-| `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` | `http://localhost:5050/graphql` | Runtime GraphQL gateway endpoint (baked at build) |
+| `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` | `http://localhost:8082/graphql/query` | Runtime GraphQL endpoint — **`backend`**, baked at build. Historical name; do not rename |
 | `NEXT_PUBLIC_BACKEND_API_URL` | `http://localhost:8082` | Backend (`app`) API base URL |
-| `GRAPHQL_SCHEMA_FOR_GEN` | `http://localhost:5050/graphql` | Schema endpoint used by `graphql-codegen` |
+| `GRAPHQL_SCHEMA_FOR_GEN` | `http://localhost:8082/graphql/query` | Schema endpoint `graphql-codegen` introspects — **`backend`** must be running |
 | `NEXT_PUBLIC_HOSTING_URL` / `PUBLIC_HOST` | `http://localhost:3000` / `localhost` | Public hosting URL; `PUBLIC_HOST` parameterizes baked URLs in compose |
 | `NEXT_PUBLIC_POSTHOG_KEY` / `_HOST` · `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_AUTH_TOKEN` | — | Analytics + error tracking (PostHog EU, Sentry/Better Stack) |
 | `STRIPE_*` / `NEXT_PUBLIC_STRIPE_*` | — | Billing/checkout |
@@ -120,6 +120,7 @@ pnpm test            # turbo test → jest in apps/web and apps/hiring
 ## Related Documentation
 
 * [Frontend Architecture](../architecture/frontend_architecture.md) — monorepo deep dive, packages, codegen, recent UX work
-* [GraphQL Gateway](./graphql-wundergraph.md) — the federated endpoint this app consumes
+* [Backend (`app`)](./backend.md) — the service that serves the GraphQL this app consumes
+* [GraphQL Gateway — RETIRED](./graphql-wundergraph.md) — the gateway it used to go through, and why the env var names survived it
 * [External Services → Clerk](../architecture/external_services.md#clerk-authentication-service)
 * [Service Taxonomy](../architecture/service_taxonomy.md) · [Dependency Map](../architecture/dependency_map.md)

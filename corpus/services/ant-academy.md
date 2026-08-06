@@ -97,8 +97,9 @@ graph LR
 **Key contrasts** with the core Go services:
 - No PostgreSQL schema of its own, no Atlas migrations
 - No Connect-RPC, no Redis Streams
-- **Provides** no GraphQL subgraph (it doesn't federate INTO Cosmo Router) — but it **consumes** the platform's
-  **academy subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL"
+- **Serves** no GraphQL of its own — but it **consumes** the platform's **academy types** as a GraphQL *client*
+  (see below), reading `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, which points at `backend`. (It never federated into
+  the Cosmo router either, and that router was retired 2026-07-31.)
 - Its rendered catalog is **NOT static repo JSON** — since v0.5.1 it is **DB-authoritative**, read from the platform
   academy backend over GraphQL. The committed JSON is the *authoring source* + the dev *draft* layer + a separate
   machine index — not what the authenticated grid renders

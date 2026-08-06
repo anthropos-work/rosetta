@@ -51,10 +51,11 @@ before/after each step, request confirmation before installs or destructive ops,
 
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
-   cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
-   init-studio`) → `platform/.env` configured → services up (`make up` — expect **11 containers** in
-   `graphql` post-merge; the `skiller` container is gone since July 2026, its taxonomy tables merged into
-   `app`'s `public` schema) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   cloned → all repos via `make init` (incl. `ant-academy`) → `platform/.env` configured → services up
+   (`make up` — the default profile is **`core`**, renamed from `graphql`, and it starts **five** containers:
+   postgresql, redis, sentinel, backend, gotenberg. There is **no GraphQL gateway container** — the router was
+   retired 2026-07-31 — and no skiller/cms/jobsimulation/skillpath/roadrunner containers either; all are folded
+   into `app`'s `public` schema) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
@@ -64,10 +65,11 @@ before/after each step, request confirmation before installs or destructive ops,
    closes the M25-D9 gap where the un-editable platform `make migrate` doesn't create `extensions` → a cold
    `make reset-db`/`make migrate` fails `schema "extensions" does not exist`). See `corpus/ops/setup_guide.md`
    § Full Database Reset.
-4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 11 healthy containers
-   (`make ps`) — the merged 4-subgraph platform (no `skiller` container), GraphQL gateway on
-   `localhost:5050`. Then **start native processes in tmux** (required —
-   these are not in the `graphql` Docker profile and must outlive the Claude session):
+4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the **five** `core`
+   containers are healthy (`make ps`). GraphQL is served by **`backend` itself** at
+   `http://localhost:8082/graphql/query` — **do not look for a gateway on `:5050`; it was retired 2026-07-31
+   and nothing listens there.** Then **start native processes in tmux** (required — these are not in the
+   `core` Docker profile and must outlive the Claude session):
    ```bash
    # next-web-app (always native — required)
    tmux has-session -t anthropos-web 2>/dev/null || \
@@ -140,7 +142,7 @@ surface at all** since M5; the guard is what found it.)
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--profile P` | `graphql` | compose profile |
+| `--profile P` | `core` | compose profile. **Not `graphql`** — renamed at platform `0dab54d`, and there is no `graphql` profile any more. A stale token fails silently: `docker compose --profile <unknown>` exits **0** and starts nothing |
 | `--no-setdress` | off (set-dress is **on**) | bare bring-up of `dev-N` — no snapshot, no seed |
 | `--no-snapshot` | off (snapshot is **on**) | seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs) |
 | `--local-content` | **off** (dev reads content live from prod) | EXECUTE a per-stack Directus so content is self-contained (v1.5 M22/M23) |
@@ -168,9 +170,10 @@ not, so it stays local until you say otherwise.
   naming the exact fix command. A half-satisfied public path is never shipped.
 - **Pass nothing and NOTHING happens** — no `tailscale` process, no cert mint, no serve config, no new files.
   This is fenced by a tripwire stub, not asserted in prose (`dev-stack/tests/test_dev_public_host.py`).
-- It fronts only the ports **your profile actually publishes** (default `core` ⇒ the backend API + Cosmo
-  GraphQL), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the next
-  bring-up.
+- It fronts only the ports **your profile actually publishes** (default `core` ⇒ the backend's `8082+off`,
+  which carries **both** the REST API and GraphQL at `/graphql/query` — the Cosmo router that used to hold
+  `5050+off` was retired 2026-07-31 and publishes nothing), because `tailscale serve` *binds* the ports it
+  fronts — fronting a dead one would block the next bring-up.
 - ⚠️ **Transport, not authentication.** This puts the stack behind the tailnet's TLS + authenticated device
   mesh. It does **not** add auth. Read [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3** and
   the runbook [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md) before using it.

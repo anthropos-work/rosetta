@@ -41,7 +41,7 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 |  /home/<you>/rosetta/         this corpus                                  |
 |  /home/<you>/ant-singularity/ agent fleet & operations docs                |
 |                                                                            |
-|  docker stack on :3000 (next-web-app) / :5050 (graphql) / :8082 (backend)  |
+|  docker stack on :3000 (next-web-app) / :8082 (backend — HTTP + GraphQL)   |
 |       └── postgres restored from a 12 GB prod pg_dump                      |
 |       └── auth via dev Clerk app `national-elk-17` (shared with all eng)   |
 |                                                                            |
@@ -92,7 +92,7 @@ Why HTTPS, not SSH: the `Makefile` and every service Dockerfile uses `GH_ACCESS_
 - Docker Engine + `docker compose` v2.20+.
 - `psql` client (`apt install postgresql-client-16`).
 - ≥30 GB free disk (12 GB dump + restored DB + docker images).
-- ≥16 GB RAM is ample. (The earlier "~10-12 GB" figure was an unmeasured over-estimate — the `graphql`-profile dev stack idles at **~0.9 GB measured**; `--profile all` adds only a handful more services. RAM is not the constraint it was once assumed to be — see [`rosetta_demo.md`](rosetta_demo.md) § Resource budget.)
+- ≥16 GB RAM is ample. (The earlier "~10-12 GB" figure was an unmeasured over-estimate — the default-profile dev stack idles at **~0.9 GB measured**; `--profile all` adds only a handful more services. That measurement was taken on the old `graphql` profile, which has since been renamed **`core`** and lost the router container, so it is if anything an over-estimate now. RAM is not the constraint it was once assumed to be — see [`rosetta_demo.md`](rosetta_demo.md) § Resource budget.)
 - `node` + `npm` 20+ on the host (only for running the Playwright smoke script outside Docker).
 
 ### Group membership
@@ -200,7 +200,7 @@ AWS_REGION=eu-west-1
 
 Production keys are NOT used here. Only dev/test keys. The AWS creds are an exception — Talk to Data calls Bedrock via the prod inference profile (no dev tenancy yet), so use the dedicated staging IAM user Stefano keeps for this. Ask Stefano if you don't have those.
 
-**Quirk #4** — Next.js 15 statically evaluates server routes at build time (`/api/create-subscription`, `/api/wundergraph/*`). Compose `env_file` is **runtime-only**, so build-time evaluation will crash with `STRIPE_SECRET_KEY is not configured` etc. Drop a gitignored `.env.production` into `next-web-app/apps/web/`:
+**Quirk #4** — Next.js 15 statically evaluates server routes at build time (e.g. `/api/create-subscription`, `/api/labs/*`). Compose `env_file` is **runtime-only**, so build-time evaluation will crash with `STRIPE_SECRET_KEY is not configured` etc. Drop a gitignored `.env.production` into `next-web-app/apps/web/`:
 
 ```bash
 cat > ~/next-web-app/apps/web/.env.production <<EOF
@@ -209,11 +209,18 @@ OPENAI_API_KEY=sk-…
 AZURE_OPENAI_ENDPOINT=…
 AZURE_OPENAI_API_KEY=…
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_…
-NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://<yourhost>staging:5050/graphql
+NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=http://<yourhost>staging:8082/graphql/query
 NEXT_PUBLIC_BACKEND_API_URL=http://<yourhost>staging:8082
 NEXT_PUBLIC_HOSTING_URL=http://<yourhost>staging:3000
 EOF
 ```
+
+> **`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` points at `backend`, on `:8082`, at `/graphql/query`.**
+> The variable name is a fossil of the WunderGraph/Cosmo router, which was **retired 2026-07-31**.
+> The old `:5050/graphql` value is dead — nothing listens on `:5050`, and a frontend built with it
+> bakes a dead endpoint into the bundle and renders blank dashboards with no server-side error.
+> **Do not rename the variable** — that is a coordinated change across next-web-app, ant-academy,
+> studio-desk and their deploy configs.
 
 `.env.production` is in `.gitignore` already; add it to `.git/info/exclude` as well to make `git status` clean (see [`staging-sync.md` § Skip-worktree handling](./staging-sync.md#skip-worktree-handling)).
 
@@ -371,7 +378,14 @@ cd ~/platform
 docker compose --profile all up --build -d
 ```
 
-Wait 5-15 min for all 14 services to report healthy:
+> **`--profile all` no longer means "everything ever declared."** There is no `graphql` service
+> (router retired 2026-07-31) and no `cms`/`jobsimulation`/`roadrunner`; `messenger` was dropped
+> from `all` and `storage` moved to the `storage-legacy` profile at v9.0. Expect **8** containers —
+> `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`, `customerio-sync`, `studio-desk`,
+> `next-web-app` — the same list [`staging_from_dump.md`](./staging_from_dump.md) gives. It was ~14
+> before the merges.
+
+Wait 5-15 min for those services to report healthy:
 
 ```bash
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
@@ -405,7 +419,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 7. **Quirks #8, #9, #14 — Postgres bind-mount + restore warnings** — already addressed in §4.
 
-8. **Quirk #10 — Backend GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns Apollo Sandbox UI; CORS preflight + auth happen at `/query`. The Wundergraph router (`:5050`) federates these into `/5050/graphql`. Tools that expect `/graphql` directly need to know.
+8. **Quirk #10 — the GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns the Apollo Sandbox UI; CORS preflight + auth happen at `/query`. This used to be softened by the Wundergraph router, which exposed a plain `/graphql` on `:5050` — **the router was retired 2026-07-31, so the quirk is now the only behaviour there is.** Every client points straight at `backend`: `http://<host>:8082/graphql/query` locally/staging, `https://gql.anthropos.work/graphql/query` in production. Tools configured with a bare `/graphql` will not work.
 
 9. **Quirk #11 — `colony` has two separate Clerk auth bugs.** Both bite every staging today; the working fix on Ithaca + Calypso is a single vendored copy of `colony` that patches both. **Read both halves before reaching for the vendor recipe** — the recipe is identical, but knowing what each piece fixes is what lets you keep it pruned over time.
 
@@ -512,7 +526,7 @@ sudo tailscale serve --bg https://<yourhost>.taildc510.ts.net http://localhost:3
 
 Then ask Stefano to add `https://<yourhost>.taildc510.ts.net` to the Clerk `allowed_origins` list (see [`staging-clerk.md` § Adding a new staging host](./staging-clerk.md#adding-a-new-staging-host)).
 
-**Caveat: graphql/backend env-vars are baked HTTP at build time.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and `NEXT_PUBLIC_BACKEND_API_URL` get baked into the Next.js bundle pointing at `http://<host>:5050|8082/...`. Browser → HTTPS frontend → HTTP backend = Mixed Content blocking → blank dashboards. Use the plain `http://<yourhost>staging:3000` URL for end-to-end testing until those vars are HTTPS too (and the backend has TLS).
+**Caveat: the backend env-vars are baked HTTP at build time.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and `NEXT_PUBLIC_BACKEND_API_URL` get baked into the Next.js bundle pointing at `http://<host>:8082/...` (both are `backend` now — the router that used to own `:5050` was retired 2026-07-31). Browser → HTTPS frontend → HTTP backend = Mixed Content blocking → blank dashboards. Use the plain `http://<yourhost>staging:3000` URL for end-to-end testing until those vars are HTTPS too (and the backend has TLS).
 
 ---
 

@@ -9,8 +9,9 @@
 > - **Frontend — [`ant-academy`](./ant-academy.md)**: the Next.js/Expo *reader/UI* (Vercel-deployed).
 > - **Backend — `app/internal/academy/` (this doc)**: the *source of truth*. It owns the `series → skill_path →
 >   chapter → body` catalog **and** all per-user study state (progress, time, bookmarks, feedback, certificates),
->   and serves them to the frontend through the **`app` GraphQL subgraph** (via the Cosmo/WunderGraph router at
->   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`).
+>   and serves them to the frontend over **`app`'s own GraphQL endpoint** — the address the frontend reads from
+>   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. That variable name is a fossil: the Cosmo/WunderGraph router it named was
+>   **retired 2026-07-31**, and the value points straight at `backend`.
 > - The backend became authoritative in app-side release **"v1.0 ground truth"** (PR #903, `0e37771f`, 2026-06-05):
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —
@@ -71,9 +72,9 @@
 
 *   **How to find the API**:
     *   **Primary — GraphQL, on the `app` (backend) subgraph.** SDL: `internal/web/backend/graphql/graph/schemas/academy.graphqls`;
-        resolvers: `resolver_academy.go`. **There is no separate "academy subgraph"** — these types live in the
-        `app`/`backend` federation subgraph. The frontend reaches them through the Cosmo/WunderGraph router
-        (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`).
+        resolvers: `resolver_academy.go`. **There is no separate "academy subgraph"** — these types live in
+        `app`/`backend`'s single GraphQL schema. The frontend reaches them at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`,
+        which points directly at `backend` (the router that name refers to was retired 2026-07-31).
         *   **Queries** (self-only unless `@public`): `academyProgress`, `academyLastActivity`, `academyChapterTime(s)`,
             `academyPathProgress`, `academyCertificates` + `academyCertificate @public` (unauthenticated verify),
             `academyBookmarks`, `academyFeedback(s)`; **catalog** (`@public`, tenant-filtered): `academyCatalogSeries`,
@@ -90,7 +91,7 @@
 *   **Background task**: the nightly Asynq **`academy_embedding_refresh` @ 03:00** materializes
     `academy_path_embeddings` (skip via `source_hash = sha256(model | embed_text)`).
 *   **Dependencies**:
-    *   **Upstream (consumers)**: the [`ant-academy` frontend](./ant-academy.md) (over GraphQL/WunderGraph); the app's
+    *   **Upstream (consumers)**: the [`ant-academy` frontend](./ant-academy.md) (over GraphQL, straight to `backend`); the app's
         own [Ask/"Talk to Data"](./askengine.md) feed (reads `academy_*` directly); [Course Builder](./coursebuilder.md)
         (publishes generated courses into the catalog via `ContentManager` upserts).
     *   **Downstream**: the **storage** service (`STORAGE_RPC_ADDR`, asset upload → S3/CloudFront); the shared **`ai`**

@@ -35,7 +35,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 
 | Doc | Service | One-liner |
 |---|---|---|
-| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | Apollo Federation v2 via Cosmo Router — **one** subgraph (`backend`) since cms-in-app |
+| [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway — **RETIRED** | Decommissioned **2026-07-31**; repo archived, ECR deleted 2026-08-05, `:5050` free. `backend` serves GraphQL itself. Kept as the historical record + the note on why `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` still has that name |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js 15 monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the `app` (backend) container** since cms-in-app |

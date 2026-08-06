@@ -15,8 +15,13 @@ Once running, access these URLs in your browser:
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
 | **Ant Academy** | http://localhost:3077 | Internal learning portal (`@anthropos.work` only) |
-| **GraphQL Playground** | http://localhost:5050 | API gateway (Cosmo Router) |
-| **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
+| **GraphQL endpoint** | http://localhost:8082/graphql/query | Served by `backend` itself (gqlgen) |
+| **GraphQL playground** | http://localhost:8082/graphql | Apollo Sandbox UI (local only) |
+| **Backend API** | http://localhost:8082 | Backend service (HTTP; Connect-RPC on `:8083`) |
+
+> **`:5050` is free.** The WunderGraph/Cosmo router that used to serve the playground there was
+> **retired 2026-07-31** — there is no gateway container and no supergraph. Note the endpoint path
+> is `/graphql/query`; bare `/graphql` is the Sandbox UI, not the executable endpoint.
 
 ---
 
@@ -79,14 +84,19 @@ cd stack-dev/platform
 
 ### Option A: Start Full Backend (Recommended)
 
-This starts the backend + GraphQL router (default **`core`** profile — renamed from `graphql` at
-platform `0dab54d`; the Makefile's `PROFILE ?= core`):
+This starts the backend stack (default **`core`** profile — renamed from `graphql` at platform
+`0dab54d`; the Makefile's `PROFILE ?= core`):
 
 ```bash
 make up
 ```
 
-This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. That is the whole
+default stack. `cms`, `jobsimulation`, `roadrunner`, `skiller` and `skillpath` are folded into
+Backend/`app` and have no containers at all; `storage`, `messenger` and `customerio-sync` folded in
+at v9.0 and survive only as opt-in rollback profiles. **There is no GraphQL router container** —
+`backend` serves GraphQL itself at `http://localhost:8082/graphql/query` (the WunderGraph/Cosmo
+router was retired 2026-07-31).
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
@@ -96,11 +106,16 @@ Start only the services you need:
 
 ```bash
 make up PROFILE=backend    # Backend (app) only
-make up PROFILE=cms        # CMS only
 make up-all                # Everything including frontend and studio-desk
 ```
 
 See [Setup Guide](setup_guide.md#profiles) for the full profile list.
+
+> **A profile name that no longer exists fails silently.** `docker compose --profile <unknown>`
+> exits **0** and selects nothing, so `make up PROFILE=graphql` (or `cms`, `jobsimulation`,
+> `roadrunner`) starts **nothing** while reporting success. `graphql` was renamed to `core`; the
+> other three went with their services. Confirm a profile's real membership with
+> `docker compose --profile <name> config --services`.
 
 ### Verify Backend Services
 
@@ -120,13 +135,22 @@ make logs S=backend
 make logs
 ```
 
-### Health Check: GraphQL Gateway
+### Health Check: GraphQL
+
+There is no gateway to probe — `backend` is the GraphQL server. Probe it directly:
 
 ```bash
-curl -s http://localhost:5050/health || echo "GraphQL not responding"
+curl -s http://localhost:8082/api/health || echo "backend not responding"
+
+curl -s http://localhost:8082/graphql/query \
+  -H 'content-type: application/json' \
+  -d '{"query":"{ __typename }"}'
 ```
 
-*Expected*: Health check response or API info.
+*Expected*: a health response, then `{"data":{"__typename":"Query"}}`.
+
+> The old `curl http://localhost:5050/health` probe is dead — the router was retired 2026-07-31 and
+> nothing listens on `:5050`. A connection-refused there is expected, not a fault.
 
 ---
 

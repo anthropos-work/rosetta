@@ -217,11 +217,16 @@ make up
 make ps
 
 # Test backend
-curl -s http://localhost:8082/health || echo "Backend not responding"
+curl -s http://localhost:8082/api/health || echo "Backend not responding"
 
-# Test GraphQL
-curl -s http://localhost:5050/health || echo "GraphQL not responding"
+# Test GraphQL — served by backend itself; there is no gateway to probe
+curl -s http://localhost:8082/graphql/query \
+  -H 'content-type: application/json' \
+  -d '{"query":"{ __typename }"}'
 ```
+
+> The old `curl http://localhost:5050/health` check is dead: the WunderGraph/Cosmo router was
+> **retired 2026-07-31** and nothing listens on `:5050`.
 
 ### Start and Test Frontend
 

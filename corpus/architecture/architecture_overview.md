@@ -23,7 +23,6 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
-    *   **GraphQL/Cosmo Router**: API federation gateway
     *   **AI Providers**: OpenAI, Anthropic, Mistral (EU-first routing)
     *   **LiveKit**: Real-time voice engine for simulations
     *   **AWS Chime**: Video/audio recording
@@ -38,7 +37,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Frontend**: Next.js 15 + React 19 + TypeScript on Vercel
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM; each service has its own schema
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
-- **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
+- **APIs**: GraphQL served by `backend` itself (gqlgen — no federation, no gateway since the router's retirement on 2026-07-31), gRPC/Connect-RPC (internal), Protocol Buffers
 - **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
 - **CMS**: Directus (self-hosted, headless)
 - **Infrastructure**: AWS ECS EC2 (EU-West-1 primary), Terraform IaC, Vercel (frontend)
@@ -46,7 +45,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `core` profile):
-1. **Core Backend Services**: Backend/App (the monolith) and Sentinel + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+1. **Core Backend Services**: Backend/App (the monolith) and Sentinel + Gotenberg (third-party PDF service). Dockerized. **Five containers** — there is no GraphQL gateway container; `backend` serves GraphQL at `:8082/graphql/query`.
 
    **Eight** former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"), **cms**
@@ -177,7 +176,7 @@ Archived / merged (removed from local orchestration; repos still exist):
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path, teardown **M810** | [→](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810** | [→](../services/cms.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1, which left the router with nothing to federate (it was retired 2026-07-31); ECS module kept as the rollback path, teardown **M810** | [→](../services/cms.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 | **Messenger** | Merged into Backend/App (v9.0 "support-in-app", 2026-08-04) — the mailer + its 24 handlers run in `app` behind `MESSENGER_ENABLED`, on messenger's **own** Redis consumer group. ECS module deleted; ECR repo preserved and now unmanaged in AWS. Still startable from the `messenger` compose profile as the rollback path | [→](../services/messenger.md) |
@@ -209,7 +208,7 @@ Archived / merged (removed from local orchestration; repos still exist):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway — **one** subgraph (`backend`) since cms-in-app | [→](../services/graphql-wundergraph.md) |
+| ~~**GraphQL/Cosmo Router**~~ | — | **Retired 2026-07-31.** Not an external service any more: `backend` serves GraphQL itself at `gql.anthropos.work/graphql/query` (local `:8082/graphql/query`). ECS service, target group and `wundergraph.anthropos.work` alias destroyed; repo archived; `:5050` free | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
@@ -227,13 +226,13 @@ Archived / merged (removed from local orchestration; repos still exist):
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 
 #### Frontend/Studio → Backend
-*   **Primary**: GraphQL via Cosmo Router (Apollo Federation v2, a single `backend` subgraph)
+*   **Primary**: GraphQL straight to `backend` — `https://gql.anthropos.work/graphql/query` (local `http://localhost:8082/graphql/query`). No gateway, no supergraph
 *   **Direct**: Some services expose REST endpoints for specific use cases
 
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
 *   **Directus**: Proxied via CMS service (business logic layer)
-*   **GraphQL**: Cosmo Router fronts a single subgraph (`backend`) — the jobsimulation and cms subgraphs were folded into it
+*   **GraphQL**: `backend`'s own gqlgen endpoint. The jobsimulation and cms subgraphs were folded into it, leaving one subgraph — at which point the federation router became a pure extra hop and was **retired 2026-07-31**
 *   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
 
 For detailed integration patterns, see [External Services](./external_services.md).
@@ -243,8 +242,8 @@ For detailed integration patterns, see [External Services](./external_services.m
 A typical API request follows this path:
 
 ```
-User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
-  → backend (the sole subgraph)
+User → Vercel (Next.js) → Clerk (JWT) → ALB (gql.anthropos.work, priority-100 rule)
+  → backend  — /graphql/query, gqlgen, served in-process (no gateway hop)
     → Connect-RPC to sentinel — the ONE remaining inter-process hop
     → in-process calls into the folded domains (cms, jobsimulation, skiller,
       skillpath, roadrunner, messenger, storage, customerio-sync)
@@ -294,7 +293,7 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 ### Infrastructure & Deployment
 
 *   **Cloud**: AWS ECS EC2 (EU-West-1 primary); Vercel for frontend
-*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; public subnets (ALB, Cosmo Router), private subnets (all microservices)
+*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; public subnets (ALB), private subnets (all services). The Cosmo Router that used to sit in the public subnet was retired 2026-07-31
 *   **IaC**: Terraform for all infrastructure provisioning
 *   **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private subnet access; Git tags trigger deployments
 *   **Monitoring**: CloudWatch (metrics, dashboards, alarms), Sentry (errors, performance, cron monitoring), PostHog (analytics), Better Stack (incident escalation, uptime)

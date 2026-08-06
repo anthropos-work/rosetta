@@ -172,4 +172,4 @@ includes the Judge0 sandbox URL, the LiveKit cloud URL, and the Directus address
 
 * [Setup Guide](./setup_guide.md) · [Run Guide](./run_guide.md) · [Update Guide](./update_guide.md)
 * [Service Taxonomy](../architecture/service_taxonomy.md) · [Shared Libraries](../architecture/shared_libraries.md)
-* [GraphQL Gateway](../services/graphql-wundergraph.md) · [Next Web App](../services/next-web-app.md)
+* [GraphQL gateway — RETIRED](../services/graphql-wundergraph.md) · [Next Web App](../services/next-web-app.md)

@@ -51,7 +51,7 @@ Individual service documentation and developer maps.
 *   **[Services Index](./services/README.md): every service doc, enumerated and grouped — start here rather than guessing a filename.** Covers the core backend tier, the gateway + frontends, the cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and the archived/merged redirects (`skiller`, `chronos`, `intelligence`).
 *   **Core Backend Services**: 8 Go microservices (Backend, CMS, Sentinel, etc. — skiller was merged into Backend, July 2026)
 *   **Gateway & Frontend**:
-    *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
+    *   [GraphQL Gateway — RETIRED](./services/graphql-wundergraph.md): the WunderGraph Cosmo Router, decommissioned 2026-07-31. `backend` serves GraphQL itself at `gql.anthropos.work/graphql/query`
     *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)
 *   **Integrations**:
     *   [Clerk Integration](./services/clerk-integration.md): Identity / authentication / organizations — what it's used for, dependent repos, SDKs

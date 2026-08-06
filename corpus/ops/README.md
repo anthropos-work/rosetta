@@ -15,7 +15,10 @@ This directory contains guides for operating the Anthropos platform locally.
 >   `make dev S=backend`).
 > * **The default profile is `core`, not `graphql`** — platform `0dab54d` renamed it, and the
 >   Makefile's `PROFILE ?= core`. Every `--profile graphql` in a runbook below should read
->   `--profile core`.
+>   `--profile core`. **A stale profile token fails silently:** `docker compose --profile <unknown>`
+>   exits **0** and selects nothing, so `--profile graphql` (or `cms` / `jobsimulation` /
+>   `roadrunner`) starts **nothing** while looking like it succeeded. Confirm with
+>   `docker compose --profile <name> config --services`.
 > * `storage` and `messenger` **still have compose entries**, but only as rollback paths:
 >   `storage` moved to `profiles: [storage-legacy]`, `messenger` stayed on `messenger` and
 >   was dropped from `all`. Starting either alongside `backend` is actively harmful — two
@@ -31,8 +34,17 @@ This directory contains guides for operating the Anthropos platform locally.
 >   and `STORAGE_S3_PUBLIC_BUCKET` are hardcoded to the real bucket names, and the private
 >   one is no longer empty, so the old "/tmp fallback" reasoning does not apply. The
 >   boot-time bucket-access guard is disarmed by `ENVIRONMENT=development`.
-> * The federation composes **one** subgraph. Compose builds `graphql` from the **production**
->   `graphql-wundergraph/Dockerfile`, so it uses the committed `schemas/backend.graphqls`.
+> * **There is no federation and no GraphQL gateway.** The WunderGraph/Cosmo router was **retired
+>   2026-07-31** — the ECS service, target group and `wundergraph.anthropos.work` alias are
+>   destroyed, the `graphql-wundergraph` repo is archived, its ECR repo was deleted 2026-08-05, and
+>   there is **no `graphql` compose service**. `backend` serves GraphQL itself:
+>   `http://localhost:8082/graphql/query` locally, `https://gql.anthropos.work/graphql/query` in
+>   production. **`:5050` is free.** A `.graphqls` change needs no composition step and no gateway
+>   rebuild — rebuild `backend`, then re-run the frontend's `pnpm codegen`.
+> * **The env var names `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` / `GRAPHQL_SCHEMA_FOR_GEN` /
+>   `VITE_GRAPHQL_ENDPOINT` are deliberately unchanged** — historical names pointing at `backend`.
+>   Renaming them is a coordinated code + deploy change across three frontends; a runbook that
+>   "corrects" the name breaks the build.
 > * `app` is the **only** repo with migrations. All application tables — taxonomy, skill-path
 >   sessions, the 23 jobsim run-state tables, the cms similarity/Studio tables — live in
 >   **`public`**. The old per-service schemas are legacy and non-authoritative.

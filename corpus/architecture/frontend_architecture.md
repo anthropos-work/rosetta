@@ -29,19 +29,21 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 | Package Name | Path | Responsibility |
 | :--- | :--- | :--- |
 | **UI Kit** | `packages/ui` | Shared UI components (Design System). Recent work: `SkillCard` mini-card, `SkillCardCallout`, onboarding `SkillsRefinement` cluster card. |
-| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the Cosmo Router supergraph. |
+| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against **`backend`'s own schema** (`GRAPHQL_SCHEMA_FOR_GEN`) — there is no supergraph to introspect since the router's retirement, so **`backend` must be running**. |
 | **Core JS** | `packages/core-js` | Common utilities and helpers. |
 | **TSConfig** | `configs/tsconfig` (workspace-scoped as `@anthropos/tsconfig`) | Shared TypeScript configs. |
 | **i18n** | `configs/i18n` (workspace-scoped as `@anthropos/i18n`) | Translation messages for 8 locales (de, en, es, fr, it, ja, nl, pt) + next-intl config; consumed as a workspace dependency by all web apps. |
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **exclusively through the federated GraphQL gateway** (Cosmo Router at `:5050/graphql`, env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
+The frontend communicates with the backend **exclusively through one GraphQL endpoint** — `backend`'s own gqlgen server at `:8082/graphql/query` locally, `https://gql.anthropos.work/graphql/query` in production, read from env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
+
+> **The env var name is a fossil, and deliberately so.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` is named after the WunderGraph/Cosmo federation router, which was **retired 2026-07-31** (`:5050` is free, the repo is archived). The name was kept because renaming it is a coordinated code + deploy change across `next-web-app`, `ant-academy`, `studio-desk` and their deploy configs. Same for `GRAPHQL_SCHEMA_FOR_GEN` and studio-desk's `VITE_GRAPHQL_ENDPOINT`. Read `packages/graphql/src/{server/server.graphql.ts,hooks/useGraphql.tsx}` for where it lands.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
 *   **Implementation**: `packages/graphql` contains the generated types and hooks.
-*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (Cosmo Router, `:5050/graphql`) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
+*   **Code Generation**: Uses `graphql-codegen` to introspect `backend`'s schema at `GRAPHQL_SCHEMA_FOR_GEN` (`http://localhost:8082/graphql/query`) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents. **`backend` must be up** — there is no supergraph artifact to read offline, and no composition step to run.
 
 ## Key Technologies
 

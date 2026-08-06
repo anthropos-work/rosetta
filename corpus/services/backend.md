@@ -103,10 +103,13 @@ containerized bring-up + migrate, and read-only prod.
 - **RPC re-pointed** — the `SkillerService` Connect-RPC surface is served **by app itself**
   (`internal/rpc/skillerrpc/`). Consumers keep the env var, re-pointed: `SKILLER_RPC_ADDR=http://backend:8083`
   locally (all four occurrences in the merged `docker-compose.yml`), `http://backend:8081` in prod terraform.
-- **Federation is now 1 subgraph**: **backend**. (At the time of the skiller merge it was 3 — jobsimulation and cms have since folded in too.) The skiller subgraph was removed
-  at the skiller merge (`schemas/skiller.graphqls` deleted at `graphql-wundergraph@c284453`); the **skillpath**
-  subgraph was subsequently removed when the skillpath service merged into `app` ("skillpath-in-app", platform
-  M502→M507). The former skiller taxonomy types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
+- **There is no federation left at all.** The supergraph went 3 → 1 subgraph as the services folded in
+  (the skiller subgraph was removed at the skiller merge — `schemas/skiller.graphqls` deleted at
+  `graphql-wundergraph@c284453`; the **skillpath** subgraph went when skillpath merged into `app`,
+  "skillpath-in-app", platform M502→M507; jobsimulation and cms followed) — and with one subgraph left the
+  WunderGraph/Cosmo router was a pure extra hop, so it was **retired 2026-07-31**. `backend` serves its own
+  gqlgen schema directly: `http://localhost:8082/graphql/query` locally, `https://gql.anthropos.work/graphql/query`
+  in production. **`:5050` is free; there is no supergraph and no composition step.** The former skiller taxonomy types/queries (`Skill`, `jobRoleMatch`, `similarJobRoles`,
   `mostPopularSkills`, `jobRoleCount`, …) **and** the skill-path session types/queries
   (`getOrCreateSkillPathSession`, `completeSkillPathStep`, …) are all served by the **backend** subgraph;
   `categoryTree`/`fullCategoryTree` were dropped, not ported.
@@ -121,8 +124,8 @@ containerized bring-up + migrate, and read-only prod.
 
 **Live de-risk (2026-07-08):** a cold containerized `make up` on stack-dev built the 86-commit merged
 image and brought up the federation with **no skiller container** (`SKILLER_RPC_ADDR=http://backend:8083`)
-— 4 subgraphs as it stood then; skillpath, jobsimulation and cms have since also merged into `app`, so the
-current supergraph is **1 subgraph** (backend).
+— 4 subgraphs as it stood then. Skillpath, jobsimulation and cms have since also merged into `app`, taking
+it to 1 subgraph — and the router itself was **retired 2026-07-31**, so there is no supergraph today.
 A clean-slate `make reset-db` + `make migrate` created the full `public` taxonomy from scratch —
 `public.skills` (with an `organization_id` column), `job_roles`, `job_role_skills`, `skill_embeddings`,
 `categories`, `specializations` — with **no `skiller` schema on a clean DB**, once the `extensions` schema
@@ -207,14 +210,14 @@ internal/
 
 ## Interface Discovery
 
-* **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the Cosmo Router supergraph as the `backend` subgraph.
+* **GraphQL**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`, served by gqlgen **in this process** at **`/graphql/query`** on the HTTP port (`:8082` locally, `gql.anthropos.work` in production). There is no gateway and no supergraph — the Cosmo router was retired 2026-07-31 — so a schema change needs a `backend` rebuild and a frontend `pnpm codegen`, nothing else. The bare `/graphql` path is the Apollo Sandbox UI (disabled in staging/production, along with introspection).
 * **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services — `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService`, `CMSService`, `MessengerService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
   > **The mux has NO external callers left.** `messenger` was the last one (pointing `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` all at `http://backend:8083` locally), and it folded in at v9.0. The service definitions stay in `proto/` — they are still the contracts the frozen repos build against at pinned tags — but nothing outside `backend` dials them. Adding a method is only worth it for a genuinely new out-of-process consumer.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
 
-* Next Web App (GraphQL via Cosmo, plus direct HTTP for SSE and webhooks)
+* Next Web App (GraphQL directly, plus direct HTTP for SSE and webhooks)
 * Hiring App
 * Mobile App
 * Studio-Desk (for org-level metadata)

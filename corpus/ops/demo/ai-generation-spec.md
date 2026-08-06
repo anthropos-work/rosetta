@@ -254,7 +254,8 @@ cross-port checks.
 > members-grid/perf issue; diagnose it via `docker logs <stack>-directus-1 | grep "does not exist"`.)
 > The manager M42 sweep on this ~500-member org initially failed 3 sections — `/enterprise/members`,
 > `/enterprise/activity-dashboard`, `/enterprise/settings` — because the **federated GraphQL queries backing those
-> enterprise grids didn't resolve in the harness window** (the Cosmo router logged **10–84 s** latencies; an
+> enterprise grids didn't resolve in the harness window** (the GraphQL layer — then still the Cosmo router,
+> retired 2026-07-31; today `backend` itself — logged **10–84 s** latencies; an
 > over-broad fetch plus a per-row resolver fan-out — `jobRole`/`targetRole`/`tags` × `GetOrganizationTargetRole`,
 > which makes a **per-object Sentinel RPC per membership**, no DataLoader). The wall **decomposes into two distinct
 > costs**:

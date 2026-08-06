@@ -138,7 +138,7 @@ Directus) never false-warns even on an unscoped run:
 - **Liveness** — per service (`lib/services.sh::service_rows` + `probe_service`): docker-health /
   TCP-connect / HTTP-code, at `base+offset`, against `<project>-<svc>-1`.
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
-  `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
+  `PING`, GraphQL introspection (historically `:5050+offset` — see the warning below), gotenberg version (`:3200+offset`), sentinel
   Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
   `directus-collections` serve-check — each resolving the offset port + project container via the same
@@ -150,6 +150,19 @@ Directus) never false-warns even on an unscoped run:
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,
 operator-initiated `repos` + `census` scopes.
+
+> **⚠️ The GraphQL readiness probe needs a rext-side check — the router it targeted is gone.**
+> `:5050+offset` was the WunderGraph/Cosmo router, **retired 2026-07-31**. There is no `graphql`
+> compose service any more, so **nothing publishes `5050+offset`** and the only GraphQL surface is
+> `backend`'s own gqlgen endpoint at **`:8082+offset`, path `/graphql/query`**.
+>
+> Whether the pinned `rosetta-extensions` still probes `:5050+offset` **has not been verified from
+> this repo** — `stack-verify/lib/{services.sh,readiness.sh}` live in `rosetta-extensions`, not
+> here. If it does, that readiness row reports `down` on **every** stack, and because `verify live`
+> is deliberately **non-fatal** it will do so quietly rather than blocking a good bring-up. Check
+> `stack-verify/lib/services.sh` in the authoring copy and repoint the row to
+> `:8082+offset` `/graphql/query` if it has not already been done. Same caveat applies to the
+> `storage` RPC row (`:8301+offset`) after the v9.0 fold.
 
 ## The `$DEVDIR → $STACK_ROOT` fix
 

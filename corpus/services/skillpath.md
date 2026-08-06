@@ -4,8 +4,9 @@
 >
 > As of the **"skillpath-in-app"** program (platform milestones **M502 → M507**), the standalone `skillpath` Go
 > microservice has been **merged into the `app` monolith** (the service the platform calls "backend") and then
-> **decommissioned**. Skillpath no longer runs as a separate service — not in the local compose, not in the
-> supergraph, not in production. This is the same pattern as the earlier [skiller-in-app merge](./skiller.md);
+> **decommissioned**. Skillpath no longer runs as a separate service — not in the local compose, not in
+> production, and not in the supergraph (which itself no longer exists — the federation router was **retired
+> 2026-07-31**). This is the same pattern as the earlier [skiller-in-app merge](./skiller.md);
 > skillpath was the next runtime engine consolidated into `app`.
 >
 > **Skillpath was always a runtime/session engine, never a content store** — it tracks per-user progression
@@ -28,8 +29,10 @@
 > * **RPC** — the `SkillPathSessionService` surface (`GetSkillPathSession`) is served by `app`; callers were cut
 >   over to read sessions **in-process** and the `SKILLPATH_RPC_ADDR` was dropped from terraform (**M506** caller
 >   cutover).
-> * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
->   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations
+> * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation, taking the
+>   supergraph to **3 subgraphs** at the time (backend/app, jobsimulation, cms). Jobsimulation and cms have since
+>   merged into `app` too, taking it to 1 — and then the router was **retired 2026-07-31**, so there is no
+>   supergraph at all now; `backend` serves the schema directly. The skill-path session types/queries/mutations
 >   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
 >   `completeSkillPathStep`, `uncompleteSkillPathStep`, `upgradeSkillPathSessionToLatest`,
 >   `upgradeAllSkillPathSessionsToLatest`, and the deprecated `createSkillPathSession`) are **folded into `app`'s

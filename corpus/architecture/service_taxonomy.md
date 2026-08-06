@@ -25,7 +25,7 @@ graph TB
     subgraph Core["⚙️ Core Backend Services"]
         Backend["Backend/App — THE MONOLITH<br/>(+ skiller, skillpath, roadrunner,<br/>jobsimulation, cms, messenger,<br/>storage, customerio-sync folded in)"]
         Sentinel["Sentinel — the ONLY<br/>out-of-process service"]
-        Others[+ Gotenberg, Cosmo Router]
+        Others[+ Gotenberg]
     end
     
     Desk --> Backend
@@ -57,7 +57,7 @@ graph TB
 | **Backend/App** | 8081-8083 (container: HTTP 8082, RPC 8083, meta 8084) | **The monolith.** Main API Gateway, User Management, **AI-readiness** workforce subsystem ([→](../services/ai-readiness.md)), **skills taxonomy + embeddings + AI matching** (merged skiller domain, July 2026 — [→](../services/skiller.md)), the **skill-path progression engine** (merged skillpath, "skillpath-in-app" M502→M507 — [→](../services/skillpath.md)), the **simulation runtime** (merged jobsimulation, "jobsim-in-app" — [→](../services/jobsimulation.md)), the **content layer + Studio** (merged cms, "cms-in-app v8.0" app v1.360.0 — [→](../services/cms.md)), **Judge0 code execution** (merged roadrunner — [→](../services/roadrunner.md)), and — since **v9.0 "support-in-app"** (2026-08-04) — **transactional email** (merged messenger, `MESSENGER_ENABLED` — [→](../services/messenger.md)), **S3 object storage** (merged storage, `STORAGE_S3_*_BUCKET` — [→](../services/storage.md)) and the **Brevo marketing-contact sync** (merged customerio-sync, `CUSTOMERIO_SYNC_ENABLED` — [→](../services/customerio-sync.md)), plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine, academy store) | core, backend | Local `../app` (+ `anthropos-studio-room` baked into the image) |
 | **Sentinel** | 8087 | Authorization (Casbin RBAC/ABAC). **The only Anthropos service still running out-of-process** | (always on) | Local `../sentinel` |
 | **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | core, backend | Third-party image `gotenberg/gotenberg:8` |
-| **Graphql** (Cosmo Router) | 5050 | Apollo Federation v2 gateway — **one** subgraph (`backend`) since cms-in-app; built from the **production** Dockerfile so it uses the committed `schemas/backend.graphqls` | core | Local `../graphql-wundergraph` |
+| ~~**Graphql** (Cosmo Router)~~ | ~~5050~~ | **GONE — retired 2026-07-31.** No compose service, no profile, no supergraph. `backend` serves GraphQL itself at `:8082/graphql/query`; `:5050` is free | — | Repo archived |
 
 **Available but not in the default `core` profile**:
 
@@ -88,7 +88,8 @@ graph TB
 | **Skiller** | Merged into Backend/App (July 2026); repo legacy/decommissioned | [skiller.md](../services/skiller.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507); session state → `public.skill_path_sessions`; no container/subgraph; repo legacy | [skillpath.md](../services/skillpath.md) |
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app"); 23 run-state tables → `public`; no container/subgraph; ECS module kept as the rollback path, teardown **M810**; repo frozen | [jobsimulation.md](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810**; repo frozen | [cms.md](../services/cms.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0); similarity + Studio tables → `public`; supergraph 2→1 — which is what made the router redundant; ECS module kept as the rollback path, teardown **M810**; repo frozen | [cms.md](../services/cms.md) |
+| **GraphQL Gateway** (`graphql-wundergraph`) | **Retired 2026-07-31 — not merged, deleted.** With one subgraph left the Cosmo router was a pure extra hop. `module.wundergraph_euwest1` destroyed (ECS service, task def, target group, ALB rule priority 810, Cloud Map entry, log group, ACM cert, `wundergraph.anthropos.work` alias); ECR repo hand-deleted 2026-08-05; no compose service, `:5050` free; **repo archived**. Clients call `gql.anthropos.work/graphql/query` | [graphql-wundergraph.md](../services/graphql-wundergraph.md) |
 | **Roadrunner** | Merged into Backend/App with jobsim-in-app; `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; no container | [roadrunner.md](../services/roadrunner.md) |
 | **Messenger** | Merged into Backend/App (v9.0 "support-in-app", 2026-08-04); the mailer + its 24 handlers run in-process behind `MESSENGER_ENABLED`, on messenger's **own** Redis consumer group. ECS module deleted; ECR repo preserved (`removed { destroy = false }`) and now **unmanaged** in AWS. Still in compose + `repos.yml` as the rollback path; repo frozen | [messenger.md](../services/messenger.md) |
 | **Storage** | Merged into Backend/App (v9.0); `backend` reads/writes both S3 buckets directly, `STORAGE_RPC_ADDR` gone. ECS service gone but **`module.storage-service_euwest1` is deliberately kept** — it now declares only the buckets, CloudFront + OAI and the `media.anthropos.work` CNAME. Still in compose (`storage-legacy`) + `repos.yml` as the rollback path; repo frozen | [storage.md](../services/storage.md) |
@@ -286,24 +287,25 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 > content-self-contained. It's **demo-default / dev-opt-in (`--local-content`)** and lives entirely in the
 > stack-ops tooling. See [`corpus/ops/directus-local.md`](../ops/directus-local.md).
 
-#### GraphQL/Cosmo Router (Dockerized - API Gateway)
+#### GraphQL — served by `backend`, no gateway
+
+The WunderGraph/Cosmo federation router was **retired 2026-07-31**. It is not a tier-3 external
+service any more; there is nothing deployed and nothing to configure.
 
 | Property | Value |
 |:---------|:------|
-| **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
-| **Port** | 5050 |
-| **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
-| **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
-| **Subgraphs** | backend/app, jobsimulation, cms (3 — skillpath's subgraph was folded into `backend` when skillpath merged into `app`, M505) |
+| **Type** | First-party — `backend`'s own gqlgen server, in the `app` binary |
+| **Port** | `8082` locally (same port as the backend HTTP API); path **`/graphql/query`** |
+| **Production** | `https://gql.anthropos.work/graphql/query` — a Route53 alias + ACM cert onto `backend`'s existing ALB rule (priority 100, sharing it with `api.anthropos.work`) |
+| **Subgraphs** | None. There is no supergraph and no composition step |
+| **`:5050`** | **Free.** Nothing listens there |
 
-> Developer/code map: [GraphQL Gateway service doc](../services/graphql-wundergraph.md) (build-time composition, routing URLs, profiles).
-
-**Aggregates**:
-- Backend (app), CMS, Jobsimulation services
+> Historical record of the gateway that used to sit here — including exactly what Terraform
+> destroyed and why the env var names survived: [GraphQL Gateway — RETIRED](../services/graphql-wundergraph.md).
 
 **Consumed By**:
-- Next.js frontend applications
-- Studio-Desk
+- Next.js frontend applications (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — historical name, points at `backend`)
+- Studio-Desk (`VITE_GRAPHQL_ENDPOINT` — likewise)
 
 ---
 
@@ -314,7 +316,7 @@ The **CMS Service** acts as a smart proxy/adapter, adding business logic on top 
 - **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
 
 ### Studio Services → Core Services
-- **Studio-Desk**: GraphQL via Wundergraph (`VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql`)
+- **Studio-Desk**: GraphQL straight to `backend` (`VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query` — the var name is historical, the router it named was retired 2026-07-31)
 - **Studio-Room**: Direct integration with CMS service for blueprint retrieval
 
 ### All Services → External Services
@@ -368,7 +370,7 @@ go run .               # Run natively — this one process covers skiller,
 | Profile | Services started |
 |---------|------------------|
 | (none — default `docker compose up`) | postgresql, redis, sentinel only |
-| **`core`** (the Makefile default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg, graphql |
+| **`core`** (the Makefile default — renamed from `graphql` at platform `0dab54d`) | postgresql, redis, sentinel, backend, gotenberg — **five containers. There is no `graphql` service**: the router was retired 2026-07-31 and `backend` serves GraphQL itself |
 | `backend` | postgresql, redis, sentinel, backend, gotenberg |
 | `storage-legacy` | postgresql, redis + the frozen standalone `storage` (rollback comparison only) |
 | `messenger` | postgresql, redis + the frozen standalone `messenger`. **`make up PROFILE=messenger` alone exits 1** — messenger declares `depends_on: backend`, which this profile does not select, so compose rejects the project. Use `docker compose --profile core --profile messenger up` |
@@ -388,11 +390,12 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 
 | Tier | Count | Technology | Deployment | Management |
 |:-----|:------|:-----------|:-----------|:-----------|
-| **Core Backend (local `core` profile)** | **2** Go services (`backend`, `sentinel`) + Gotenberg + Cosmo Router | Go (+ embedded Python studio-room in the `app` image) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
+| **Core Backend (local `core` profile)** | **2** Go services (`backend`, `sentinel`) + Gotenberg | Go (+ embedded Python studio-room in the `app` image) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Storage (`storage-legacy`), Messenger, CustomerIO Sync — all three **frozen rollback paths**, not live services — plus Studio-Desk (Docker), Next-Web-App (Docker) | Go / TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | 5 (colony, authn, proto, ai, taxonomy) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in cms image as `cms/studio/` | Local directories / cms submodule |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |
 | **Archived / merged** | Chronos, Intelligence, Skiller, Skillpath, Roadrunner, Jobsimulation, CMS, **Messenger, Storage, CustomerIO Sync** (the last three at v9.0 "support-in-app", 2026-08-04) | Go | Merged into `app`; removed from local orchestration or demoted to an opt-in rollback profile | GitHub repos still exist (frozen) |
-| **External** | Clerk, Directus, Cosmo Router, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |
+| **External** | Clerk, Directus, AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |
+| **Retired** | GraphQL/Cosmo Router (2026-07-31) | Go binary + config | ECS service, target group and `wundergraph.anthropos.work` alias destroyed; repo archived; ECR deleted 2026-08-05 | — |

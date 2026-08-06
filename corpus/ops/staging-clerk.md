@@ -88,7 +88,8 @@ Then on each staging host, run the rebind procedure (§ 3 of [`staging_from_dump
 
 ## Allowed origins
 
-Clerk only accepts requests from origins in its `allowed_origins` list. Currently (2026-05-14) there are 13:
+Clerk only accepts requests from origins in its `allowed_origins` list. As last recorded
+(2026-05-14) there are 13:
 
 ```
 http://localhost:3000
@@ -105,6 +106,13 @@ http://100.120.254.65:3000
 http://100.83.121.80:3000
 https://anthropos.work
 ```
+
+> **`http://localhost:5050` in that list is a fossil.** It was the WunderGraph/Cosmo router's origin;
+> the router was **retired 2026-07-31** and nothing listens on `:5050`. Nothing breaks by leaving it
+> — a dead origin is inert — but it is not needed by any client, and it is the one entry you can
+> safely drop next time the list is edited. The list above is reproduced as last recorded; the
+> authoritative copy is Clerk's own instance config (the `GET /v1/instance` call below).
+> **`:5050` is not a substitute for a `:3000` origin** — the frontend is what Clerk sees.
 
 ### Adding a new staging host
 

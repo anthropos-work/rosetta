@@ -19,7 +19,7 @@ Key guarantees:
 
 ### VPC Architecture
 - **VPC CIDR**: 10.0.0.0/16 with Multi-AZ deployment
-- **Public subnets**: Application Load Balancer (ALB), Cosmo Router
+- **Public subnets**: Application Load Balancer (ALB). *(The Cosmo Router was the other public-subnet resident until it was retired 2026-07-31 — its ECS service, target group and `wundergraph.anthropos.work` alias are destroyed.)*
 - **Private subnets**: All microservices (no direct internet access)
 - **Data subnets**: PostgreSQL RDS, Redis ElastiCache
 - **Controls**: Network ACLs, Security Groups, least-privilege rules

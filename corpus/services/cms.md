@@ -4,7 +4,7 @@
 >
 > As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
-> separate service — not in the local compose, not in the supergraph. It is the fourth and last engine
+> separate service — not in the local compose, and not in the supergraph (which no longer exists at all: the router was retired 2026-07-31). It is the fourth and last engine
 > consolidated into `app`, after [skiller](./skiller.md), [skillpath](./skillpath.md) and
 > [jobsimulation](./jobsimulation.md).
 >
@@ -23,7 +23,7 @@
 >   `CMS_RPC_ADDR=http://backend:8083` locally / `http://backend.internal.anthropos:8081` in production. `app`
 >   itself makes **no** outbound cms RPC.
 > * **GraphQL** — the cms subgraph was folded into `app`'s `backend` subgraph, taking the **supergraph from 2
->   subgraphs to 1**. Public (unauthenticated) library content queries are preserved — see app v1.360.2/v1.360.3.
+>   subgraphs to 1** — which is what left the federation router redundant (it was **retired 2026-07-31**). Public (unauthenticated) library content queries are preserved — see app v1.360.2/v1.360.3.
 > * **Events** — `app` owns the `CMS_STREAM` subscriber. The folded similarity re-index + Studio handlers are
 >   merged onto app's **existing** CMS subscriber via `.AddHandler(...)`; they act on disjoint rows, so they
 >   compose. Directus webhooks land on `POST /api/webhook/directus`, which now **fails closed** without
@@ -139,7 +139,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
 * **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux. In-repo callers reach it in-process; the one external caller left is `messenger`, via `CMS_RPC_ADDR=http://backend:8083` locally (`http://backend.internal.anthropos:8081` in production).
-* **Federation**: the cms subgraph was folded into `backend` at cms-in-app v8.0, taking the supergraph from **2 subgraphs to 1**. Cosmo Router now composes `backend` alone.
+* **Federation**: gone entirely. Folding the cms subgraph into `backend` at cms-in-app v8.0 took the supergraph from **2 subgraphs to 1** — leaving the Cosmo Router with nothing to federate, so it was **retired 2026-07-31**. Clients call `backend`'s own gqlgen endpoint (`:8082/graphql/query` local, `gql.anthropos.work/graphql/query` production); `:5050` is free.
 
 ### Upstream consumers
 * Next Web App (GraphQL)

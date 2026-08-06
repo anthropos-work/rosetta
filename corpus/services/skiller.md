@@ -18,8 +18,9 @@
 >   `SKILLER_RPC_ADDR=http://backend:8083` locally; `skiller_rpc_addr = http://backend:8081` in production
 >   terraform. The externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
 >   `GetJobRole`) are implemented in `app`.
-> * **GraphQL** — the skiller subgraph was **removed** from the WunderGraph/Cosmo federation; `app`'s `backend`
->   subgraph now serves the taxonomy types/queries (`app/.../graph/schemas/skiller_taxonomy.graphqls`). The
+> * **GraphQL** — the skiller subgraph was **removed** from the WunderGraph/Cosmo federation (which was itself
+>   **retired 2026-07-31**, once `backend` was the only subgraph left); `app`'s `backend` GraphQL endpoint now
+>   serves the taxonomy types/queries (`app/.../graph/schemas/skiller_taxonomy.graphqls`). The
 >   `categoryTree` / `fullCategoryTree` queries were **dropped entirely** (not ported).
 > * **Infrastructure** — the skiller ECS service and its terraform module were removed from production (the
 >   old ECR repo is intentionally orphaned pending manual deletion). `app`'s internal app→skiller RPC path is
