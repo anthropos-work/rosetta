@@ -1767,3 +1767,50 @@ defect and would also explain why no amount of accessor work has helped.
   not finished.** `stack-core` **957 passed · 1 failed** (+20 this iter; the failure is iter-105's
   proven-pre-existing one). Gate **unchanged at 4 of 5**, no `N` movement claimed — clause 3's instrument,
   never clause 5's; zero platform edits, clones read but never fetched, no tag cut — see iter-106/progress.md
+- iter-107 (tik, `iter_shape: fence`, **`TOK-06` step 2**): **the repair loop's own largest induction shape
+  is now fenced AT THE COMMIT — and replaying iter-102's real commit surfaces all four `:321` citers,
+  including `backend.md:54`, which the 14-seat double reading MISSED IN BOTH PASSES.**
+  `stack-core/anchor_offset_guard.py` is commit-scoped (like `repair_leak_guard`) because the defect is only
+  decidable at the commit: looking at `:321` today tells you what is on line 321, not that a citer meant
+  something else. §5 rule 34 already names this mechanism and has failed to stop it **twice, one cycle
+  apart** — iter-100 booked by iter-101, iter-102 booked by iter-103 — which is why it needed a fence and
+  not a restatement. **The design changed TWICE in flight, both times because a control refuted it, and
+  both cuts would have shipped green.** (1) The first waived any citation in a file the commit touched —
+  sound reasoning, and it returned **GREEN on `cd16967`, the very commit that motivated it**, because
+  iter-102 was a 98-site repair that modified all three citing service docs while editing *other* claims in
+  them. The carve-out is now **line-level**. General form, worth more than the fix: **a waiver keyed on the
+  unit the defect hides inside will waive the defect** (`D-M257x-107-1`). (2) The second went **RED on a
+  CORRECT repair** — a synthetic control showed a citer correctly re-pointed `:7 → :9` is indistinguishable
+  from iter-102's stale `:321`, because *"post-move and correct"* and *"pre-move and stale"* are both
+  consistent with everything the diff records and **intent is not in the repository**. A third narrowing was
+  tried and lost the real case. **Resolution: that class is REPORTED, COUNTED and excluded from the exit
+  code**, with the OK line stating in its own words that the green does not cover it — §8's *grade the
+  cannot-tell*. **A fence must not assert what it cannot decide**; the alternative is a RED that correct
+  repairs trigger, i.e. a fence that gets turned off (`D-M257x-107-2`). **The answer key is the COMMIT, not
+  a fixture** (`D-M257x-107-3`): `cd16967` → 5 ROT + 5 CANNOT-TELL (the four `:321` citers + a
+  `service_taxonomy` self-cite); `a229f8d` → iter-101's booked `service_taxonomy.md:131 → :137/:139`
+  induction. **And it surfaced 5 ROT findings NO reading has ever named**, incl. `hiring.md 93 → 107` and
+  `storage.md 115 → 129`. Shas **pinned** in the test per §5 rule 25. **Citations are read at the range's END
+  revision**, not the working tree (`D-M257x-107-4`) — the measured difference on `cd16967` was real (36 → 33
+  seen, 7 → 5 ROT), and it is §5 rule 41a one level down: an instrument resolving against *now* cannot grade
+  a measurement taken *then*. **18 tests**: two real commits + six synthetic shapes each separating a case
+  the guard must distinguish + refusals (**an empty range is exit 2 with `Nothing was checked`, never a
+  pass**) + anti-vacuity against the LIVE corpus (≥25 citations, **0 unresolved** — the `README.md` ×6
+  ambiguity resolved by preferring the citer's own directory rather than dropping it). **TOK-06 step 2's
+  SECOND shape is NOT taken and is routed with its measurement** (`D-M257x-107-5`): the canonical-wording
+  defect is re-confirmed live — `:8081` has **1 occurrence in `app` + 3 in `stack-demo/rosetta-extensions`**,
+  a repo the sentence's own 13-repo denominator counts. Gate **unchanged at 4 of 5**, no `N` movement claimed;
+  zero platform edits, no clone fetched, no tag cut — see iter-107/progress.md
+  **⚠ AND A FINDING AGAINST THIS RUN'S OWN iter-106 DELIVERABLE, recorded at iter-107's close:**
+  `clone_drift_guard` went **GREEN** one iter after shipping RED, **with nothing repaired.** The §8 section
+  written to *document* the RED contains *"`sentinel` at `f2c46190`, 2 commits past the newest sha the corpus
+  cites"* — and that backticked sha **is** a corpus citation of sentinel's HEAD, so the fence's own assertion
+  is now literally false while five stale sites remain stale. It is the stated reach behaving as documented,
+  and it is the sharpest thing measured today: **writing about the drift satisfies the drift fence.** The
+  honest reading of a D1 green is *no repo advanced past every sha the corpus MENTIONS* — mentions, not
+  verifies. **Deliberately NOT patched** (an exclusion list of *"docs that are about fences"* is §2's
+  hand-maintained tuple again, and inventing one at the end of a long session is how a fence acquires an
+  exemption nobody can later justify): recorded in the guard's docstring, **pinned by a known-limitation
+  test** (§8 rule 7 — the assertion is what expires), routed as
+  `FIX-M257x-iter107-drift-fence-satisfiable-by-prose`. **Fourth time in three days the milestone's class has
+  landed on its own apparatus, and the fourth time what caught it was re-running rather than reasoning.**

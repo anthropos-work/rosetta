@@ -1867,6 +1867,42 @@ a form no line-scoped fence can read. **Write a checkable pin claim as `<module>
 and the ref is what makes a claim settleable, and putting them where the checker can see them is what makes
 it *checked*.
 
+### A sixth layer, on the OTHER inflow: the repair's own induction (M257x iter-107)
+
+The fifth layer watches the platform moving under us. This one watches **us moving things under ourselves**.
+`TOK-06` counted it at **21 % of the residual**, and its largest measured shape has now occurred twice by
+the same mechanism, one cycle apart, with §5 rule 34 already naming it both times:
+
+* **iter-100 → booked by iter-101.** A two-line parenthetical pushed a `service_taxonomy.md` table down two
+  rows; the numbers around it did not move, so a note that had been exactly correct came to cite Chronos and
+  Intelligence.
+* **iter-102 → booked by iter-103.** `architecture_overview.md:321` was the correct local-stack line; an
+  inserted production-topology block moved the wording to `:331` and **4 sites still cite `:321`**, now
+  naming the opposite topology. The 14-seat double reading found 2 of the 3 in-scope ones and **missed
+  `backend.md:54` in both passes**, inside a seat's own file set.
+
+| layer | asserts | lives in |
+|---|---|---|
+| repair-induced anchor rot | over a revision range: no commit moves a line out from under an intra-corpus `` `<doc>.md:<N>` `` citation it did not also update. A citation the commit *authored beside a shift it made* is reported **CANNOT-TELL** | `stack-core/anchor_offset_guard.py` (M257x iter-107), with `tests/test_anchor_offset_guard.py` — whose controls are **the two real commits**, replayed |
+
+**Three things it taught, and two of them came from its own controls refuting its first design:**
+
+1. **The answer key is the commit, not a fixture.** Replaying `cd16967` (iter-102) surfaces **all four**
+   `:321` citers — including the one both reading passes missed — and replaying `a229f8d` (iter-100)
+   surfaces its `service_taxonomy.md` induction. A fence for a defect that has actually happened should be
+   graded against the commit that caused it; a fixture only proves the fence does what its author expected.
+2. **A file-level carve-out returns GREEN over the defect.** The first cut waived any citation in a file the
+   commit had touched — reasonable, and wrong: iter-102 was a **98-site repair** that modified all three
+   citing service docs while editing *other* claims in them. It graded 2 citations and passed. The carve-out
+   must be **line-level**: the commit must have written the line the citation is on.
+3. **Some of it is genuinely undecidable, and the fence says so rather than guessing.** When a commit authors
+   a citation *and* shifts that target line, `X is post-move and correct` and `X is pre-move and stale` are
+   both consistent with everything the diff records — a synthetic control proved it by showing a **correct**
+   re-point (`:7 → :9`) is indistinguishable from iter-102's stale one. So that class is **counted, named,
+   and excluded from the exit code**, and the OK line states that the green does not cover it (§8's
+   *grade the cannot-tell*, iter-91). **A fence must not assert what it cannot decide** — the alternative is
+   a RED that correct repairs trigger, which is a fence that gets suppressed.
+
 ### A fourth layer, on a different axis: fence the PROSE against verdicts already recorded (M257x iter-43)
 
 The three layers above all fence **tooling against the platform**. None of them reads a sentence, and §5
