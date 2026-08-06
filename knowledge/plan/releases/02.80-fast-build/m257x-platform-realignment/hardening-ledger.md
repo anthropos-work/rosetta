@@ -1924,3 +1924,73 @@ tests/test_m257x_mechanical_fences_mutation_battery.py tests/test_iter45_mechani
 **Stop condition:** continue-to-next-pass — four live defects in the first dimension pass is not a
 stabilized surface, and `fence_provenance.py` itself plus the 16-guard stamp threading have not yet had a
 dimension scan of their own.
+
+## Pass 24 — 2026-08-06 — incremental
+
+**Iters hardened this pass:** iter-105 … iter-109 (same window; second dimension)
+**Tiks covered since prior pass:** 0 (second pass of the same session; the incremental cap is 3)
+
+**The dimension: `fence_provenance.py` itself** — the primitive iter-105 built the other two guards'
+provenance on, and the one file pass 23 did not scan. Its 152 lines carry the milestone's densest
+concentration of *stated* safety properties, so the pass was run as an audit of those statements rather
+than of the code: **take each claim the docstring makes and try to make it false.**
+
+One of them was.
+
+**5. `STAMPED_ENV` is a general quiet switch after all, on the one caller that must never be quiet**
+(`9dfd717`). The module says, in its own words:
+
+> It is deliberately NOT a general quiet switch: a suppressible stamp with no one else stating it would
+> re-introduce the exact defect this module exists to close. `guard_family` sets it only AFTER printing
+> the line itself.
+
+The second sentence is true of `guard_family`. The first is not true of the variable, because
+**nothing enforces the second sentence.** `stamp()` reads `STAMPED_ENV` from the AMBIENT environment, so
+an operator, a wrapper script, or a shell that exported it once silences the stamp in every process
+started thereafter — including the family runner, where by construction there is no one else to state
+the tree.
+
+Measured, with `FENCE_PROVENANCE_STAMPED=1` exported into a `guard_family` run:
+
+```
+guard-family: corpus /…/fam @ ?
+guard-family: 1 GREEN · 0 RED · 0 could-not-check · 0 not-run
+guard-family: OK — every member of the census (1) was run and returned green.
+```
+
+No `fence-tree:` line at all. **A clean, unqualified green stating no tree** — iter-103's condition
+exactly, reachable by one environment variable, on the fence built to close it.
+
+**Why the 19 existing tests could not see it.** `TestLiveBehaviour._run` **pops** `STAMPED_ENV` before
+every invocation, so the ambient case was unreachable from the suite by construction; and the one
+suppression test that does run drives a **member** (`corpus_index_guard`), where suppression is correct
+and must stay correct. The suite tested the half of the contract that works.
+
+`stamp()` gains `force`; `guard_family` forces. A member's suppression is untouched.
+
+**Coverage delta on touched files:** `python3 -m pytest tests/test_fence_provenance.py
+tests/test_clone_drift_guard.py tests/test_anchor_offset_guard.py tests/test_guard_family.py
+tests/test_test_collection_fence.py -q` in `stack-core`: **121 → 125 passed** (+4;
+`test_fence_provenance.py` 19 → 23).
+
+**Mutation controls — both directions, because this fix has a symmetric failure mode.** A `force` that is
+always on would make every member stamp, which is the noise the variable exists to prevent, and it would
+pass a one-directional test. Applied **separately**, since applied together they cancel exactly (the
+first run of this battery was a false green for that reason, and is recorded here because the shape
+recurs): dropping `force=True` fails 2 tests; making `force` unconditional fails 1.
+
+**Scanned and found clean / not worth a fix:**
+
+- The docstring's two `headline()` claims (a stamp printed last would replace a green member's summary;
+  a stamp cannot inflate a RED cardinality) are **defensive about a state that needs two independent
+  regressions to reach** — members do not stamp in a family run at all, because `run_one` sets the
+  variable in the child env. Left untested deliberately rather than pinned at cost.
+- `citations()` resolves its file set from `ls-tree` at a rev but from `rglob("*.md")` in the working
+  tree — **8830 files vs 90 corpus ones on the live tree, in 1.0 s**. A latent asymmetry, not a live
+  defect: target resolution filters to `corpus/` afterwards, and `corpus_files` is built from the same
+  prefix in both branches. Measured rather than assumed, and not repaired — the repair would be
+  gold-plating a path with no reachable wrong answer.
+
+**Stop condition:** continue-to-next-pass — one live defect on the second dimension is fewer than the
+four on the first, but a scan that still surfaces a defect in the fence family's own primitive has not
+come up empty.
