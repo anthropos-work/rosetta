@@ -32,7 +32,7 @@ Studio-Room does not run as its own deployment. Since **cms-in-app v8.0** it is 
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | Python 3.x, asyncio |
-| **Deployment** | Embedded in the **`app` (backend)** container since cms-in-app — invoked synchronously as a Python subprocess (`python3 studio/gen.py`) by the **cms domain's** Asynq worker *inside `app`* on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
+| **Deployment** | Embedded in the **`app` (backend)** container since cms-in-app — invoked synchronously as a Python subprocess (`python3 studio/gen.py`, dispatched in **argv (exec) form, never through a shell** — `studioManager.go:119` → `runCommand` at `:1099-1101` @ `app` `ad9f3c49`) by the **cms domain's** Asynq worker *inside `app`* on the `studio` queue (worker `Concurrency: 5` shared across all queues; the `studio` queue has asynq priority weight 3 vs the `ai_video` queue's 7 — scheduling priorities, not concurrency limits); not a standalone deployment |
 | **AI Providers** | OpenAI, Azure OpenAI, Anthropic |
 | **Repository** | `anthropos-studio-room`, pulled into the **`app`** image by CI (was cloned into the cms repo at `cms/studio/` before cms-in-app) |
 
@@ -341,8 +341,9 @@ python gen.py --simid <uuid> --force
 ```bash
 # studio-room's root IS app/studio/ — it holds gen.py, requirements.txt, agents/, services/.
 # There is no studio/studio-room path. The Go side invokes `studio/gen.py` from the app repo
-# root (app/internal/cms/studio/studioManager.go:119), against the managed venv at
-# `studio/studio-venv` (studioManager.go:94-96).
+# root (app/internal/cms/studio/studioManager.go:119) in argv (exec) form — never via a shell,
+# never `bash -c` (runCommand, :1096-1101) — against the managed venv at
+# `studio/studio-venv` (studioManager.go:93-96, the const block). All @ app ad9f3c49.
 cd app/studio
 pip install -r requirements.txt
 ```
@@ -371,7 +372,9 @@ pytest-asyncio  # tests
 > (`r3.py:194`). **Nothing dispatches it from the pipeline:** `gen.py` imports only
 > `console`/`format`/`agents`/`services.ai`/`postgen`, a reference sweep outside `tools/` finds no code
 > reference, and no Go caller exists (Go execs **two** studio scripts, neither of them this one:
-> `studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045` @ `app b948604f`). The package
+> `studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045` — **both re-derived at `app`
+> `ad9f3c49` and both still exact** (M257x iter-115), and both are `runCommand` calls, i.e. argv form with no
+> shell). The package
 > **is** installed in the shipped image (`app/Dockerfile:45-46` copies the whole `studio/` tree and
 > pip-installs this file).
 >

@@ -26,7 +26,11 @@
 > **✅ The husk is GONE locally, and M809 has landed (re-measured at platform `0c91421`).**
 > There is no `cms` compose service, no `cms` entry in `repos.yml` (4 entries: app, sentinel,
 > next-web-app, studio-desk) and no `cms` profile. Nor is there a `CMS_RPC_ADDR` any more: M809
-> re-pointed it at `http://backend:8083` on the `messenger` block, and `838d907` deleted that block —
+> re-pointed it at `http://backend:8083` on the `messenger` block — **one of the MIDDLE TWO `d11a403`
+> moved** (with `JOBSIMULATION_RPC_ADDR`); `BACKEND_USERS_RPC_ADDR` and `SKILLER_RPC_ADDR` already held
+> that value at `d11a403^`, so "all four" (which
+> [`service_taxonomy.md`](../architecture/service_taxonomy.md) asserted until M257x iter-115) was never
+> true — and `838d907` deleted that block —
 > **compose now sets zero `*_RPC_ADDR` values**, and the cms domain is reached in-process.
 > *(Until `2adcf71` all of the above was false, and this banner said so; the M809 re-point is what
 > changed it.)* **Scope note: this is the LOCAL compose topology only.** Whether production's
@@ -47,7 +51,8 @@
 >   DB schema is **legacy — no longer authoritative**.
 > * **RPC** — `CMSService` is served on `app`'s single RPC mux, and **nothing outside the process
 >   reaches it**. `messenger` was the last caller; `CMS_RPC_ADDR` was `http://backend:8083` at
->   `0dab54d`, set on messenger's block alone, and `838d907` deleted that block — so the variable is
+>   `0dab54d` — `d11a403` put it there, **one of the two that commit moved, not one of four** — set on
+>   messenger's block alone, and `838d907` deleted that block — so the variable is
 >   set by no compose file today.
 >   **The M809 re-point had already landed** and there was no husk container left to reach either — `cms` is
 >   not among the **five** services compose declares at platform `0c91421` (**seven** effective, once
@@ -92,7 +97,7 @@ The CMS service is the **content layer of the platform** — it owns the authore
 
 1. **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — **skill paths** (title, description, cover/video, curators a.k.a. "Meet the Experts", library categories, **chapters → steps**, the job-simulation steps inside a chapter, skills-to-verify, settings, versioning — the `skill_paths` Directus collection), **job-simulation blueprints** (the `simulations` collection + `sequences`, roles, tasks, validation criteria), and the **content library** (`library_categories`, `library_macro_categories`, `resource`) — all proxied through Directus with Anthropos-specific business logic on top.
 2. **Owns the Studio data model** — `StudioDocument` (simulation blueprints), `StudioTask` (generation jobs), and related entities for the content-authoring workflow.
-3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess; the Go side dispatches generation work, the Python code executes it against **OpenAI, Azure OpenAI or Anthropic** — those three and no others. The provider registry is a three-entry dict: `{'openai': OpenAIProvider, 'azure': AzureProvider, 'anthropic': AnthropicProvider}` (`services/ai.py:705-708` @ `anthropos-studio-room` `aeec036` v0.51.1), and `services/ai.py:1-2` imports only `openai`/`anthropic`. **There is no Mistral path in the Python *generation* engine** — but `mistralai` is **not** unimported. `tools/pdf2md.py:24` does `from mistralai import Mistral` (client at `:96`, `model="mistral-ocr-latest"` at `:127`): a **standalone CLI OCR utility**, one leg of the `tools/r3.py` offline PDF→markdown chain, that nothing on the generation path calls — `gen.py` never imports `tools`, nothing outside `tools/` references it, and no Go caller exists (Go execs **two** studio scripts and neither is `pdf2md.py`: `studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045`, both @ `app b948604f`). `git -C app/studio grep -i mistral aeec036a` returns **22 hits in 3 files** (`requirements.txt:8`, `tools/pdf2md.py`, `tools/r3.py`), not one. So Mistral is **OCR-only on both sides** — Go-side for studio attachments, Python-side for that offline tool — and on the generation path on neither (see the Downstream-dependencies bullet below, and [`studio-room.md`](./studio-room.md) for the grep caveat that hid `tools/`).
+3. **Runs the AI generation pipeline** in-process. The Python project `anthropos-studio-room` is pulled into the image and dispatched as a subprocess **in argv (exec) form — never through a shell** (`app/internal/cms/studio/studioManager.go:1099-1101` @ `app` `ad9f3c49`; `git grep -n '"bash"' ad9f3c49 -- '*.go'` over the whole tree returns **0**); the Go side dispatches generation work, the Python code executes it against **OpenAI, Azure OpenAI or Anthropic** — those three and no others. The provider registry is a three-entry dict: `{'openai': OpenAIProvider, 'azure': AzureProvider, 'anthropic': AnthropicProvider}` (`services/ai.py:705-708` @ `anthropos-studio-room` `aeec036` v0.51.1), and `services/ai.py:1-2` imports only `openai`/`anthropic`. **There is no Mistral path in the Python *generation* engine** — but `mistralai` is **not** unimported. `tools/pdf2md.py:24` does `from mistralai import Mistral` (client at `:96`, `model="mistral-ocr-latest"` at `:127`): a **standalone CLI OCR utility**, one leg of the `tools/r3.py` offline PDF→markdown chain, that nothing on the generation path calls — `gen.py` never imports `tools`, nothing outside `tools/` references it, and no Go caller exists (Go execs **two** studio scripts and neither is `pdf2md.py`: `studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045`, both @ `app b948604f`). `git -C app/studio grep -i mistral aeec036a` returns **22 hits in 3 files** (`requirements.txt:8`, `tools/pdf2md.py`, `tools/r3.py`), not one. So Mistral is **OCR-only on both sides** — Go-side for studio attachments, Python-side for that offline tool — and on the generation path on neither (see the Downstream-dependencies bullet below, and [`studio-room.md`](./studio-room.md) for the grep caveat that hid `tools/`).
 
 This last point was the first structural shift: **studio-room is not a standalone deployable**. Since cms-in-app it rides in the **`app`** image rather than the cms one.
 
@@ -161,14 +166,14 @@ sequenceDiagram
     participant Desk as Studio-Desk
     participant CMS as CMS (Go)
     participant DB as PostgreSQL
-    participant Studio as studio/gen.py (Python)
+    participant Studio as studio/gen.py (Python — argv exec, no shell)
     participant AI as AI Providers
 
     Desk->>CMS: createStudioDocument(blueprint)
     CMS->>DB: INSERT studio_documents
     Desk->>CMS: generateContent(documentId)
     CMS->>DB: INSERT studio_tasks (pending)
-    CMS->>Studio: exec gen.py --media simulation --blueprint <file>.json
+    CMS->>Studio: runCommand(python3, ["studio/gen.py", "--media", ...]) — argv, never a shell
     Studio->>AI: prompts (FAST → STRICT → EXECUTION → CREATIVE slots)
     AI-->>Studio: generated content
     Studio->>CMS: results (stdout / files)
@@ -193,7 +198,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ## Interface Discovery
 
 * **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph. The Directus webhook receiver moved to `POST /api/webhook/directus` on app's web server and **fails closed** without `DIRECTUS_WEBHOOK_SECRET` (the standalone receiver at `:8090/webhooks/` was unauthenticated).
-* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux, and **every caller is in-process**. `messenger` was the last external one: M809 pointed its `CMS_RPC_ADDR` at `http://backend:8083`, and `838d907` deleted the messenger service and that variable with it, so compose sets it nowhere. **No `.tf` file in any clone names `http://backend.internal.anthropos:8081`** — 0 hits measured 2026-08-06 over all 44 tracked `.tf` files in the 13 `stack-demo` repos at each clone's own HEAD, and 0 again over the 59 `.tf` files a raw filesystem sweep of that workspace finds. The literal does occur in the clone set — **6 times, none of them terraform**; the count and its per-repo derivation are stated once, in [`backend.md`](./backend.md)'s *RPC re-pointed, then un-set* bullet, and are not restated here. The one that matters is a **markdown KB page** — `app/knowledge/service-dependencies.md:52` @ `app` `ad9f3c49` — which is not terraform, and which puts it in the **past** tense: *"it used to reach the users, cms, jobsimulation and skiller surfaces at `http://backend.internal.anthropos:8081`, and folding it in at v9.0 closed that edge"*, under the heading *"**There are no external callers of app's RPC mux left.**"* **And the production declaration is not measurable from this repo at all:** it lives in `infrastructure`, which has never been in any clone set — as `:18` of this same file already says — so no *"still names"* claim can be made here in either direction. See [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced unmeasurable-claims convention.
+* **RPC**: `app/internal/cms/rpcsrv` — served on app's single RPC mux, and **every caller is in-process**. `messenger` was the last external one: M809 pointed its `CMS_RPC_ADDR` at `http://backend:8083` — **`d11a403` moved exactly two variables on that block, `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR`; the other two already read `http://backend:8083` at `d11a403^` and were untouched (measured M257x iter-115)** — and `838d907` deleted the messenger service and that variable with it, so compose sets it nowhere. **No `.tf` file in any clone names `http://backend.internal.anthropos:8081`** — 0 hits measured 2026-08-06 over all 44 tracked `.tf` files in the 13 `stack-demo` repos at each clone's own HEAD, and 0 again over the 59 `.tf` files a raw filesystem sweep of that workspace finds. The literal does occur in the clone set — **6 times, none of them terraform**; the count and its per-repo derivation are stated once, in [`backend.md`](./backend.md)'s *RPC re-pointed, then un-set* bullet, and are not restated here. The one that matters is a **markdown KB page** — `app/knowledge/service-dependencies.md:52` @ `app` `ad9f3c49` — which is not terraform, and which puts it in the **past** tense: *"it used to reach the users, cms, jobsimulation and skiller surfaces at `http://backend.internal.anthropos:8081`, and folding it in at v9.0 closed that edge"*, under the heading *"**There are no external callers of app's RPC mux left.**"* **And the production declaration is not measurable from this repo at all:** it lives in `infrastructure`, which has never been in any clone set — as `:18` of this same file already says — so no *"still names"* claim can be made here in either direction. See [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced unmeasurable-claims convention.
 * **Federation**: **there is none left to speak of.** The cms subgraph was folded into `backend` at cms-in-app v8.0 — the **3 → 1** step, because `graphql-wundergraph@915da06` deleted `cms.graphqls` and `jobsimulation.graphqls` in the same commit. Then platform `2adcf71` (2026-07-31, PR #23 *"drop the WunderGraph router"*) **deleted the Cosmo/WunderGraph router itself** — service, `repos.yml` entry and clone. So this line's old ending, *"Cosmo Router now composes `backend` alone"*, names a component that no longer exists: **nothing composes anything.** GraphQL is served **directly by `backend`** at `:8082/graphql/query` — note the path moved with it (`/graphql` → `/graphql/query`), so a host-only re-point 404s rather than errors.
 
 ### Upstream consumers
@@ -284,7 +289,25 @@ python gen.py --media simulation --blueprint <file>.json
 > command *succeeds* while generating something unrelated. The reusable unit is a **blueprint**, not
 > a template — see [studio-room.md](./studio-room.md#blueprints-not-templates).
 
-> Note: when the Go service runs in development mode it auto-provisions a venv at `studio/studio-venv`, runs `pip3 install -r studio/requirements.txt`, and invokes `python3 studio/gen.py ...` / `studio/postgen.py` from the cms repo root via `bash -c` (paths are `studio/...`, not from inside `studio/`). For standalone Python work, use a venv to match the service's behavior.
+> ⚠️ **CORRECTED M257x iter-115 — this note asserted the exact inversion of a shipped security property.**
+> It said the Go service invokes `python3 studio/gen.py ...` / `studio/postgen.py` **"via `bash -c`"**, in the
+> present tense and with no HISTORICAL marker (unlike both of its neighbours in this section). The live code is
+> the opposite, deliberately: at `app` `ad9f3c49`,
+> `app/internal/cms/studio/studioManager.go:1096-1098` reads *"runCommand executes name+args in **argv (exec)
+> form — NEVER through a shell**… nothing is string-interpolated into a command line (M809b H-1/M-1)"*, and
+> `:1101` is `pycmd := exec.CommandContext(ctx, name, args...)`. `:100-103` says it in the caller's own words —
+> *"It MUST NOT be interpolated into a shell … **No `bash -c`**"* — and `:119` is
+> `s.runCommand(ctx, pyBin, append([]string{"studio/gen.py"}, tokens...))`. Measured: `git grep -n '"bash"'
+> ad9f3c49 -- '*.go'` over the whole `app` tree returns **0**.
+>
+> **What survives.** Dev mode does auto-provision a venv at `studio/studio-venv` and run
+> `pip3 install -r studio/requirements.txt` — as **fixed argv** (`:126`, `:129`), *"previously chained into the
+> same `bash -c` string that carried the tainted args"* (`:122-124`). Paths are still `studio/...`, not from
+> inside `studio/`. For standalone Python work, use a venv to match the service's behavior.
+>
+> **Why it read as true:** the claim is still correct about the **frozen** `cms` repo
+> (`ca50c817:internal/studio/studioManager.go:967` = `exec.Command("bash", "-c", command)`) — right about the
+> dead code, wrong about the shipped code, and wrong about the direction of a deliberate hardening.
 
 ### Sync the studio submodule
 

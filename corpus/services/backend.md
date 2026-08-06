@@ -150,7 +150,12 @@ containerized bring-up + migrate, and read-only prod.
   passage used to carry was **self-refuting at its own stated scope**, which is why the count is now
   spelled out: **1** in `app` (`app/knowledge/service-dependencies.md:52` @ `ad9f3c49`) and **5** in
   `rosetta-extensions` @ the pinned `09d06070` — four inside this corpus's own frozen test fixtures
-  (`stack-core/tests/fixtures/repair_leak/{pre,post}/corpus/services/cms.md:32` and `:157`) plus
+  (the merge-banner **RPC** bullet and the *Interface Discovery* **RPC** bullet of
+  `stack-core/tests/fixtures/repair_leak/{pre,post}/corpus/services/cms.md` — **named, not numbered**:
+  those are FROZEN copies of a corpus file, and a citation of the form `…/corpus/services/cms.md:NNN` is
+  resolved against the **live** corpus by `anchor_construct_guard`, so a corpus repair that shifts the live
+  file false-REDs a citation of the fixture. Measured M257x iter-115; routed as
+  `FIX-M257x-iter115-anchor-guard-resolves-fixture-paths-live`) plus
   `stack-core/tests/test_platform_predicate_guard.py:435`. **`rosetta-extensions` is one of the 13 repos
   the same 44-`.tf` denominator counts**, so a uniqueness claim over "the clone set" could never have been
   true at the scope the sentence itself defined. The `app` occurrence is the load-bearing one and it is

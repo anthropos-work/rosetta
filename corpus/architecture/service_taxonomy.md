@@ -35,7 +35,7 @@ graph TB
     
     Desk -->|GraphQL| Backend
     Academy -->|GraphQL - backend subgraph| Backend
-    Backend -->|spawns studio/gen.py in-process| Room
+    Backend -->|runs studio/gen.py in-process, argv exec — no shell| Room
     Core --> Directus
     Studio --> Clerk
     Core --> Clerk
@@ -45,10 +45,16 @@ graph TB
 > is backwards: Studio-Desk never receives anything from Studio-Room, and Studio-Room never calls
 > Studio-Desk. Generation flows **Desk → Backend → Room** — Desk submits/polls `StudioTask` over GraphQL
 > (`studio-desk/.env.example:44` bakes `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query` @ `41ee3575` — `:45` is `VITE_ENVIRONMENT=production`; the
-> `studioTask` / `studioTasks` / `archiveStudioTask` operations are `app`'s, in
-> `app/internal/web/backend/graphql/graph/schemas/cms_queries.graphqls:106`), and the cms domain in `app`
-> then runs the pipeline as a **subprocess of its own container** —
-> `app/internal/cms/studio/studioManager.go:119` execs `studio/gen.py`. Same correction as
+> `studioTask` / `studioTasks` / `archiveStudioTask` operations are `app`'s — but ⚠️ **they are not all in
+> one file, and this bullet supplied a single locator for three constructs until M257x iter-115.** At `app`
+> `ad9f3c49`: `studioTask` is `…/graphql/graph/schemas/cms_queries.graphqls:106` and `studioTasks` is `:107`,
+> while **`archiveStudioTask` is a MUTATION and lives in `cms_mutations.graphqls:22`** — it occurs nowhere in
+> `cms_queries.graphqls`, so this was a wrong *file*, not line drift, and a reader chasing the archive
+> operation found nothing. The load-bearing proposition — *these operations are `app`'s, not studio-desk's and
+> not a standalone cms's* — is true and re-derived), and the cms domain in `app`
+> then runs the pipeline as a **subprocess of its own container**, in **argv (exec) form, never through a
+> shell** — `app/internal/cms/studio/studioManager.go:119` runs `studio/gen.py` via `runCommand`, whose
+> contract at `:1096-1098` is *"NEVER through a shell"*. Same correction as
 > [`dependency_map.md`](./dependency_map.md)'s content-generation flow, which had it right all along.
 
 ## Technical Deep Dive (For Engineers)
@@ -146,9 +152,12 @@ two carry none either.
 > when taken and **carries an expiry**; the `Jobsimulation` row is the live proof that they expire (its flat
 > archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:89`).
 > **Read every date here as "asserted on", never as "is".** This note exists because the **Skiller**
-> (`service_taxonomy.md:157`) and **Skillpath** (`:158`) rows publish the flat form immediately above the
-> **Jobsimulation** row (`:159`) — the one cell retracting exactly that predicate. Rows are named as well
-> as numbered from M257x iter-102: iter-100's edit here shifted the table and left these numbers behind.
+> **Roadrunner** and **Skillpath** rows publish the flat form immediately above the **Jobsimulation** row —
+> the one cell retracting exactly that predicate. ⚠️ **The row NUMBERS are now gone entirely (M257x
+> iter-115), because this is the second time they rotted.** iter-100's edit shifted this table and left three
+> bare row numbers behind; iter-102 added the row *names* beside them as a self-heal; iter-115's repair
+> shifted the table again and the Jobsimulation number landed on the table **header**. A same-file line pin
+> into a growing table is not worth its self-heal — **search the row name.**
 
 | Service | Why removed | Local container? | Reference |
 |:--------|:------------|:-----------------|:----------|

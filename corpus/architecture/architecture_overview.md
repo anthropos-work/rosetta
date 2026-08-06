@@ -125,7 +125,7 @@ graph TD
     %% Studio connections
     Desk --> Clerk
     Desk -->|local: :8082/graphql/query| Gateway
-    Gateway -.->|spawns studio/gen.py in-process| Room
+    Gateway -.->|runs studio/gen.py in-process, argv exec — no shell| Room
     
     %% Router aggregation — PROD ONLY. ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation
     %% entries in one commit (a 3 → 1 step) — the jobsimulation subgraph outlived jobsim-in-app.
@@ -275,8 +275,12 @@ may still exist on disk):
     this document's own local-stack diagram below** — *"the only cross-process **RPC** edge out of backend
     on a core stack"* — which was right while this line was wrong, 55 lines apart in one file.
     On the `*_RPC_ADDR` half: the `messenger` block was the last thing
-    that set any (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_`, all re-pointed at
-    `http://backend:8083` by `d11a403`), and `838d907` deleted that service. The env-var *names* still exist
+    that set any (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_` — **all four read
+    `http://backend:8083`, but `d11a403` moved only the MIDDLE TWO**: `CMS_RPC_ADDR` and
+    `JOBSIMULATION_RPC_ADDR`. `BACKEND_USERS_RPC_ADDR` and `SKILLER_RPC_ADDR` already held that value at
+    `d11a403^`, and `BACKEND_USERS_RPC_ADDR` never addressed anything but `backend` from its introduction
+    at `3e85fce` — it only ever moved ports, so there was nothing to re-point. Corrected M257x iter-115),
+    and `838d907` deleted that service. The env-var *names* still exist
     in consumer code; no local compose file configures them
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 

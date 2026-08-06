@@ -1890,7 +1890,11 @@ the same mechanism, one cycle apart, with §5 rule 34 already naming it both tim
   the correct local-stack line; an inserted production-topology block moved that wording down, and **4 sites
   went on citing the old number**, by then naming the opposite topology. The 14-seat double reading found 2
   of the 3 in-scope ones and **missed `backend.md:54` in both passes**, inside a seat's own file set.
-  **Repaired at iter-108**, which re-measured the wording to **`:335`** and re-pointed all four citers
+  **Repaired at iter-108**, which re-measured the wording to **`architecture_overview.md` line 335 as it
+  stood at that repair** — named in full here because a bare `:NNN` written after a *different* file's
+  citation binds to that other document, which is how this very line resolved against `backend.md` instead
+  until M257x iter-115 (and false-RED'd the moment a repair shifted that file) — and re-pointed all four
+  citers
   (`backend.md`, `sentinel.md`, `jobsimulation.md`, `CLAUDE.md`). **The line numbers in this bullet are
   HISTORICAL and are deliberately written with their ref** — an unpinned `file:line` in a post-mortem is
   indistinguishable from a live citation, and `repair_postcondition` correctly refused this paragraph when
