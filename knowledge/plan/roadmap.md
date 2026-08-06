@@ -575,6 +575,27 @@ proving function rather than presence, and covering the journeys that are silent
 > (21) was closed by the coordinator directly when spawns were failing — and its running-ledger line was the
 > one artifact that step missed, found only by this close's iter-ledger audit. **0 platform-repo edits ·
 > 0 net-new deps.**
+>
+> **Closing headline numbers** (moved here from `state.md` 2026-08-06 — `context.md` § state.md contract puts
+> closed-milestone write-ups in this file, never in `state.md`):
+>
+> - **Python (rext):** **1,723 pass / 2 skip / 0 fail** over four suites (stack-core 287 · demo-stack 1000 ·
+>   stack-verify 171 · stack-injection 267), counts from **JUnit XML, never grepped stdout**, one invocation
+>   per suite with rc captured into a variable. Same-scope vs M255's three-suite 1,505: **1,552 (+47)**.
+> - **Go (rext):** **2,130** test funcs (M255: 2,023, **+107**) · **0 of 6** modules failing, 58 packages ok.
+>   NB rext is **not one Go module** — `go test ./...` from the root fails by design; run each section.
+> - **Playwright:** **209 tests in 43 files** (was 204/42); unit **174** (was 169).
+> - **Playthroughs: 30 live + 1 verdicted TODO** · mutating **12** · negative controls **28 of 30** ·
+>   `blocked` **1** · written verdicts **31/31, 0 `unimplementable`** · `ptvalidate` VALID rc 0.
+> - **Flake: 0** (3 consecutive cold reset-to-seed, rc `0/0/0`). **Platform-repo edits: 0. Net-new deps: 0.**
+>
+> **v2.8 baselines to beat** (also moved from `state.md`):
+>
+> | | Baseline | v2.8 target |
+> |---|---|---|
+> | Cold `--purge` + `demo-up` (billion) | **666.29 s** (n=3 p50; min 658.15) | **≤ 360 s p50** (M257) · stretch 300 |
+> | Composed up-and-proven cycle | *does not exist* | **≤ 480 s p50**, zero standing red (M258) |
+> | Playthrough suite, ABSOLUTE on billion | **228 s** (dominated by one LLM-bound test) | re-measure = **reporting only**, M258 |
 
 **Exit gate** (three clauses, all objective, all on `billion`, all measured on the **post-coverage** suite):
 1. **Faster** — **median per-Playthrough ≤ 5 s** *and* **full post-coverage suite p50 ≤ 200 s wall-clock**,
