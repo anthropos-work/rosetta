@@ -496,7 +496,9 @@ Rules, in order of how often they actually catch something:
     alone.** The partition that is *correct for reading* is *wrong for repairing*. Six auditors each owning
     a disjoint file set is precisely what surfaces independent double-finds (rule 18(b), which has now paid
     three times — M257x iter-38 had two auditors refute the same false EU-AI-Act premise from two different
-    files; iter-39 had two find `hiring.md:93` independently). But a **claim does not respect a file
+    files; iter-39 had two find `hiring.md:93` **as it stood then** independently — a HISTORICAL anchor,
+    deliberately not re-pointed, because re-pointing it would falsify the record of what iter-39 actually
+    found). But a **claim does not respect a file
     boundary**, and a repairer who owns `external_services.md` cannot fix the same sentence where it also
     lives in `graphql-wundergraph.md`.
 
@@ -1468,10 +1470,13 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 > standing. Fenced by `platform_predicate_guard.py` G4.
 
 **Where it came from is the whole lesson.** The refuting citation iter-21 trusted was a corpus line
-asserting messenger points *all four* addresses at `backend:8083` — **`corpus/services/backend.md:241`
-today**; the `:187` this passage cited until M257x iter-98 has since drifted onto a directory listing
-(`bootstrap/ First-run / new-org provisioning`), which is the §5 rule-22 failure *inside the rule that
-teaches it*. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
+asserting messenger points *all four* addresses at `backend:8083` — **`corpus/services/backend.md:302`
+today**; the `:187` this passage cited until M257x iter-98 drifted onto a directory listing
+(`bootstrap/ First-run / new-org provisioning`), and the `:241` that replaced it drifted again, onto
+`askengine/ "Talk to Data"`. **That is the same anchor rotting three times in three readings** — §5 rule 22's
+failure *inside the rule that teaches it*, now with a measured recurrence rate rather than an anecdote.
+Cite the *claim* here, not the line: the sentence to look for is the `**Connect-RPC**` bullet under
+*Interface Discovery*, whichever line it currently occupies. At `2adcf71` it pointed **two** (at `0dab54d` it does point all four — the claim was
 premature, not permanently wrong, which is its own lesson). **One false corpus line, cited as authority, produced two false corrections in
 a hand-off designed to be applied mechanically.** An audit that reads the corpus to correct the corpus is
 circular; the citation must terminate in platform source.
@@ -1876,10 +1881,15 @@ the same mechanism, one cycle apart, with §5 rule 34 already naming it both tim
 * **iter-100 → booked by iter-101.** A two-line parenthetical pushed a `service_taxonomy.md` table down two
   rows; the numbers around it did not move, so a note that had been exactly correct came to cite Chronos and
   Intelligence.
-* **iter-102 → booked by iter-103.** `architecture_overview.md:321` was the correct local-stack line; an
-  inserted production-topology block moved the wording to `:331` and **4 sites still cite `:321`**, now
-  naming the opposite topology. The 14-seat double reading found 2 of the 3 in-scope ones and **missed
-  `backend.md:54` in both passes**, inside a seat's own file set.
+* **iter-102 → booked by iter-103.** `architecture_overview.md` **line 321 as it stood at `8f04d3a`** was
+  the correct local-stack line; an inserted production-topology block moved that wording down, and **4 sites
+  went on citing the old number**, by then naming the opposite topology. The 14-seat double reading found 2
+  of the 3 in-scope ones and **missed `backend.md:54` in both passes**, inside a seat's own file set.
+  **Repaired at iter-108**, which re-measured the wording to **`:335`** and re-pointed all four citers
+  (`backend.md`, `sentinel.md`, `jobsimulation.md`, `CLAUDE.md`). **The line numbers in this bullet are
+  HISTORICAL and are deliberately written with their ref** — an unpinned `file:line` in a post-mortem is
+  indistinguishable from a live citation, and `repair_postcondition` correctly refused this paragraph when
+  it carried bare ones.
 
 | layer | asserts | lives in |
 |---|---|---|

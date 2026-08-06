@@ -19,7 +19,7 @@
 ## Architecture & Code Map
 
 * **Codebase**: `next-web-app` (local) — repo `git@github.com:anthropos-work/next-web-app`
-* **Language / runtime**: **TypeScript**, **Next.js 16.2.7** (App Router, Turbopack), **React 19.2.7**, **Node ≥ 24**, **pnpm 10.30.3**. All four apps (`apps/{web,hiring,integration,maintenance}/package.json`) declare `"next": "^16.2.7"` and the lockfile resolves it; the repo carries `UPGRADE-IMPACT-next16.md`
+* **Language / runtime**: **TypeScript**, **Next.js 16.2.12** (App Router, Turbopack), **React 19.2.7**, **Node ≥ 24**, **pnpm 10.30.3**. All four apps (`apps/{web,hiring,integration,maintenance}/package.json`) declare `"next": "~16.2.12"` — **a tilde range, not a caret** — and the lockfile resolves **`16.2.12`**, measured @ `8297c684`. (`apps/mobile` declares no `next`.) **This line read `"^16.2.7"` until M257x iter-108**; `^16.2.7` is the `@next/*` sibling range, not this one. The repo carries `UPGRADE-IMPACT-next16.md`
 * **Build system**: Turborepo 2.9.x; `repos.yml` type `node-pnpm`
 * **Data layer**: `graphql-request` + **TanStack React Query** (⚠️ **not** Apollo Client) + `@graphql-codegen` client-preset
 * **Database**: none (org scoping comes from Clerk session claims; data lives in backend services)

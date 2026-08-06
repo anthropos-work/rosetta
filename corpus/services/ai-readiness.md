@@ -426,23 +426,27 @@ decision):**
   `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
   `ai_readiness_sims` config — and, **for an active cycle, the membership filter is `keepInCycleStep1`**
-  (`readiness.go:388`, `:662-664`): it keeps only members who **FINISHED step 1 inside the cycle window**
-  (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers` is the **other**
-  branch — the lifetime filter used when there is **no** active cycle (`:390`, `:684`). This passage named
-  the wrong one of the two until M257x iter-52.
+  (call site `readiness.go:388`; **`func` at `:710`**): it keeps only members who **FINISHED step 1 inside
+  the cycle window** (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers`
+  is the **other** branch — the lifetime filter used when there is **no** active cycle (call site `:390`;
+  **`func` at `:730`**). This passage named the wrong one of the two until M257x iter-52, and carried the
+  wrong `func` anchors until iter-108: `:662-664` is the body of `audienceScope` (`:655`) and `:684` is
+  `queryInCycleStep1Completers`, the very function the sentence contrasts this branch against.
 
   ⚠️ The no-active-cycle filter `keepStartedMembers` **excludes members with no PROGRESS ROW** from the
   aggregate, and **reads no step-1 evidence signal at all**, which this sentence claimed until M257x iter-49:
-  `queryReadinessStarters` (`aireadiness/steps.go:915-938`) is
+  `queryReadinessStarters` (`aireadiness/steps.go:964`, its SQL at `:969-974`) is
   `SELECT DISTINCT user_id FROM public.ai_readiness_user_step_progresses … AND status <> 'not_started'` — a
   row in the **progress** table, never a `user_skill_evidences` row. The old wording was wrong in **both**
   directions: a member with step-1 evidence but no progress row is **dropped**, and one with an
   `in_progress` row and zero evidences is **kept**. (This paragraph **previously said** the active-cycle
-  path used this filter; that attribution is **refuted** — see the `keepInCycleStep1` correction above.) The platform states this itself at `steps.go:907-914`
-  (*"This DB signal is the only real 'has started' check"*). So an **active**-cycle dashboard requires the
+  path used this filter; that attribution is **refuted** — see the `keepInCycleStep1` correction above.) The platform states this itself at `steps.go:962`
+  (*"This DB signal is the only real 'has started' check"*) — this doc cited `:907-914` until M257x
+  iter-108, which is the doc comment of `queryReadinessSimCompleters` (`:922`), a
+  `job_simulation_sessions` query about a different proposition. So an **active**-cycle dashboard requires the
   **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
   counted, not the evidences. **Both branches read that one table, at different strictness**, and the
-  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:638-652`) demands
+  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:684`) demands
   `step_type = skill_mapping` **AND** `status = completed` **AND** `completed_at >= cycle.start`, so a
   progress row seeded `in_progress` — enough for `keepStartedMembers` — leaves the member **invisible**
   on an active cycle (write the real skill evidences +

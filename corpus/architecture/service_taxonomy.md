@@ -44,7 +44,7 @@ graph TB
 > **Read the generation edge in that direction.** Until this pass the diagram drew `Room --> Desk`, which
 > is backwards: Studio-Desk never receives anything from Studio-Room, and Studio-Room never calls
 > Studio-Desk. Generation flows **Desk → Backend → Room** — Desk submits/polls `StudioTask` over GraphQL
-> (`studio-desk/.env.example:45` bakes `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`; the
+> (`studio-desk/.env.example:44` bakes `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query` @ `41ee3575` — `:45` is `VITE_ENVIRONMENT=production`; the
 > `studioTask` / `studioTasks` / `archiveStudioTask` operations are `app`'s, in
 > `app/internal/web/backend/graphql/graph/schemas/cms_queries.graphqls:106`), and the cms domain in `app`
 > then runs the pipeline as a **subprocess of its own container** —
@@ -163,7 +163,7 @@ two carry none either.
 **Production-only (deployed but not in local docker-compose)**:
 - **db-backup**: Scheduled PostgreSQL backups (6h cycle) to S3, Azure, Hetzner — see [db-backup.md](../services/db-backup.md)
 
-**Shared Libraries** (imported as private Go modules — **not** cloned by `make init`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). Full reference: [Shared Libraries](./shared_libraries.md).
+**Shared Libraries** (imported as private Go modules — **not** cloned by `make init`; pulled at Docker build via `GH_PAT`/`GOPRIVATE`). **`ai` is NO LONGER among them** — `app` folded it in-tree at `1e457fa70` (2026-08-04) and it is now `app/internal/ai/`; the live private-module set a stack builds is **colony, proto, taxonomy**. Full reference: [Shared Libraries](./shared_libraries.md).
 
 | Library | Purpose | Repository |
 |:--------|:--------|:-----------|
@@ -506,7 +506,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 |:-----|:------|:-----------|:-----------|:-----------|
 | **Core Backend (the default `core` selection)** | **5 containers** — `backend` + `gotenberg` + the three always-on base services (`postgresql`, `redis`, `sentinel`). No Cosmo Router (deleted at `2adcf71`), no cms / jobsimulation / roadrunner (deleted at `d11a403`) | Go (+ embedded Python — Studio-Room, in the **`app`** image) | Docker Compose + Makefile | GitHub repos (`anthropos-work` org) |
 | **Other profiles (off by default)** | Studio-Desk (`studio-desk`) and Next-Web-App (`frontend`) — **the only two left**. Storage (`storage-legacy`), Messenger (`messenger`) and CustomerIO Sync (`customerio-sync`) were here until `838d907` deleted all three services and their profiles | TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
-| **Shared Libraries** | **5 libraries, 4 imported** — colony, proto, ai, taxonomy (none of them in `repos.yml`; they are pulled at Docker build). `authn` is a library but not a dependency: it ships inside colony as `colony/authn` and no service's `go.mod` requires the standalone module (0 hits across all seven Go clones; control — `colony` is required by all seven) | Go | Imported (not deployed) | GitHub repos |
+| **Shared Libraries** | **5 libraries, 3 imported by a service a stack builds** — colony, proto, taxonomy (none of them in `repos.yml`; they are pulled at Docker build). **`ai` left this set** at `1e457fa70` (2026-08-04): `app` carries it in-tree as `app/internal/ai/`, and no `go.mod` a stack builds requires the module — only the frozen `cms` / `jobsimulation` husks (`v1.40.2`) still do. `authn` is a library but not a dependency: it ships inside colony as `colony/authn` and no service's `go.mod` requires the standalone module (0 hits across all seven Go clones; control — `colony` is required by all seven) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in the **`app`** image, orchestrated from `app/internal/cms/studio/` (it was `cms/studio/` before cms-in-app) | Local directories |
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | Go | ECS scheduled task | GitHub repo |

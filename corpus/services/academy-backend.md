@@ -122,9 +122,16 @@
     *   `cmd/academy-seed` — local dev/test seeder. Seeds chapter-progress + last-activity **through the Manager**
         (so writes go through the same monotonic-merge + self-only privacy paths, idempotent by construction). Flags:
         `--user-email`/`--user-id`, `--fixture`, `--reset`, `--dry-run`, `--list`. Local dev only.
-        **Demo caveat**: on a demo the frontend has **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so it serves its
-        **committed FS catalog** and any rows `academy-seed` writes have **no reader** — i.e. `academy-seed` is **moot
-        on a demo**; the demo CTA is a real `/courses/<slug>` link (see
+        **Demo caveat**: on a demo the frontend has **no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`**, so any rows
+        `academy-seed` writes have **no reader** — i.e. `academy-seed` is **moot on a demo**. **It does NOT
+        "serve its committed FS catalog": there is no FS-as-published fallback in the app** — this passage
+        said there was until M257x iter-108, contradicting
+        [`ant-academy.md`](./ant-academy.md)`:82-88`, which states the opposite in bold.
+        `getServerCatalogView()` resolves a null backend result to the **empty view**
+        (`serverTenant.js:115-145` — *"the cutover is intentional, not reversible-on-error"*). A demo grid
+        renders cards **only** because the rext demo-patch `demo-stack/patches/academy-fs-published-fallback`
+        *restores* that removed fallback on the demo's ephemeral clone; if the patch is refused, the grid is
+        empty. The demo CTA is a real `/courses/<slug>` link (see
         [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md)).
     *   `cmd/academyImport` — idempotent, resumable catalog/metadata/**bodies** importer from a manifest JSON
         (`--manifest`, `--content-root`, `--checkpoint`), uploading covers/audio via the asset uploader.

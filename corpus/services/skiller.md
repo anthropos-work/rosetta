@@ -16,8 +16,15 @@
 >   no longer authoritative**.
 > * **RPC** — the skiller Connect-RPC surface (`SkillerService`) is now served by `app`
 >   (`app/internal/rpc/skillerrpc/`). Consumers kept the same env var, re-pointed at
->   `http://backend:8083` locally; `skiller_rpc_addr = http://backend.internal.anthropos:8081` in production
->   terraform. **Locally that variable is now set by nothing**: the last block to carry it was
+>   `http://backend:8083` locally. **The production value is NOT ASSERTED here in either direction** — this
+>   line used to state `skiller_rpc_addr = http://backend.internal.anthropos:8081` flatly, in the present
+>   tense and unpinned, while four other docs declared the same value unmeasurable; it was the last site
+>   still asserting it. No `.tf` file in any clone names that literal (0 hits over all 44 tracked `.tf`
+>   files in the 13 `stack-demo` repos, each at its own HEAD, 2026-08-06), and the deciding declaration
+>   lives in the `infrastructure` repo, which has never been in any clone set — see
+>   [`backend.md`](./backend.md) for the derivation and
+>   [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced
+>   unmeasurable-claims convention. **Locally that variable is now set by nothing**: the last block to carry it was
 >   `messenger`'s, and platform `838d907` (merged `0c91421`, 2026-08-05) deleted that service — so
 >   there is no out-of-process consumer left to address, and the surface is reached in-process. The
 >   externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,

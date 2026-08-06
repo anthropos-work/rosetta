@@ -21,8 +21,10 @@
 > The `app`-side anchors have been re-derived repeatedly since (M257x iter-49, -52, -98, -100, -102); every
 > one re-derived at **iter-102** is measured at `app` **`ad9f3c49`** (= `origin/main` **and** the demo build
 > pin `stack-demo/clones.pin.json`, 2026-08-06). They are **not** interchangeable:
-> `internal/organization/manager.go:450` / `:453` / `:537` resolve at `ad9f3c49` and are each **off by −2**
-> at `5ba17044`. **Read the ref that travels with the anchor; do not read this banner as a pin over the
+> `internal/organization/manager.go:450` / `:453` / `:537` resolve at `ad9f3c49`, and **the offset back to
+> `5ba17044` is NOT uniform — do not apply one delta to all three.** Measured line-for-line:
+> `:450 → :448` (−2), `:453 → :451` (−2), but **`:537 → :487` (−50)**. This banner said *"each off by −2"*
+> until M257x iter-108; on that rule `:537` would resolve to `:535` at `5ba17044`, which is unrelated code. **Read the ref that travels with the anchor; do not read this banner as a pin over the
 > whole document.**
 > **This doc named a table the platform has since DROPPED — which is the worst possible version of the warning
 > directly above.** The score source was `public.local_jobsimulation_sessions`, a `Float32` MIRROR. `app`

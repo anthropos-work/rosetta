@@ -56,7 +56,7 @@ The frontend communicates with the backend **primarily — but NOT exclusively �
 
 ## Key Technologies
 
-* **Framework**: **Next.js 16** (App Router, Turbopack), React 19 — `apps/web/package.json:46` reads `"next": "^16.2.7"` (same in `apps/hiring` / `apps/integration` / `apps/maintenance`); the repo carries an `UPGRADE-IMPACT-next16.md`
+* **Framework**: **Next.js 16** (App Router, Turbopack), React 19 — `apps/web/package.json:46` reads `"next": "~16.2.12"` @ `next-web-app` `8297c684` (same in `apps/hiring` / `apps/integration` / `apps/maintenance`; `apps/mobile` declares none). **Note the operator: a TILDE, not a caret** — this line read `"^16.2.7"` until M257x iter-108, wrong in both the range operator and the patch; the lockfile resolves `16.2.12`. The repo carries an `UPGRADE-IMPACT-next16.md`
 * **Build System**: Turborepo 2.x
 * **Package Manager**: pnpm 10.x (`packageManager: "pnpm@10.30.3"`)
 * **Node**: **v24+ required** (`engines.node: ">=24.0.0"` in `package.json`)

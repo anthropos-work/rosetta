@@ -60,7 +60,7 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 ### How It Fits Into the Platform
 
-Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names).
+Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app`'s **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`, 1 of 43) inside it. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names).
 
 > **⚠️ The write path is the CLIENT harness, not the beacon route** (corrected M257x iter-102 — this sentence
 > sourced the mutations to `code/app/api/academy/beacon/route.js`, which states the mechanism in the opposite
@@ -108,7 +108,7 @@ graph LR
     end
 
     Academy --> Clerk
-    Academy -->|catalog: GraphQL academy subgraph| App
+    Academy -->|catalog: GraphQL, backend subgraph| App
     Academy -.->|direct, no platform proxy| OpenAI
     Academy ==> Vercel
     Desk --> Clerk
@@ -119,7 +119,9 @@ graph LR
 - No PostgreSQL schema of its own, no Atlas migrations
 - No Connect-RPC, no Redis Streams
 - **Provides** no GraphQL subgraph (it doesn't federate into the supergraph, which is `backend` alone) — but it **consumes** the platform's
-  **academy subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL"
+  **`backend` subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL". **There is no
+  "academy subgraph" to consume either** — the academy types live inside `backend`; this bullet named one
+  until M257x iter-108
 - Its rendered catalog is **NOT static repo JSON** — since v0.5.1 it is **DB-authoritative**, read from the platform
   academy backend over GraphQL. The committed JSON is the *authoring source* + the dev *draft* layer + a separate
   machine index — not what the authenticated grid renders
@@ -131,7 +133,7 @@ catalog).
 ### The Content Model — DB-authoritative catalog (v0.5.1 M7)
 
 **The home grid does NOT read the committed JSON.** Since ant-academy **v0.5.1 (M7)** the catalog the portal renders is
-**DB-authoritative** — queried from the **platform academy subgraph** (served by `app`'s `internal/academy`) over
+**DB-authoritative** — queried from the **platform `backend` subgraph** (the academy types are served by `app`'s `internal/academy`; there is no separate academy subgraph) over
 GraphQL, not from the repo's JSON files. This is the most load-bearing fact about the academy and the root of the demo
 "empty grid" symptom below.
 
@@ -474,7 +476,7 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 - **Studio Desk (loose link)**: `NEXT_PUBLIC_STUDIO_URL` can deep-link from the academy to the Studio Desk UI; nothing required at runtime.
 - **next-web-app (iframe embed):** the Workforce app loads Academy in an iframe with `?embed=anthropos`; `proxy.js` detects this server-side (`Sec-Fetch-Dest=iframe` + an `embed-mode` cookie, or an explicit `?embed=anthropos`), stamps an `x-embed-mode` request header, persists the cookie, and SSRs a light-themed, topbar-less variant (`data-embed` + `data-theme=light`). No data flows back — it is a presentation/cookie coupling only.
 - **Platform academy backend (GraphQL, load-bearing):** the home grid **reads its course catalog** from the platform
-  **academy subgraph** (`app internal/academy`) over GraphQL at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — `getBackendCatalogView()`
+  **`backend` subgraph** (academy types served by `app internal/academy`) over GraphQL at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — `getBackendCatalogView()`
   queries `academyCatalogSeries` + `academyCatalogSkillPaths`, tenant-filtered server-side. This is the catalog source of
   truth since v0.5.1 (M7); on failure the grid degrades to `emptyCatalogView()` (0 cards). See
   [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7). *(No Connect-RPC and no Redis events — the

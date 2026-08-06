@@ -92,11 +92,16 @@ fallback order (there is none; see above).
 
 ### Unified AI Library
 
-All Go services access AI through the shared `ai` library, which provides:
+Go services access AI through one `ai.AI` interface — but **it is no longer a shared private module for any
+service a stack builds.** `app` **folded the library into its own tree** at `1e457fa70` (2026-08-04,
+*"refactor(ai): fold the ai library into app as internal/ai"*): at `app` `ad9f3c49` neither `app/go.mod` nor
+`sentinel/go.mod` requires `github.com/anthropos-work/ai`, and the library lives at `app/internal/ai/`.
+The only repos that still *require* the module are the frozen `cms` and `jobsimulation` husks, which nothing
+clones or builds. What the interface provides is unchanged:
 - A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
 - Per-provider client constructors that return provider token counts (`MetaData.Usage`)
 
-> **Vendor selection/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: selection/fallback in each consumer's own wrapper — in `app` @ `5ba17044` that is **`app/internal/jobsimulation/ai/ai.go:267,344`** and **`app/internal/skillerai/ai.go:347`**, *not* a bare `app/internal/ai/ai.go` (**no such file** — that path now resolves only inside the frozen `jobsimulation` husk repo). The Azure client defaults to EU and swaps to US on the PostHog flag `flag_use_azure_us`; direct OpenAI is the retry target on HTTP 429; Anthropic is always Bedrock `eu-west-1`. **These are three independent mechanisms, not rungs of an ordered ladder** — the ⚠️ under *Provider Routing Strategy* at the head of this file (`:15-17`) retracts that ladder, and this line went on publishing it 68 lines below, in `→` form, until M257x iter-48. Cost tracking is in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
+> **Vendor selection/fallback and cost tracking are NOT in the `ai` library** — they live in the consuming services: selection/fallback in each consumer's own wrapper — in `app` @ `5ba17044` that is **`app/internal/jobsimulation/ai/ai.go:267,344`** and **`app/internal/skillerai/ai.go:347`**, *not* a bare `app/internal/ai/ai.go`. **NB that file DOES exist** at `app` `ad9f3c49` — it is the folded `ai.AI` interface (`1e457fa70`), and this parenthetical asserted *"no such file"* until M257x iter-108; what remains true is only that **vendor selection does not live there**, which is the point the sentence is making. The Azure client defaults to EU and swaps to US on the PostHog flag `flag_use_azure_us`; direct OpenAI is the retry target on HTTP 429; Anthropic is always Bedrock `eu-west-1`. **These are three independent mechanisms, not rungs of an ordered ladder** — the ⚠️ under *Provider Routing Strategy* at the head of this file (`:15-17`) retracts that ladder, and this line went on publishing it 68 lines below, in `→` form, until M257x iter-48. Cost tracking is in `app/internal/aiusage/ai_usage.go` (fed by `Event_AiUsage` over Redis Streams). See [Shared Libraries → ai](shared_libraries.md#ai).
 
 ---
 

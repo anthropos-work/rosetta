@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading; v2.2 "panorama" M213 MagicDNS/egress; v2.3 "cue to cue" M217 self-healing demopatch gate + **M218 the roster-aware fake BAPI**) · **Last updated:** 2026-07-14
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading; v2.2 "panorama" M213 MagicDNS/egress; v2.3 "cue to cue" M217 self-healing demopatch gate + **M218 the roster-aware fake BAPI**; v2.8 "fast build" M257x iter-108 pin re-derivation) · **Last updated:** 2026-08-06
 **Repo:** the `clerkenstein/` **section** of the `rosetta-extensions` monorepo — authored at
 `.agentspace/rosetta-extensions/clerkenstein`, consumed per-stack at a pinned tag as
 `stack-demo/rosetta-extensions/clerkenstein`. (It is **not** "its own git" — see *One monorepo, two clone
@@ -273,7 +273,11 @@ source changes.
 
 > **⚠️ The `v0.34.3` pin is the ARTIFACT's, and it is BEHIND the platform** (v2.8 M257x iter-23). At platform
 > `2adcf71`, `app/go.mod` reads `colony v0.35.2` — and `app` is the service an injected demo actually runs.
-> `sentinel` and `storage` are still on `v0.34.3`, so the pin is not wrong for the whole platform, but a
+> **`sentinel` has since moved too** — it is on `colony v0.35.2` at `f2c46190` (`sentinel/go.mod:8`), taken
+> there by `88036d7` *"chore(deps): update dependencies to latest versions"* — so the softening clause this
+> paragraph used to carry (*"`sentinel` and `storage` are still on `v0.34.3`"*) is **false for `sentinel`**
+> and now rests on the frozen `storage` repo alone, which nothing clones or builds. **Both live Go services
+> are on `v0.35.2`; the artifact's pin is behind the whole live platform, not part of it.** A
 > `clerk-deploy-1` score taken against `v0.34.3` **is not measuring the binary under test**. This is precisely
 > the drift the deployment DNA exists to catch, so re-run `deployrun` against `v0.35.2` before quoting 7/7 as
 > current. (`app` is likewise on `clerk-sdk-go/v2 v2.7.0`, not `v2.6.0` — `CHECK-M257x-iter22-clerk-sdk-drift`.)

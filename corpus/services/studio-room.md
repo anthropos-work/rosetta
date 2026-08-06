@@ -64,7 +64,9 @@ studio-room/
 ├── console.py          # CLI output formatting
 ├── format.py           # File formatting utilities
 ├── errors.py           # Error types
-├── cert.py             # Certificate / signing helpers
+├── cert.py             # CERTIFICATION-benchmark CLI (not certificates/signing — 0 hits for
+│                       #   certificate/signing/private_key/x509): runs the certification phase
+│                       #   over benchmark/certification/test-set/*.json and writes the reports
 ├── agents/             # Media generator agents
 │   └── simulation/     # Simulation generator package
 │       ├── prep.py

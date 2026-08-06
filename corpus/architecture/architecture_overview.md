@@ -37,7 +37,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Studio-Desk**: Web app where creators design job simulations
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the `app` (backend) image** since cms-in-app — it rode in the cms container before that, and was never a standalone deployment.
 *   **Standalone Internal Apps**: Separately deployed products that reuse platform identity (Clerk) — **but not independent of the backend**:
-    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel. Its course catalog is **DB-authoritative**, read from the platform academy subgraph over GraphQL, so it degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
+    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel. Its course catalog is **DB-authoritative**, read over GraphQL from the platform's **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`) inside it — so the catalog degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
 *   **Frontend**: Next.js **16** applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
@@ -56,7 +56,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
-- **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ^16.2.7` across all four apps)
+- **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ~16.2.12` — a tilde range, not a caret — in the four `apps/*` that declare it: `web`, `hiring`, `integration`, `maintenance`; `apps/mobile` declares no `next`. Lockfile resolves `16.2.12`, at `next-web-app` `8297c684`)
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router — **prod only**; local dev talks to
@@ -305,8 +305,12 @@ may still exist on disk):
     is not "EU-only" — a feature flag routes traffic to the US, and an unset `ai_vendor` does so with no flag
     at all.** AWS Bedrock is a *per-call vendor*
     (`AnthropicAws`, pinned to `eu-west-1` at `:85-88`), never a fallback tier. **Mistral is not part of this
-    routing chain** — but it *is* live in `app`: `internal/cms/studio/markdownManager.go:11,19` builds a
-    Mistral client from `MISTRAL_API_KEY` for **Studio document OCR** (called from `studioManager.go:583`).
+    routing chain** — but it *is* live in `app`: `internal/cms/studio/markdownManager.go:29-30` builds a
+    Mistral OCR client (`mistralocr.New(aiKey)`) for **Studio document OCR**. **The key reaches it from the
+    CALLER, not from the environment**: `studioManager.go:583` reads `os.Getenv("MISTRAL_API_KEY")` and
+    passes it in. This sentence used to cite `:11,19` and say the constructor read the variable itself —
+    `:11` is the closing paren of the import block and `:19` is a doc comment recording that that very
+    `os.Getenv` read was **removed**, so the anchor named the fix as if it were the defect.
     It is a separate, single-purpose provider, not a tier in the simulation cascade
 
 For detailed integration patterns, see [External Services](./external_services.md).
