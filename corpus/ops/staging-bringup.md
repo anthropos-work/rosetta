@@ -379,11 +379,15 @@ docker compose --profile all up --build -d
 ```
 
 > **`--profile all` no longer means "everything ever declared."** There is no `graphql` service
-> (router retired 2026-07-31) and no `cms`/`jobsimulation`/`roadrunner`; `messenger` was dropped
-> from `all` and `storage` moved to the `storage-legacy` profile at v9.0. Expect **8** containers —
-> `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`, `customerio-sync`, `studio-desk`,
-> `next-web-app` — the same list [`staging_from_dump.md`](./staging_from_dump.md) gives. It was ~14
-> before the merges.
+> (router retired 2026-07-31) and no `cms`/`jobsimulation`/`roadrunner`. Against platform
+> `origin/main` expect **7** containers — `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`,
+> `studio-desk`, `next-web-app`. It was ~14 before the merges.
+>
+> The exact count is a moving target and worth re-deriving rather than trusting: it read **8** until
+> platform `838d907` (2026-08-05) deleted the `storage`, `messenger` and `customerio-sync`
+> containers, which also removed the `storage-legacy` / `messenger` / `customerio-sync` profiles.
+> [`staging_from_dump.md`](./staging_from_dump.md) still gives the older 8-container list.
+> Derive it yourself: `docker compose --profile all config --services`.
 
 Wait 5-15 min for those services to report healthy:
 

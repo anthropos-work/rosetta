@@ -93,10 +93,17 @@ make up
 
 This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. That is the whole
 default stack. `cms`, `jobsimulation`, `roadrunner`, `skiller` and `skillpath` are folded into
-Backend/`app` and have no containers at all; `storage`, `messenger` and `customerio-sync` folded in
-at v9.0 and survive only as opt-in rollback profiles. **There is no GraphQL router container** —
-`backend` serves GraphQL itself at `http://localhost:8082/graphql/query` (the WunderGraph/Cosmo
-router was retired 2026-07-31).
+Backend/`app` and have no containers at all. **There is no GraphQL router container** — `backend`
+serves GraphQL itself at `http://localhost:8082/graphql/query` (the WunderGraph/Cosmo router was
+**retired 2026-07-31**).
+
+> **The profile list shrank again on 2026-08-05.** Platform `838d907` deleted the `storage`,
+> `messenger` and `customerio-sync` **containers** outright, taking the `storage-legacy`,
+> `messenger` and `customerio-sync` profiles with them. As of platform `origin/main` there are
+> **five** profiles — `core`, `backend`, `all`, `studio-desk`, `frontend` — and `--profile all`
+> yields **seven** containers (the five above + `studio-desk` + `next-web-app`). Runbooks written
+> before that date still name the three retired rollback profiles; asking for one exits **0** and
+> starts only the always-on floor.
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
