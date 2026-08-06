@@ -133,7 +133,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 > `DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work` (`docker-compose.yml:53`) and **no
 > `DIRECTUS_BASE_ADDR`** — that one `backend` picks up from the shared `env_file: .env`. The standalone `cms`
 > service that used to carry both explicitly is **gone from compose** (`d11a403`), so `backend` is the only
-> consumer left and per-service re-point tooling has ONE target, not two — see the ⚠️ under *Architecture* below.
+> **live** consumer left. **But the re-point tooling declares TWO targets, not one** — `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` (`rosetta-extensions/stack-injection/gen_injected_override.py:86`, and identically in the dev twin `stack-core/gen_override.py:58`, both @ the demo's pinned rext `09d06070`). Only `backend` ever *matches* on a current clone; `cms` is retained deliberately as an **inert key**, and the source says so at `:77-81` — the test *"never matches it on a current clone"* and it is *"kept only so a ROLLBACK/older platform clone that still DEFINES the container gets re-pointed too."* The ⚠️ under *Architecture* below (`:206-211`) states that two-member tuple **in bold**; it **qualifies** this sentence rather than corroborating a one-target reading, and an earlier revision here cited it as corroboration while it said the opposite (booked M257x iter-101, repaired iter-102).
 > A freshly-built local stack reads its public content **live from prod**. (Earlier revisions of this doc described a
 > `directus/directus:10.10.1` compose service on port 8055 with an `admin@example.com` / `password` admin login
 > and an inline `docker-compose.yml` snippet **as if it were CURRENT**, which it is not — there is still no
@@ -141,7 +141,7 @@ Then configure the webhook URL in Clerk Dashboard pointing to `https://<your-url
 >
 > **That retraction over-corrected, and this corrects the correction (M257x iter-48).** The twin of this
 > paragraph said *"all of that is false; that service **has never existed**"* — repaired at
-> [`service_taxonomy.md:332-339`](./service_taxonomy.md) and left standing here. The service **did** exist,
+> [`service_taxonomy.md:350-357`](./service_taxonomy.md) and left standing here. The service **did** exist,
 > with exactly that image tag, port and password, until platform `a2a3ee6` (2026-02-27) removed it:
 > `git show a2a3ee6^:docker-compose.yml` → `:384 image: directus/directus:10.10.1`, `:386 8055:8055`,
 > `:409 ADMIN_PASSWORD=password`. Only the `admin@example.com` **email** is unfound in history. And a check
@@ -205,8 +205,8 @@ graph TB
 
 > **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
 > tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to the stack's
-> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:669-670`
-> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:84`). `backend`
+> compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:698-699`
+> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:86`) — both @ the demo's **pinned** rext `09d06070`; the same constructs were `:669-670` / `:84` at the prior pin `ab81527a`, which is why an unpinned anchor here rots on every re-pin. `backend`
 > is in that tuple because — per the `cms_reader_switch` above — **`backend` is the service that actually
 > reads Directus**; re-pointing only `cms` would leave the real reader aimed at production content.
 >

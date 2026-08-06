@@ -18,11 +18,22 @@ derived_at:
 
 **RED — and deliberately pre-staged rather than terminal.**
 
+> **⚠️ STATUS AT iter-102 (2026-08-06): reason 1 is DISCHARGED and reason 2 is PARTLY discharged.**
+> Reason 1's item is **filed** (`D-M257x-102-1`) and §8 now has **zero** open user questions. Of reason 2's
+> CHRONIC #2 block, **three of the four items are closed** — two dropped as subsumed or defect-less
+> (`D-M257x-102-2`, `D-M257x-102-4`), one filed (`D-M257x-102-1`) — leaving
+> `FIX-M257x-iter56-assignment-flake` alone. **The verdict stays RED on reason 3**, which is the one that
+> was always the real one: the milestone is not near close. **The audit itself is not re-run here** — this
+> is a status annotation by the iter lane, and `close-milestone` must still run its own audit.
+
 RED for three independent reasons, any one of which is sufficient:
 
-1. **A HIGH-severity item has been escalated to the user for 21 iterations and is still undecided**
-   (`DEF-M257x-iter80-storage-prod-bucket`). It is a **blocking input to this audit** and was re-derived
-   LIVE this pass: still true at platform origin HEAD.
+1. ~~**A HIGH-severity item has been escalated to the user for 21 iterations and is still undecided**~~
+   **✅ DISCHARGED at iter-102** (`DEF-M257x-iter80-storage-prod-bucket`). It was a **blocking input to
+   this audit** and was re-derived LIVE this pass: still true at platform origin HEAD — and it is now
+   **filed to `platform-defect-register.md`** rather than escalated, per `D-M257x-102-1`. The audit's own
+   finding §7 #1 (*"the register has zero M257x entries"*) is what resolved it: the destination existed and
+   had never been used.
 2. **Two CHRONIC repeat-deferral blocks** — the 11-item hardening routed-forward queue (`RF-2`, `RF-3`,
    `RF-7`…`RF-14`), restated as carried across **~33 iters and ≥5 harden passes**, and the four standing
    carry items iter-100 lists as *"carried, untouched, exactly as standing"* (restated in **28–36** iters
@@ -388,10 +399,34 @@ rext pin/clone/tag state, and one live test run.
    **exit clause 1 still names `odysseus`** — retired from the project by `D-v28-15` (2026-07-31), which
    `state.md` records but the roadmap does not. A gate clause that names a retired host cannot be met as
    written; that is this milestone's own defect class, in this milestone's own gate. → F17.
-3. **Three `fast-build-m257x-iter-101*` tags exist on origin**, two of them pointing at the *same* commit
-   (`iter-101` and `iter-101b` both dereference to `09d06070`; `iter-101c` → `4cb920a`).
-   `D-M257x-101-3` explicitly instructed the other lane to *"re-pin to it rather than cut a second tag, or
-   the two tags will disagree about which tooling the release means."* → F18.
+3. ~~**Three `fast-build-m257x-iter-101*` tags exist on origin**, two of them pointing at the *same* commit
+   (`iter-101` and `iter-101b` both dereference to `09d06070`; `iter-101c` → `4cb920a`).~~ → F18.
+
+   > **⚠️ STRUCK — FALSE POSITIVE. Re-derived against origin at iter-102 (`D-M257x-102-6`): there is
+   > EXACTLY ONE.**
+   >
+   > ```
+   > git ls-remote --tags origin 'refs/tags/fast-build-m257x*' | grep -v '\^{}' | wc -l  ->  54
+   > … | grep 'iter-101'                                                                 ->   1
+   > fast-build-m257x-iter-101  ->  tag object 0011c10a, peeled commit 09d06070
+   > ```
+   >
+   > No `iter-101b`, no `iter-101c`; **no origin tag points at `4cb920a`** at all. `.agentspace/rext.tag`
+   > reads `fast-build-m257x-iter-101`, the clone HEAD is `09d0607`, and `git tag --contains 7844e97`
+   > includes it. **The other lane's re-pin is done and correct**; its commit `b02150c` is titled, in terms,
+   > *"one rext tag, not two"*.
+   >
+   > **Two mechanisms, and the evidence does not separate them — so both are recorded.** (1) A **peeled-ref
+   > miscount**, which is demonstrable: `git ls-remote --tags` prints **two lines per annotated tag** (the
+   > tag object and its `^{}` peel), so counting *line shapes* rather than *distinct refs* doubles every
+   > annotated tag — for `iter-101` alone, **2 raw lines, 1 distinct ref**. This is the same mechanism run 57
+   > fixed in the guard family (*"take the cardinality from the GUARD, not from line shapes"*), recurring in
+   > a different instrument. (2) A **transient state since reconciled** by `b02150c`. Mechanism (1) cannot
+   > manufacture the specific names `iter-101b`/`iter-101c`, so it is **not a complete explanation on its
+   > own** — which is why (2) stands beside it rather than being dropped for the tidier story.
+   >
+   > **Booked regardless:** a peeled-ref line-shape miscount is a real `--tags` reading defect and will
+   > recur. Any future tag count takes `| grep -v '\^{}'` first, or counts `refs/tags/` names.
 4. **`repair_leak_waivers.json` and `repair_leak_guard.py` contradict each other in writing.** The guard's
    own prose says *"It can only ever make the fence quieter, so it is reported"* and the waiver file says
    *"every one is reported on each run"*; `find_leaks` (`repair_leak_guard.py:475`) returns
@@ -406,7 +441,30 @@ rext pin/clone/tag state, and one live test run.
 
 ## §8 — WHAT THE USER MUST DECIDE BEFORE `close-milestone` CAN RUN
 
-Four questions. **Q1 is a blocking input to this audit and has been open since 2026-08-05.**
+> ## ✅ RESOLVED AT iter-102 — **ZERO open user questions remain.**
+>
+> All four were decided or withdrawn on 2026-08-06. This section is kept in full, with each question's
+> disposition inline, because the *reasoning* is the durable part — three of the four turned out to be
+> questions that should never have reached a user.
+>
+> | | question | disposition | record |
+> |---|---|---|---|
+> | **Q1** | `DEF-M257x-iter80-storage-prod-bucket` | **(b) FILED** to `platform-defect-register.md`; the item moves *escalated-undecided → filed* | `D-M257x-102-1` |
+> | **Q2** | `FIX-M257x-iter53-union-set`, 46-vs-35 | **DROPPED as subsumed** (Fate 3) — `D-M257x-59-1` absorbed it **47 iters ago**; the thing it was pending on no longer exists | `D-M257x-102-2` |
+> | **Q3** | `CHECK-M257x-iter38-ai-act-classification` | **WITHDRAWN — not a user question at all.** The repair finished at iter-38; the corpus asserts no classification. What was carried was an *aspiration*, not a defect | `D-M257x-102-4` |
+> | **Q4** | ratify the gate re-grade | **RATIFIED — 2 of 5 PROVEN**, and clauses 1–2 are a **CLOSE BLOCKER**, not an M258 route | `D-M257x-102-3` |
+>
+> **A standing rule now governs this section** (`D-M257x-102-5`, binding user decision): **no legal,
+> regulatory, compliance or policy question is escalated during delivery.** Route it — close it, file it, or
+> state exactly what it blocks. **Never "needs an owner."** That routing is what turned Q3, a finished
+> repair, into a 36-iteration standing question.
+>
+> **The pattern across Q1–Q3 is the audit's most useful output and outranks its defect list:** two of the
+> three were **not decidable questions at all** — one was already answerable by the register that existed
+> for it, one had been subsumed 47 iters earlier, and one had no defect behind it. **Each survived because
+> every pass restated it instead of re-reading it at source.** See `platform-alignment.md` §5 rules 47–48.
+
+Four questions **as originally put**. **Q1 is a blocking input to this audit and has been open since 2026-08-05.**
 
 > **Q1 — `DEF-M257x-iter80-storage-prod-bucket`: what is the disposition?**
 > At platform origin HEAD `0c91421`, `docker-compose.yml:82` sets `STORAGE_S3_BUCKET` to the **production**
@@ -481,9 +539,9 @@ Nothing in this file was executed. These are handoffs, each with its owner.
 |---|---|
 | **the iter lane** (owns `iter-*/`, `progress.md`, `decisions.md`, `state.md`, `hardening-ledger.md`) | Book this audit in `progress.md`'s routes table so it is discoverable at close. Carry F13/F14 into the next reading's ground-truth addendum. Note in `decisions.md` that `D-M257x-101-1`'s app-clone precondition and `D-M257x-101-3`'s two handoff steps are now **discharged** (§5 #3, #4) |
 | **the corpus lane** (owns `corpus/**`) | RF-13 (`security_compliance.md`'s `Derivation:` block ends in a hand subtraction); the ~320 minors; the three `*-ops-collateral` sets; `DOC-M257x-iter22-ops-guides-5050`. **Do not start until the blind reading in flight has closed** |
-| **the rext lane** (owns rext code + tags + `.agentspace/rext.tag`) | F1–F11, F18. **F18 is the urgent one** — three `iter-101*` tags on origin, two on the same commit, is an ambiguous code-of-record for the release |
-| **the lane that owns `knowledge/plan/**`** | F16 (`platform-defect-register.md` — 0 M257x entries) and F17 (`roadmap.md` § M257x: `Status: planned`, and clause 1 naming the retired `odysseus`) |
-| **the user** | Q1–Q4 in §8 |
+| **the rext lane** (owns rext code + tags + `.agentspace/rext.tag`) | F1–F11. ~~**F18 is the urgent one**~~ — **F18 is STRUCK as a false positive** (§7 #3, `D-M257x-102-6`): re-derived at iter-102, there is **exactly one** `iter-101` tag on origin, the pin matches it, and it contains `7844e97`. **Nothing is urgent for this lane.** **F1 (`FIX-M257x-iter100-suite-stall`) is the highest-value item** — until it lands, no whole-suite claim in this milestone is defensible, which is the close's own evidence |
+| ~~**the lane that owns `knowledge/plan/**`**~~ **DONE at iter-102** | ✅ F16 — `platform-defect-register.md` has its first M257x entry (`PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`). ✅ F17 — `roadmap.md` § M257x status and the retired-`odysseus` clause both corrected |
+| ~~**the user**~~ **DONE at iter-102** | ✅ Q1–Q4 all decided or withdrawn — **zero open user questions**. See the resolution block at the head of §8 |
 
 ---
 

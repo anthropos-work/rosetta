@@ -64,8 +64,8 @@ Three layers of isolation ensure tenant data cannot leak:
 ### Layer 1: Database
 
 > **⚠️ Isolation is NOT automatic across the whole schema — do not rely on it as a blanket guarantee.**
-> Measured at `app` HEAD: of **135** Ent schemas (139 `.go` files, 4 of which declare no schema), only
-> **30** use `OrganizationMixin{}` — the one that carries the privacy `Policy()` (`mixin.go:126`). Seven use
+> Measured at `app` `ad9f3c49` (== `origin/main`, 2026-08-06): of **135** Ent schemas (139 `.go` files, 4 of which declare no schema), **30** *mention*
+> `OrganizationMixin{}` — the mixin that carries the privacy `Policy()` (`mixin.go:126`) — but only **29** *use* it: `user_resource.go:22` reads `// OrganizationMixin{},  // We need to work on this`, and a commented line compiles into nothing. **The predicate is *use*, not *mention*.** Seven use
 > `OrganizationIDMixin{}`, explicitly *"a plain nullable organization_id column"* with **no policy** — **and
 > a further 18 declare a plain `organization_id` field with neither mixin**. Two of those 18 are policed by
 > other means: `org_membership.go` declares its own fail-closed org `Policy()` (`:172-188`, ending in
@@ -101,8 +101,8 @@ Three layers of isolation ensure tenant data cannot leak:
 > `Policy()` either. An earlier revision of this paragraph closed with *"the remainder … carry no org column
 > by design"*, which excluded those 7 from its own count **three lines after naming them as unpoliced** — a
 > contradiction inside a single blockquote, and in the direction that reads as *"isolation is handled"*.
-> The genuine remainder — global reference data with no `organization_id` at all — is what carries no org
-> column by design.
+> **The remainder — 135 − 31 policed − 23 unpoliced-with-`organization_id` = 81 schemas — is NOT uniformly "global reference data."** Most of it carries no org column by design, but at least **four** members are per-TENANT and unfiltered on that axis: `lab.go:63`, `academy_chapter.go:84` and `academy_skill_path.go:78` each declare `field.String("tenant_eid")`, and `skill_path_session.go:43` declares `field.UUID("tenant_id", …)` (all @ `app` `ad9f3c49`). None of the four carries an `organization_id` or either org mixin; the first three declare **no `Policy()` at all**, and the fourth is filtered by `UserMixin{}` — by *user* (owner, `mixin.go:98`), never by its `tenant_id`.
+> A fifth, `academy_feedback.go`, falls in that remainder by the same arithmetic and **does** carry an `organization_id` (`:129`); it is out of the 23 only because `UserMixin{}` (`:64`) polices it by owner. **Scoping the tenant-scoped four is the caller's job**, exactly as it is for the jobsim fan-out and the taxonomy named below. The sentence replaced here — a **later** slip than the one named just above, and in the same *"isolation is handled"* direction — read *"The genuine remainder — global reference data with no `organization_id` at all — is what carries no org column by design"*, which silently re-classed those four tenant-scoped schemas as reference data. Booked M257x iter-99, repaired iter-102.
 >
 > **Re-measured M257x iter-46, at `app` @ `5ba17044`:** 139 `.go` files in `internal/data/ent/schema/`;
 > `OrganizationMixin{}` in 30, `OrganizationIDMixin{}` in 7, a plain `organization_id` with neither mixin in

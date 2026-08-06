@@ -1161,6 +1161,49 @@ Rules, in order of how often they actually catch something:
     reports the result in the guard's own confident voice (§5 rule 12). **Fetch, then measure, and
     say when you fetched.**
 
+    ### 41a. Corollary — a reading's GROUND TRUTH INCLUDES THE CLONE REFS, so **no lane may fetch while a reading is in flight** (M257x iter-101 / iter-102)
+
+    Rule 41 says *fetch, then measure*. It does not say **when you may stop fetching**, and that
+    omission cost M257x a provability it cannot get back.
+
+    M257x runs three lanes concurrently against one checkout. Path ownership was assigned to keep
+    them from colliding: one lane owned `corpus/**` and the milestone records, another owned
+    `stack-demo/**`, a third owned the deferral ledger. **The reading's adjudicators were grading
+    claims against the platform clones — which live inside `stack-demo/**`, the tree assigned
+    exclusively to another lane.** That lane refreshed the clone set at **11:18:16 – 11:20:51**;
+    the reading's adjudication commit landed at **11:21:55**.
+
+    The exposure is bounded — most of adjudication ran pre-fetch, the orchestrator observed the
+    pre-fetch ref, no corpus file moved, and the reading's `N` stands. **But it cannot be PROVEN that
+    no adjudicator read post-fetch**, and that is the whole problem: a fetch moves the very refs the
+    citation guards resolve against (`CITE_REF=auto` → `origin/main` first). Five clones advanced in
+    that window — `app` by 98 commits over 634 files, `next-web-app` by 41 over 192 — so an
+    adjudicator who happened to re-derive after 11:20:47 graded a **different subject** from one who
+    re-derived before, with nothing in either report saying which.
+
+    > **Rule.** **A reading's ground truth is not just the corpus — it is the corpus PLUS every clone
+    > ref the reading resolves against.** Freeze both for the reading's duration. **No lane may fetch
+    > any clone while a reading is in flight**; a lane that needs a clone advanced says so, and the
+    > fetch happens **between** readings and is recorded in the next reading's ground-truth sheet.
+
+    **Path ownership was necessary and not sufficient, and that is the generalisable half.** Two
+    lanes can hold disjoint sets of *writable paths* and still collide, because **the reading's
+    SUBJECT is wider than the paths anyone declared** — it reaches into a tree the reading never
+    writes and does not own. When you partition work by ownership, partition by **what each task
+    READS to settle its claims**, not only by what it writes. An instrument whose inputs are outside
+    every declared boundary is an instrument nobody is protecting.
+
+    Two practical corollaries:
+
+    - **Timestamp both sides.** A reading's ground-truth sheet already records the clone shas; it must
+      also record the **fetch time** of each clone, so a mid-reading move is *detectable* rather than
+      merely *suspected*. `guard_family.py` already prints `fetched Nm ago` — the sheet should carry
+      the same fact.
+    - **"It has since been fetched" is not a repair, it is a NEW ground truth.** The next pass
+      re-derives against the moved refs and measures what the move injected; it does not
+      retro-fit the old reading. Retro-fitting a reading to refs it never saw is the same error as
+      re-anchoring a deleted fact (§5 Trap A).
+
 42. **A RED summary line must name the EVENT, and "the last line of the output" does not.** The
     sibling of rule 11, found in the runner built to enforce rule 8. `guard_family.py` reported each
     guard's final output line as its headline. Guards emit findings in assertion order, so the
@@ -1456,6 +1499,51 @@ defect, it was arguing for it.*
 > for its schema or its tables. Then ask, per hit, *does the code that actually performs this read still live
 > in the named service?* A `docker inspect <container> | grep <VAR>` on a live stack answers it in one command
 > and beats any amount of reasoning.
+
+47. **Close a routed item when its DEFECT is repaired — not when its SUBJECT is fully understood.** The
+    ledger records defects, not curiosity.
+
+    M257x iter-38 found the corpus asserting an **EU AI Act Limited-Risk** classification resting on a
+    technical premise. It measured the premise, found it **false at platform HEAD**, and **removed the
+    claim** — correctly refusing to substitute *"therefore High Risk"*, on the ground that replacing one
+    unmeasured legal conclusion with another repeats the defect with the sign flipped (it cites the tenancy
+    fence, wrong twice in **opposite** directions, as precedent).
+
+    **That repair was complete.** The corpus asserts nothing; the retracted bullets sit inside an explicit
+    *"what is STATED, not what this corpus asserts"* fence (`security_compliance.md:227` under `:231-256`).
+    **Silence was the correct end state.** What went onto the ledger was not a defect but an **aspiration** —
+    *that someone re-derive the true classification* — routed as *"needs an owner outside this milestone."*
+
+    It was then carried as an **open question for 36 iterations**, and re-escalated by three separate
+    passes, none of which re-read the item at source. There was never anything to do.
+
+    > **Rule.** An item whose only remaining content is *"someone should determine X"* is **not deferred
+    > work** — it is a **finished repair with a wish attached**. Close it at the moment the repair lands.
+    > **Never route an item as "needs an owner."** A routing with no owner and no defect is a permanent
+    > resident of every future audit.
+
+    The diagnostic is one question: *if nobody ever does this, is any statement in the corpus false?*
+    If no, the item is done.
+
+48. **No legal, regulatory, compliance or policy question is escalated during delivery — route it, do not
+    ask.** *(Binding user decision, 2026-08-06: "don't bother me with legal stuff during this migration:
+    our goal is to close this release, not waste resources on legal matter.")*
+
+    This is rule 47 from the other direction, and the two share a cause. **The corpus documents what the
+    code does; it does not issue legal conclusions in either direction.** A compliance question is therefore
+    almost never a documentation defect — and when it is, the defect is the *unsupported assertion*, which
+    is repaired by **deleting the assertion**, not by sourcing a better one.
+
+    When one surfaces, pick one of three **without asking**:
+
+    | | condition | action |
+    |---|---|---|
+    | 1 | the false assertion is **already removed** | **close it.** Silence is a valid end state |
+    | 2 | a real defect **this repo cannot fix** | **file it** to `platform-defect-register.md` and move on |
+    | 3 | it **genuinely blocks delivery** | surface it — and state **exactly what it blocks** |
+
+    Apply it **retroactively** to an existing ledger: anything whose remaining content is a legal or policy
+    *determination* rather than a *repair* gets closed or filed, never carried.
 
 ---
 

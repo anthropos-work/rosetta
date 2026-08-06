@@ -85,8 +85,31 @@
 ## Local Development
 
 ### 1. Running Standalone
-*   **Prerequisites**: runs **as part of `app`** (no dedicated `cmd/`); a failed Bedrock init **disables** Talk-to-Data
-    but doesn't crash `app`. Needs AWS Bedrock access (IAM via the default credential chain) with Claude Sonnet 4.6
+*   **Prerequisites**: runs **as part of `app`** (no dedicated `cmd/`). ⚠️ **A failed Bedrock init takes the WHOLE
+    `backend` process down — nothing is "disabled".** Measured at `app` `ad9f3c49` (`== origin/main`, 2026-08-06),
+    `main.go:467-471`:
+
+    ```go
+    bedrockClient, err := askengine.NewBedrockClient(serverContext)
+    if err != nil {
+        logger.Error("bedrock client unavailable; talk-to-data disabled", "error", err)
+        return
+    }
+    ```
+
+    That `return` sits at **one level inside `func main()`** (`main.go:229`; no other `func` declaration falls
+    between `:229` and `:467`), so it returns from `main` itself — a *normal* return, hence exit status 0, which
+    is why it reads as a clean shutdown rather than a crash. Everything constructed **after** it never runs: the
+    Connect-RPC mux (`:1295`), the meta HTTP server (`:1361`), the Echo router, the Asynq pools and the Redis
+    subscribers (`:1438` onward). **The trap is the platform's own log string** — `"bedrock client unavailable;
+    talk-to-data disabled"` occurs **exactly once** in `app`'s Go source, and this doc had read it as a
+    description of behaviour rather than of intent (retracted M257x iter-102).
+    **How narrow the path is, stated rather than smoothed:** `askengine.NewBedrockClient`
+    (`internal/askengine/bedrock.go:161`) has exactly **one** error return — `config.LoadDefaultConfig` failing
+    (a malformed AWS config/profile), not merely absent credentials, which the SDK resolves lazily at call time.
+    So a bare local shell with no AWS creds normally boots fine and fails *per request*; but **when** the
+    constructor does error, the consequence is process exit, not a disabled subsystem.
+    **Beyond that**, it needs AWS Bedrock access (IAM via the default credential chain) with Claude Sonnet 4.6
     enabled in **eu-west-1**, a Postgres with the platform schema, and an embeddings provider for the shared `ai`
     client.
 *   **Command**: `go run .` in the app repo, or `make up` (ships inside the `backend` container).

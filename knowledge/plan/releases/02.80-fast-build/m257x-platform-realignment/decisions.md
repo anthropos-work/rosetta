@@ -1178,3 +1178,214 @@ tooling that includes `7844e97` is the work; a concurrent lane owns it.
 **The generalisable rule — this is the milestone's own recurring class turned on itself:** *a gate clause is
 proven at a REF, and it decays when that ref moves.* Booking a clause MET without re-anchoring it is the same
 defect as a corpus claim pinned to a stale sha, and M257x has now found it in its **own** exit gate.
+
+---
+
+### DEF-M257x-iter101-crosslane-fetch — a reading's ground truth moved under it, and it is my defect
+
+**Class:** coordination · **Severity:** medium · **Exposure:** bounded and stated · **Status:** recorded,
+rule written, not recurring (the rule now forbids it)
+
+**What happened.** M257x runs three lanes concurrently against one checkout. I assigned `stack-demo/**`
+exclusively to Lane B — while iter-101's adjudicators were grading claims against the platform clones,
+which live **inside `stack-demo/**`**. Lane B ran a clone-set refresh; iter-101's adjudication commit
+landed just after it.
+
+**Measured, at iter-102's open:**
+
+| | |
+|---|---|
+| Lane B's fetch window (`FETCH_HEAD` mtimes) | **11:18:16 – 11:20:51** |
+| iter-101 adjudication commit `a360d66` | **11:21:55** |
+| overlap | **≈ 68 s** between the last fetch and the commit |
+| clones whose **HEAD advanced** | **5** — `app` (98 commits / 634 files), `next-web-app` (41 / 192), `ant-academy` (5 / 86), `sentinel` (2 / 3), `studio-desk` (2 / 9) |
+| corpus files moved by the fetch | **0** |
+| `platform` (the ref clause 3/4 are graded at) | **unmoved** — `0c91421`, still `== git ls-remote origin HEAD` |
+
+**The exposure, stated honestly rather than minimised.** Most of adjudication ran pre-fetch and run 64
+observed the pre-fetch ref, so **`N = 24` stands**. But **it cannot be PROVEN that no adjudicator
+re-derived post-fetch**, and that is the whole problem: a fetch moves the very refs the citation guards
+resolve against (`CITE_REF=auto` → `origin/main` first, §5 rule 41). An adjudicator who happened to
+re-derive after 11:20:47 graded a *different subject* from one who re-derived before, and **nothing in
+either report says which**.
+
+**What makes it mine rather than Lane B's.** Lane B did exactly what it was told to do with a tree it had
+been given exclusively. **The ownership map was wrong, not the lane.** Path ownership was **necessary and
+not sufficient** — two lanes can hold disjoint sets of *writable paths* and still collide, because the
+reading's **SUBJECT is wider than the paths anyone declared**. It reaches into a tree the reading never
+writes and does not own. An instrument whose inputs sit outside every declared boundary is an instrument
+nobody is protecting.
+
+**The mitigating fact, and it is a measurement rather than a hope.** The `app` move — the largest of the
+five, and the one 17 corpus sites depend on — turns out to have changed **nothing any corpus claim cites**:
+
+| | at `2035f9a4` | at `ad9f3c49` |
+|---|---|---|
+| `main.go` line count | 1639 | **1639** |
+| `main.go:504` / `:524` / `:525` / `:1384` / `:1450` | — | **all five byte-identical** |
+| `terraform/main.tf` line count | 786 | **786** |
+| `terraform/main.tf:181` (`service_desired_count = 1`) | — | **identical** |
+
+The 5 commits touched `.claude/skills/publish/SKILL.md`, `CLAUDE.md`, `knowledge/deployment.md`,
+`terraform/main.tf` and `terraform/variables.tf` — **no Go source, and no cited terraform construct.** So
+the fetch could not have changed any adjudicator's verdict on an `app` anchor even if one had re-derived
+mid-window. **That is a fact about this particular move, not a general reassurance**, and it is exactly why
+the rule below is stated in terms of *provability* rather than *outcome*.
+
+**Durable rule — written into `corpus/ops/platform-alignment.md` §5 rule 41a.**
+
+> **A reading's ground truth is not just the corpus — it is the corpus PLUS every clone ref the reading
+> resolves against.** Freeze both for the reading's duration. **No lane may fetch any clone while a reading
+> is in flight.** A lane that needs a clone advanced says so, and the fetch happens **between** readings and
+> is recorded in the next reading's ground-truth sheet.
+
+Two corollaries also written into 41a: a ground-truth sheet must record each clone's **fetch time**, not
+only its sha, so a mid-reading move is *detectable* rather than *suspected*; and *"it has since been
+fetched"* is **a new ground truth, not a repair** — the next pass re-derives against the moved refs and
+measures what the move injected, and never retro-fits the old reading.
+
+---
+
+### D-M257x-102-1 — `DEF-M257x-iter80-storage-prod-bucket` is FILED to the platform-defect register
+
+Answers the deferral audit's **Q1**. Escalated and undecided for 21 iterations; the audit made it a
+blocking input to its own gate.
+
+**Choice.** Option (b): **file it to `platform-defect-register.md`** as
+`PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`, and leave the rext isolation
+registry as it stands with the disagreement documented. `DEF-M257x-iter80` moves **escalated-undecided →
+filed**.
+
+**Why.** The deciding line is **platform source** — `docker-compose.yml:82-83` @ `0c91421`, re-derived for
+this filing and still true, inside the **`backend`** block, which the **default `core` profile** starts.
+This milestone is zero-platform-edit, so the register is precisely the sanctioned destination for *"Rosetta
+cannot fix this."* Filing does not pre-empt a platform-side fix; it makes the disagreement **documented and
+permanent**, which is the honest end state.
+
+**The audit's own finding that this closes:** `platform-defect-register.md` held **4 entries, all from
+M256, and zero from M257x** — despite having been created *by M256's deferral audit* for exactly this
+class. The register built for this item had never been used. It now has its first M257x entry.
+
+**What is NOT decided here.** `stack-seeding/isolation/isolation.go:106` still registers `s3-private` as
+`PerStackIsolated`. That is **ours**, it is a separate open question, and (a)/(b) were never exclusive.
+Recorded rather than quietly folded in.
+
+---
+
+### D-M257x-102-2 — `FIX-M257x-iter53-union-set` is DROPPED as subsumed (Fate 3)
+
+Answers the deferral audit's **Q2**. The question as booked was *"is the clause-5 repair target 46 or 35?"*
+
+**Dropped.** `D-M257x-59-1` (TOK-05) made predicate-scoping the repair unit **47 iterations ago**, which
+turned the union count from the *scoping input* into a *post-sweep validation cross-check*. The item has
+been restated by iters 76, 82, 86 and 100 in a form that no longer corresponds to how the repair works.
+
+It sat on the do-not-touch list pending a user ruling. **The thing it was pending on no longer exists**, so
+there is nothing for a ruling to decide. Same shape as `D-M257x-102-4` below and the same lesson: an item
+survived because each pass restated it instead of re-reading it.
+
+---
+
+### D-M257x-102-3 — the gate re-grade is RATIFIED, and clauses 1–2 are a CLOSE BLOCKER
+
+Answers the deferral audit's **Q4**. **`D-M257x-101-4` is ratified: 2 of 5 PROVEN.**
+
+**Clauses 1 and 2 stay in M257x's scope and are a close blocker — they are NOT routed to M258.** The gate's
+own first clause of text is *"Against platform @ **origin HEAD**, never a pinned pre-drift commit."*
+Routing them forward would be **re-cutting the gate**, which is not on the table. A concurrent lane owns
+the re-run.
+
+The 2-of-5 re-grade is honest accounting, not a regression: **UNPROVEN is not REFUTED.**
+
+---
+
+### D-M257x-102-4 — `CHECK-M257x-iter38-ai-act-classification` is DROPPED (Fate 3); the repair was finished 36 iters ago
+
+Withdraws the deferral audit's **Q3**, which is therefore no longer a user question. **§8 of that audit now
+has ZERO open user questions.**
+
+**Re-read at source** (`iter-38/decisions.md` `D-M257x-38-2`, `iter-38/progress.md:128-130`) and
+**re-verified in the corpus at this iter's open**: `security_compliance.md:227` sits inside a blockquote
+(`:231-256`) that says in terms *"Both bullets above are what is STATED, not what this corpus asserts"*, and
+`ai_architecture.md:284` carries the matching retraction. **The corpus asserts no classification, in either
+direction.**
+
+So there is **no false claim to fix**. What was carried was not a defect but an **aspiration** — *that
+someone re-derive the true classification* — routed as *"needs an owner outside this milestone."*
+
+- **Not a documentation defect** — nothing in the corpus is false.
+- **Not clause-5 blocking** — clause 5 requires the corpus not to assert falsehoods, and it does not.
+- **Not Rosetta's to answer** — the corpus documents what the code does. Issuing a legal classification in
+  either direction is exactly the category error iter-38 identified and correctly refused.
+
+**Silence is the correct end state, not a placeholder for a future answer.**
+
+**The meta-lesson, and it is a real one — written into `platform-alignment.md` §5 rule 47.** A completed
+repair was carried for **36 iterations** as an open question because the ledger recorded the **aspiration**
+rather than the **defect**. An item whose only remaining content is *"someone should determine X"* is not
+deferred work — it is a **finished repair with a wish attached**. The diagnostic is one question: *if nobody
+ever does this, is any statement in the corpus false?* If no, the item is done.
+
+---
+
+### D-M257x-102-5 — BINDING USER DECISION: no legal/regulatory escalation during delivery
+
+**The user's words (2026-08-06):** *"don't bother me with legal stuff during this migration: our goal is to
+close this release, not waste resources on legal matter."*
+
+**Binding for the remainder of v2.8. It constrains ROUTING, not just this iter.** When a legal, regulatory,
+compliance or policy question surfaces, pick one of three **without asking**:
+
+1. **already repaired** → **close it**; silence is a valid end state;
+2. **a real defect this repo cannot fix** → **file it** to `platform-defect-register.md` and move on;
+3. **genuinely blocks delivery** → surface it, **and state exactly what it blocks**.
+
+**Never route one as "needs an owner."** That routing is what turned a finished repair into a 36-iteration
+standing question (`D-M257x-102-4`).
+
+**Applied retroactively** to the open ledger: anything whose remaining content is a legal or policy
+*determination* rather than a *repair* is closed or filed, never carried. Written into
+`platform-alignment.md` §5 rule 48, next to rule 47 — the two are the same lesson from opposite directions:
+**the ledger records defects, not curiosity.**
+
+---
+
+### D-M257x-102-6 — the deferral audit's "urgent" tag escalation (F18) is a FALSE POSITIVE, and the state is clean
+
+The audit escalated, as the single **urgent** item for the rext lane, that *"three `fast-build-m257x-iter-101*`
+tags exist on origin, two of them pointing at the same commit"* — an ambiguous code-of-record.
+
+**Re-derived directly against origin at this iter's open:**
+
+```
+git ls-remote --tags origin 'refs/tags/fast-build-m257x*' | grep -v '\^{}' | wc -l   ->  54 distinct tags
+… | grep 'iter-101'                                                                  ->  1
+fast-build-m257x-iter-101  ->  tag object 0011c10a, peeled commit 09d06070
+git tag --contains 7844e97 | grep -c fast-build-m257x-iter-101                        ->  1
+.agentspace/rext.tag                                                                  ->  fast-build-m257x-iter-101
+```
+
+**There is exactly ONE.** No `iter-101b`, no `iter-101c`; **no origin tag points at `4cb920a`** at all. The
+pin, the clone HEAD (`09d0607`) and the tag agree, and the tag contains `7844e97`. **Lane B's re-pin is
+done and correct.**
+
+**Two mechanisms are available and I am not asserting one over the other, because the evidence does not
+separate them:**
+
+1. **A peeled-ref miscount, which is demonstrable.** `git ls-remote --tags` prints **two lines per annotated
+   tag** — the tag object and its `^{}` peel. For `iter-101` alone: **2 raw lines, 1 distinct ref.** Counting
+   *line shapes* rather than *distinct refs* doubles every annotated tag. **This is the same mechanism run 57
+   fixed in the guard family** (*"take the RED headline's cardinality from the GUARD, not from line shapes"*),
+   recurring in a different instrument.
+2. **A transient state since reconciled.** Lane B's commit `b02150c` is titled, in terms, *"one rext tag, not
+   two"*. The audit may have observed extra tags that were subsequently deleted.
+
+**Mechanism (1) cannot manufacture the specific NAMES `iter-101b` / `iter-101c`, so it is not a complete
+explanation on its own** — which is why (2) is recorded beside it rather than discarded in favour of the
+tidier story. Asserting the flattering single explanation is the failure this milestone exists to prevent.
+
+**What is booked regardless:** a **peeled-ref line-shape miscount is a real `--tags` reading defect** and
+will recur. Any future count of tags takes `| grep -v '\^{}'` first, or counts `refs/tags/` names.
+
+**Corrected in `deferrals-audit.md`:** F18 is struck, and §10's *"F18 is the urgent one"* handoff to the
+rext lane is withdrawn.

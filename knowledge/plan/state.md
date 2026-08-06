@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 101 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 2 of 5 PROVEN (the booked '4 of 5' withdrawn at iter-101, D-M257x-101-4): clauses 3–4 hold, clauses 1–2 UNPROVEN at origin HEAD pending re-run, clause 5 open. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative) — IN PROGRESS, 102 iters + 22 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 2 of 5 PROVEN (the booked '4 of 5' withdrawn at iter-101, D-M257x-101-4): clauses 3–4 hold, clauses 1–2 UNPROVEN at origin HEAD and are a CLOSE BLOCKER (D-M257x-102-3) — a concurrent lane has cycle 1 green + the Playthrough suite 30/0/0; clause 5 open. iter-102 paid BOTH read unions (52 anchors → 98 sites). M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 2 of 5 PROVEN** — the booked \"4 of 5\" is WITHDRAWN (`D-M257x-101-4`): clauses 3–4 hold at `0c91421`; **clauses 1–2 are UNPROVEN at origin HEAD** (proven at `2adcf71`, now 6 commits / 281 changed compose lines behind — the gate forbids a pinned pre-drift commit); **clause 5 open**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut or argued). iter-101 (the first true REPLICATE) returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, graded on **13 of 14 seats** — so `n₂` is a SIX-seat count. **Band #3 decided the estimator: blind overlap with iter-99's 28 was 6 against [14,22], so the readings are MORE independent than Chapman assumes and `N̂ = 45.1` is a FLOOR — cross-reading Chapman puts the residual near ~103.** Read **no** trend from 13 → 20 → 28 → 24; the upheld rate is non-constant and the last union is 13-seat. **Next action: pay down `FIX-M257x-iter101-read-union` by PREDICATE, and re-run clauses 1–2 at origin HEAD.** **Live detail lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back."
+phase: "M257x ITER LOOP, local to the new Mac (D-v28-15). **Gate 2 of 5 PROVEN** — the booked \"4 of 5\" is WITHDRAWN (`D-M257x-101-4`): clauses 3–4 hold at `0c91421`; **clauses 1–2 are UNPROVEN at origin HEAD** (proven at `2adcf71`, now 6 commits / 281 changed compose lines behind — the gate forbids a pinned pre-drift commit); **clause 5 open**, met ONLY by a reading that returns zero (ruled FOUR times; never re-cut or argued). iter-101 (the first true REPLICATE) returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, graded on **13 of 14 seats** — so `n₂` is a SIX-seat count. **Band #3 decided the estimator: blind overlap with iter-99's 28 was 6 against [14,22], so the readings are MORE independent than Chapman assumes and `N̂ = 45.1` is a FLOOR — cross-reading Chapman puts the residual near ~103.** Read **no** trend from 13 → 20 → 28 → 24; the upheld rate is non-constant and the last union is 13-seat. **iter-102 PAID BOTH unions** (iter-99's 28 + iter-101's 24 = 52 anchors → 76 assignments → **98 sites found, 94 repaired**, 10-seat fan-out); `claim_twin_guard`'s fenced claim set **134 → 264**. **The pool was probably always ~100 — it is NOT growing; the estimator was wrong and the replicate fixed it.** **Next action: RE-READ (a fresh graded reading over the repaired tree), and finish clauses 1–2 at origin HEAD.** **Live detail lives in the milestone `progress.md`. This field is a POINTER, per `context.md` § state.md contract; do not grow it back."
 last_updated: "2026-08-06"
 ---
 
@@ -39,18 +39,22 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **101 iters closed**. Gate **2 of 5 PROVEN** — the booked *"4 of 5"* is **WITHDRAWN**
+M257x iter loop, **102 iters closed**. Gate **2 of 5 PROVEN** — the booked *"4 of 5"* is **WITHDRAWN**
 (`D-M257x-101-4`): clauses 3 and 4 hold at `0c91421`, but clauses **1 and 2 are UNPROVEN at origin HEAD**
 (proven 2026-08-01/02 at platform `2adcf71`, now **6 commits / 281 changed lines of `docker-compose.yml`**
 behind, against the gate's own *"never a pinned pre-drift commit"*). **UNPROVEN is not refuted** — it is
 a re-run, and a concurrent lane owns it.
 
-Clause 5 open: the iter-101 **replicate** returned **N = 24** at **77.8 % raw / 80.0 % adjusted**, confirming
-iter-99's precision break is **structural, not variance**. **Band #3 is the result that matters:** blind
-overlap with iter-99's 28 came out **6** against **[14, 22]** — the readings are **more independent than
-Chapman assumes**, so **`N̂ = 45.1` is a FLOOR**; cross-reading Chapman puts the residual near **~103**.
-**A zero reading is not near, and no schedule may assume it is.** Graded on **13 of 14 seats** (`r24-D` lost
-to a spend limit, not re-run) — `n₂` is a **6-seat** count and is never compared to a 7-seat one.
+Clause 5 open. iter-101's **replicate** returned **N = 24**, and band #3 (overlap **6** vs **[14, 22]**)
+settled the estimator: the readings are **more independent than Chapman assumes**, so **`N̂ = 45.1` is a
+FLOOR** and cross-reading puts the residual near **~103**. **Read it correctly: the pool was probably always
+~100. It is NOT growing — the estimator was wrong and the replicate fixed it.** 16.7 → 29.4 → 45.2 → ~103 is
+four **corrections to an underestimate**, not four measurements of growth. **A zero reading is not near.**
+
+**iter-102 paid BOTH unions** — 28 + 24 = **52 anchors**, by PREDICATE, **10-seat** fan-out: **76
+assignments → 98 sites found → 94 repaired**. `claim_twin_guard`'s fenced set **134 → 264**, so completeness
+is **fenced, not claimed**. The `app` move injected **almost nothing** (`main.go` and `terraform/main.tf`
+byte-identical across it); the residual was **17 sites labelling `2035f9a` "origin/main."**
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):

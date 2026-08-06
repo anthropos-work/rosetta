@@ -262,9 +262,19 @@ may still exist on disk):
 ### Communication Patterns
 
 #### Core Services ↔ Core Services
-*   **Synchronous**: Connect-RPC/HTTP endpoints — down to **one edge on a local stack, `backend → sentinel`**.
-    At platform `0c91421` compose sets exactly one service address, `AUTHORIZATION_ADDRESS=http://sentinel:8087`
-    (`docker-compose.yml:48`), and **zero `*_RPC_ADDR` variables**: the `messenger` block was the last thing
+*   **Synchronous**: Connect-RPC/HTTP endpoints — down to **one Connect-RPC edge on a local stack,
+    `backend → sentinel`**. At platform `0c91421` that is the only cross-process **Connect-RPC** address,
+    `AUTHORIZATION_ADDRESS=http://sentinel:8087`
+    (`docker-compose.yml:48`), and there are **zero `*_RPC_ADDR` variables**. **It is NOT the only service
+    address compose sets, and not the only cross-process edge** — this passage previously said *"compose
+    sets exactly one service address"*, which **is false** and is retracted (corrected M257x iter-102).
+    The same `backend` block also sets `GOTENBERG_URL=http://gotenberg:3200` (`docker-compose.yml:57` — a
+    second container on the **default** `core` profile at `:183`, reached over **plain HTTP**, not
+    Connect-RPC, at `app/internal/converter/gotenberg.go:31` @ `app` `ad9f3c49`), `JUDGE0_BASE_URL`
+    (`docker-compose.yml:59`) and `REDIS_ADDR` (`docker-compose.yml:66`). **The correctly-scoped form is
+    this document's own local-stack diagram below** — *"the only cross-process **RPC** edge out of backend
+    on a core stack"* — which was right while this line was wrong, 55 lines apart in one file.
+    On the `*_RPC_ADDR` half: the `messenger` block was the last thing
     that set any (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_`, all re-pointed at
     `http://backend:8083` by `d11a403`), and `838d907` deleted that service. The env-var *names* still exist
     in consumer code; no local compose file configures them

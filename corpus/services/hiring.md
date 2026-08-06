@@ -17,6 +17,13 @@
 > **⚠️ RE-GROUNDED — v2.8 M257x iter-23, against platform origin `2adcf71` / `app` @ `5ba17044`.**
 > *(The platform-side citations below were re-anchored again to platform `0dab54d` in the M257x sweep —
 > `d11a403` had removed the cms / jobsimulation / roadrunner compose services and `repos.yml` entries.)*
+> **`5ba17044` is the historical iter-23 re-grounding ref — NOT a governing pin over the anchors below.**
+> The `app`-side anchors have been re-derived repeatedly since (M257x iter-49, -52, -98, -100, -102); every
+> one re-derived at **iter-102** is measured at `app` **`ad9f3c49`** (= `origin/main` **and** the demo build
+> pin `stack-demo/clones.pin.json`, 2026-08-06). They are **not** interchangeable:
+> `internal/organization/manager.go:450` / `:453` / `:537` resolve at `ad9f3c49` and are each **off by −2**
+> at `5ba17044`. **Read the ref that travels with the anchor; do not read this banner as a pin over the
+> whole document.**
 > **This doc named a table the platform has since DROPPED — which is the worst possible version of the warning
 > directly above.** The score source was `public.local_jobsimulation_sessions`, a `Float32` MIRROR. `app`
 > migration `20260729133514.sql:58-62` — *"5. Drop the mirrors."* — **re-points the *referencing* rows** (the
@@ -35,8 +42,15 @@
 >    `platform/repos.yml` carried **6** entries — **4** since `838d907` — and `jobsimulation` is **not one of them** — `d11a403`
 >    deleted it; `app` (`repos.yml:14-17`) is the only `migrations: true` entry. Qualified M257x iter-52,
 >    re-anchored in the M257x sweep)
->    — as the twins [`service_taxonomy.md:52`](../architecture/service_taxonomy.md)
->    and [`dependency_map.md:78`](../architecture/dependency_map.md) already said. `app/atlas.hcl:8` pins
+>    — as the twins [`service_taxonomy.md`](../architecture/service_taxonomy.md)'s Tier-1 **Database**
+>    characteristic bullet (`:62` — *"one schema, `public`, owned by `app`, which is the only repo with
+>    migrations"*, the `cms` / `jobsimulation` / `skillpath` schemas *"legacy husks"*) and
+>    [`dependency_map.md:78`](../architecture/dependency_map.md) (§ *2. Job Simulation* — session state goes
+>    *"directly to the **`public`** schema (the legacy `jobsimulation` schema is non-authoritative)"*)
+>    already said. (This cited `service_taxonomy.md:52` until M257x iter-102 — that is the closing line of
+>    the `:44-52` blockquote correcting the Studio-Desk → Backend → Studio-Room **generation edge**, which
+>    says nothing about schemas, `jobsimulation`, or migrations. The bullet is named as well as numbered
+>    because `service_taxonomy.md` is edited concurrently and `:62` can move.) `app/atlas.hcl:8` pins
 >    `search_path=public`, and the only `CREATE SCHEMA` in the entire migration set is `auth`.
 >    (This bullet read *"`jobsimulation.sessions` was dropped"* from iter-23 until M257x iter-49.)
 > 3. **One subgraph.** There is no second subgraph for `Session!` to resolve from — no join key, no
@@ -114,7 +128,8 @@ and an `apps/web` surface gated client-side on a Clerk org flag.
 > separately; a single "it doesn't re-skin" covers neither.
 >
 > - **DB-only** (column `true`, Clerk metadata absent) → **the client half is dead.** `isHiringOrg` is `false`,
->   so the nav keeps the "Activity dashboard" label (`useNavbarSections.tsx:460`) and the org is *not* filtered
+>   so the nav keeps the "Activity dashboard" label (`useNavbarSections.tsx:476` @ `next-web-app` `8297c684`;
+>   it was `:460` at `bb3313bc`) and the org is *not* filtered
 >   out of the workforce list (`useGetClerkOrganization.tsx:16-18`). And the product-boundary hand-off — which
 >   reads Clerk and **only** Clerk (`apps/web/src/context/UserStatusContext.tsx:144-149` computes
 >   `userHasAllHiringOrgs` from `publicMetadata.isHiring`, then `:168-172` fires
@@ -127,7 +142,8 @@ and an `apps/web` surface gated client-side on a Clerk org flag.
 >   The browser *does* re-skin (the re-skin reads Clerk, not the column) and the hand-off *does* route the
 >   recruiter to `apps/hiring`. What breaks is server-side: the content library serves the **workforce**
 >   type-set instead of the hiring one (`resolver_cms_queries.go:99-103`), and
->   `CreateOrganizationSimInvitationLink` hard-errors `"organization is not hiring"` (`siminvitationlink.go:62`)
+>   `CreateOrganizationSimInvitationLink` hard-errors `"organization is not hiring"` (`siminvitationlink.go:63`,
+>   guarded at `:62`)
 >   for any caller that uses it. **The `HiringConfigSeeder` is not such a caller** — it writes the 5 positions
 >   directly (`hiring_config.go:99`) and is unaffected. This bullet previously said it *"cannot write the 5
 >   positions in the first place"*; that consequence is **refuted** (M257x iter-52).
@@ -157,7 +173,14 @@ candidate's name/role, so **every candidate the scoreboard shows must have an ac
   a "role you're hiring for", but the comparison surface does **not** read it, and the captured snapshot has **0
   `job_position` rows** (the prod "443" was never captured). **⇒ the 5 "positions" ARE 5 real HIRING sims; there is
   no `job_position` replay** (M222 D4 → M223 Scope.In refinement). A candidate is comparable to another when they
-  share the same `jobsimulation_id` — the sim IS the position for scoreboard purposes.
+  share the same **`sim_id`** — the sim IS the position for scoreboard purposes.
+  ⚠️ **This said `jobsimulation_id` until M257x iter-102, and no such column exists on the live table.**
+  `public.job_simulation_sessions` has 23 columns; the sim reference is **`sim_id`**
+  (`20260722104506.sql:7`, `ent/schema/job_simulation_session.go:33`). `jobsimulation_id` was a column of the
+  **dropped mirror** `local_jobsimulation_sessions` — created `20240527131926.sql:7`, dropped with the table
+  at `20260729133514.sql:62`, the same drop this doc's re-grounding banner describes. A seeder or query
+  written from the old name does not mis-rank; it **errors on an unknown column**. Measured at `app`
+  `ad9f3c49` (= `origin/main` and the demo build pin, 2026-08-06).
 
 ## The comparison read-model (THE HEADLINE) — the score is `public.job_simulation_sessions.score`
 
@@ -189,14 +212,21 @@ schema, read directly by the resolver.
 | 2 | `packages/graphql/src/query/insights.ts:31-82` | query `insightsJobSimulationByMemberships` |
 | 3 | `app/.../resolver_queries.go:1034,1080` | resolver `InsightsJobSimulationByMemberships` (decl `:1034`) → `IntelligenceManager.InsightsJobSimulationByMemberships` (`:1080`) |
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
-| 5 | `intelligence.go:1728-1735` | best-attempt: `row_number() ORDER BY score DESC` per candidate |
+| 5 | `intelligence.go:1733` → `:2158-2160` | best-attempt: the call site (`:1733`) invokes `usersBestOrFirstJobSimulationSession` (declared `:2124`), whose window is `ROW_NUMBER() OVER (PARTITION BY sim_id, owner_id ORDER BY score DESC …)` at `:2158-2160`; the `RowNumber == 1` reduction back in the caller is `:1739-1744`. (Read `:1728-1735` until M257x iter-102 — that range holds the `onlyAssignments` branch and the call, not the `row_number()`.) |
 | 6 | `intelligence.go:1820` | `Score` ← the session's own `score` column — **not a mirror's** (see row 7) |
 | 7 | `app/internal/data/ent/schema/job_simulation_session.go:45` | Ent table `public.job_simulation_sessions`, `field.Float32("score").Default(0).Min(0).Max(100)` — **the score column, read at `intelligence.go:1820` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer exists** |
 
-**The best-attempt sort + the cohort** (`intelligence.go:1738-1751`): rows are grouped per `user_id`, reduced to
+**The best-attempt sort + the cohort** (`intelligence.go:1738-1764`): rows are grouped per `user_id`, reduced to
 **ONE best-attempt row per candidate** (the highest `score`), then sorted `score DESC, completition_status ASC,
-session_started_at DESC`. Candidates are **comparable** when they share the same `jobsimulation_id` +
-`organization_id` — that pair defines **one comparable cohort** (one scoreboard).
+session_started_at DESC`. Candidates are **comparable** when they share the same **`sim_id`** +
+`organization_id` — that pair defines **one comparable cohort** (one scoreboard). Both halves are the
+resolver's own predicates: `jobsimulationsession.SimID(jobSimulationId)` (`intelligence.go:1702`) +
+`jobsimulationsession.OrganizationID(organizationID)` (`:1709`); and the best-attempt window partitions on
+that same sim column per candidate — `ROW_NUMBER() OVER (PARTITION BY sim_id, owner_id ORDER BY score DESC
+…)` (`intelligence.go:2158-2160`, inside `usersBestOrFirstJobSimulationSession`, declared `:2124`).
+(This said `jobsimulation_id` until M257x iter-102 — that column belonged to the **dropped**
+`local_jobsimulation_sessions` mirror, never to `job_simulation_sessions`; see the `job_position` bullet
+above. Measured at `app` `ad9f3c49`.)
 
 **The silent-403 substrate:** the resolver gates on the **`OrgFeatureInsights` Casbin permission**
 (`resolver_queries.go:1035` — the first statement of `InsightsJobSimulationByMemberships`; `:1089` is the
@@ -264,10 +294,11 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 > `public.local_jobsimulation_sessions` (score) + a co-written `jobsimulation.sessions` twin (so the federated
 > non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). The mirror table is
 > dropped and there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.**
-> (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of **`:170-175`** above, which
-> is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was not, and no local stack creates
-> that schema either way. It cited `:157-159` until M257x iter-98 — that is the `job_position` bullet, a
-> different construct entirely.) The old
+> (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of the **History** blockquote
+> (**`:193-198`**) above, which is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was
+> not, and no local stack creates that schema either way. It cited the then-`:157-159` — the `job_position`
+> bullet, now `:173-175`, a different construct entirely — until M257x iter-98. Both in-file line numbers were
+> re-derived at M257x iter-102, when the repairs above shifted them by +23 and +16.) The old
 > "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
 
 **Org prerequisites:** `public.organizations.is_hiring = true` (§ *the gate*) + Clerk `publicMetadata.isHiring =
@@ -289,8 +320,9 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 `isHiringOrg` is **client-derived** (`useGetClerkOrganization.tsx:20-21`, above). What the flip changes:
 
 - **The comparison surface SURVIVES** — it is only **RELABELED "Results"** (vs "Activity dashboard"):
-  `packages/ui/src/NavBar/useNavbarSections.tsx:460`, inside `enterpriseInsightsMenuItem` (`:459-466`)
-  (`label: isHiringOrg ? tNavbar('results') : tNavbar('activityDashboard')`).
+  `packages/ui/src/NavBar/useNavbarSections.tsx:476`, inside `enterpriseInsightsMenuItem` (`:475-482`)
+  (`label: isHiringOrg ? tNavbar('results') : tNavbar('activityDashboard')`) — measured at `next-web-app`
+  `8297c684`; both anchors read `:460` / `:459-466` until M257x iter-102, exact at the earlier `bb3313bc`.
   It stays in `enterpriseAdminNavbarMenuItems`; the route `/enterprise/activity-dashboard` has **no `is_hiring`
   guard**.
 - **Two `isEnterprise` definitions DIVERGE — and that is not a bug:**
@@ -299,8 +331,23 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
   - **Billing:** `isEnterprise = !isHiringOrg && organizationId` (`FreeTrialContainer.tsx:29`) → flips **FALSE**, so
     hiring orgs are **excluded from the Workforce free-trial** container. Irrelevant to the comparison; enumerated
     here so a future reader doesn't "fix" the divergence.
-- **Also under `is_hiring`:** the nav trims the library to **AI-Simulations**, hides some member surfaces for
-  non-admins, and gates **Workforce Intelligence off**. None of these touch the comparison scoreboard.
+- **Also under `is_hiring`:** the nav trims the Content Library to **AI-Simulations** alone
+  (`packages/ui/src/NavBar/useNavbarSections.tsx:340-343` — `isHiringOrg` selects
+  `[librarySimulationsMenuItem]`, label `tNavbar('aiSimulations')` at `:249-256`, instead of the
+  simulations + skill-paths + academy + labs set), and hides the member Profile / Skills / Activities
+  entries for non-admins (`:329-331`, each `!isHiringOrg || isAdmin`). Both clauses verify.
+  ⚠️ **It does NOT gate Workforce Intelligence off — that clause is RETRACTED (M257x iter-102).** Nothing
+  gates Workforce Intelligence on `isHiringOrg`. The entry is `enterpriseWorkforceMenuItem`
+  (`tNavbar('workforceIntelligence')`, `:391-398`); it sits in the `intelligence` group, whose visibility
+  comes from `orgSectionVisibility({ isAdmin, showStudio })` returning `intelligence: isAdmin`
+  (`packages/ui/src/NavBar/orgGroups.ts:48-65`, the field at `:61`) — a function that **takes no
+  `isHiringOrg` parameter at all** — and the item itself is gated on `showWorkforce`
+  (`useNavbarSections.tsx:568`), which **defaults to `true`** (`useNavbarSections.tsx:161`) and is passed
+  `false` in exactly **two** places, **both in `apps/hiring`**
+  (`apps/hiring/src/app/(authenticated)/(verified)/template.tsx:167` and `:248`). So a recruiter loses
+  Workforce Intelligence by being handed off to **`apps/hiring`** (§ *The render path*), not by the
+  `is_hiring` flag inside `apps/web`; an `is_hiring` org's admin still browsing `apps/web` keeps it.
+  Measured at `next-web-app` `8297c684`. None of these touch the comparison scoreboard.
 
 ## Interface
 

@@ -1,15 +1,28 @@
 # Shared Libraries
 
-The Anthropos Go services share five internal libraries. They are **not deployed
-services** — there is no container, port, or `docker-compose` entry for any of them.
-They are **Go modules** compiled *into* each service's binary.
+This document covers **five** internal library repos. **The Go services do not share five**
+(corrected M257x iter-102; this line previously said *"The Anthropos Go services share five
+internal libraries"*): measured at platform `0c91421`, the two Go repos a stack clones and
+builds — `app` and `sentinel` — require **three**, colony + proto + taxonomy. The other two
+arrived by **absorption, not dependency**: `authn` ships *inside* colony as `colony/authn`
+and is a `require` in **no** repo's `go.mod`, and `ai` was folded into `app` as
+`app/internal/ai` at `1e457fa70` (2026-08-04), which dropped its module requirement — it
+survives as a requirement only in the frozen `cms` / `jobsimulation` repos. None of the five
+is a **deployed service** — there is no container, port, or `docker-compose` entry for any of
+them. They are **Go modules** compiled *into* each service's binary.
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
 Think of these as the platform's "standard library." Rather than every microservice
 re-implementing logging, database wiring, authentication, RPC contracts, or AI calls,
-that shared plumbing lives in five small repos that the services pull in like any
-third-party dependency. This keeps the services consistent and small.
+that shared plumbing lives in a handful of small repos that the services pull in like any
+third-party dependency. This keeps the services consistent and small. **Five such repos
+exist, but no service pulls five** (corrected M257x iter-102; this passage previously said
+*"that shared plumbing lives in five small repos that the services pull in like any
+third-party dependency"*). Counting `go.mod` requires over the seven Go repos on disk at
+their pinned refs: colony **7/7**, proto **7/7**, taxonomy **6/7** (all but roadrunner),
+ai **2/7** (only the frozen cms + jobsimulation), authn **0/7**. So **four** of the five are
+pulled by at least one repo, and only **three** by the two repos a stack actually builds.
 
 | Library | One-liner |
 |---------|-----------|
@@ -22,7 +35,10 @@ third-party dependency. This keeps the services consistent and small.
 > ### How they are consumed (this matters)
 > **None of these are cloned by `make init`** — they are **absent from
 > `platform/repos.yml`**, so there is no `stack-dev/colony` (etc.) directory.
-> Each is pulled as a **private Go module** during a service's Docker build:
+> **Each of the three a stack actually builds against** — colony, proto, taxonomy — is pulled
+> as a **private Go module** during a service's Docker build (`authn` rides *inside* colony
+> and is fetched by no `go.mod` line of its own; `ai` has no live puller left since `app`
+> folded it in — see its section below):
 > `platform/docker-compose.yml` passes `GH_ACCESS_TOKEN=$GH_PAT` as a build arg, and the
 > service Dockerfiles set `GOPRIVATE=github.com/anthropos-work/*` plus a
 > `git config … url."https://x-access-token:${GH_ACCESS_TOKEN}@github.com/".insteadOf`
@@ -106,8 +122,8 @@ e.g. `storage/internal/migration` imports `go/simulator/storage/v1` as `legacySt
 |:---------|:------|
 | **Module** | `github.com/anthropos-work/ai` |
 | **Language** | Go (`go 1.25.0`) |
-| **Version pin** | **`v1.40.2`** across every repo that requires it — `app`, and the frozen `cms` / `jobsimulation` repos — all agree |
-| **Imported by** | **`app` alone among the services a stack runs** — i.e. every folded domain. The frozen `cms` and `jobsimulation` repos still require it directly in their own `go.mod` (`cms/go.mod:9`, `jobsimulation/go.mod:11`, both `v1.40.2`), but at platform `0dab54d` neither has a compose service or a `repos.yml` entry, so nothing builds or starts them — a `go.mod` require in a repo nothing compiles is not a live import. Go services only — **not** Studio-Desk, which is TypeScript, and **not** roadrunner, whose only shared-lib requires are colony + proto |
+| **Version pin** | **`v1.40.2`** across every repo that *still* requires it — the frozen `cms` and `jobsimulation` — both agree. `app` required `v1.40.2` too, up to `b948604f`; it requires nothing now (next row) |
+| **Imported by** | **No repo a stack builds** (corrected M257x iter-102; this row previously said *"`app` alone among the services a stack runs"*). `app` **dropped** the module at `1e457fa70` (2026-08-04, *"refactor(ai): fold the ai library into app as internal/ai"*): `git show ad9f3c49:go.mod` has no `anthropos-work/ai` line and `go.sum` has zero, while `app/internal/ai/` carries the library in-tree — with a one-way door, `internal/ai/module_import_guard_test.go`, whose own comment records that the repo *"was deliberately left in place because at least one consumer outside this codebase (anthropos-work/rosetta-extensions/stack-seeding) pins it."* `sentinel` never required it. The frozen `cms` and `jobsimulation` repos still require it directly (`cms/go.mod:9` @ `ca50c817`, `jobsimulation/go.mod:11` @ `462343b0`, both `v1.40.2`), but neither has a compose service or a `repos.yml` entry, so nothing builds or starts them — a `go.mod` require in a repo nothing compiles is not a live import. Go services only — **not** Studio-Desk, which is TypeScript, and **not** roadrunner, whose only shared-lib requires are colony + proto |
 
 A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 `ChatCompletionStream`, `Response`, `CreateEmbeddings`, `CreateSpeech`, `OCRProcess`,
@@ -127,10 +143,21 @@ A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`,
 >    the `ai_usage` Postgres table, fed by an `Event_AiUsage` published over Redis Streams.
 > 2. **The `ai` library does NOT select a provider.** It only exposes per-provider
 >    constructors. (And what the consumers do is not an EU-first fallback *ladder* either —
->    `external_services.md:579` retracts that chain.) Vendor selection lives in each consumer's own
->    `internal/ai/ai.go` wrapper: an EU Azure client by default, a US Azure client gated
->    by the PostHog flag `flag_use_azure_us`, and an Azure→direct-OpenAI fallback on
->    HTTP 429. Anthropic is always Bedrock in `eu-west-1`.
+>    `external_services.md:579` retracts that chain.) **Vendor selection lives in each
+>    consuming DOMAIN's own `ai` wrapper — NOT in a file called `internal/ai/ai.go`**
+>    (corrected M257x iter-102; this passage previously said it in *"each consumer's own
+>    `internal/ai/ai.go` wrapper"*, which names no such code at any ref: `app/internal/ai/`
+>    did not exist at all at `b948604f`, and since the fold `app/internal/ai/ai.go` is
+>    **21 lines** declaring `type AI interface` + `type TokenEncoder interface` — no Azure
+>    client, no PostHog flag, no 429 handling). Measured @ `app` `ad9f3c49` — the two real
+>    sites are `internal/jobsimulation/ai/ai.go` and `internal/skillerai/ai.go`, each with
+>    its own `AIManager.getClient` (`:259` and `:332`): an EU Azure client by default, a US
+>    Azure client swapped in when the PostHog flag `flag_use_azure_us` is enabled
+>    (`jobsimulation/ai/ai.go:267` and `:344`, `skillerai/ai.go:347`), and — a **retry
+>    target, not a rung** — the vendor overridden to `Openai` on the next attempt once
+>    `isThrottlingError` sees an HTTP 429 (`jobsimulation/ai/ai.go:129`, used at `:166`
+>    and `:325`; `skillerai/ai.go:128`, used at `:176`). Anthropic is always Bedrock in
+>    `eu-west-1`.
 
 **Other gotchas**: capability is asymmetric — only OpenAI/Azure implement embeddings,
 speech, OCR, transcription, streaming; **Anthropic `ChatCompletionStream`/`CreateSpeech`

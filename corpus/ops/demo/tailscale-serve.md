@@ -375,7 +375,7 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 cert** as every other browser-facing port (M220 S4; see the correction at § "the last plain-HTTP surface is
 gone" below). It lists the seeded heroes; each **[Log in as]** is a link to the FAPI handshake:
 
-> ⚠️ **This step previously read `http://$HOST:17700` — "deliberately *not* fronted by `tailscale serve`".**
+> ⚠️ **This step previously said `http://$HOST:17700` — "deliberately *not* fronted by `tailscale serve`".**
 > That was true up to v2.3 M220 S3 and is **false now**: `gen_tailscale_serve.py` carries `('cockpit', 7700)`
 > on its own `DEMO_STORIES`-gated axis and `up-injected.sh` fronts it. Following the old text verbatim points
 > the operator at the wrong scheme on the demo's **entry point** — the one page a presenter actually opens.

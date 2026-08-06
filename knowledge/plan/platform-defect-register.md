@@ -30,6 +30,46 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`
+**Found:** M257x iter-80 (2026-08-05) · **Filed here:** iter-102 (2026-08-06), after 21 iterations escalated
+and undecided · **Repo:** `platform` · **Status:** open · **Severity:** high (a default `make up` writes into
+production-named buckets)
+
+`docker-compose.yml:82-83` @ `0c91421` — **re-derived at platform origin HEAD for this filing, still true** —
+sets, **inside the `backend` service block**:
+
+```
+- STORAGE_S3_BUCKET=production-storage20240826131618541000000005
+- STORAGE_S3_PUBLIC_BUCKET=production-storage-public20240919130721114900000001
+```
+
+`backend` is the service the **default `core` profile starts**, so this is not an opt-in path: a plain
+`make up` on a developer machine configures object storage against the **production** bucket names. The
+compose file's own comment three lines above says these *"MUST be set"* because `app`'s boot guard *"only
+fires outside a developer machine and `ENVIRONMENT=development` disarms it"* — i.e. the alternative the
+platform authors were avoiding was silent writes to ephemeral container disk. **They chose the production
+literal to avoid a silent local failure**, which is why this is a design disagreement to report rather than
+an obvious slip to fix.
+
+**Why it is filed rather than fixed:** the deciding line is **platform source**, and zero platform-repo edits
+is a standing constraint of this milestone. Filing does not pre-empt a platform-side fix; it makes the
+disagreement documented and permanent.
+
+**Our side of it, stated so the two halves are not confused.**
+`rosetta-extensions/stack-seeding/isolation/isolation.go:106` still registers `s3-private` as
+`PerStackIsolated`. That registration is **ours** and is a separate, still-open question — re-classing it is
+a rext change, not a platform one, and the two are not exclusive. **What was NOT done is assert our way out
+of it:** iter-98 found `safety.md:207` claiming the `s3-private` registry entry had been *removed* when it
+had not, and the assertion was **withdrawn rather than made true**.
+
+**Provenance:** source read at three refs (iter-80 at the then-current platform ref; iter-98; re-derived
+here at `0c91421` == `git ls-remote origin HEAD`). **Never driven live** — no upload was performed against
+the configured bucket, and the entry does not claim one was. The claim is about **what the compose file
+configures**, which is definitive by source; whether a given local run actually reaches those buckets
+depends on credentials in `.env` and was not measured.
+
+---
+
 ### `PLATFORM-M256-onboarding-step-not-resumed` — the org-prepared onboarding flow cannot resume
 **Found:** M256 iter-31 (2026-07-30) · **Repo:** `next-web-app` · **Status:** open · **Severity:** high (the
 first thing a real member does)

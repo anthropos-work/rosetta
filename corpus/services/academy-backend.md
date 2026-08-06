@@ -12,14 +12,18 @@
 >   and serves them to the frontend through the **`app` GraphQL subgraph**, reached at
 >   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — which on a local stack is **`backend`'s own `:8082/graphql/query`**
 >   since platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from compose. The env-var
->   *name* outlived the router; in production the router is still declared. (Consistent with :80-83 below.)
+>   *name* outlived the router; in production the router is still declared. (Consistent with :85-89 below.)
 > - The backend became authoritative in app-side release **"v1.0 ground truth"** (PR #903, `0e37771f`, 2026-06-05):
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —
 >   when the FE started reading the DB catalog; the backend domain's labels are its own "v1.0/v1.05" line, distinct
->   from `app` SemVer, which runs in the `v1.3xx` range — **`v1.369.0`** @ origin/main `2035f9a4`, measured
->   2026-08-06. **A version is a reading at a ref, never a standing "current"**: this line said `v1.363.2` while
->   `:57` below cited `v1.367.0`, one document disagreeing with itself.)
+>   from `app` SemVer, which runs in the `v1.3xx` range — **`v1.369.0`** @ `app` **`ad9f3c49`**, re-derived
+>   **2026-08-06** (`git describe --tags ad9f3c49` → `v1.369.0-7-gad9f3c498`; the `v1.369.0` tag is dated
+>   2026-08-05 in `CHANGELOG.md`). **A version is a reading at a ref, never a standing "current"**: this line
+>   said `v1.363.2` while `:61` below cited `v1.367.0`, one document disagreeing with itself — and it then
+>   attached the moving label *"origin/main"* to the sha `2035f9a4`, which **expired** when `app`'s branch head
+>   moved 5 commits on to `ad9f3c49` (corrected M257x iter-102). `2035f9a4` still resolves and still means
+>   exactly what it meant: it is the **label** that rotted, never the pin. A pinned sha here is left alone.)
 
 ## Role & Responsibility
 

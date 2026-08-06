@@ -74,9 +74,24 @@
     `/sessions/:id`, **`POST /sessions/:id/messages`** (the **SSE** build/refine stream), `/sessions/:id/{queue,steer,
     cancel,publish,unpublish,duplicate,translate,cover}`, `PATCH /sessions/:id/draft`, `GET /sessions/:id/published-diff`,
     `DELETE /sessions/:id`, `GET /people`, `GET /tags`.
-*   **SSE wire contract** (`event:` name / `data:` JSON): `session`, `stage`, `outline`, `progress`, `patch_applied`,
-    `patch_skipped`, `preview_ready`, `draft_kept`, `translation_ready`, `rebuild_required`, `error`, `cost`, and an
-    always-last `done`.
+*   **SSE wire contract** (`event:` name / `data:` JSON) — **16 names, and `cost` is NOT one of them.** Measured at
+    `app` `ad9f3c49` (`== origin/main`, 2026-08-06), all anchors in
+    `internal/web/backend/coursebuilder/handler.go`: `session` is written directly by the stream handler right
+    after `beginSSE` (`:1458`); the other **15** are returned by `renderEvent` (`:2604-2772`) —
+    `text` (`:2607`), `score` (`:2609`), `patch_applied` (`:2614`), `patch_skipped` (`:2620`),
+    `stage` (`:2637`/`:2639`), `outline` (`:2654`), `progress` (`:2661`), `preview_ready` (`:2671`),
+    `draft_kept` (`:2678`), `error` (`:2704`), `translation_ready` (`:2724`), `rebuild_required` (`:2732`),
+    `steering_received` (`:2744`), `steering_applied` (`:2754`), and an always-last `done` (`:2768`).
+    (`renderEvent`'s `default` arm also emits `text`, `:2770` — the same name, not a 17th.)
+*   ⚠️ **`cost` is filtered off the wire BY DESIGN — do not build a client that waits for it.** `case cb.EventCost:`
+    (`:2709`) returns an **empty** event name (`:2717`) under a D2 ruling (2026-07-13) recorded in the code itself:
+    *"the terminal cost readout is COGS and MUST NOT reach the customer SSE stream … filtered here at the wire
+    boundary by returning an empty event name"* — and the stream loop skips `writeSSE` whenever the name is empty
+    (`:1478-1480`). The `EventCost` **kind** still exists internally, consumed by
+    `awaitAndPersist`/`persistTerminal` and the ops surface; it is a wire filter, not a deleted event, which is
+    exactly why grepping the enum finds it and a browser never does. **This bullet previously listed `cost` as a
+    live wire event and omitted four that are live — `text`, `score`, `steering_received`, `steering_applied`
+    (13 listed vs 16 real); corrected M257x iter-102.**
 *   **Dependencies**:
     *   **Upstream (callers)**: the Next.js `/enterprise/coursebuilder` UI (via SSE); **Ask "author mode"**
         (`app/internal/askengine/coursebuilder_tool.go` → `ask.SetCourseBuildStarter`); the Asynq worker.
@@ -128,8 +143,13 @@ tools.
     endpoint. Per-sub-feature kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`,
     `COURSEBUILDER_EMAILS_ENABLED`.
 *   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines), measured at app
-    **`v1.363.2`** @ `5ba17044` (2026-07-31). **That is a reading at a ref, not a standing "current"** — `app` is
-    **`v1.369.0`** @ origin/main `2035f9a4` as of 2026-08-06, six releases on, and the wave count is not re-derived here.
+    **`v1.363.2`** @ `5ba17044` (2026-07-31). **That is a reading at a ref, not a standing "current"** — re-read
+    **2026-08-06** at `app` **`ad9f3c49`** (which was `origin/main` that day): the newest tag is **`v1.369.0`**,
+    seven commits back (`git describe --tags ad9f3c49` → `v1.369.0-7-gad9f3c498`), six releases on from
+    `v1.363.2`; the wave count is not re-derived here. ⚠️ **This line used to read `v1.369.0` @ origin/main
+    `2035f9a4`.** The **sha is still a valid pin** — `2035f9a4` resolves and still means what it meant
+    (`v1.369.0-2-g2035f9a40`); what expired is the **`origin/main` label**, which moved 5 commits on 2026-08-06.
+    A version, and a branch label, are each *a reading at a ref* — never a standing "current".
     The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is the only path now.
 
 ## Related Documentation

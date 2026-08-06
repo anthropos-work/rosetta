@@ -43,8 +43,13 @@
 > drift-ledger's **D-07** item originally assigned it to: the manifest reads `path:
 > internal/aireadiness/readiness.go` (`app-aireadiness-snapshot-loadmembers.yaml:42`) and its own header says
 > *"v2.7 M254 RE-POINT"* (`:33`), with `demo-stack/tests/test_aireadiness_snapshot_loadmembers_m254.py`
-> fencing it. This paragraph stated completed work as outstanding and contradicted `:459` of this same file,
-> which is already in the past tense; corrected M257x iter-46.
+> fencing it. This paragraph stated completed work as outstanding while the **⚠⚠ M51 iter-08/09** block below
+> already described the same call site in its post-refactor location — *"(now `aireadiness/readiness.go`,
+> formerly `workforce/ai_readiness.go:512`)"* — i.e. the doc contradicted itself; corrected M257x iter-46.
+> ⚠️ **The bare line number was itself the defect.** That cross-reference read `:458` when iter-46 wrote it and
+> `:459` after iter-100 mechanically re-pointed it, and **neither line has ever carried the statement** — `:459`
+> merely opens the `> **✅ CORRECTED M219 …**` blockquote, which is about an unrelated claim. The target is
+> therefore named by construct above and pinned at **`:496`** (M257x iter-102); when the two disagree, the name wins.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -297,16 +302,24 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 **How the orphan was identified, while it still existed** (there was no `@deprecated` marker, no `-v2`
 naming and no feature flag switching between them — the legacy one was simply *unlinked*). Retained as the
 recognition pattern. **The three orphaned COMPONENTS are deleted; the surrounding anchors below still
-resolve at HEAD** — `urls.ts`, `useNavbarSections.tsx`, the e2e spec, `WorkforceNewClient.tsx` (still
+resolve** — `urls.ts`, `useNavbarSections.tsx`, the e2e spec, `WorkforceNewClient.tsx` (still
 omitting readiness) and `useWorkforceAIReadiness.ts` (still cycle-less) are all live, so they remain
-checkable evidence rather than history:
+checkable evidence rather than history. **Every line number in the three bullets below is a reading at
+`next-web-app` `8297c684`** (re-derived 2026-08-06) — this block used to say *"at HEAD"*, and a bare moving
+label is what let the first anchor below rot through four readings:
 
 - **`/ai-readiness` is the only readiness route the navbar links** — `AI_READINESS_URL`
-  (`packages/core-js/src/constants/urls.ts:52`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx`
-  — imported at `:4`, built into `aiReadinessMenuItem` at `:398-400`, gated at `:547`
-  (`showAIReadiness ? aiReadinessMenuItem : null`). A repo-wide grep finds the constant in exactly those
-  two non-`node_modules` files. `/ai-readiness` is also the only readiness route next-web's own e2e covers
-  (`e2e/specs/web.ai-readiness.spec.ts`).
+  (`packages/core-js/src/constants/urls.ts:51`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx`
+  — imported at `:4`, built into `aiReadinessMenuItem` at `:401-408` (`key: AI_READINESS_URL` at `:403`),
+  gated at `:569` (`showAIReadiness ? aiReadinessMenuItem : null`). ⚠️ **This doc said `urls.ts:52` for four
+  readings, and `:52` has never been `AI_READINESS_URL` at any ref reachable from this clone** — over every
+  commit touching that file the constant sits at line **41, 50 or 51 only**; `:52` is `TALK_TO_DATA_URL` at
+  `8297c684` and was `ORGANIZATION_FEEDBACK_URL` at `bb3313bc`. The citation *resolved*,
+  which is why an anchor-existence check passed it while a reader following it landed on a different route;
+  corrected M257x iter-102. A repo-wide grep finds the constant in exactly those
+  two **source** files — the only other non-`node_modules` hit is the platform's own KB page,
+  `knowledge/ai-readiness/frontend-architecture.md:15`. `/ai-readiness` is also the only readiness route
+  next-web's own e2e covers (`e2e/specs/web.ai-readiness.spec.ts`).
 - **The legacy route was an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omitted it),
   no redirect points at it. Its hook (`hooks/useWorkforceAIReadiness.ts:23-27`) calls
   `GET /api/workforce/ai-readiness?tag=` — **there is no `cycle` param in it at all**, and it never calls `/cycles`.
@@ -588,11 +601,15 @@ interaction, so the field was a hard **0**. The funnel now writes each stage-3 i
 
 > **Measured, not assumed — and it corrects the finding that opened this thread.** The **current** dashboard's
 > *"✨ Handled for you this cycle"* tile renders **`skillsMapped` / `handsOnMinutes` / `interviewMinutes`** —
-> and **does not render `interviewQuestions` at all** (`HowWeMeasureTab.tsx:1879` opens the
+> and **does not render `interviewQuestions` at all** (**all anchors in this parenthetical re-derived at
+> `next-web-app` `8297c684`, 2026-08-06**: `HowWeMeasureTab.tsx:1879` opens the
 > `{/* ===== C · Handled for you this cycle ===== */}` block, label `:1903`, then exactly three cells —
 > `skillsMapped` `:1915`, `handsOnMinutes` `:1921`, `interviewMinutes` `:1927`; `grep -c interviewQuestions`
 > over that 1,989-line file returns **0**. The field exists in the API and in the FE's TypeScript type,
-> `apps/web/src/hooks/useAIReadiness.ts:326`, and is drawn by nothing). So its zero was a
+> `apps/web/src/hooks/useAIReadiness.ts:326` — inside `export interface AIReadinessCycleTotals` (`:323-330`)
+> — and is drawn by nothing. ⚠️ **Read that `:326` as a pin, not a standing line**: it was `:274` at
+> `bb3313bc`, this doc carried `:274` and `:326` in successive iters, and at each ref the *other* number named
+> an unrelated construct. The interface name is the contract; the line number is the convenience). So its zero was a
 > **payload** zero, not a visible empty cell. Filled regardless — an interview with no questions is not real
 > data — but the honest claim is that this tile's *visible* zero-risk lives in the three cells that do render,
 > which the coverage sweep now fences with a **non-zero-value** assert rather than a label assert (a section

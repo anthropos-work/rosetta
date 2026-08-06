@@ -60,7 +60,23 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 ### How It Fits Into the Platform
 
-Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names). This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
+Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names).
+
+> **⚠️ The write path is the CLIENT harness, not the beacon route** (corrected M257x iter-102 — this sentence
+> sourced the mutations to `code/app/api/academy/beacon/route.js`, which states the mechanism in the opposite
+> order). Measured @ `ant-academy` `22df69dd`: **every in-session write is fired from `code/src/progress/store.js`**
+> — `saveChapterProgress` (`:150`) calls the injected authed requester with `UPSERT_CHAPTER_PROGRESS` at `:162`,
+> `saveLastActivity` (`:202`) with `SET_LAST_ACTIVITY` at `:210` — i.e. **straight to the supergraph** over the
+> cross-origin GraphQL endpoint with a Clerk Bearer token. The beacon route is the **exception the old sentence
+> presented as the rule**: an *on-unload last-ditch flush*, passed as the `beacon:` option at `store.js:169` /
+> `:215` and reached only by `navigator.sendBeacon` / `fetch({keepalive:true})` on pagehide
+> (`src/writeThrough/index.js:247`, `:259`). It exists precisely **because** `sendBeacon` cannot set an
+> `Authorization` header, so this **same-origin** route re-issues the mutation server-side from the Clerk session
+> cookie — its own header comment says so: *"a best-effort last-ditch flush for a write that would otherwise be
+> lost if the tab closes mid-retry"* (`route.js:1-18`). The mutation NAMES are correct either way; only the
+> attribution of where they are posted from was wrong.
+
+This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
 backend-wired deployment. That binary is MOOT on a demo stack** (M236 iter-08): a demo academy has no
 `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so the backend read yields nothing and **nothing ever reads the seeded
 `academy_chapter_progresses` rows**. Seeding them on a demo changes no pixel. **⚠️ It does *not* "fall back to
@@ -131,8 +147,22 @@ getBackendCatalogView(eids)   (src/lib/backendContent.js)
     →  query academyCatalogSeries + academyCatalogSkillPaths   (tenant-filtered server-side by the user's eids)
 ```
 
-`getServerCatalogView()` is literally `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, so on
-**any** failure the catalog becomes `emptyCatalogView() = { chapters: [], skillPaths: {}, series: [] }` → **0 cards**.
+`getServerCatalogView()` is literally `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`
+(`code/src/lib/serverTenant.js:145` @ `ant-academy` `22df69dd` — byte-exact), so on **any** failure the catalog
+becomes `emptyCatalogView()` → **0 cards**.
+
+> **The shape of `emptyCatalogView()` is FIVE keys, not three** (corrected M257x iter-102 — this passage asserted
+> it by `=` as the 3-key literal `{ chapters: [], skillPaths: {}, series: [] }`). Measured at
+> `serverTenant.js:115-117`: `return { chapters: [], skillPaths: {}, series: [], bundles: PUBLIC_BUNDLES,
+> catalogVersion: CATALOG_VERSION }`. The two extra keys are **not** empty — `PUBLIC_BUNDLES`
+> (`code/ucourses/catalog.js:961`) is a populated exported array of curated bundle objects and `CATALOG_VERSION`
+> (`:31`) is `'1.0'` — they pass through verbatim from the committed FS tree because, in the function's own
+> words (`:111-113`), `bundles` *"carries no tenant metadata and is the one piece not yet modeled in the backend
+> catalog."* **The `→ 0 cards` conclusion is unaffected and stands:** a bundle stripe's path cards are derived
+> from the (empty) `chapters` — `AcademyClient.jsx:1363-1365` drops every path whose `scopedChapters` filter is
+> empty — so the audience views render bundle chrome with **zero** path cards, and the grid itself renders none.
+> Do not "fix" this by deleting the bundles key from the shape; the shape is what the code returns.
+
 Three failure legs collapse to the same empty grid:
 1. **Endpoint unset** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` empty → `createServerGraphQLClient()` throws → `makeClient()`
    returns `null` → `getBackendCatalogView()` returns `null`.
@@ -226,13 +256,27 @@ used to dismiss it on a premise that was never true). It decomposes into:
   `/[locale]` path-prefix route**). A bare `/it` URL 404s because it was never a route. `coerceLocale` falls back to
   `en` for anything unsupported.
 - **There are TWO switchers, and only one of them is the 2-way toggle.** `src/i18n/LocaleSwitch.jsx` **is** a 2-way
-  EN↔IT toggle `<Link>` that sets `?lang=it` on the current path — but it is mounted **only in the public-storefront
-  header** (`src/views/public/PublicHeader.jsx:20`, i.e. `/library` + `/free`). The **app-shell** header mounts a
+  EN↔IT toggle `<Link>` that sets `?lang=it` on the current path — and it is mounted **only in the public-storefront
+  header** (`src/views/public/PublicHeader.jsx:20`). **That header renders on `/library` ALONE** — corrected M257x
+  iter-102, which struck the trailing two-route gloss this line used to carry: measured @ `22df69dd`,
+  `PublicHeader` has exactly one mount site, `code/app/(public)/library/page.jsx:28`, and `/free` renders no
+  header of its own — its whole body is `redirect('/?tier=free')` (`code/app/(public)/free/page.jsx:18`), which
+  lands on the **app-shell** home and therefore serves the *other* switcher. (The *"only in the public-storefront
+  header"* half was true and is kept.)
+  The app-shell header mounts a
   different component, and that one **IS a dropdown menu**: `src/components/LanguageSelector.jsx`
-  (`src/components/TopBar.jsx:76`) renders a flag-only trigger opening a `role="menu"` panel of **7**
-  `role="menuitemradio"` options over `SUPPORTED_LOCALES = ['en', 'it', 'es', 'fr', 'de', 'nl', 'pt']`
-  (`src/i18n/locale.js:10`) — and `TopBar` is on `/`, `/chapters/*`, `/latest`, `/bookmarks` and `/my-activity`.
-  **So "the switcher shows no menu" cannot be dismissed as "there is no menu."** This bullet read *"not a dropdown
+  (`src/components/TopBar.jsx:76`) renders a flag-only trigger opening a `role="menu"` panel
+  (`LanguageSelector.jsx:88`) of **7** `role="menuitemradio"` options (`:97`) over
+  `SUPPORTED_LOCALES = ['en', 'it', 'es', 'fr', 'de', 'nl', 'pt']`
+  (`src/i18n/locale.js:10`) — and **`TopBar`'s surface set is SEVEN routes, not five** (also corrected at iter-102;
+  this line named `/`, `/chapters/*`, `/latest`, `/bookmarks`, `/my-activity` and closed the list). Measured
+  @ `22df69dd` by mount site: **`/`, `/courses`, `/courses/[slug]`** — all three render `AcademyClient`
+  (`app/(authed)/page.jsx:151`, `courses/page.jsx:92`, `courses/[slug]/page.jsx:219`), whose `TopBar` is at
+  `AcademyClient.jsx:1906` — plus **`/chapters/[slug]`** (`CourseClient.jsx:2091`, `:2141`), **`/latest`**
+  (`LatestClient.jsx:128`), **`/bookmarks`** (`BookmarksClient.jsx:508`) and **`/my-activity`**
+  (`MyActivityClient.jsx:161`). `/my-certificates` renders **no** `TopBar` (`MyCertificatesClient.jsx` imports
+  none). The two routes the old list omitted — `/courses` and `/courses/[slug]` — are precisely the demo's landing
+  routes. **So "the switcher shows no menu" cannot be dismissed as "there is no menu."** This bullet read *"not a dropdown
   menu"* until M257x; that half is **retracted**, and it was wrong **when written**, not merely stale — the dropdown
   has been mounted in `TopBar` since `5b05b7d9` (2026-05-05) and 7-locale since `e22f3230` (2026-05-18), both well
   before M238. What survives is the mechanism: locale is a `?lang=` param either way, never a route.

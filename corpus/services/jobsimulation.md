@@ -9,7 +9,7 @@
 > `service_desired_count` does not appear anywhere in `jobsimulation/terraform/main.tf` (`:15-22`). Its
 > subgraph is gone from the supergraph. **M810 has LANDED for the ECS service**; what it has not yet done here
 > is drop the legacy `jobsimulation` schema, a deliberately separate step (`:38-40`). **Do not generalise this
-> to `cms`**, which has not moved (`cms/terraform/main.tf:39` `service_desired_count = 0`).
+> to `cms`, in EITHER direction** — `cms`'s two measured facts point **opposite ways**, and the corpus's flat *"cms has not moved"* is half of them. Measured at `cms` `origin/main` `f38c0c4a` (2026-08-06): the module block has *not* moved — `cms/terraform/main.tf:39` still reads `service_desired_count = 0` in an otherwise-whole 191-line module — **but** `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted** that repo's `.github/workflows/build-production.yml` under the subject *"the cms ECR repository is decommissioned (M810)"*, because it *"would try to push an image into a registry that no longer exists."* The deciding declaration is in `infrastructure`, which has never been in any clone set: **report both, assert neither** — see [`cms.md`](./cms.md) and the fenced map.
 >
 > **✅ The husk is GONE locally too (re-measured at platform `0c91421`).** There is no `jobsimulation` compose
 > service, no `jobsimulation` entry in `repos.yml` (4 entries: app, sentinel, next-web-app, studio-desk)
@@ -46,8 +46,8 @@ Report both, assert neither. State: **frozen legacy repo,
 > * **RPC** — `JobSimulationService` is served on `app`'s single RPC mux, and **nothing outside the
 >   process reaches it**. `messenger` was the last caller, at `JOBSIMULATION_RPC_ADDR`; that value was
 >   `http://backend:8083` at `0dab54d`, and `838d907` deleted the messenger block that held it, so
->   **compose sets no `*_RPC_ADDR` at all** now. Production terraform still names
->   `http://backend.internal.anthropos:8081`.
+>   **compose sets no `*_RPC_ADDR` at all** now. **No `.tf` file in any clone names
+>   `http://backend.internal.anthropos:8081`** — 0 hits over all 44 tracked `.tf` files in the 13 `stack-demo` repos at each clone's own HEAD (measured 2026-08-06), and 0 again over the 59 `.tf` files a raw filesystem sweep of that workspace finds. The literal's one occurrence anywhere in the clone set is a **markdown KB page** — `app/knowledge/service-dependencies.md:52` @ `app` `ad9f3c49` — which is not terraform and is itself in the **past** tense (*"it used to reach the users, cms, jobsimulation and skiller surfaces at `http://backend.internal.anthropos:8081`, and folding it in at v9.0 closed that edge"*, under the heading *"**There are no external callers of app's RPC mux left.**"*). **And the production declaration is not measurable from this repo at all:** it lives in `infrastructure`, which has never been in any clone set — so no *"still names"* claim can be made here in either direction. See [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced unmeasurable-claims convention.
 >   **The local re-point onto `app` — M809 — had already landed** and there was no husk container left to
 >   reach either — `jobsimulation` is not among the **five** services compose declares at platform
 >   `0c91421` (**seven** effective, once `include: common.yml` adds the `postgresql`/`redis` floor).
@@ -142,8 +142,8 @@ internal/
 
 > These are the edges the engine has, **not** a reading of a compose block: there is no
 > `jobsimulation` service and therefore no `depends_on` list to quote. They are satisfied in-process inside
-> `backend` — with one exception, `sentinel`, which is the **only** cross-process hop a local stack has
-> left and the only service address `backend`'s compose entry carries (`docker-compose.yml:48`).
+> `backend` — with one exception on the RPC axis: the only cross-process **Connect-RPC** edge out of
+> `backend` on a `core` stack is **`backend → sentinel`** (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48`), and there are **zero `*_RPC_ADDR` variables anywhere in compose**. **It is not the only cross-process edge, and compose does not set exactly one service address:** `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31`), and Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). All at platform `0c91421`; the correctly-scoped model wording is [`architecture_overview.md:321`](../architecture/architecture_overview.md).
 
 * **Backend (app)** — user context, organization scoping
 * **CMS** — simulation definitions, content, studio entities. **The engine holds no `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own**; it calls the cms domain **in-process** (same binary, no RPC hop). There is no husk container on either end of that edge any more, and no variable either: `CMS_RPC_ADDR` was read only by `messenger`, pointed at `http://backend:8083` by `d11a403`, and removed outright with the messenger block at `838d907`. **The M23 content cutover does NOT ride on a `cms` container.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
@@ -200,8 +200,8 @@ needs a subcommand" for an entire release cycle, and the proposed fix would have
 **Always read the FIRST line of `docker logs`, never the help block.** That rule is for the frozen binary.
 
 > ⚠️ **The signature did NOT survive the fold — do not go looking for a help block in `backend`.** `app` has
-> **no cobra root command**: `app/main.go:216` (@ `origin/main` `7177374`, identical at `9d00a313`
-> v1.367.0; `:212` at the older `b948604` v1.366.0) is a plain
+> **no cobra root command**: `app/main.go:216` (@ `app` `7177374` — a **pin**: that was origin/main on
+> 2026-08-04 and is 38 commits back now; identical at `9d00a313` v1.367.0; `:212` @ the older `b948604` v1.366.0; and **`:229` at today's origin/main, `ad9f3c49`** — re-derived 2026-08-06, so do not read the pinned line offset as current) is a plain
 > `func main()`, and the only `spf13/cobra` import in the whole repo is `cmd/createTaxonomy/main.go`. There is
 > no `RunE`, so there is nothing to print `Error: …` and nothing to print a usage block. A failed init in
 > `backend` is a single stdlib `log.Fatalf` line — timestamped, no `Error:` prefix, no help — and the container

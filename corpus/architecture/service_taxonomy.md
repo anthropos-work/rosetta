@@ -34,7 +34,7 @@ graph TB
     end
     
     Desk -->|GraphQL| Backend
-    Academy -->|GraphQL - academy subgraph| Backend
+    Academy -->|GraphQL - backend subgraph| Backend
     Backend -->|spawns studio/gen.py in-process| Room
     Core --> Directus
     Studio --> Clerk
@@ -98,17 +98,35 @@ not select, so compose exits 1; stack them on `core`.
 > v9.0 "support-in-app", customerio-sync on the asynq scheduler). The last two stay **OFF** on a
 > developer machine behind `MESSENGER_ENABLED` / `CUSTOMERIO_SYNC_ENABLED`, which compose deliberately
 > does not set — pinning them to `false` there would override `.env` and make opting in impossible
-> (`docker-compose.yml:84-92`). `customerio-sync` was still in the **`all`** profile until the deletion,
-> so `make up-all` started a second Brevo contact pusher alongside `backend`'s own.
+> (`docker-compose.yml:84-92`). `customerio-sync` was still in the **`all`** profile until the deletion
+> (`profiles: [customerio-sync, all]`, `0dab54d:docker-compose.yml:154`) — **that half is true; the
+> "second Brevo pusher" half is not.** `make up-all` started exactly **one** Brevo contact pusher, the
+> container: `backend`'s own was never on locally. Compose sets `ENVIRONMENT=development` on `backend`
+> (`0dab54d:docker-compose.yml:56`, still `:56` at `0c91421`), so `deployedEnvironment()` returns
+> **false** (`app/env_guards.go:37-44` @ `ad9f3c49`) and an unset `CUSTOMERIO_SYNC_ENABLED` resolves to
+> `(false, nil)` rather than an error (`resolveSubsystemSwitch`, `:92-111`) — `main.go:394`'s
+> `if customerIOSyncEnabled` never fires. Nor did it before that switch existed: at the fold commit
+> itself, `app` `3e5bc33ef:main.go:387` gated the manager on `deployedEnvironment() &&
+> os.Getenv("BREVO_KEY") != ""`. True at **every** ref between the fold (2026-08-04) and the container's
+> deletion (`838d907`, 2026-08-05) — which is what the `MESSENGER_ENABLED` / `CUSTOMERIO_SYNC_ENABLED`
+> sentence just above already said.
 
 **Gone from compose entirely** — no service, no port, no profile, at `0c91421`:
 Jobsimulation, CMS and Roadrunner (their domains run inside `app`; deleted by `d11a403`), Storage,
 Messenger and CustomerIO Sync (also in-process; deleted by `838d907`), and the
 Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:8082/graphql/query`**).
 
-**Base services (no profile, always on with any `make up`)**:
-- **PostgreSQL** :5432 (custom image with pgvector extension)
-- **Redis** :6379 (`bitnamilegacy/redis:latest`)
+**Base services — the floor. Three, not two.** These declare **no `profiles:` key**, so they are in
+*every* selection, including a bare `docker compose up`. Measured at `0c91421`: of the five services
+`docker-compose.yml` declares, exactly four carry a `profiles:` key — `backend` (`:110`), `studio-desk`
+(`:141`), `next-web-app` (`:168`), `gotenberg` (`:183`) — and `sentinel` carries none; `common.yml`'s
+two carry none either.
+- **PostgreSQL** :5432 (custom image with pgvector extension) — `common.yml:2`, via `include:`
+- **Redis** :6379 (`bitnamilegacy/redis:latest`) — `common.yml:24`
+- **Sentinel** :8087 — `docker-compose.yml:5`. A Tier-1 Go service **and** a floor member. It is the
+  third member the *Services* paragraph, the *Profiles* table and the Summary Table below all count
+  when they say `core` starts **five** containers; this bullet list said **two** for four releases
+  while every other statement of the floor in this file said three.
 
 **Archived / merged — but read the `Local container?` column** (repo dirs may still exist on disk):
 
@@ -127,10 +145,10 @@ Cosmo Router (`graphql`, deleted by `2adcf71`; frontends hit `backend` at **`:80
 > on this host and the repos are private, so even the anonymous REST path is closed. Each date below was true
 > when taken and **carries an expiry**; the `Jobsimulation` row is the live proof that they expire (its flat
 > archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:89`).
-> **Read every date here as "asserted on", never as "is".** This note exists because rows
-> `service_taxonomy.md:137`/`:138` published the flat form two rows above `:139`, a cell retracting
-> exactly that predicate. (The file is named explicitly as of M257x iter-100: a bare `rows :137/:138`
-> reads as an anchor into the document cited immediately before it, which is a different file.)
+> **Read every date here as "asserted on", never as "is".** This note exists because the **Skiller**
+> (`service_taxonomy.md:157`) and **Skillpath** (`:158`) rows publish the flat form immediately above the
+> **Jobsimulation** row (`:159`) — the one cell retracting exactly that predicate. Rows are named as well
+> as numbered from M257x iter-102: iter-100's edit here shifted the table and left these numbers behind.
 
 | Service | Why removed | Local container? | Reference |
 |:--------|:------------|:-----------------|:----------|
@@ -265,7 +283,7 @@ python gen.py --media simulation --blueprint <file>.json
 | **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
 | **Location** | Local `../ant-academy` — **NOT** in `platform/repos.yml`, so **not** cloned by `make init` (by design, v1.10b M49 #5). For a **demo**, `ensure-clones.sh` clones it explicitly; for **dev**, clone it manually. See [`ant-academy.md`](../services/ant-academy.md). |
 | **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |
-| **Platform dependencies** | **A GraphQL client of the platform `app` academy subgraph at runtime** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (`code/src/graphql/server.js:14,18` — it **throws** when unset). Reads: the course catalog is **DB-authoritative**, not the committed FS tree (`code/src/lib/backendContent.js:36,102-103`; `code/src/lib/serverTenant.js:145`). Writes: per-user progress, bookmarks, certificates and feedback POST through `code/app/api/academy/beacon/route.js:36,41-55` (`UPSERT_CHAPTER_PROGRESS`, `SET_LAST_ACTIVITY`, …). Server side: `app/internal/web/backend/graphql/graph/schemas/academy.graphqls`. Also reuses platform Clerk; AI calls go straight to the providers (never through the platform `ai` library). No Connect-RPC, no Redis. |
+| **Platform dependencies** | **A GraphQL client of the platform `app` (`backend`) at runtime** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` (`code/src/graphql/server.js:14,18` — it **throws** when unset). **There is no separate "academy subgraph"**: the supergraph declares exactly **one** subgraph, `backend` — all three of `graphql-wundergraph`'s configs at `60c229f3` (`supergraph-config-prod.yaml`, `-dev`, `-compose`) carry a single `- name: backend` entry, and `schemas/` holds one file, `backend.graphqls` — and the academy types are **one SDL file inside it** — `app/internal/web/backend/graphql/graph/schemas/academy.graphqls`, 1 of 43 files in that directory at `app` `ad9f3c49`. Locally there is no router at all (deleted at platform `2adcf71`), so the endpoint resolves straight to `backend` `:8082/graphql/query`. Same statement, same words, at [`academy-backend.md`](../services/academy-backend.md) (*"There is no separate 'academy subgraph'"*), and this file says it again below — *"**`backend` alone (1)**"*. Reads: the course catalog is **DB-authoritative**, not the committed FS tree (`code/src/lib/backendContent.js:36,102-103`; `code/src/lib/serverTenant.js:145`). Writes: per-user progress, bookmarks, certificates and feedback POST through `code/app/api/academy/beacon/route.js:36,41-55` (`UPSERT_CHAPTER_PROGRESS`, `SET_LAST_ACTIVITY`, …). Also reuses platform Clerk; AI calls go straight to the providers (never through the platform `ai` library). No Connect-RPC, no Redis. |
 
 **Key Features**:
 - Static chapter *bodies* as JSON in `code/public/content/<series>/<skill-path>/` — but **the catalog that decides what is visible is read from the platform over GraphQL, not from this tree**. With `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` unset or the academy tables empty, the read degrades to an **empty grid**; it does *not* back-fill from the committed FS content (`code/src/lib/serverTenant.js:115-145` — *"there is NO FS-as-published fallback … not reversible-on-error"*). This is the "empty academy" demo symptom, and a **demo** only shows a populated grid because a rext demo-patch (`demo-stack/patches/academy-fs-published-fallback`) restores that fallback on the demo's ephemeral clone — it is not the shipped behaviour
@@ -373,7 +391,7 @@ baked against `backend`.)
 
 > **⚠️ Not a local service.** Platform `2adcf71` (2026-07-31) deleted the `graphql` compose service **and** the
 > `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30** (a dated snapshot — see
-> the archive-state note at `:124`; the clone is consistent with it, no commit after that date). **There is no `:5050` on
+> the archive-state note above the *Archived / merged* table, `:142`; the clone is consistent with it, no commit after that date). **There is no `:5050` on
 > a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
 > describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
 > and in the archived repo; **do not follow it as a local-development instruction.** Consistent with `:67-68` above
@@ -404,7 +422,7 @@ Locally, both of those now consume `backend` directly at `:8082/graphql/query`.
 ## Service Communication Patterns
 
 ### Core Services ↔ Core Services
-- **Synchronous**: HTTP RPC — and at platform `0c91421` there is **exactly one** cross-process edge left, `backend → sentinel`. Compose sets a single service address, `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`), and **zero `*_RPC_ADDR` variables**. The last four (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_`) were `messenger`'s, all re-pointed to `http://backend:8083` by `d11a403` — the M809 re-point landed — and `838d907` deleted the `messenger` service, taking all four with it. The env-var names survive in consumer code; no compose file configures them
+- **Synchronous**: at platform `0c91421` the only cross-process **Connect-RPC** edge out of `backend` on a `core` stack is **`backend → sentinel`** (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48`), and there are **zero `*_RPC_ADDR` variables anywhere in compose**. **It is not the only cross-process edge, and compose does not set a single service address:** `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31` @ `ad9f3c49`), and Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The last four `*_RPC_ADDR` (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_`) were `messenger`'s, all re-pointed to `http://backend:8083` by `d11a403` — the M809 re-point landed — and `838d907` deleted the `messenger` service, taking all four with it. The env-var names survive in consumer code; no compose file configures them. The correctly-scoped model form is [`architecture_overview.md`](./architecture_overview.md) — *"the only cross-process RPC edge out of backend on a core stack"*
 - **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
 
 ### Studio Services → Core Services

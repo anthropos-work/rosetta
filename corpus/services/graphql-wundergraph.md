@@ -131,7 +131,7 @@ The two Dockerfiles source schemas differently:
 > `dockerfile: Dockerfile.dev`, `67ba772` moved the context to `..` (path becoming
 > `graphql-wundergraph/Dockerfile.dev`), and it stayed `Dockerfile.dev` until the service block was
 > deleted at `360efd4` (merged as `2adcf71`). So for its **final five months** compose built
-> `Dockerfile.dev` — which is why a subgraph SDL change rebuilt the router, as `:84` describes.
+> `Dockerfile.dev` — which is why a subgraph SDL change rebuilt the router, as the *Build-time, static composition* bullets at `:114-117` of this doc describe (specifically `:116-117`, the struck-through *"`make up` rebuilds `graphql`"* bullet: *"It **used to** rebuild whenever any subgraph schema changed, because the build context is the parent dir (`..`) holding all sibling repos"*). **Not `:84`**, which is the *Ports* bullet and is about `8080`/`5050` — corrected M257x iter-102.
 
 ## Interface Discovery
 

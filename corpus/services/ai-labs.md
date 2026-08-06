@@ -13,9 +13,11 @@
 >   [Course Builder](./coursebuilder.md)**, not to AI Labs.
 > - The **AI Labs self-serve credits initiative** branded **v6.0 "shared purse"** (org self-serve *buy* AI-Labs
 >   credits + an *enforcing* shared-pool wallet) is **DESIGNED / QUEUED, NOT BUILT** — a knowledge-plan release
->   (`app` `knowledge/plan/releases/06.00-shared-purse/`, milestones M600–M607, all planned). In current `origin/main`
->   there is **no `checkout.session.completed` webhook, no labs↔credits linkage, and `/credits/purchase` was removed
->   (Wave 13)**. `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (those run in the `v1.3xx` range — **`v1.369.0`** @ origin/main `2035f9a4`, measured 2026-08-06; **a version is a reading at a ref, never a standing "current"** — this line read `v1.363.2` @ `5ba17044` for six `app` releases).
+>   (`app` `knowledge/plan/releases/06.00-shared-purse/`, milestones M600–M607, all planned). Measured at `app`
+>   **`ad9f3c49`** (which was `origin/main` on 2026-08-06) there is **no `checkout.session.completed` webhook**
+>   (0 occurrences in Go source), **no labs↔credits linkage** (`internal/labs/` imports `internal/credits`
+>   nowhere), **and `/credits/purchase` was removed (Wave 13)** (`internal/web/backend/credits/handler.go:12`).
+>   `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (those run in the `v1.3xx` range — newest tag **`v1.369.0`**, re-read 2026-08-06 at that same `ad9f3c49`, seven commits past the tag: `git describe --tags ad9f3c49` → `v1.369.0-7-gad9f3c498`. **A version — and a branch label — is a reading at a ref, never a standing "current"**: this line read `v1.363.2` @ `5ba17044` for six `app` releases, then `v1.369.0` @ *origin/main* `2035f9a4` until that label expired five commits later. `2035f9a4` is still a valid **pin** (`v1.369.0-2-g2035f9a40`); only the moving label rotted).
 > This doc documents the **shipped reality**; the shared-purse unification is flagged as planned where relevant.
 
 ## Role & Responsibility

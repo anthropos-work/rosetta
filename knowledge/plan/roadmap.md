@@ -640,7 +640,10 @@ mutation classification, the batch-gate rule) **+ `corpus/services/clerkenstein.
 re-scoped)
 
 ### M257x: Platform re-alignment
-**Status:** `planned`
+**Status:** `in-progress` — **102 iters + 22 harden passes closed** (branch `m257x/platform-realignment`).
+Gate **2 of 5 PROVEN** (`D-M257x-101-4` withdrew the long-booked *"4 of 5"*): clauses 3–4 hold at `0c91421`;
+clauses 1–2 are **UNPROVEN at origin HEAD**, not refuted, and re-proving them is a **close blocker**
+(`D-M257x-102-3`); clause 5 open. *Was `planned` at 101 iters — corrected at iter-102 (deferral-audit F17).*
 **Shape:** `iterative`
 **Dir:** [`releases/02.80-fast-build/m257x-platform-realignment/`](releases/02.80-fast-build/m257x-platform-realignment/overview.md)
 **Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it
@@ -663,7 +666,11 @@ deliverable, not a formality.
 
 **Exit gate** (both repos in the gate by construction — clauses 1/2/4 are rext, 3/5 are the corpus), against
 platform @ **origin HEAD**, never a pinned pre-drift commit:
-1. cold `--purge` + `demo-up` on **odysseus** → `autoverify green:true / 0 warnings`, **3 consecutive cycles**;
+1. cold `--purge` + `demo-up` on **the dev host** → `autoverify green:true / 0 warnings`, **3 consecutive cycles**.
+   *(Was **odysseus**, which `D-v28-15` retired from this project on 2026-07-31 — dev/test is LOCAL to the new
+   Mac, `billion` is demo-only. A gate clause naming a retired host cannot be met as written; corrected at
+   iter-102, deferral-audit F17. This is the milestone's own recurring class found in its own exit gate — the
+   second such, after `D-M257x-101-4`.)*
 2. the **full Playthrough suite passes on that stack** (30 live / 0 failing) — so a green bring-up cannot mean an empty world;
 3. a checked-in **migration-status map** — every service, its state, **cited to platform source**, **machine-fenced against `repos.yml`**;
 4. **zero rext writes to a schema the platform no longer creates**, by a FENCE watched going RED;

@@ -6,13 +6,20 @@
 > customerio-sync containers"*) deleted the compose service. The domain now runs **in-process inside
 > `backend`** as `app/internal/customeriosync/` — a **relocation, not a rewrite**, ported out of
 > `customerio-sync` v0.19.3 and, by its own package doc, *"the last of the Go services to be folded
-> into app"* (`app/internal/customeriosync/doc.go:4`).
+> into app"* (`app/internal/customeriosync/doc.go:4-5` — the sentence wraps the line break).
+>
+> **Every `app` anchor in this file is read at `app` `ad9f3c49`** — `origin/main` *and* the demo's build
+> pin on 2026-08-06, and byte-identical at `2035f9a4`. Ref pinned M257x iter-102: these citations were
+> unpinned and present-tense, and `env_guards.go` **did not exist** at the demo's former pin `b948604f`
+> (`git -C stack-demo/app ls-tree b948604f -- env_guards.go` → empty), so several of them resolved at no
+> ref this document named.
 >
 > It does **not** run by default. `app` gates it behind `CUSTOMERIO_SYNC_ENABLED`
 > (`app/env_guards.go:62`), resolved before anything connects to anything (`app/main.go:286`), and
 > unset means **off** on a developer machine — `ENVIRONMENT=development` is what makes that so.
 > Compose deliberately sets **no value** for it on the `backend` block: pinning one there would
-> override `.env` and make opting in impossible without editing compose (`docker-compose.yml:84-92`).
+> override `.env` and make opting in impossible without editing compose (`docker-compose.yml:84-92`
+> @ platform `0c91421`).
 > Turning it on writes **real** contacts, which is the whole reason for the switch.
 >
 > **The name is a fossil.** The destination has been **Brevo**, not Customer.io, since long before
@@ -111,7 +118,8 @@ The domain is inside `backend` and **off unless you say otherwise**:
 #   CUSTOMERIO_SYNC_ENABLED=true
 #   BREVO_KEY=<a real key>
 # Then `make up`. Both are required: app log.Fatalf's if the switch is on with an
-# empty key (app/main.go:295), because the sender has no console fallback.
+# empty key (app/main.go:295-300 — the condition at :295, the log.Fatalf at :296),
+# because the sender has no console fallback.
 #
 # WARNING: this writes REAL marketing contacts. That is why the switch exists.
 ```
@@ -128,7 +136,10 @@ For most local-development tasks you do not need any of this.
 ## Production
 
 Runs inside the `backend` ECS task, gated by the same `CUSTOMERIO_SYNC_ENABLED` switch — where unset
-is **fatal** rather than off (`app/main.go:284`), so a deployed environment must state its intent.
+is **fatal** rather than off, so a deployed environment must state its intent. The mechanism is
+`app/env_guards.go:98-104` (`resolveSubsystemSwitch`'s `case "":` returns an error when `deployed`) via
+`mustSubsystemSwitch`'s `log.Fatalf` at `:87`. (`app/main.go:284` is only the **comment** pointing at it,
+not the mechanism — anchor corrected M257x iter-102.)
 **Scope note:** whether its own ECS task / image / terraform module have been torn down was **not
 measured** in this pass — the fold and the container deletion are local-compose and `app`-source
 facts. Do not read them as the production teardown.
@@ -137,7 +148,14 @@ facts. Do not read them as the production teardown.
 
 * [Backend (app)](./backend.md) — the host process, and the source of user/org data
 * [Service Taxonomy](../architecture/service_taxonomy.md) — orchestration profiles
-* [External Services](../architecture/external_services.md) — Customer.io as an integrated SaaS
+* [External Services](../architecture/external_services.md) — the third-party-integration index. **It has
+  no Customer.io section and no Brevo section**: its per-service `##` sections are Clerk, Directus, the
+  Cosmo router, AI Providers, LiveKit and AWS Chime, and `brevo` occurs **0** times in the whole file
+  (corpus HEAD, M257x iter-102). This bullet used to gloss it as *"Customer.io as an integrated SaaS"*,
+  which was false in **both** directions — there is no such section, and the destination is **Brevo**, not
+  Customer.io, as the fossil-name banner at the top of this file says
+* [Messenger](./messenger.md) — the **other** Brevo consumer, folded into `backend` in the same v9.0
+  program, and the file that actually documents the Brevo integration
 
 ## Notes
 

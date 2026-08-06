@@ -37,10 +37,18 @@ Callers don't talk to Brevo directly — they **publish Redis Stream events that
 > messenger and customerio-sync containers"*). Re-derived at `app` `9d00a313` v1.367.0 /
 > `messenger` `e9421c6`.
 >
+> **Which tree settles which row, stated because getting it backwards inverts the answer.** `e9421c6` is
+> `messenger`'s **`origin/main`**, and the **prod** row is a claim about *production infrastructure*, so
+> origin/main is the tree that settles it. The demo's `messenger` clone is a frozen legacy checkout **7
+> commits behind** at `fa47850d`, where `terraform/main.tf:19` reads `service_desired_count = 1` — **one,
+> not zero** — and there is no `:29` declaration at all; grading the prod row against that clone returns
+> the opposite verdict. The **local** row, by contrast, is a claim about a stack and is settled by platform `0c91421`
+> + the clone set. (Noted M257x iter-102.)
+>
 > | side | measured |
 > |---|---|
-> | **prod** | `messenger/terraform/main.tf:29` `service_desired_count = 0` — the compute is stopped, the cms precedent again. Image and task definition stay declared: this is the rollback path, a one-line revert plus an apply (`:27-28`) |
-> | **consumer** | `app` imports `internal/messenger/{flow,adapters,sender}` (`app/main.go:15`, `:62`, `:63` @ `app` origin/main) and runs a **second subscriber server on messenger's OWN Redis consumer group** (`:1450`, wired at `:1471`, sender at `:1473` via `msgsender.NewFromEnv`). It does **not** merge messenger's handlers onto app's own subscribers — it **takes the group over**, so Redis keeps the cursor and there is no gap. The group name is messenger's, and it is a literal on purpose: the standalone read `cmp.Or(os.Getenv("SERVICE_NAME"), "messenger")` and nothing in terraform ever set `SERVICE_NAME` for it (`:1416-1421`). **Every anchor in this row moved between `9d00a313` and origin/main `2035f9a` without the code moving** — re-derived M257x iter-87, ref re-stated M257x iter-100 (the bare `9d00a313` was the only sha this cell named, so a citation resolver pinned the row to the ref the anchors had moved *away from*) |
+> | **prod** | `messenger/terraform/main.tf:29` `service_desired_count = 0` **@ `messenger` `e9421c6` (= `origin/main`)** — the compute is stopped, the cms precedent again. Image and task definition stay declared: this is the rollback path, a one-line revert plus an apply (`:27-28`, the in-file comment saying exactly that) |
+> | **consumer** | `app` imports `internal/messenger/{flow,adapters,sender}` (`app/main.go:15`, `:62`, `:63` @ `app` **`ad9f3c49`**) and runs a **second subscriber server on messenger's OWN Redis consumer group** (`:1450`, wired at `:1471`, sender at `:1473` via `msgsender.NewFromEnv`). It does **not** merge messenger's handlers onto app's own subscribers — it **takes the group over**, so Redis keeps the cursor and there is no gap. The group name is messenger's, and it is a literal on purpose: the standalone read `cmp.Or(os.Getenv("SERVICE_NAME"), "messenger")` and nothing in terraform ever set `SERVICE_NAME` for it (`:1416-1421`). **Every anchor in this row moved between `9d00a313` and `2035f9a` without the code moving** — re-derived M257x iter-87, ref re-stated M257x iter-100, and re-stated **again** at iter-102. **This cell is the reference specimen of the stale-currency-pin class:** iter-100 correctly replaced the bare `9d00a313` — but replaced it with the *moving label* `origin/main` rather than with the sha that label then denoted, and on 2026-08-06 `origin/main` advanced `2035f9a4 → ad9f3c49` (5 commits) and the citation went stale a second time. A pin is a pin; a branch name refills on the platform's release cadence. The anchors themselves are unaffected — `git -C stack-demo/app diff --stat 2035f9a4 ad9f3c49 -- main.go` is **empty**, so every line number above resolves at both refs |
 > | **local** | **nothing left.** No compose service, no `repos.yml` entry, so `make init` does not clone it. `838d907` deleted both; the rollback path is production-side only. (At `0dab54d` it was still `repos.yml:21-23` and a compose block behind an opt-in profile — that release also dropped it from `all`, because running it beside `backend` puts **two consumers on one Redis group**. That hazard is now unreachable rather than merely discouraged.) |
 >
 > **Everything below this banner describes the standalone service** — the frozen repo where the
@@ -50,7 +58,11 @@ Callers don't talk to Brevo directly — they **publish Redis Stream events that
 > **You cannot run it locally at all.** There is no messenger container and no `messenger` profile —
 > both were deleted at `838d907`. `make up` never started it even before that (it was opt-in), and
 > since the v9.0 fold `backend` does its work in-process, gated by `MESSENGER_ENABLED`
-> (`app/env_guards.go:61`), which defaults to **off** on a developer machine.
+> (`app/env_guards.go:61` @ `app` **`ad9f3c49`** — `origin/main` and the demo's build pin on 2026-08-06;
+> identical at `2035f9a4`), which defaults to **off** on a developer machine. **The ref is not optional
+> on this anchor** (M257x iter-102): `env_guards.go` **did not exist** at the demo's former pin
+> `b948604f` (`git -C stack-demo/app ls-tree b948604f -- env_guards.go` → empty), so this citation used to
+> resolve at no ref the document named.
 
 ## Architecture & Code Map
 
@@ -146,7 +158,10 @@ more (`make init` does not fetch it), so `cd messenger` assumes you cloned it by
 
 Set `BREVO_KEY=""` to route through the **console sender** (`internal/messenger/console/`) instead of
 hitting Brevo — emails print to stdout. (That fallback is standalone-only: `app` did **not** port it —
-`app/main.go:295` `log.Fatalf`s if `MESSENGER_ENABLED` is on with an empty key.)
+`app/main.go:295-300` @ `app` **`ad9f3c49`** (identical at `2035f9a4`): the condition is at `:295`
+(`MESSENGER_ENABLED` **or** `CUSTOMERIO_SYNC_ENABLED` on with an empty `BREVO_KEY`) and the `log.Fatalf`
+at `:296`. Ref re-stated M257x iter-102 — the citation was previously unpinned and present-tense, and
+`:295` at the demo's former pin `b948604f` is a different construct.)
 
 ## Environment Variables
 

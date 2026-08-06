@@ -380,7 +380,7 @@ dispositions:
   finalized in **M235** (depends on M230), and the CTA went **live at M236 iter-08** as a real
   **`/courses/<slug>`** link into the demo academy's committed FS catalog (see §4 + §7.1).
 
-  > *This previously read: "Today's fixture carries no academy session; this path is unit-proven and lights up
+  > *This previously said: "Today's fixture carries no academy session; this path is unit-proven and lights up
   > when M235 adds the fixture." **Stale** — the academy CTA is live, and it is **not** fixture-driven. A demo
   > academy has no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it serves its committed FS catalog and never reads a
   > seeded session; the CTA resolves against that catalog. There is no academy content-session fixture to wait
@@ -437,7 +437,7 @@ sections, per-session rows, the two CTA hrefs with the right `__clerk_identity`/
 omission, AI-labs presence-only, academy origin), the seats resolve through `roster.go` byte-identically to the
 seed, and the export→render pipeline runs end-to-end. **Proving every CTA lands on a non-empty result page — a
 live browser on a cold reset-to-seed — is M236** (the "prove-it-lands" milestone, run on `billion`). **M235
-unit-proves the seeders + the manifest projection**; it does not drive a browser. *(This line previously read
+unit-proves the seeders + the manifest projection**; it does not drive a browser. *(This line previously said
 "…is M235; proving it on `billion` is M236", which split one gate across two milestones and credited M235 with a
 render proof it did not perform — M235 closed `closed-incomplete`. §4's statement of the same split is the
 correct one.)*

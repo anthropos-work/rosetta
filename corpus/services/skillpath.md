@@ -32,10 +32,12 @@
 >   platform's own M506 record says so — *"**No in-app RPC handler is served**"* / *"the client is simply
 >   deleted"*. Callers read sessions **in-process**, and `SKILLPATH_RPC_ADDR` was dropped from terraform.
 >   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:109` and
->   `app/knowledge/architecture.md:28` still list the service — re-derived at `app` origin/main `2035f9a`;
->   the CLAUDE.md line was `:80` when this was first measured, so re-find the sentence rather than
->   trusting the offset. Trap C, *the platform's planning docs lag its
->   own code*. Grade against `main.go`.)
+>   `app/knowledge/architecture.md:28` still list the service — **re-derived at `app` `ad9f3c49`**, which is
+>   both `origin/main` and the demo's build pin on 2026-08-06; both anchors also hold at `2035f9a`, the ref
+>   this sentence used to name as `origin/main` before that label expired (M257x iter-102 — *a pin is a pin,
+>   a branch name is not*). The CLAUDE.md line was `:80` when this was first measured, so re-find the
+>   sentence rather than trusting the offset. Trap C, *the platform's planning docs lag its own code*.
+>   Grade against `main.go`: `SkillPathSessionService` has **0** occurrences in Go source at `ad9f3c49`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
 >   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations
 >   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
@@ -94,7 +96,10 @@
   `apps/hiring` has no skill-paths tab (no-surface). Full treatment:
   [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
-* **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app` `origin/main`).
+* **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app`
+  **`8297c684`** — the demo's build pin on 2026-08-06, which is the tree that settles a claim about what a
+  stack renders. This bullet previously named the bare moving label `next-web-app` `origin/main`, which has
+  since advanced to `f97ba659`; ref pinned M257x iter-102).
   The reader above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
   (`InsightsBySkillPathStudentsContainer`) — a real table, fed by the runtime session row. The
   **per-member** route `…/skill-paths/[skillPathId]/[userId]`

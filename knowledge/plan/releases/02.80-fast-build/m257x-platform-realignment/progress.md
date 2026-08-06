@@ -1491,3 +1491,67 @@ defect and would also explain why no amount of accessor work has helped.
   five readings — three adjudicators reported it *structurally* absent. Routed as
   **`FIX-M257x-iter101-read-union`** (repair by PREDICATE, not by anchor; re-read after). **Gate re-graded
   honestly this iter: 2 of 5 proven, NOT 4 of 5** (`D-M257x-101-4`) — see `iter-101/adjudication.md`
+- iter-102 (tik, the REPAIR pass — **no reading inside it**): **BOTH outstanding unions paid in one pass —
+  `FIX-M257x-iter99-read-union` (28) + `FIX-M257x-iter101-read-union` (24) = 52 anchors — repaired BY
+  PREDICATE across a TEN-seat file-disjoint fan-out**, wider than the habitual seven because *repair is the
+  parallelizable half of this loop and the measuring pass is the half that must stay serial*. **76 anchor
+  assignments → 98 sites found → 94 repaired**, plus **4 verified-correct-and-deliberately-not-rewritten**
+  and **1 declined with evidence**. Guard family **14 GREEN · 0 RED** at open and at close;
+  `claim_twin_guard`'s adjudicated-claim set went **134 → 264** because the ledgers are published in the
+  shape `claim_ledger.py` derives from, so **completeness is fenced rather than claimed**.
+  **Read the estimator correctly and do not let the record drift: the pool was probably always ~100. It is
+  not growing — the estimator was wrong and iter-101's replicate fixed it.** The series
+  16.7 → 29.4 → 45.2 → ~103 is four successive **corrections to an underestimate**, not four measurements of
+  growth. **Five findings outrank the defect list. (1) The `app` clone move injected almost NOTHING, and
+  that number is load-bearing for the ETA:** `origin/main` went `2035f9a4 → ad9f3c49` (5 commits) and
+  `main.go` is **byte-identical** (1639 lines both refs, all five cited anchors identical), as is
+  `terraform/main.tf` (786 lines, `:181` identical) — the 5 commits touched **no Go source and no cited
+  terraform construct**. The entire residual is a **LABEL**: **17 sites** call `2035f9a` *"origin/main"*
+  (15 in `corpus/`, **2 in `CLAUDE.md`** that no reading is scoped to see). **A pin is a pin; only the
+  labelled citations rot** — which is exactly why the label is the defect, and it confirms §5 rule 41's
+  own corollary that *a large "behind" count is not a large repair.* **(2) `DEF-M257x-iter101-crosslane-fetch`,
+  and it is MY defect:** I gave `stack-demo/**` exclusively to one lane while another lane's adjudicators
+  were grading claims against the clones inside it. Measured: the fetch window was **11:18:16–11:20:51**,
+  iter-101's adjudication commit landed **11:21:55**, and **five** clones advanced (`app` 98 commits/634
+  files, `next-web-app` 41/192, `ant-academy` 5/86, `sentinel` 2/3, `studio-desk` 2/9) — not the one the
+  brief named. `N = 24` stands, but **it cannot be PROVEN no adjudicator read post-fetch**, and finding (1)
+  is what bounds the exposure rather than any argument. **Path ownership was necessary and NOT sufficient:
+  the reading's SUBJECT is wider than the paths anyone declared.** Written into `platform-alignment.md` as
+  **§5 rule 41a** — *a reading's ground truth includes the clone refs, so no lane may fetch while a reading
+  is in flight.* **(3) CENTRALISING A WORDING CENTRALISES ITS DEFECTS, measured twice in one iter.** The
+  canonical sheet exists so five seats do not word one predicate five ways; the price is that one error
+  reaches every seat **by construction, with no independent re-derivation to catch it.** Its CANON-1 text
+  ended `JUDGE0_BASE_URL (\`:59\`)` — a **bare** anchor, which resolves against the most recently named
+  file, `gotenberg.go`, which is **53 lines** — and `repair_postcondition` caught it in the pre-commit hook
+  at **four sites at once**. Its CANON-2 text was **weaker than the evidence** (*"not measurable"* alone,
+  when the adjudicators had measured **0 hits over 44 tracked `.tf` across 13 clone dirs and 0 over 59 on
+  disk**), and two seats had to be re-briefed mid-flight. **The ~2-defects-per-repair-cycle induction rate
+  held for the fifth consecutive cycle — this time inside the iter that documents it.** **(4) The corpus
+  inherited a false claim by quoting a PLATFORM COMMIT MESSAGE as authoritative** —
+  `platform-migration-status.md:101` reported `838d907`'s *"`make up-all` started a second Brevo contact
+  pusher alongside backend's own"* as *"the commit names the hazard."* Measured, the second half is false
+  (`backend`'s in-process pusher is gated behind an unset `CUSTOMERIO_SYNC_ENABLED`), so `make up-all`
+  started exactly **one**. Now quoted as the platform's wording and explicitly **not endorsed**: *a commit
+  message is evidence of INTENT, never a measurement.* **(5) Predicate width is real and the booking
+  under-counts it — `academy-subgraph-exists` was booked at 2 anchors and lives at 15 sites across 8 files**,
+  8 of them in files no seat owned (`CLAUDE.md`, `run_guide.md`, `content-stories-routes.md`,
+  `frontend-tier.md`), with the correct model already published at `academy-backend.md:83`. **Four seats
+  independently reported their predicates were WIDER outside their partition than inside it**, which is the
+  argument for a consolidation pass rather than a wider fan-out. **Also settled this iter, and three of the
+  four were questions that should never have reached a user:** `DEF-M257x-iter80-storage-prod-bucket`
+  **FILED** to `platform-defect-register.md` (`D-M257x-102-1`) — the register was built for this class by
+  M256's audit and had **zero** M257x entries; `FIX-M257x-iter53-union-set` **DROPPED as subsumed 47 iters
+  ago** (`D-M257x-102-2`); the gate re-grade **RATIFIED** with clauses 1–2 a **CLOSE BLOCKER**
+  (`D-M257x-102-3`); and `CHECK-M257x-iter38-ai-act-classification` **DROPPED** (`D-M257x-102-4`) because
+  the repair finished at iter-38 and the corpus asserts nothing — **what was carried for 36 iterations was
+  an ASPIRATION, not a defect.** That yields **§5 rule 47** (*close a routed item when its DEFECT is
+  repaired, not when its SUBJECT is understood; never route as "needs an owner"*) and **§5 rule 48**, the
+  binding user decision **`D-M257x-102-5`: no legal/regulatory escalation during delivery** — route it,
+  never ask. **The deferral audit's §8 now has ZERO open user questions.** Its one *urgent* escalation
+  (F18, *"three iter-101 tags on origin"*) is a **FALSE POSITIVE** — re-derived, there is **exactly one**,
+  no tag points at `4cb920a`, and the pin matches — recorded with **both** candidate mechanisms because a
+  peeled-ref line-shape miscount cannot manufacture the specific names, so it is **not a complete
+  explanation on its own** (`D-M257x-102-6`). F16/F17 closed: register entry landed, and `roadmap.md`
+  § M257x was **`planned` at 101 iters** with **exit clause 1 still naming the retired `odysseus`** — this
+  milestone's own class, in its own gate, for the second time. **Gate: no clause moved in this pass and
+  none could** — a repair pass contains no reading — see `iter-102/progress.md`

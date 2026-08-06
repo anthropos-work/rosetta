@@ -11,10 +11,10 @@
   Next.js apps that consume the platform's single GraphQL endpoint (locally **`backend` directly**, since
   platform `2adcf71` deleted the Cosmo router) and authenticate with Clerk.
 * **Key Functions**:
-  * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`). The hiring **org-type** (`is_hiring`) re-skins `apps/web` and exposes the recruiter **candidate-comparison read-model** — see [`hiring.md`](hiring.md).
+  * Ship two **distinct sold products** from one monorepo: **Workforce** (`apps/web`) and **Hiring** (`apps/hiring`). The hiring **org-type** (`is_hiring`) re-skins `apps/web` for a recruiting buyer — **but the recruiter candidate-comparison read-model is NOT reachable in `apps/web` for a *genuine* hiring org** (corrected M257x iter-102; this bullet's conjunction implied it was). A user whose Clerk memberships are **all** `isHiring` orgs is ejected out of `apps/web` into `apps/hiring` — see the ⚠️ note under *Apps* below and [`hiring.md`](hiring.md), which is authoritative for the org-type + read-model.
   * Talk to the backend **only** through the GraphQL endpoint — **`:8082/graphql/query` on `backend` directly** since platform `2adcf71` deleted the router from local dev (it was `:5050/graphql` on the Cosmo Router) — no direct microservice calls. In particular it has **no direct Directus dependency**: content reaches it through **`backend`'s GraphQL endpoint → the cms domain inside `app` → Directus** (it was gateway → CMS subgraph → Directus before the folds; the supergraph has been **one** subgraph since `915da06`, and the local router is gone since `2adcf71`), so the M23 content cutover (re-pointing CMS's `DIRECTUS_BASE_ADDR` at the per-stack Directus) is transparent to next-web — no `DIRECTUS_BASE_ADDR` env on the frontend. (The demo override does strip the inherited prod `DIRECTUS_TOKEN` from next-web too, defence-in-depth, even though it never reads Directus directly.) Browser images still load from the prod asset plane (`DIRECTUS_PUBLIC_BASE_ADDR=content.anthropos.work`), which is why the baked next/image host whitelist needs no rebuild.
   * Enforce auth at the edge via Clerk middleware (all routes protected by default, explicit public allowlist).
-  * Deploy per-app to **Vercel**; only `apps/web` is also containerizable for local Docker.
+  * Deploy per-app to **Vercel**; `apps/web` is the only app with an in-repo Dockerfile and the only frontend in platform compose (a **demo** additionally containerizes `apps/hiring` from a rext-side Dockerfile — note under *Apps*).
 
 ## Architecture & Code Map
 
@@ -29,10 +29,36 @@
 | App | Package | Port | Product / purpose | Dockerized? |
 |-----|---------|------|-------------------|-------------|
 | **Workforce** | `@anthropos/web-app` | 3000 | Primary product (`app.anthropos.work`): skill paths, AI simulations, org skill management, dashboard, **AI-readiness** (the member 3-step onboarding `components/ai-readiness/` + the manager dashboard `app/.../ai-readiness/`; gates DIFFER by surface — corrected v2.3 M219: the **member** funnel is gated on PostHog `flag_ai_readiness` **and** the org `ai_readiness` setting; the **manager dashboard** is gated on the GraphQL `aiReadinessEnabled` + the `isEnterprise` nav, and does **NOT** read the PostHog flag. Conflating them is the wrong-vantage error M219 spent a section correcting. A demo bakes no PostHog, so the flag resolves `undefined` forever and the member surface needs the `next-web-aireadiness-flag-gate` demo-patch — see [`ai-readiness.md`](ai-readiness.md)) | ✅ (the only one) |
-| **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels. **NB the demo's recruiter candidate-comparison scoreboard is an `is_hiring` ORG-TYPE surface in the dockerized `apps/web`** (`/enterprise/activity-dashboard`), **not** this Vercel-only app — the full hiring org-type + read-model is [`hiring.md`](hiring.md) | ❌ Vercel-only |
+| **Hiring** | `@anthropos/hiring-app` | 3001 | Distinct product (`hiring.anthropos.work`): job ladders, candidate funnels. **The demo's recruiter candidate-comparison scoreboard IS this app** — see the ⚠️ note below the table; the full hiring org-type + read-model is [`hiring.md`](hiring.md) | ❌ not in platform compose — but the **demo containerizes it** (note below) |
 | **Integration** | `@anthropos/integration` | 3002 | Public-website embed (WordPress via proxy rewrites, SEO/Prerender) | ❌ Vercel-only |
 | **Maintenance** | `@anthropos/maintenance-app` | — | Downtime/outage placeholder UI | ❌ |
 | **Mobile** | `@anthropos/mobile` | 3031 (Expo) | Expo / React Native PoC (**paused**); **excluded** from the pnpm workspace, uses `EXPO_PUBLIC_*` | ❌ |
+
+> **⚠️ RETRACTED — "the recruiter scoreboard is an `is_hiring` org-type surface in the dockerized `apps/web`, not
+> the Hiring app."** That sentence stood in the Hiring row (and was implied by the *Key Functions* bullet above)
+> and is **false in both directions**. Two independent adjudicator readings booked the same anchor; corrected
+> M257x iter-102.
+>
+> * **Why it is false.** `/enterprise/activity-dashboard` exists in *both* apps, so the route's presence in
+>   `apps/web` proves nothing. What decides it is a global product-boundary guard: measured @ `next-web-app`
+>   **`8297c684`**, `apps/web/src/context/UserStatusContext.tsx:144-148` computes `userHasAllHiringOrgs` from
+>   `membership.organization.publicMetadata.isHiring`, and when it holds, `:168-172` sets
+>   `window.location.href = buildSwitchHandoffUrl({ targetProduct: 'hiring', … next: '/home' })` — the recruiter
+>   is **ejected out of `apps/web`**, on a direct navigation too. So *"the org genuinely reads as hiring"* and
+>   *"the scoreboard is reachable in `apps/web`"* are **mutually exclusive**. The screen that actually renders the
+>   comparison is `apps/hiring/src/components/containers/InsightsByMembersContainer.tsx:108`, mounted at
+>   `apps/hiring/…/enterprise/activity-dashboard/@tabs/ai-simulations/[simId]/page.tsx:14`.
+> * **Which half was true.** The scoreboard *is* driven by the `is_hiring` **org-type** and *does* render from
+>   seedable data with no platform edit — that half stands. Only the **app** was wrong.
+> * **Consequence for the "Dockerized?" column.** `apps/hiring` is still absent from **platform** compose
+>   (`platform` `0c91421` `docker-compose.yml` declares `sentinel`, `backend`, `studio-desk`, `next-web-app`,
+>   `gotenberg` — the frontend service is `apps/web` only, at `:143`), and the repo ships one
+>   `Dockerfile.dev`. But a **demo** builds `apps/hiring` as a **second UI container** from the same unmodified
+>   clone using rext's own `demo-stack/frontend/hiring.Dockerfile` (`demo-stack/up-injected.sh:1076-1085`, image
+>   `demo-<N>-hiring`, port `3001`+offset) — still zero platform-repo edits. `❌ Vercel-only` was therefore too
+>   strong as well.
+>
+> Authoritative statement, with the render proof: [`hiring.md`](hiring.md) § *The render path* (M224).
 
 ### Shared packages (`packages/` + `configs/`)
 
@@ -46,7 +72,7 @@
 ## Interface Discovery
 
 * **GraphQL**: single endpoint `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — compose bakes `http://${PUBLIC_HOST:-localhost}:8082/graphql/query`, as a build arg (`docker-compose.yml:151`) and again in the runtime environment (`:160`), re-anchored at platform `0c91421` (it was `:236` at `0dab54d`); the env-var NAME still says wundergraph, the router behind it is gone locally; Clerk bearer token injected via React Query `defaultOptions.queries.meta.getToken`.
-* **Auth edge**: **`apps/web/src/proxy.ts`** (and `apps/hiring/src/proxy.ts`) — **not `middleware.ts`**, which does not exist at origin HEAD: **Next 16 renamed the `middleware.ts` convention to `proxy.ts`** (the repo's own `CLAUDE.md:55` says so). `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
+* **Auth edge**: **`apps/web/src/proxy.ts`** (and `apps/hiring/src/proxy.ts`, and `apps/integration/src/proxy.ts`) — **not `middleware.ts`**, which exists nowhere in the repo at `next-web-app` **`8297c684`** (re-derived 2026-08-06; the label here read the moving *"origin HEAD"* until M257x iter-102 — a pin is checkable, a moving label rots): **Next 16 renamed the `middleware.ts` convention to `proxy.ts`** (the repo's own `CLAUDE.md:55` says so, verbatim at that ref). `clerkMiddleware` protects every non-public route; public allowlist includes `/login`, `/sign-up`, `/checkout`, `/free-trial`, `/monitoring`, `/print`, `/api/bunny/thumbnail`. `/print` routes are HMAC-gated (`PRINT_ROUTE_SECRET`) for Puppeteer PDF generation.
 * **Observability proxies**: `/logpoint/*` → PostHog (EU); `/monitoring` tunnels Sentry/Better Stack events.
 
 ## Dependencies
@@ -69,7 +95,8 @@ pnpm dev:integration             # Integration on :3002
 pnpm codegen                     # regenerate GraphQL types (needs the endpoint — :8082/graphql/query locally)
 pnpm check                       # tsc --noEmit + eslint --fix across the workspace
 # pnpm storybook                 # REMOVED — no `storybook` script and no `.storybook/` dir exist at
-                                 # origin HEAD; the only trace left is configs/tailwind/storybooks.css
+                                 # next-web-app 8297c684 (re-derived 2026-08-06; this said the moving
+                                 # "origin HEAD"); the only trace is configs/tailwind/storybooks.css
 ```
 
 > Older Node fails with `WARN Unsupported engine`, and pnpm refuses to wipe
@@ -89,9 +116,13 @@ make up-frontend                 # builds Dockerfile.dev (web app only), serves 
 > *"service `next-web-app` depends on undefined service `backend`: invalid compose project."* Use
 > `make up-frontend` (which adds `core`), or `make up PROFILE=all`.
 
-`Dockerfile.dev` (Node 24 alpine) builds **only** `@anthropos/web-app`
-(`pnpm turbo build --filter=@anthropos/web-app`). Hiring / integration / maintenance /
-mobile are **not** containerized — they ship via Vercel only. `NEXT_PUBLIC_*` are baked
+The repo's own `Dockerfile.dev` (Node 24 alpine — it is the only Dockerfile in the repo)
+builds **only** `@anthropos/web-app`
+(`pnpm turbo build --filter=@anthropos/web-app`), and `apps/web` is the only frontend in
+platform compose. Integration / maintenance / mobile ship via Vercel only. **Hiring is the
+exception a demo makes**: `/demo-up` builds `apps/hiring` into a second UI container from
+the same unmodified clone using a Dockerfile that lives in **rext**, not here — see the
+⚠️ note under *Apps*. `NEXT_PUBLIC_*` are baked
 at **build time**; on a remote VM set `PUBLIC_HOST` in `platform/.env` so the client
 bundle resolves the right hostname.
 
