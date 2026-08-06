@@ -1553,5 +1553,14 @@ defect and would also explain why no amount of accessor work has helped.
   peeled-ref line-shape miscount cannot manufacture the specific names, so it is **not a complete
   explanation on its own** (`D-M257x-102-6`). F16/F17 closed: register entry landed, and `roadmap.md`
   § M257x was **`planned` at 101 iters** with **exit clause 1 still naming the retired `odysseus`** — this
-  milestone's own class, in its own gate, for the second time. **Gate: no clause moved in this pass and
-  none could** — a repair pass contains no reading — see `iter-102/progress.md`
+  milestone's own class, in its own gate, for the second time. **REACH GRADED BY MACHINE, not claimed** (`repair_reach_guard` vs each reading's own raw seat reports,
+  `iter-102/evidence/reach-grade.md`): **37/46 = 80.4 %** against iter-99's ledger and **29/36 = 80.6 %**
+  against iter-101's — **and the entire unreached residue is the adjudicator-REJECTED findings**, which
+  must NOT be repaired because a rejection is a claim that turned out TRUE. iter-101 makes it exact:
+  **7 of 7 unreached anchors are 7 of its 8 rejections** (`ai_architecture.md:35`/`:141`,
+  `security_compliance.md:185`, `backend.md:19`, `skiller.md:19`, `chronos.md:27`, `ai-labs.md:76`); the
+  8th sits in a file edited for other reasons. iter-99's 9 line up the same way and include `hiring.md:80`
+  twice — the one finding **seat 4 DECLINED with a written derivation** after re-measuring it as true.
+  **So: 80.4/80.6 % against the FULL booked set, effectively 100 % against the UPHELD set — both published,
+  the first not adjusted away.** **Gate: no clause moved in this pass and none could** — a repair pass
+  contains no reading — see `iter-102/progress.md`
