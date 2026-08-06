@@ -2424,6 +2424,92 @@ Two riders:
    *parsed construct, never a whole-file substring* rule above: a `grep` would pass a guard that mentions
    the module in a comment or imports it and never calls it, and both are the shapes a stamp regresses into.
 
+### A verdict with a GRAMMAR states its provenance INSIDE the payload (M257x iter-111)
+
+Rider 3 above is right and was implemented in the wrong place for a third of the family. `stamp()` printed
+the tree **first, on stdout** — correct for a text verdict, and **twelve** of these guards also offer
+`--json`, where stdout is a document. There the same line does not weaken the verdict, it **destroys** it:
+`guard.py --json | jq` dies at char 0 and the consumer gets nothing at all.
+
+**The suite did not see it for six days, because the suite worked around it.** Every test that parsed a
+guard's `--json` set `FENCE_PROVENANCE_STAMPED=1` first — undocumented, load-bearing, and nowhere stated.
+**A green bought with a hidden condition is the §5 rule 50 class**, and it had arrived inside the fix *for*
+rule 50.
+
+> **Rule.** Provenance follows the payload's grammar. **Text** → the line first, on stdout. **Machine** →
+> the tree goes **inside the document** (a `fence_tree` key), the human line to stderr. And the mode is
+> **derived from the invocation** — `--json` is in `argv` or it is not — never from a flag and never from
+> the environment.
+
+Three things this gets right that a flat *"default the stamp to stderr"* would not:
+
+1. **Text mode is untouched**, so iter-105's two real reasons — `run_one` reports `lines[-1]`; `headline()`
+   counts finding-shaped lines — keep holding. Both were arguments about **order and shape**; neither was
+   ever an argument about the **stream**, which is why the apparent dilemma dissolved on re-reading.
+2. **An archived `verdict.json` states its own tree** without the terminal that produced it. A stderr line
+   is lost to `> verdict.json`; a stdout preamble is lost to a parser. The document is the only place that
+   survives both.
+3. **The workaround dies with the defect.** Repairing the pollution and leaving the env var in the tests
+   would keep the *mechanism* — an undocumented variable that makes tests pass — alive for the next one.
+   Removed at all five call sites and fenced: a scan over every `test_*.py` fails on any **setter**, with
+   an anti-vacuity control that writes a synthetic setter and confirms the matcher still sees one.
+
+**And the inverse false promise, which nothing was looking for.** `demo_knob_guard`'s rule is that a
+**doc**-promised flag with no parser entry is a false promise. iter-111 found the halves swapped: a guard
+**declared** `--json` in its parser and read it **nowhere**, so `--json` parsed, exited 0, and printed
+prose. Fenced by walking each `--json`-declaring guard's AST for a read of the flag. **Check both
+directions: promised-and-absent, and present-and-unread.**
+
+### A battery that stages a SUBSET carries an underived dependency contract (M257x iter-111)
+
+Five mutation batteries copy a hand-listed subset of `stack-core` into a temp tree and run a fence's suite
+there. iter-111 added one module-scope `import` to eleven guards — and **16 tests across all five
+batteries went RED at once**, reporting *"the unmutated baseline went RED"*, i.e. **the fence looks
+broken** when the true cause is **a file missing from a copy list**.
+
+The batteries already assert the **presence** direction — *"the dependency list names a file that does not
+exist"*. There is no assertion in the **absence** direction, and that is the one that fires when a guard
+grows an import.
+
+> **Rule.** A staged tree is a **closure**, and a hand-written closure rots the moment the code it stages
+> grows a dependency. Either derive it (an import graph, not a grep), or make the staged run's failure
+> **name its cause** — an import smoke-check before the battery grades anything, so *"you forgot a file"*
+> can never be reported as *"the fence is broken"*.
+
+The second-order lesson is about the write-up, not the code: the tempting reading of 16 simultaneous REDs
+is *"a hidden failure, exposed at last"*. It was **caused by the iter that found it**, and it is recorded
+that way (`D-M257x-111-5`). The flattering reading is the one this protocol refuses on principle.
+
+### A SILENT test is not a BLOCKED test — and CPU-idle is not evidence when the work is in a child (M257x iter-111)
+
+iter-108 recorded that `stack-core`'s full `pytest tests/` **"BLOCKS INDEFINITELY"** — *"blocked, not
+slow"* — on the evidence *"12.6 s CPU over 3 m 43 s, frozen at 442 results, reproduced in two runs"*, and
+drew the corollary that the standing suite total **could not be produced on that host**.
+
+**Measured at iter-111: the suite completes.** Three full runs — **414.14 s**, **431.36 s**, and, once the
+batteries were repaired so their mutants actually execute instead of aborting on a red baseline,
+**1090.88 s (18 m 10 s) for `1 failed, 1011 passed`.** That last number is worth pausing on: the suite got
+**2.5× slower by being fixed**, because a battery that dies on its baseline never runs its mutants. *A
+fast suite is not evidence of a healthy one.*
+
+The freeze is real and fully accounted for:
+
+- the named test is the suite's slowest at **132.72 s** (pytest `--durations`), and its module takes
+  **142.38 s** measured alone;
+- it prints **nothing** while running — it is one `-q` dot, and inside it a harness runs a nested suite
+  **8 times at ~16 s each** through `subprocess.run(..., timeout=900)`;
+- so **low parent CPU is expected, not diagnostic**: the work is in child processes and in waiting;
+- watched at 45-second intervals, output sat at 522 bytes for **2 m 15 s** and then advanced.
+
+> **Rule.** Before calling a stall a block, measure **how long the thing is supposed to take**. A
+> long-running test that captures its children's output emits nothing and burns no parent CPU — the exact
+> signature of a hang, produced by working normally. The cheap discriminators, in order: run the module
+> **alone** and time it; ask pytest for `--durations`; sample the **process tree**, not the parent.
+
+**What survives from the retracted finding, and it was always the better half: *state the invocation with
+the count*.** A scoped pass must never read as a whole-suite pass. That rule is correct whether or not the
+suite completes, and it is unchanged.
+
 ### Guards must be tested in PAIRS — a green suite proves each guard, not the specification (M257x iter-90)
 
 Every rule above hardens **one** fence. This one is about what a set of fences can hide from a suite that

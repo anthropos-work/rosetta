@@ -1926,3 +1926,38 @@ defect and would also explain why no amount of accessor work has helped.
   §9 in the same commit. Clause 5 **not** re-cut; Chapman stays retired, floors only. **No reading taken
   and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone fetched,
   no stack touched, no tag cut — see `iter-110/progress.md` + `decisions.md` § TOK-07
+
+- iter-111 (tik, `iter_shape: tooling`, **`TOK-07` step 0**): **the two hardening items with teeth —
+  one DECIDED, one REFUTED.** (1) `FIX-M257x-harden23-json-polluted-by-provenance-stamp` is closed by
+  dissolving its dilemma rather than choosing a side (`D-M257x-111-1`): iter-105's two stated reasons
+  for *printed-FIRST-on-stdout* are about **order and shape**, never about the **stream**, so text mode
+  is kept **byte for byte** and machine mode puts the tree **INSIDE the document** (`fence_tree`) with
+  the human line on stderr — which is the doctrine **strengthened**, since an archived `verdict.json`
+  now states its own tree without the terminal that produced it. Mode **derived from argv**, never from
+  a flag and never from the environment. 19 guards → `stamp_main()` (mechanical, 19/0 misses), 11 sites
+  → `emit_json`. **The workaround died with the defect** (`D-M257x-111-2`): all five sites setting
+  `FENCE_PROVENANCE_STAMPED=1` — including the fifth the harden pass missed — now POP it, fenced by a
+  disk-wide setter scan whose anti-vacuity control both proves it can see a setter **and** proves it
+  does not fire on the removal helper. **Net-new** (`D-M257x-111-3`): `anchor_construct_guard`
+  **declared `--json` and read it nowhere** — the false-promise class with its halves swapped —
+  implemented and fenced by an AST walk. (2) **`FIX-M257x-iter108-stackcore-suite-hangs` is REFUTED as
+  stated** (`D-M257x-111-4`): the suite **completes**, measured three times, ending at **`1 failed ·
+  1011 passed` in 1090.88 s** with its invocation stated. The freeze is a **2 m 15 s silent stretch**
+  watched directly at 45-second intervals, fully accounted for by a test pytest itself times at
+  **132–136 s** whose module measures **142.38 s** alone and which prints nothing while running 8
+  nested suites — **low parent CPU is expected, not diagnostic**. Retracted: *"blocks indefinitely"*,
+  *"blocked, not slow"*, *"the total cannot be produced on this host"*. **Kept, and it was always the
+  better half: STATE THE INVOCATION WITH THE COUNT.** ⚠ **And 16 of the 17 REDs those runs surfaced
+  were THIS ITER'S OWN** (`D-M257x-111-5`) — five mutation batteries stage a hand-listed **subset**, a
+  new module-scope import made the staged guards unimportable, and the batteries reported *"the fence
+  is broken"* for *"you forgot a file"*; one had also pinned a literal this iter moved, silently
+  turning a mutant into a **no-op**. Fixed inside the iter (30 passed · 1 failed, 664.44 s); the
+  **absence direction is routed**, not faked. The 1 is
+  `test_claim_twin_guard_iter48_answer_key::test_02`, **RE-ATTESTED at last** after two sessions of
+  *"not re-run"* — run four times, fails exactly as documented (`D-M257x-111-6`). **Run C also found
+  that the suite got 2.5× SLOWER by being fixed** (431 s → 1090 s), because a battery that dies on its
+  baseline never runs its mutants — *a fast suite is not evidence of a healthy one*. The **second
+  3-pass-harden-cap-without-stabilization** is recorded as a standing signal, not converted into a
+  request for a fourth pass (`D-M257x-111-7`). Three §8 sections added in the same commit. **No reading
+  taken and no `N` movement is claimed.** Gate unchanged at **4 of 5**. Zero platform edits, no clone
+  fetched, no stack touched, no tag cut — see `iter-111/progress.md` + `decisions.md`
