@@ -175,6 +175,18 @@ self-contradiction?
   declared-GREEN control still survives and the signature-discrimination assertion still holds.
 - `anchor_construct_guard` on the live corpus: **528 resolved / 0 findings**, from 360 resolved. Reach
   **+47 %**.
+- Targeted suites re-run after the corpus repairs: `test_iter45_mechanical_fences` +
+  `test_guard_family` + `test_repair_postcondition` — **146 tests, OK**. Pre-commit
+  `repair-postcondition` green over 6 staged paths, 0 sites reported.
+
+**DISCLOSED GAP — the full `unittest discover` still does not complete, and this iter did not fix it.**
+iter-99 recorded that two nested-subprocess tests stall under load. Re-confirmed here: a full
+`python3 -m unittest discover -s tests` ran **> 55 minutes without terminating** and was stopped, having
+emitted 53 lines. It is **not** reported as passing, and no claim in this iter rests on it. What *is*
+claimed rests on the targeted runs above plus the full mutation battery (26/26, 391 s), each of which
+completed and is named. **Routed as `FIX-M257x-iter100-suite-stall`** — the batteries each spawn
+subprocesses that re-run the whole behaviour suite, so `discover` runs them O(batteries × mutants) deep;
+the fix is a runner that excludes the batteries from discovery and invokes them explicitly, not a timeout.
 
 ## Close — 2026-08-06
 
@@ -192,6 +204,8 @@ pass took no reading.
 **Side-deliverables:** per-finding ref provenance in `anchor_construct_guard`'s output — unplanned, and
 recorded separately because it was found by needing it, not by looking for it.
 **Routes carried forward:**
+- `FIX-M257x-iter100-suite-stall` — the full `unittest discover` still does not terminate (> 55 min,
+  re-confirmed, not fixed here). Disclosed in §8; no claim in this iter rests on it.
 - `FIX-M257x-iter100-read-union` — the reading itself. **Not taken this session** (budget), and it is now
   the next action: the instrument is repaired, so a reading taken under it is comparable in a way iter-99's
   was not.
