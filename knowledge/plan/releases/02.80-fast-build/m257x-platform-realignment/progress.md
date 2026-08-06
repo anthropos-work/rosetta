@@ -1732,3 +1732,38 @@ defect and would also explain why no amount of accessor work has helped.
   0 could-not-check · 3 not-run — and for the first time the transcript says which fence tree said so.**
   Gate **unchanged at 4 of 5**; no `N` movement claimed (clause 3's instrument, never clause 5's); zero
   platform edits, no clone fetched, no tag cut — see iter-105/progress.md
+- iter-106 (tik, `iter_shape: fence`, **`TOK-06` step 1**): **the 61 % inflow now has a watcher, and on its
+  first committed run it fired ONCE — correctly, with zero false positives, having parsed no prose.**
+  `stack-core/clone_drift_guard.py` names **`sentinel` as 2 commits past everything the corpus cites**, and
+  those two commits are `chore(deps): update dependencies to latest versions` + a version bump, moving colony
+  `v0.34.3 → v0.35.2` and proto `v1.200.0 → v1.210.0` — **both of iter-103's booked pin-drift predicates are
+  downstream of that single advance.** The fence found the **CAUSE** of two findings that two full reading
+  passes could only find the **EFFECTS** of. **The assertion it REFUSES to make is the design**
+  (`D-M257x-106-1`): *"a version the corpus states must equal the clone's"* was built, measured and
+  **rejected** — `shared_libraries.md:85` states `sentinel v1.200.0` citing `sentinel/go.mod:9 @ 88bc5592`,
+  and `git show 88bc5592:go.mod` reads `proto v1.200.0`, so **at that ref the claim was TRUE**; §5 rules
+  41/44 make it ref-scoped and a fence calling it false asserts what it never measured. **A fence that cries
+  wolf gets suppressed, and a suppressed fence is worse than none** — this milestone has the receipt (a
+  silently-refused perf patch shipped a 76 s grid for four releases). So D1 reports the **ADVANCE**, which
+  accuses no sentence. **There is no baseline file** (`D-M257x-106-2`): a checked-in `repo → sha` map is §2's
+  hand-maintained tuple in a new costume and its first value would have to be *asserted*, so instead every
+  backticked sha in `corpus/**` is resolved with `git cat-file` against every clone — **a sha resolves in
+  exactly the repo that contains it**, so attribution is exact with no convention and no list (live: **103
+  distinct shas · 13 of 14 clones cited · 0 ambiguous**, asserted as a test). **20 tests, 7-mutant battery**
+  (incl. *no corpus is `CANNOT RUN`, never clean* and *citing HEAD must CLEAR it, or the fence can never be
+  satisfied and gets suppressed*) + **anti-vacuity written against the SUBJECT** per §8's iter-94 rule — the
+  LIVE corpus and clone set must yield ≥20 shas / ≥5 attributed repos / 0 ambiguous; every fixture is a real
+  git repo because the fence resolves shas with `cat-file`. **D2 (the pin check) ships CONSERVATIVE and its
+  low yield is REPORTED, not dressed up** — 1 pin graded, 7 unmeasured; two widenings tried and dropped (a
+  nearest-neighbour association is a coin flip dressed as a measurement), and **the reason it is empty is
+  corpus-side**: the corpus writes pins as `<repo> <version>` with the module implied by a table heading, so
+  the module token is not on the line — recorded as a convention in §8's new **fifth layer** section.
+  **The family is committed RED — 14 GREEN · 1 RED over 18 members — deliberately** (`D-M257x-106-3`): clause
+  4's own wording is *"asserted by a FENCE that is watched going RED, not by inspection"*, and TOK-06 puts
+  repair at step 3 precisely so the repair has something watching it. **Read it correctly: clause 3's fence
+  is GREEN, clause 4's schema fence is untouched, and the RED is a NEW member finding PRE-EXISTING drift —
+  not a regression in either clause.** Its subject is 5 sites in 2 predicates, both already inside
+  `FIX-M257x-iter103-read-union`, so **the fence is now step 3's answer key; a repair that leaves it RED has
+  not finished.** `stack-core` **957 passed · 1 failed** (+20 this iter; the failure is iter-105's
+  proven-pre-existing one). Gate **unchanged at 4 of 5**, no `N` movement claimed — clause 3's instrument,
+  never clause 5's; zero platform edits, clones read but never fetched, no tag cut — see iter-106/progress.md

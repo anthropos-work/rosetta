@@ -1820,6 +1820,53 @@ success without checking.
 | static schema fence | every schema a seeder WRITES to **through a statically-visible construct** is one the migrate step CREATES | `stack-core/tests/test_write_target_schema_fence.py` (M257x iter-06) — reads the legal set from `repos_yml_schemas_to_create`, so it **names no dead schema at all** |
 | live schema assert | every schema rext writes exists in `information_schema.schemata` on the migrated stack | bring-up / autoverify (precedent: `dev-stack/tests/test_migrate_dev_live.py:144`) |
 
+### A fifth layer, and it watches the INFLOW rather than the stock (M257x iter-106)
+
+The four layers above all answer *"is what the corpus says true?"* None answers *"has the thing it describes
+moved since anyone looked?"* — and M257x iter-103 measured what that costs: of the `N = 33` false anchors a
+14-seat double reading found, **20 — 61 % — were clone-advance drift**: a version literal, a `go.mod` pin, a
+symbol name, a line offset. `TOK-06` ranked this fence **above repairing those 20**, because repairing them
+without a fence re-arms the class at the next clone advance, which is the mechanism that produced them.
+
+| layer | asserts | lives in |
+|---|---|---|
+| cited-clone advance | every cloned repo the corpus cites **by sha** has at least one cited sha equal to its current HEAD — i.e. no repo has moved past everything the corpus knows about it. Plus a conservative pin check: a site naming `` `<repo>/go.mod` `` **and** a `<module> v<semver>` must agree with that `go.mod` | `stack-core/clone_drift_guard.py` (M257x iter-106), with `tests/test_clone_drift_guard.py` + a 7-mutant battery |
+
+**Three design decisions worth carrying to the next fence of this kind:**
+
+1. **It does not adjudicate truth-at-a-ref, and refusing to was the whole design.** The obvious rule — *a
+   version the corpus states must equal the clone's* — cries wolf on the live tree, and a fence that cries
+   wolf gets suppressed. `shared_libraries.md:85` states `sentinel v1.200.0` and cites
+   `sentinel/go.mod:9 @ 88bc5592`; **at that ref it was true.** §5 rules 41/44 make it a ref-scoped claim,
+   so the fence reports the ADVANCE — *this repo moved past everything you cite, by N commits, and here are
+   the citing sites* — which is mechanically true and accuses no sentence. A site pinned to a ref the clone
+   is not at is **UNMEASURED and named**, never graded false.
+2. **The baseline is DERIVED from the corpus's own citations, so there is no baseline file.** A checked-in
+   `repo → last-reconciled-sha` map is §2's hand-maintained tuple in a new costume: it drifts, it gets
+   re-accepted absent-mindedly, and its first value has to be *asserted* rather than measured. Instead every
+   backticked sha in `corpus/**` is resolved with `git cat-file -t` against every clone — **a sha resolves
+   in exactly the repo that contains it**, so attribution is exact and needs no naming convention, no list,
+   and nothing to keep in step.
+3. **State the REACH in the OK line** (§5 rule 46). This fence catches *"a whole repo advanced unreviewed"*.
+   It does **not** catch *"one site cites HEAD while five others are stale"* — one fresh citation reconciles
+   the repo. The green says so in its own words, because otherwise "no drift" reads as "the corpus is
+   current," which is a different and much larger claim.
+
+**What it caught on its first committed run, which is also the evidence it works.** One RED, zero false
+positives: `sentinel` at `f2c46190`, **2 commits past** the newest sha the corpus cites, 5 citing sites. Those
+two commits are `chore(deps): update dependencies to latest versions` and a version bump — moving colony
+`v0.34.3 → v0.35.2` and proto `v1.200.0 → v1.210.0`. **Both of iter-103's booked pin-drift predicates**
+(`clerkenstein.md:275`'s *"sentinel is still on `v0.34.3`"* and `shared_libraries.md:85`'s *"the live skew is
+two … `sentinel v1.200.0`"*) are downstream of that single advance, and the fence found it **without parsing
+one sentence**.
+
+**The limit it also measured, and it is a corpus-side finding.** The conservative pin rule graded exactly
+**1** pin, because the corpus writes pins as `<repo> <version>` with the module implied by a table heading —
+a form no line-scoped fence can read. **Write a checkable pin claim as `<module> <version>
+(`<repo>/go.mod:N`)`**, all three on one line. That is the fence-facing half of §5 rule 44: naming the tree
+and the ref is what makes a claim settleable, and putting them where the checker can see them is what makes
+it *checked*.
+
 ### A fourth layer, on a different axis: fence the PROSE against verdicts already recorded (M257x iter-43)
 
 The three layers above all fence **tooling against the platform**. None of them reads a sentence, and §5
