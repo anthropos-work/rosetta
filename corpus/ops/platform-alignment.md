@@ -2532,6 +2532,41 @@ What followed was worse than the failure, and is the part to internalise:
 
 ## 9. Cadence
 
+### Iter-type refinement — the 3-no-prog tok-trigger reads UNMEASURED as UNMEASURED (M257x iter-108)
+
+**This protocol's primary metric (`N`, the graded read) is expensive and is deliberately not measured every
+iter.** A strategy under this protocol may legitimately sequence several iters that build instrumentation
+before the next reading — `TOK-06` does exactly that, putting the read **last** so it measures a pool whose
+inflows are already fenced rather than re-measuring the inflow.
+
+That collides with the generic 3-consecutive-no-progress tok-trigger, which fires when *"the metric did not
+move in any of those 3 tiks (zero or net-negative delta)."*
+
+**The refinement, and it narrows nothing:** a **delta requires two measurements.** An iter that took **no
+reading** has an **UNMEASURED** metric, not an unmoved one, and does not count toward the streak. Grading
+"not measured" as "did not move" asserts something nobody measured — §8's *grade the cannot-tell* applied to
+the trigger itself.
+
+**The floor is not suppressed.** Three consecutive tiks that DID measure and did not move still fire the
+trigger. What this rule excludes is only the case where the metric was never read.
+
+**Two guard-rails, both mandatory:**
+
+1. **The iter must SAY it took no reading**, in its own close, in the words *"no `N` movement is claimed"*.
+   An iter that quietly omits the measurement and an iter that measured zero must not look alike.
+2. **The strategy must have declared the sequence in advance** (a `TOK-NN` entry naming the step order). A
+   post-hoc claim that the metric "wasn't being measured anyway" is the flattering reading, and this
+   milestone refuses those on principle.
+
+Worked case: at iter-108, iters 105/106/107 were three consecutive tiks with no `N` movement — and the
+trigger correctly did **not** fire, because `TOK-06` had declared them steps 0–2 of five and each said so at
+its close. Firing would have revised a strategy **3 of 5 steps in, before either of its metric-moving steps
+had run** — revising it from evidence that step 4 exists to produce. It would also mean **no declared
+multi-step strategy longer than three non-metric steps could ever complete**, since the tok terminates the
+call.
+
+---
+
 Detection is cheap. Run it on a schedule, not on an incident.
 
 - **At every release open, and before any prove-it-live milestone:** run §4's six signals.

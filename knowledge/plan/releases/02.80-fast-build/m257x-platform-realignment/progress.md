@@ -1814,3 +1814,53 @@ defect and would also explain why no amount of accessor work has helped.
   test** (§8 rule 7 — the assertion is what expires), routed as
   `FIX-M257x-iter107-drift-fence-satisfiable-by-prose`. **Fourth time in three days the milestone's class has
   landed on its own apparatus, and the fourth time what caught it was re-running rather than reasoning.**
+- iter-108 (tik, `iter_shape: repair`, **`TOK-06` step 3**): **the union is paid BY PREDICATE — 22
+  predicates across 23 files — and BOTH new fences fired on the repair before it was allowed to stand,
+  which is exactly what sequencing repair after them was for.** Machine-graded: `repair_reach_guard`
+  **raw 46/47 = 97.9 %**, and **46/46 = 100 % over the UPHELD union** — the single unreached booking is
+  `shared_libraries.md:128` / `r25-G B3`, which adjudicator 4 **REJECTED** (class `wrong-tree`: it graded
+  app's post-fold in-tree fork instead of the `ai` module at the `v1.40.2` the section's own pin row names,
+  readable in the same clone at `1e457fa70`). **iter-102's residue result reproduced exactly — the apparent
+  miss is a claim that came out TRUE**, which is why reach is reported twice (`D-M257x-108-4`).
+  `anchor_offset_guard` **OK** on the repair's own range (13 graded, 0 rotted, 7 CANNOT-TELL **each checked
+  by hand and all correct post-move**); `clone_drift_guard` **OK with its 2 gradeable pins now MATCHING** —
+  iter-106's RED is genuinely discharged, the drift repaired rather than written about.
+  **The anchor list was DERIVED, never hand-assembled** (§5 rule 19) via `repair_reach_guard.read_ledger()`
+  over `iter-103/raw/` — *the same code path that grades the repair* — 48 blocks / 14 seats → **31 primary
+  anchors**; a hand list would have missed `shared_libraries.md:128`.
+  **Both of iter-102's induction shapes were refused BY CONSTRUCTION.** The `:8081` canonical wording is
+  **removed, not corrected** (`D-M257x-108-2`): re-derived first (**6 occurrences, 0 in any `.tf`, 44 `.tf`
+  across 13 repos**), then stated **once** in `backend.md` with `cms.md`/`jobsimulation.md` **pointing at
+  it** — *a pointer cannot carry a false cardinality to five places*, so the multiplier is gone rather than
+  fixed. And the one line-adding edit was made FIRST, the target re-measured after (**`:335`**), and all
+  four `:321` citers re-pointed — **including `backend.md:54`, which the 14-seat double reading missed in
+  BOTH passes.**
+  **⚠ THE CLASS LANDED ON THE APPARATUS AGAIN, TWICE, IN THIS ITER.** `repair_postcondition` **refused the
+  repair commit itself** (§8's iter-102 post-mortem carried bare `:321`/`:331` numbers, which became
+  citations onto a blank line once the wording moved); then `anchor_offset_guard` went **RED on the repair
+  one commit old** — §8's write-up of the *drift fence* quoted the drift as **live corpus text**, and the
+  repair had just fixed it. Fifth occurrence in four days; fifth time it was **re-running, not reasoning**,
+  that caught it. Retrospective line numbers now carry the ref they were true at.
+  **The 5 routed "rotted" citations were graded ONE AT A TIME, not bulk-bumped** (`D-M257x-108-3`): 3
+  resolve correctly today, 1 was genuinely rotted (`backend.md` `:187`→`:241`→**`:302`** — the same anchor
+  rotting **three times in three readings**, now marked *cite the claim, not the line*), and 1 is a
+  **HISTORICAL** anchor (`hiring.md:93`) deliberately left, because re-pointing it would falsify the record
+  of what iter-39 found. **A guard cannot tell a live citation from a record of where something once was.**
+  **`FIX-M257x-iter107-drift-fence-satisfiable-by-prose` stays OPEN with no exclusion list** and the
+  reasoning recorded (`D-M257x-108-5`): every candidate discriminator is a shape allow-list in a
+  derivation's clothes, because *"is this sha dating a claim or being discussed"* is intent, and intent is
+  not in the repository — the same wall `D-M257x-107-2` hit.
+  **The 3-no-prog tok-trigger was graded out loud and did NOT fire** (`D-M257x-108-1`): iters 105–107 are
+  three consecutive tiks with no `N` movement, but they took **no reading at all**, so the metric is
+  **UNMEASURED, not unmoved**, and the trigger's precondition is unestablished. **Codified as a protocol
+  refinement in §9** — with the floor preserved (three tiks that DID measure still fire it) and two
+  mandatory guard-rails — so the next agent inherits a rule rather than re-deriving a judgement call.
+  **Side-deliverable, rext `680e852`:** `anchor_offset_guard` **false-greened its own pinned answer key on a
+  bare rev** — `git diff <sha>` is *sha vs the working tree*, so the bare form graded **0 of 33 citations
+  and printed OK** where `<sha>^..<sha>` is **RED with 10 findings**. All 18 existing tests passed
+  throughout, because every one used the explicit form; the defect lived in the invocation an operator types
+  first. Normalized, +3 tests, mutation control verified firing. **Found by Phase 0d pre-flighting the fence
+  that was about to grade this iter** — without it this iter's own verdict would have been a false green.
+  Gate **unchanged at 4 of 5**; **no `N` claimed** — measuring here would be repair inside the measuring
+  pass. **`TOK-06` step 4 (the read) is next and is deliberately unstarted.** Zero platform edits, clones
+  read but never fetched, no tag cut — see iter-108/progress.md
