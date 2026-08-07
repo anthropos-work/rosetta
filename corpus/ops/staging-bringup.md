@@ -121,9 +121,16 @@ make init                  # clones the 4 repos.yml entries: app/, sentinel/,
 
 cd ~
 git clone https://github.com/anthropos-work/rosetta.git
-git clone https://github.com/stefano-anthropos/ant-singularity.git
+git clone https://github.com/anthropos-work/ant-singularity.git
 git clone https://github.com/anthropos-work/anthropos-knowledge-base.git
 ```
+
+> **⚠️ This line was broken from day one and is now fixed.** Until 2026-08-07 it read
+> `github.com/stefano-anthropos/ant-singularity`, an account/repo that **does not exist** — measured
+> `Repository not found` over **both** HTTPS and SSH — so the very first onboarding command a new
+> engineer runs after `make init` failed. The live repo is `anthropos-work/ant-singularity`
+> (`origin/main` `5d944e4a`, 1,046 commits). Four **other** references to the same wrong URL carried a
+> deep link as well, and those could not be repointed — see the note at § 6.
 
 **Quirk #1** — `make init` may issue `git clone git@github.com:` (SSH). If yours doesn't have `gh auth setup-git` configured, you'll see prompts for SSH keys. Fix by editing `Makefile` to `git clone https://github.com/` (or land the upstream PR that does this) before re-running `make init`. The dockerfiles themselves use `GH_PAT` over HTTPS — no SSH agent needed.
 
@@ -487,7 +494,18 @@ The fix is the engineer-rebind procedure documented at length in `corpus/ops/sta
 
 **Shortcut: use Stefano's account.** If you don't need your own user to exist in the DB, you can just log in as `stefano@anthropos.work / chichi88kora` — that's the shared cross-engineer test login. See [`staging-clerk.md` § Shared test login](./staging-clerk.md#shared-test-login).
 
-The full singularity-catalog blueprint for this loop lives at [`ant-singularity/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md`](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — it has the SQL one-liners and the Clerk REST snippets in one place.
+> **⚠️ RETRACTED 2026-08-07 — the "full singularity-catalog blueprint" for this loop does not exist.**
+> Four corpus lines (this one, § Related below, `staging-clerk.md`, `staging-sync.md`) pointed at
+> `ant-singularity/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md` under the
+> **nonexistent** account `stefano-anthropos`, and claimed it held *"the SQL one-liners and the Clerk
+> REST snippets in one place."* Measured at `anthropos-work/ant-singularity` `origin/main` `5d944e4a`:
+> the file is **absent**, has **never** been added in the repo's 1,046 commits
+> (`git log --all --diff-filter=A` → 0), and **no file matching that name exists anywhere in the
+> `anthropos-work` org** (GitHub code search, `org:anthropos-work` → `total_count: 0`). The
+> `knowledge/singularity-catalog/` directory is real and holds ~20 `auto-*.md` entries — none of them a
+> staging dev loop. **The SQL and Clerk REST material is in THIS document and in
+> [`staging-clerk.md`](./staging-clerk.md); there is no other copy to go and read.** A wrong-org URL
+> looks like a one-token typo; this one was hiding a citation to a document that was never written.
 
 ---
 
@@ -634,4 +652,7 @@ gh pr create --base main --title "fix: something" --body "…"
 - [`setup_guide.md`](./setup_guide.md) — original setup guide (no prod-dump path).
 - [`run_guide.md`](./run_guide.md) — day-to-day operations.
 - [`update_guide.md`](./update_guide.md) — pulling latest code (now superseded by the auto-sync routine on staging hosts).
-- [Ant-singularity catalog entry](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — org-level workflow framing.
+- [`anthropos-work/ant-singularity`](https://github.com/anthropos-work/ant-singularity) — the singularity
+  node repo. **Its `knowledge/singularity-catalog/` holds no staging-dev-loop entry** (measured at
+  `origin/main` `5d944e4a`, 2026-08-07); the deep link this list used to carry was to a file that has
+  never existed in any org repo — see the retraction in § 6.

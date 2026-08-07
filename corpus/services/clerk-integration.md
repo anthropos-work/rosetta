@@ -83,7 +83,8 @@ sign-in token is therefore a **documented, deliberate second-factor bypass** aga
 three other places: the staging/CI `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens` bypass for
 Clerk's "new device" challenge — [`staging-clerk.md:58`](../ops/staging-clerk.md),
 [`staging_from_dump.md:384`](../ops/staging_from_dump.md), and
-[`staging-bringup.md:461`](../ops/staging-bringup.md) (*"Quirk #13"*). It mints against whichever
+[`staging-bringup.md:468`](../ops/staging-bringup.md) (*"Quirk #13"* — cite the **quirk number**, which is
+stable; the line moved 461 → 468 on 2026-08-07 when § 2 grew). It mints against whichever
 instance the operator's key points at.
 
 **The "chosen over Enterprise-tier Actor Tokens" half is correct** and stays: `manager.go:6-11` says so in

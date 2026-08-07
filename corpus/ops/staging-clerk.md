@@ -462,4 +462,9 @@ If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colon
 - [`staging-bringup.md`](./staging-bringup.md) — fresh-VM onboarding.
 - [`staging-sync.md`](./staging-sync.md) — daily sync routine.
 - [`staging_from_dump.md`](./staging_from_dump.md) — engineer-rebind reference (creates Clerk users + remaps DB).
-- Ant-singularity catalog: [`auto-anthropos-staging-dev-loop.md`](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — full dev-loop blueprint.
+- [`anthropos-work/ant-singularity`](https://github.com/anthropos-work/ant-singularity) — the singularity
+  node repo. **RETRACTED 2026-08-07:** this line used to deep-link
+  `knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md` under the nonexistent account
+  `stefano-anthropos` and call it the *"full dev-loop blueprint."* That file has never existed in the
+  repo (1,046 commits, 0 additions) nor anywhere in the org (code search `total_count: 0`). The
+  blueprint is [`staging-bringup.md`](./staging-bringup.md) — see its § 6 retraction.

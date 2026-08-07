@@ -336,4 +336,8 @@ Then ssh in and verify `cat ~/.local/state/anthropos-staging-sync/drift.summary`
 - [`staging-bringup.md`](./staging-bringup.md) — fresh-VM onboarding.
 - [`staging-clerk.md`](./staging-clerk.md) — dev Clerk app + shared test login.
 - [`staging_from_dump.md`](./staging_from_dump.md) — original verbose engineer-rebind reference.
-- Ant-singularity catalog: [`auto-anthropos-staging-dev-loop.md`](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — org-level workflow framing.
+- [`anthropos-work/ant-singularity`](https://github.com/anthropos-work/ant-singularity) — the singularity
+  node repo. **RETRACTED 2026-08-07:** this line used to deep-link
+  `knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md` under the nonexistent account
+  `stefano-anthropos`. That file has never existed in the repo (1,046 commits, 0 additions) nor anywhere
+  in the org (code search `total_count: 0`). See [`staging-bringup.md`](./staging-bringup.md) § 6.
