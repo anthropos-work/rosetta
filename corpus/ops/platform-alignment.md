@@ -1737,6 +1737,33 @@ defect, it was arguing for it.*
     > **And a mutation is only a control for the clause it can ISOLATE** — a mutant that leaves a second,
     > broader clause satisfying every assertion proves nothing about the clause it targeted.
 
+54. **A correction that reaches ONE cell is not a correction. When a measurement retracts a claim, the
+    unit of repair is the PREDICATE, corpus-wide, in the SAME iter that measures it.** *(M257x iter-124,
+    against iter-123.)*
+
+    iter-123 cloned `infrastructure` and measured one rule that settled four standing questions at once —
+    *a service repo's own `service_desired_count` is not evidence of production state.* It then repaired
+    **three** of the four rows sharing that predicate. The fourth (`graphql-wundergraph`) kept the refuted
+    reading **in a fenced table**, and **24 further sites across 13 files** kept asserting that the router
+    *"survives in production only"*. A second predicate from the same iter — the `db-backup` schedule and
+    targets — survived unrepaired at **3** sites, two of them in the security-and-compliance posture.
+
+    **Why no amount of care at the repair site prevents this.** Every surviving instance is *locally
+    plausible*: *"the Cosmo Router — prod only"* reads as a careful hedge, not as a falsehood, to anyone
+    who does not already hold the measurement. Re-reading the repaired file cannot find them, because they
+    are not in it. **Only enumerating the predicate can**, which is [`TOK-02`]'s method and [`TOK-07`]'s
+    unit of repair — both vindicated here on a class neither was aimed at.
+
+    > **Rule.** A retraction ships with (a) the **enumeration** of every site publishing the retracted
+    > predicate, (b) the repair of all of them, and (c) the **enumeration recorded in the iter** so a later
+    > reader can check the reach rather than trust it. **Grade a correction by its reach, never by its
+    > correctness at the site that prompted it.**
+    >
+    > **Corollary — a repair moves line numbers, and line numbers are cited.** iter-124's own repair
+    > silently turned four true citations into blank-line anchors; `repair_postcondition` rejected the
+    > commit. **Re-run the anchor fences over the WHOLE tree after a multi-file repair**, not over the
+    > files you edited.
+
 ---
 
 ## 6. Classification — the map
