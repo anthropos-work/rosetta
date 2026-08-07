@@ -1764,6 +1764,27 @@ defect, it was arguing for it.*
     > commit. **Re-run the anchor fences over the WHOLE tree after a multi-file repair**, not over the
     > files you edited.
 
+55. **A finding is placed where the DECISION is made, not where the investigation happened. A census is
+    not a disclosure.** *(M257x iter-125, against iter-123.)*
+
+    iter-123 documented the contradicting second corpus in full and correctly — 14 unsourced occurrences
+    of a refuted taxonomy figure, load-bearing in four customer-facing tables, in a repo whose plugin
+    injects it into every engineer's editor. It landed in a **93-row repo census**. Nothing a reader
+    would see changed, because **a reader who needs the taxonomy figures opens the taxonomy section, and
+    an engineer about to install the plugin opens the toolchain page.** Neither opens the census.
+
+    **The gap was placement, not writing.** The correct placements were: the section that already holds
+    this corpus's own version of the disputed number; the **install line** of the recommendation that
+    causes the harm; and the defect register, so the part this milestone cannot fix has an owner.
+
+    > **Rule.** Ask *"where is somebody standing when this finding would change what they do?"* and put
+    > it there. An investigation's own write-up is the **record**, not the disclosure — and a finding
+    > that only exists in the record is indistinguishable, to everyone downstream, from a finding nobody
+    > made.
+    >
+    > **Sibling of rule 54, on the other axis.** 54: a *correction* must reach every site publishing the
+    > retracted predicate. 55: a *disclosure* must reach the site where somebody acts on it.
+
 ---
 
 ## 6. Classification — the map

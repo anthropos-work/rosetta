@@ -2580,3 +2580,4 @@ strategy remains FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMEN
 **exit-3**
 **Decisions:** `D-M257x-122-1` … `D-M257x-122-6` (see [`decisions.md`](decisions.md))
 - iter-124 (tik): tier 2 triaged over its consequence class — cite 96.2 % printed / ≈86.6 % audited, fix a floor of 4; **the corpus is under-cited, not unfounded**. 27 false sentences repaired across 14 files, all one predicate iter-123 had measured and whose correction had reached 2 sites — see `iter-124/progress.md`
+- iter-125 (tik): the directus register entry re-derived at source — 3 of 4 claims verbatim, the environment inventory WRONG and corrected, plus a net-new second exposure (`KEY` in clear in the task definition); the AKB contradiction placed in the three sites a reader meets it and filed with an owner; AKB's correctness on the router residue recorded — see `iter-125/progress.md`
