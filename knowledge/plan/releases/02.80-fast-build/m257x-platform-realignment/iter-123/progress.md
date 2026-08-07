@@ -116,8 +116,8 @@ plan record.
 
 | file | bytes | what it is |
 |---|---|---|
-| [`corpus/architecture/org-repos.md`](../../../../../corpus/architecture/org-repos.md) | 38,842 | all **93** org repos, each with an **advisory** keep/retire verdict. Advisory is the load-bearing word: **nothing was deleted, and the file does not license a deletion** |
-| [`corpus/ops/observability.md`](../../../../../corpus/ops/observability.md) | 9,034 | the `ant-observability` surface — the census's one correct-and-understated finding (`git grep -i grafana -- corpus/` returned **0 files** before it) |
+| [`corpus/architecture/org-repos.md`](../../../../../../corpus/architecture/org-repos.md) | 38,842 | all **93** org repos, each with an **advisory** keep/retire verdict. Advisory is the load-bearing word: **nothing was deleted, and the file does not license a deletion** |
+| [`corpus/ops/observability.md`](../../../../../../corpus/ops/observability.md) | 9,034 | the `ant-observability` surface — the census's one correct-and-understated finding (`git grep -i grafana -- corpus/` returned **0 files** before it) |
 
 `org-repos.md` is reachable from `CLAUDE.md` and `corpus/architecture/README.md` plus six sibling
 architecture docs, so it is discoverable to a *reader*; what it lacked was an owner in the *plan*.
