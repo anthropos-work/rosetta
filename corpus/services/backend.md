@@ -116,7 +116,13 @@ It also hosts a growing number of cross-cutting features that don't fit neatly i
 
 * **Talk to Data** (`internal/askengine`) — SSE-streaming natural-language Q&A over the platform's data, powered by Bedrock (Anthropic) with a SQL-validation sandbox. Added 2026-Q2 (v1.266+).
 * **Workforce analytics** (`internal/workforce`) — aggregations of skills, simulations, and growth across org members
-* **Job-simulation feedback** (`internal/jobsimfeedback`) — post-session signals routed back to the skills domain (in-process since the skiller merge)
+* **Job-simulation feedback** (`internal/jobsimfeedback`) — a learner-**satisfaction survey** about the
+  simulation experience (`is_positive` + an 11-value enum from `FUN_AND_USEFUL` to `CALL_ISSUES` + free
+  text). ⚠️ *Said "post-session signals routed back to the skills domain" until run 81 — FALSE on both
+  halves*: `app/internal/data/ent/schema/jobsimulation_feedback.go:26-46` @ `ad9f3c498` declares no skill
+  field and no skill edge, and the package's only non-generated consumers are GraphQL resolvers — there
+  is **no route into the skills domain at all**. It also hid that the table holds **user-authored free
+  text** (a scrub/export surface).
 * **AI usage / cost tracking** (`internal/aiusage`) — central ledger driven by the `AI` Redis Stream
 * **Bootstrap & admin** (`internal/admin`, `internal/bootstrap`, `cmd/bootstrap-org`) — provisioning utilities
 * **AI Labs LabSession** (`internal/labs/session`; siblings `internal/labs/labsapi`, `internal/labs/adapter`, `internal/labs/catalog`) — Connect-RPC `lab.v1.LabSessionService` (Create/Get/List/Cancel/ReportEvent) plus a `lab_sessions` Ent table. The labs-api client is wired **only when `LABS_API_URL` is set** (`main.go:743-746` @ `app` `b948604` v1.366.0); with it unset — the usual local/demo case — Create persists a session row without booting a VM and Cancel marks the row cancelled without calling labs-api (see Recent Feature Additions). It is NOT unconditionally nil.
@@ -275,7 +281,7 @@ internal/
   deadletterqueue/          DLQ handling for Redis Streams
   experiencepoint/          User XP tracking
   cms/                      Merged cms domain: directus edge, similarity, studio, library, importer/exporter (cms-in-app)
-  jobsimfeedback/           Post-session signal routing
+  jobsimfeedback/           Learner-satisfaction survey on the simulation experience
   jobsimulation/            Merged jobsim domain: session engine, actors, calls, recording, anticheat, analytics (jobsim-in-app)
   jobsimwiring/             Single construction entry point for the merged jobsim engine
   jobsimulations/           Backend's view of jobsim data

@@ -199,12 +199,33 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 | `/coursebuilder` | `:229-232` | `cors` + `authn` + **`cbGate`** |
 | `/credits` | `:273-276` | `cors` + `authn` + **`cbGate`** |
 
+> ⚠️ **CORRECTED AGAIN at run 81 — and this time the DENOMINATOR was wrong, not the quantifier.** The
+> table above enumerates only the groups declared **inside `backend.go`**. `app` mounts **ELEVEN**
+> non-test Echo groups on the **one** REST instance (`internal/web/web.go:124-163`), and the five below
+> were invisible to every previous reading of this paragraph. **Three never touch the Clerk `authn`
+> middleware at all, and one has no authentication whatsoever.** All at `app` `ad9f3c498`:
+
+| Echo group | declared | middleware stack |
+|---|---|---|
+| `/api/invitations` | `internal/invitations/handlers.go:31` (mounted `web.go:148`) | **`cors` ONLY — no authentication.** `web.go:145-146` says so in as many words: *"Public invitation JSON endpoints (no auth required)"* |
+| `/content/admin` | `internal/web/backend/content_admin.go:35` (mounted `backend.go:289`) | **no Clerk `authn`** — a bearer shared secret (`ACADEMY_CONTENT_API_TOKEN`) is the entire gate |
+| `/v1/labs` | `internal/web/backend/labs_admin.go:31` (mounted `backend.go:301`) | **no Clerk `authn`** — a group-level org **API key + `labs:write` scope** check |
+| `/academy/embeddings` | `internal/web/backend/academy_embeddings_admin.go:41` (mounted `backend.go:295`) | `cors` + `authn` |
+| `/api/workforce` | `internal/web/backend/emailpreview/handler.go:66` (mounted `web.go:162`) | `cors` + `authn` — **grouped off the ROOT `e`**, so despite the `/api/` prefix it does **not** inherit the `/api` group's swagger/authn stack |
+
+> **`cbGate` is also not the only group-level authorization**: `/v1/labs` carries a group-level *scope*
+> check and `/content/admin` a group-level shared-secret check. **This is the THIRD correction to this
+> one paragraph** — iter-120 over-stated it, iter-121 corrected the quantifier, and run 81 found the
+> *denominator* had been six all along because the enumeration only ever read one file. **A count is only
+> as wide as the search that produced it**, and the two earlier repairs both re-derived from
+> `backend.go` because that is where the previous sentence pointed.
+
 > ⚠️ **CORRECTED at iter-121, in the OTHER direction.** iter-120's own repair of this paragraph said
 > *"every Echo group … and nothing else"*, and cited `:230-231` / `:274-275` — **each one line short of
 > the third middleware**. `cbGate := courseBuilderAccessGate(authorizationManager)` (`backend.go:227`,
 > defined `internal/web/backend/gate.go:27-49`) **is** a Sentinel-backed group middleware: it requires a
 > user, a non-nil active org, and `OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID)`, returning
-> 401/403 before the handler. Two of the six groups carry it. The conclusion — no blanket, authorization
+> 401/403 before the handler. Two of the eleven groups carry it. The conclusion — no blanket, authorization
 > is opt-in — survives; the absolute quantifier did not. **Same defect class as the sentence it replaced,
 > pointing the other way**, and a citation that stops one line short of its own subject is exactly the
 > wrong-construct class `anchor_construct_guard` does not detect.
@@ -214,7 +235,9 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
   store), and its policies are centrally managed and auditable — that part always held.
 - **It is not a blanket applied to every request.** The GraphQL middleware is a *viewer* gate with a
   narrow cross-user check bolted on; the REST surface has **no blanket authz middleware** — two of its
-  six groups opt into one (`cbGate`), the rest authorize per handler or not at all.
+  **eleven** groups opt into `cbGate`, two more carry a non-Clerk group gate (an API-key scope, a shared
+  secret), **one (`/api/invitations`) has no authentication at all**, and the rest authorize per handler
+  or not at all. *(Said "six" until run 81 — an under-count of the REST attack surface by five groups.)*
 - **Where isolation actually comes from** is the three layers *together* — Layer 1 on the 31 schemas
   that declare a policy, per-resolver and per-handler checks elsewhere, and Layer 3's org-scoped
   session. Reading Layer 2 as universal is what let the M207 port ship an IDOR.

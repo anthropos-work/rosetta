@@ -37,7 +37,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **Studio-Desk**: Web app where creators design job simulations
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the `app` (backend) image** since cms-in-app — it rode in the cms container before that, and was never a standalone deployment.
 *   **Standalone Internal Apps**: Separately deployed products that reuse platform identity (Clerk) — **but not independent of the backend**:
-    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel. Its course catalog is **DB-authoritative**, read over GraphQL from the platform's **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`) inside it — so the catalog degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
+    *   **Ant Academy** (`ant-academy`): the AI-academy learning product (Next.js 16 + Expo mobile) — a **public storefront** with an enterprise/org tier, **not** an `@anthropos.work`-only portal (refuted iter-115, swept run 81). Deployed on Vercel. Its course catalog is **DB-authoritative**, read over GraphQL from the platform's **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`) inside it — so the catalog degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
 *   **Frontend**: Next.js **16** applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
@@ -262,7 +262,7 @@ may still exist on disk):
 | **Next Web App** | Next.js 16 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
 | **Hiring App** | Next.js | Recruiting & hiring workflows | [→](./frontend_architecture.md) |
 | **Mobile App** | Expo/React Native | Mobile experience | [→](./frontend_architecture.md) |
-| **Ant Academy** | Next.js 16 + Expo | Internal learning portal for `@anthropos.work` employees (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
+| **Ant Academy** | Next.js 16 + Expo | The AI-academy product — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
 
 ### Communication Patterns
 

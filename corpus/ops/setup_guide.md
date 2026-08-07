@@ -382,7 +382,7 @@ blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
 
 ### Ant Academy Environment (Native Only — Not in Docker)
 
-Ant Academy is the internal learning portal and **always** runs natively (no docker-compose profile). The Next.js
+Ant Academy is the AI-academy learning product (a public storefront with an org tier — **not** internal-only) and **always** runs natively (no docker-compose profile). The Next.js
 app reads from `code/.env.local` (Next.js precedence makes `.env.local` win; the live repo ships no `code/.env`),
 **not** the repo root. **Provision it with `/stack-secrets`** — it writes `ant-academy/code/.env.local` (the exact
 pinned target) from your source. The keys it needs:

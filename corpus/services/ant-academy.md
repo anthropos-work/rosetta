@@ -2,9 +2,19 @@
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-**Ant Academy** (a.k.a. *AI Academy*) is the **internal learning portal** for Anthropos employees. It delivers micro-chapters on AI engineering, Claude Code, agent frameworks, and related topics to anyone with an `@anthropos.work` email.
+**Ant Academy** (a.k.a. *AI Academy*) is the **AI-academy learning product**: micro-chapters on AI
+engineering, Claude Code, agent frameworks and related topics.
 
-Think of it as **the company's training app**:
+> ⚠️ **This paragraph called it *"the internal learning portal for Anthropos employees … to anyone with an
+> `@anthropos.work` email"* until run 81, and that is FALSE** — refuted at **M257x iter-115** in this
+> file's own Clerk bullet, which then sat 469 lines below an opening that still contradicted it. It is a
+> **public storefront** that sells a **$399/yr** subscription to **anonymous visitors**
+> (`code/src/lib/pricing.js`, `TopBar.jsx:77-88` @ `22df69dd`), carries **no domain predicate anywhere in
+> `code/`**, and shares its Clerk instance with the customer-facing platform. **What is true:** there is
+> an **enterprise/org tier**, and the org-membership gate applies to *those* surfaces. Run 81 swept the
+> predicate across **13 sites in 9 files** — see [`iter-128/progress.md`](../../knowledge/plan/releases/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md).
+
+Think of it as **a training product with a company tier**:
 - A web portal where employees take short, structured chapters
 - A companion **iOS / Android app** (Expo / React Native) that bundles the same content for offline reading
 - Authored content lives **inside the repo** as JSON, so curriculum changes ship through normal PRs
@@ -21,14 +31,14 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
 | **Technology Stack** | Next.js 16 App Router + React 19.2 (React Compiler enabled), Expo / React Native (mobile) |
 | **Deployment** | **Vercel native** (no Docker, no docker-compose entry). Mobile builds via Expo. |
 | **Local dev port** | **3077** (web); **8555** (mobile web preview) |
-| **Authentication** | Clerk (`@anthropos.work` domain gate + org-membership gate) |
+| **Authentication** | Clerk (org-membership gate only — `REQUIRE_ORGANIZATION_MEMBERSHIP`, and it gates the *enterprise* surfaces). ⚠️ **The `@anthropos.work` domain gate was REMOVED from this row at run 81**; it is FALSE and this file has said so at the Clerk bullet since iter-115 |
 | **Repository** | `git@github.com:anthropos-work/ant-academy.git` → `stack-dev/ant-academy/` |
 | **In `repos.yml`** | **No — by design (v1.10b M49 #5).** NOT in `platform/repos.yml`, so `make init` / `make pull` do **not** clone/pull it. M49 did **not** add the entry: `repos.yml` lives in the *ephemeral, gitignored* `stack-demo/platform` clone (editing it is non-durable + a platform-repo edit). Instead, for a **demo**, `ensure-clones.sh` clones ant-academy **explicitly** (phase d2 — the cms/studio submodule-pattern precedent, non-fatal). For **dev**, clone it directly (it's a Vercel-native peripheral). The old "cloned by `make init`" claims are **stale**. |
 | **In `docker-compose.yml`** | **No** — runs natively only |
 
 ### Role & Responsibility
 
-- **Primary Goal**: Internal-only learning portal that delivers AI-engineering chapters to `@anthropos.work` employees, online (installable via `public/academy-manifest.json`, but **no longer offline on the web** — the Serwist service worker was removed at v0.5 M1) and offline on the Expo mobile bundle.
+- **Primary Goal**: an AI-engineering learning product — a **public storefront** with an enterprise/org tier, not an internal-only portal (*"Internal-only … to `@anthropos.work` employees"* was **removed at run 81**; the retraction is at the Clerk bullet, iter-115). Chapters are delivered online (installable via `public/academy-manifest.json`, but **no longer offline on the web** — the Serwist service worker was removed at v0.5 M1) and offline on the Expo mobile bundle.
 - **Key Functions**:
   - Serve chapter content as a Next.js App Router site at `/chapters/<slug>/`
   - ~~Cache chapters offline via a Serwist-built service worker~~ — **REMOVED at v0.5 M1.** `RegisterServiceWorker.jsx` is now a kill-switch that unregisters any surviving worker and deletes its caches; the web app is online-only
@@ -295,7 +305,7 @@ used to dismiss it on a premise that was never true). It decomposes into:
 | Layer | Technology |
 |:------|:-----------|
 | **Framework** | Next.js 16 App Router + React 19.2 (React Compiler enabled, Turbopack default) |
-| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate (`REQUIRE_ORGANIZATION_MEMBERSHIP`, default ON, fail-closed); `@anthropos.work` domain restriction is enforced in the Clerk app. **The public surface is much wider than "a few auth pages"** — it includes the catalog root `/`, `/courses/*` and `/chapters/*`, and three `/api/*` routes. Full enumeration below the table. |
+| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate (`REQUIRE_ORGANIZATION_MEMBERSHIP`, default ON, fail-closed); **There is NO `@anthropos.work` domain restriction** — the claim that one *"is enforced in the Clerk app"* was **removed at run 81**. No domain predicate exists in `code/` @ `22df69dd`, and the Clerk instance is **shared with the customer-facing platform** (`code/.env.example:66` points sign-up at `app.anthropos.work`), so an instance-level domain restriction would block every paying customer. The *dashboard's* own configuration is not readable from here; what is measurable is the code path and the shared instance, and both refute it. **The public surface is much wider than "a few auth pages"** — it includes the catalog root `/`, `/courses/*` and `/chapters/*`, and three `/api/*` routes. Full enumeration below the table. |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
 | **Fonts** | **Work Sans + Instrument Serif** — and those two only (`code/app/layout.jsx:1` imports exactly `{ Work_Sans, Instrument_Serif }` from `next/font/google`; `:41`, `:51`). **Neither DM Sans nor JetBrains Mono is loaded** — this row named both until M257x iter-98; `code/academy.css:1` says display + mono usages *"fall back to system fonts."* Plus Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
@@ -430,7 +440,15 @@ pnpm run dev:web     # web preview at :8555 (Playwright-friendly)
 # or run on a real device / simulator with Expo Go
 ```
 
-The mobile app bundles `code/public/content/` at build time via `pnpm run dev:bundle`.
+⚠️ **The mobile bundler is INOPERATIVE, and this line said it bundles `code/public/content/` until run
+81.** `mobile/scripts/bundle-content.ts:27-28` @ `22df69dd` computes
+`CONTENT_DIR = join(REPO_ROOT, 'content')` — the **repo root**, not `code/public/`. That directory was
+deleted at `8199ea5d` (2026-05-20, *"remove orphaned root content/ tree"*) and `ls-tree -r origin/main`
+returns **0** entries under `content/` against **3,406** under `code/public/content/`. The script does a
+bare `readdirSync` with no existence check (`:38`, `:53`), so `pnpm run dev:bundle` **ENOENTs on a clean
+checkout and bundles nothing**. Two things a reader wrongly concluded: that the mobile artifact ships the
+live catalog, and that the tenant-exclusion filter inside that bundler is protecting it. Neither holds
+while the script cannot run. (Inherited: the repo's own `CLAUDE.md` makes the same claim.)
 
 #### 5. Tests
 
@@ -443,7 +461,7 @@ npm run validate -- --all # course-validator across all chapters
 
 ### Repo-Local Claude Skills
 
-`ant-academy/.claude/skills/` ships **its own** set of skills focused on **authoring content** — not to be confused with the platform's `/ant-*` skills in Rosetta:
+`ant-academy/.claude/skills/` ships **its own** set of skills focused on **authoring content**, distinct from Rosetta's stack-ops skills (`/dev-*`, `/demo-*`, `/stack-*`, `/align-*`). *(This line said *"the platform's `/ant-*` skills in Rosetta"* until run 81 — **Rosetta ships no `/ant-*` skill**; none of the 16 in `.claude/skills/` begins with `ant-`.)*
 
 | Skill | Purpose |
 |-------|---------|

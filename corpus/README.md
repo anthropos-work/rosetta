@@ -52,7 +52,7 @@ Individual service documentation and developer maps.
 *   **Studio Services & Standalone Internal Apps**:
     *   [Studio-Desk](./services/studio-desk.md): Content design tool
     *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
-    *   [Ant Academy](./services/ant-academy.md): Internal learning portal for `@anthropos.work` employees (Next.js 16 + Expo, Vercel)
+    *   [Ant Academy](./services/ant-academy.md): the AI-academy product — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only (Next.js 16 + Expo, Vercel)
 
 ### [Ops](./ops/)
 Operations guides for setting up, running, and updating the platform.

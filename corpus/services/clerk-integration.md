@@ -18,7 +18,7 @@ Clerk is **not** the platform's permission engine. For the backend, *deciding wh
 | **Authentication** | ✅ | Issues session JWTs; verified platform-wide against Clerk's JWKS. The "are you signed in?" gate. |
 | **Identity / profile** | ✅ | User id (internal `eid` + Clerk subject), email, first/last name. |
 | **Organizations & membership** | ✅ | Clerk Organizations are the source of truth for which org a user belongs to. |
-| **Org roles** | ✅ | `org_role` rides in the JWT. **Server-side it is the bare `admin` / `basic_member`** (what `AuthRole()` and Next.js `auth()` server routes see — e.g. `metabase/route.ts` checks `orgRole === 'admin'`); the **client `useAuth().orgRole`** is prefixed (`org:admin`). Server checks should match the bare form or accept both. |
+| **Org roles** | ✅ | `org_role` rides in the JWT. **Server-side it is the bare `admin` / `basic_member` / `content_creator`** (what `AuthRole()` and Next.js `auth()` server routes see — e.g. `metabase/route.ts` checks `orgRole === 'admin'`); the **client `useAuth().orgRole`** is prefixed (`org:admin`). Server checks should match the bare form or accept both. |
 | **Authorization (backend)** | ⚠️ indirect | Backend permission decisions are made by **Sentinel**, not Clerk. Clerk org roles are *synced into* Sentinel at webhook time, then Sentinel decides. |
 | **Authorization (frontend/standalone)** | ✅ direct | next-web-app, studio-desk, and ant-academy read Clerk's `org:admin` / membership **directly** to allow/deny features (no Sentinel). |
 
@@ -32,7 +32,11 @@ Clerk's catalog is large; the platform uses a **focused subset**. Unused feature
 - **Authentication** — session JWT + JWKS verification (backend). Sign-in/up UI: prebuilt `<SignIn>` / `<SignUp>` + `<UserProfile>` (next-web-app), `<SignIn>` (ant-academy web); studio-desk delegates to the web app; ant-academy mobile uses a custom email+password form.
 - **Session JWT as the API bearer** — `getToken()` is called with **no template** (the default token); the custom claims are baked into that default token via dashboard config.
 - **Organizations + memberships** — active org, `setActive`, `publicMetadata.eid` → tenant id (core to multi-tenancy).
-- **Org roles** (`admin` / `basic_member`) — coarse RBAC gating; synced into Sentinel.
+- **Org roles** — **three**, not two: `admin` / `basic_member` / **`content_creator`** (each also in a
+  prefixed `org:` form) — coarse RBAC gating; synced into Sentinel. All six constants:
+  `app/internal/clerk/orgclient/roles/roles.go:12-17` @ `ad9f3c498`. **This bullet said
+  `admin` / `basic_member` until run 81**, while this same file named `content_creator` 120 lines lower
+  (the studio-desk row) — the enumeration and the counter-example sat in one document.
 - **Org invitations** — backend create/revoke (+ a hand-rolled bulk call); frontend list/accept.
 - **Webhooks** (svix, 12 event types) — Clerk → Postgres + Sentinel sync.
 - **Backend API** — org/membership/invitation CRUD, user-create CLI, `external_id` + metadata write-back, lookups.
@@ -41,7 +45,17 @@ Clerk's catalog is large; the platform uses a **focused subset**. Unused feature
 - **Localization** — 8 locales (`@clerk/localizations`).
 
 **Not used** (available but untouched)
-MFA / TOTP / passkeys · OAuth / social / SAML / Enterprise SSO (mobile is email+password only) · device & multi-session management · Clerk Billing (billing is Stripe) · custom org **permissions** / `has()` / `<Protect>` (only coarse admin/member) · Clerk-native impersonation / Actor Tokens · Waitlist / GoogleOneTap / Web3 · `@clerk/themes` · most prebuilt components (`<UserButton>`, `<OrganizationSwitcher>`, `<OrganizationProfile>`, … — org UI is custom).
+MFA / TOTP / passkeys · SAML / Enterprise SSO · device & multi-session management · Clerk Billing (billing is Stripe) · custom org **permissions** / `has()` / `<Protect>` (the gating is by *role*, and there are **three** — see above) · Clerk-native impersonation / Actor Tokens · Waitlist / GoogleOneTap / Web3 · `@clerk/themes` · most prebuilt components (`<UserButton>`, `<OrganizationSwitcher>`, `<OrganizationProfile>`, … — org UI is custom).
+
+> **⚠️ `OAuth / social` was in that "Not used" list until run 81, with the parenthetical *"mobile is
+> email+password only"*, and BOTH halves are false.** `next-web-app`'s Expo app renders Google **and**
+> Microsoft Clerk OAuth buttons — `apps/mobile/app/(public)/sign-in.tsx:70,75` and `sign-up.tsx:86,91`
+> drive `apps/mobile/components/OAuthButton.tsx:29` (`useOAuth` → `startOAuthFlow`). Verified at
+> `origin/main` `f97ba6599` **and** at `8297c684`, the ref this page pins — so it is not clone drift.
+> Two consequences a reader was being denied: **two external IdP connections (Google, Microsoft) must be
+> enabled on the Clerk instance**, and the identity attack surface includes a federated path. The mobile
+> app is a **paused PoC** (see the SDK table below), so this is wired-and-shipped code rather than a
+> live production login — state both halves, not either alone.
 
 > **⚠️ Caveat:** ant-academy **mobile sign-in aborts on any second factor** (`ClerkSignInForm.tsx`), so enabling MFA in the Clerk dashboard would **break mobile login**. Treat MFA as an explicit on/off decision, not a silent dashboard toggle.
 
@@ -91,7 +105,7 @@ instance the operator's key points at.
 the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.
 
 **Corpus cross-references for the harness half** (this page previously mentioned it nowhere):
-[`ant-academy.md:324`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair),
+[`ant-academy.md:334`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair),
 [`studio-desk.md:90`](./studio-desk.md) (*"Dev-only acceptance harness"*), and — added at **iter-121**, the
 **pair-half iter-120 left open** — [`next-web-app.md` § the two minting sites in this repo](./next-web-app.md#the-two-clerk-sign-in-token-minting-sites-in-this-repo-added-m257x-iter-121). That page held **2 of the 5 sites, including the
 only ungated one**, and said nothing about either; a repaired enumeration whose per-repo pages stay silent
@@ -119,7 +133,7 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 | `email`, `firstname`, `lastname` | profile (lazy `user.Client.Get` fallback if absent) |
 | `org` (public-metadata map, its `eid`) | `Organization.ID()` — internal org UUID |
 | `org_id` | `Organization.AuthID()` — Clerk org id |
-| `org_role` | `Organization.AuthRole()` — returned **verbatim**. The backend session token carries the **bare** form (`admin` / `basic_member`); only the client-side `useAuth().orgRole` is prefixed (`org:admin`). Match the bare form server-side, or accept both. |
+| `org_role` | `Organization.AuthRole()` — returned **verbatim**. The backend session token carries the **bare** form (`admin` / `basic_member` / `content_creator`); only the client-side `useAuth().orgRole` is prefixed (`org:admin`). Match the bare form server-side, or accept both. |
 
 `AuthRole()` is **exposed as a getter and never enforced inside `authn`** — consumers decide what to do with it.
 
@@ -135,7 +149,11 @@ To avoid Clerk API round-trips, the platform puts custom claims on the Clerk ses
 ### 4. Org/role sync — how Clerk reaches Sentinel
 The **backend `app`** receives **svix-verified Clerk webhooks** (`user.*`, `organization.*`, `organizationInvitation.*`, `organizationMembership.*`). On membership change it:
 1. upserts the local user/org/membership, and
-2. **translates the Clerk role** (`admin` / `basic_member`) and **pushes it into Sentinel** (`OrgAddUserToRole` / `OrgReplaceUserRole` / `OrgRemoveUserFromRole`).
+2. **translates the Clerk role** (`admin` / `basic_member` / **`content_creator`** — all three, via
+   `TranslateRoleFromClerkToAnt`) and **pushes it into Sentinel** (`OrgAddUserToRole` /
+   `OrgReplaceUserRole` / `OrgRemoveUserFromRole`). `app/internal/clerk/events/org_handler.go:229,:249`
+   @ `ad9f3c498` — the role synced into Sentinel is whatever the translation returns, so the
+   **synced-role set a Sentinel policy reviewer must reason about has three members, not two.**
 
 So Clerk org roles become Sentinel roles at **sync time** — that's the only way Clerk influences backend authorization. The backend also writes membership/user metadata **back** to Clerk via `clerk-sdk-go/v2` (`organizationmembership`, `user`). See [Webhook Setup](../ops/webhook_setup.md) for local tunnel configuration.
 

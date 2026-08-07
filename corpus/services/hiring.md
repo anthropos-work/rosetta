@@ -299,9 +299,12 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 > non-null `Session!` resolved from the other subgraph, else the list NULL-bubbled). The mirror table is
 > dropped and there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.**
 > (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of the **History** blockquote
-> (**`:193-198`**) above, which is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was
+> (**`:196-209`**) above, which is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was
 > not, and no local stack creates that schema either way. It cited the then-`:157-159` — the `job_position`
-> bullet, now `:173-175`, a different construct entirely — until M257x iter-98. Both in-file line numbers were
+> bullet, now **`:176-187`**, a different construct entirely — until M257x iter-98. **Both pins in this
+> sentence were themselves wrong until run 81** (`:193-198` landed on the score sentence + a blank line;
+> `:173-175` on the tail of the *preceding* bullet), because iter-102 re-derived them by **adding +23 and
+> +16 to the old numbers instead of re-measuring** — arithmetic on a citation is not a citation. Both in-file line numbers were
 > re-derived at M257x iter-102, when the repairs above shifted them by +23 and +16.) The old
 > "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
 

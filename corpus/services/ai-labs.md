@@ -54,8 +54,14 @@ yet by code:
 ### AI Labs — catalog (`internal/labs/catalog/`)
 *   `catalog.Manager` (slug catalog domain) + `ContentManager` (viewer-facing, **fail-closed** tenant-filtered
     reads; `ErrNotFound` is a hard-404 no-existence-oracle), `content_import.go` (idempotent manifest upsert),
-    `s3_workspace_store.go` (S3-backed workspace/grader/solution assets — the solution is private, never served to
-    learners).
+    `s3_workspace_store.go` (S3-backed **workspace tarball only** — one object per Lab at
+    `<prefix>/<slug>/workspace.tar.gz` in `LABS_WORKSPACE_BUCKET`, `internal/labs/catalog/s3_workspace_store.go:19,:45`
+    @ `ad9f3c498`; the words *grader* and *solution* do not occur in the file). **The grader and solution
+    assets are `{id,url}` reference pairs on the `labs` row, stored via the general storage service** —
+    a different bucket and mechanism (`internal/data/ent/schema/lab.go:113-116`). *The privacy claim is
+    unchanged and TRUE — the solution is private and never served to learners — but it was attached to
+    the wrong file until run 81, sending an auditor of that asset's access control to a store that
+    never holds it.*
 *   **Tables**: `labs` (Ent `lab.go` — metadata: `slug`, `tenant_eid` nullable = org-scoped else public, `lifecycle`,
     `base_image`, `default_model`, `budget_usd`, S3 asset refs) and `lab_bodies` (Ent `lab_body.go` — one row per
     `(lab_slug, locale)`; EN base + 6 overlays; `{meta,brief,tutor,hints}` as one jsonb). Migration

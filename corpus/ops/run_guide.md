@@ -14,7 +14,7 @@ Once running, access these URLs in your browser:
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
-| **Ant Academy** | http://localhost:3077 | Internal learning portal (`@anthropos.work` only) |
+| **Ant Academy** | http://localhost:3077 | The AI-academy product (**not** `@anthropos.work`-only — public storefront + org tier) |
 | **GraphQL Playground** | http://localhost:8082/graphql | Served by `backend` itself — the Cosmo Router was deleted from compose at platform `2adcf71`. The **endpoint** is `/graphql/query`; `/graphql` is the Apollo Sandbox UI |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
@@ -229,7 +229,7 @@ Open http://localhost:9100 in your browser.
 
 ## 5.1 Start Ant Academy (Optional — Internal Learning Portal)
 
-Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.work` employees. It runs **natively only** — no docker-compose profile. It authenticates via **Clerk** and — since v0.5.1 — **reads its course catalog from the platform academy subgraph over GraphQL** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`); without that backend it still boots but the catalog grid **renders empty** (see [`../services/ant-academy.md` § The Content Model](../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7)).
+Ant Academy is the standalone Next.js 16 / Expo learning product — a public storefront with an enterprise/org tier, **not** `@anthropos.work`-only. It runs **natively only** — no docker-compose profile. It authenticates via **Clerk** and — since v0.5.1 — **reads its course catalog from the platform academy subgraph over GraphQL** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`); without that backend it still boots but the catalog grid **renders empty** (see [`../services/ant-academy.md` § The Content Model](../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7)).
 
 ### Navigate
 

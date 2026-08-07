@@ -238,8 +238,13 @@ The `__schema` form is the one that returns real `data` unauthenticated, and it 
 frontend's `pnpm codegen` relies on. It is gated on `colony.Development`, so on staging/prod it is
 refused like everything else.
 
-Note the path: **`/graphql/query`**, not `/graphql`. On `backend`, `/graphql` serves the Apollo Sandbox UI;
-CORS preflight and auth happen at `/query`.
+Note the path: **`/graphql/query`**, not `/graphql`. On `backend`, `/graphql` serves the Apollo Sandbox UI
+**in local development ONLY** — the route is registered inside `if environment == colony.Development`
+(`app/internal/web/backend/backend.go:312-317` @ `ad9f3c498`), whose own comment says *"only expose it in
+local development. api + the new gql.anthropos.work are internet-reachable in staging/prod."* On
+staging/prod `/graphql` is **not served at all**, while `/graphql/query` is registered unconditionally.
+CORS preflight and auth happen at `/query` (inside `graphHandler`, not on the sandbox route). *(The
+development-only qualifier was missing until run 81, which over-stated production exposure.)*
 
 ### Recompose the supergraph manually
 

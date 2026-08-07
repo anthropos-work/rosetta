@@ -287,8 +287,8 @@ python gen.py --media simulation --blueprint <file>.json
 |:---------|:------|
 | **Technology** | Next.js 16 App Router + React 19.2 (web) + Expo / React Native (mobile) |
 | **Port** | 3077 (web dev), 8555 (mobile web preview) |
-| **Purpose** | Internal learning portal — micro-chapters on AI engineering, agent frameworks, Claude Code, etc., for `@anthropos.work` employees |
-| **Authentication** | Clerk (domain-gated to `@anthropos.work` + org-membership gate) |
+| **Purpose** | The AI-academy learning product — micro-chapters on AI engineering, agent frameworks, Claude Code, etc. **Publicly reachable, sold to anonymous visitors; the org tier is the enterprise surface.** *"for `@anthropos.work` employees"* was removed at run 81 |
+| **Authentication** | Clerk (org-membership gate only). ⚠️ **`domain-gated to @anthropos.work` was REMOVED at run 81 — it is FALSE**, and it had been retracted at iter-115 in [`ant-academy.md`](../services/ant-academy.md) without reaching this row. The Academy is a **public storefront** that sells a $399/yr subscription to anonymous visitors; `code/proxy.js:293-329` @ `22df69dd` contains sign-in + an env-toggleable org redirect and **no email/domain predicate** |
 | **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
 | **Location** | Local `../ant-academy` — **NOT** in `platform/repos.yml`, so **not** cloned by `make init` (by design, v1.10b M49 #5). For a **demo**, `ensure-clones.sh` clones it explicitly; for **dev**, clone it manually. See [`ant-academy.md`](../services/ant-academy.md). |
 | **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |

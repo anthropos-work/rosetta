@@ -124,7 +124,13 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
 * **Downstream**:
   * **Brevo API** — outbound email delivery (`BREVO_KEY`)
   * **PostgreSQL** — read-only `public` schema access for org / whitelabel lookups
-  * **Redis** — Watermill stream subscriber + scheduled-message storage
+  * **Redis** — Watermill stream subscriber **only**. *("+ scheduled-message storage" was removed at run
+    81: messenger stores nothing in Redis. `cmd/root.go:107-116` @ `e9421c68` builds the client and hands
+    it straight to `pubsub.NewSubscriberServer`; it has no other consumer, and the only cache is an
+    in-process `patrickmn/go-cache` (`:144`). Scheduling is **not implemented** — both RPCs return
+    `CodeUnimplemented` (`internal/rpcsrv/rpcsrv.go:25-30`), as this page already says 12 lines above.
+    A reader chasing "where do pending email payloads live?" for a retention or GDPR review was sent to
+    a store that holds none.)*
 
 > **Staging safety**: if you ever restore a production DB dump into local staging, `BREVO_KEY` **must be blanked** in `platform/.env` before `make up` to prevent real customer emails from going out. See [staging_from_dump.md](../ops/staging_from_dump.md).
 

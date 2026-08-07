@@ -289,8 +289,13 @@ for demos).
 
 ### Remote HTTPS over the tailnet (v2.2 "panorama" M213)
 
-Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in via `/demo-up --public-host
-<magicdns>`) touches three Clerkenstein-adjacent seams — all **gated** so an unset host is byte-identical:
+Making a demo reachable from another machine on a **Tailscale** tailnet touches three Clerkenstein-adjacent
+seams. ⚠️ **This said "opt-in via `/demo-up --public-host <magicdns>`" until run 81 and that is FALSE for
+the demo path**: since v2.3 M220 (`D-DESIGN-3`) remote reach is **DEFAULT-ON via auto-discovery** — a bare
+`/demo-up N` probes tailscale, mints a trusted cert and publishes the stack on the tailnet. It is
+**opt-OUT** (`--no-public-host` / `DEMO_NO_PUBLIC_HOST=1`, `demo-stack/up-injected.sh:27-40,108-116`);
+`--public-host` now only *forces a host and skips discovery*. **Only `/dev-up` is still opt-in.** This is
+the exposure axis — a reader believed a bare `/demo-up N` stayed local. Seams — all **gated** so an unset host is byte-identical:
 
 - **FAPI cert → `tailscale cert`.** For a MagicDNS host the fake-FAPI cert is minted via `tailscale cert` (a real
   Let's Encrypt cert **trusted tailnet-wide, no per-machine CA install**) instead of mkcert/openssl — **same output
