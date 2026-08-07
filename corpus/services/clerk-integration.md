@@ -37,13 +37,61 @@ Clerk's catalog is large; the platform uses a **focused subset**. Unused feature
 - **Webhooks** (svix, 12 event types) — Clerk → Postgres + Sentinel sync.
 - **Backend API** — org/membership/invitation CRUD, user-create CLI, `external_id` + metadata write-back, lookups.
 - **User/org metadata** — `unsafeMetadata` (trial/stripe flags), `publicMetadata` (eid, isHiring, role).
-- **Sign-in tokens** — **only** for app-native admin impersonation (chosen over Enterprise-tier Actor Tokens).
+- **Sign-in tokens** — **five** live minting sites, one product and four harnesses. The product one is app-native admin impersonation (chosen over Enterprise-tier Actor Tokens). **See the enumeration below — this bullet used to say "only", and it was false.**
 - **Localization** — 8 locales (`@clerk/localizations`).
 
 **Not used** (available but untouched)
 MFA / TOTP / passkeys · OAuth / social / SAML / Enterprise SSO (mobile is email+password only) · device & multi-session management · Clerk Billing (billing is Stripe) · custom org **permissions** / `has()` / `<Protect>` (only coarse admin/member) · Clerk-native impersonation / Actor Tokens · Waitlist / GoogleOneTap / Web3 · `@clerk/themes` · most prebuilt components (`<UserButton>`, `<OrganizationSwitcher>`, `<OrganizationProfile>`, … — org UI is custom).
 
 > **⚠️ Caveat:** ant-academy **mobile sign-in aborts on any second factor** (`ClerkSignInForm.tsx`), so enabling MFA in the Clerk dashboard would **break mobile login**. Treat MFA as an explicit on/off decision, not a silent dashboard toggle.
+
+### Sign-in tokens — every minting site, enumerated
+
+> ⚠️ **CORRECTED M257x iter-120 — this list said sign-in tokens are minted "only" for app-native admin
+> impersonation. There are FIVE minting sites in the clone set, not one.** The word was a
+> **security-surface understatement**: a reader auditing where a token that mints a full session for an
+> arbitrary user can be created was sent to one site out of five. Booked and upheld at iter-116 and again
+> at iter-119; repaired here by enumeration rather than by anchor. **Two of the five had never been named
+> in any prior reading either** — the enumeration found them, the ledger did not.
+
+A Clerk **sign-in token** (Backend API `POST /v1/sign_in_tokens`) is a one-shot ticket that a browser
+exchanges via `signIn.create({ strategy: 'ticket' })` for a **genuine session as the named user** — no
+password, no 2FA, no CAPTCHA. It is the strongest impersonation primitive in the integration, so the
+complete list matters. Measured across the whole clone set with three independent instruments
+(`/usr/bin/grep -rn`, per-clone `git grep`, and a Python `os.walk`, per rule 44 — all three agree):
+
+| # | site | ref | what it is | gate |
+|---|------|-----|-----------|------|
+| 1 | `app/internal/admin/impersonation/manager.go:101` (`m.signInTokenCl.Create`) | `app` `ad9f3c49` | **The product feature** — app-native admin impersonation, the one this page always documented | A Sentinel permission check + a non-nil actor, then an audit row on **every** attempt, success or failure (`manager.go:1-4`). **The permission it checks is `ActionObjectTaxonomy` / `UserActionWrite`** (`internal/web/backend/graphql/graph/resolver_admin_audit.go:19-23`) — a **taxonomy-write** permission, not a dedicated impersonation one |
+| 2 | `next-web-app/apps/web/src/app/api/dev/login-as/route.ts:79` | `next-web-app` `8297c684` | Dev "log in as a real Clerk user" harness → `/dev/accept` | `DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'` (`apps/web/src/lib/devLogin.ts:28`); hard-404 otherwise |
+| 3 | `next-web-app/e2e/auth.setup.ts:72` | `next-web-app` `8297c684` | **Playwright e2e auth setup** — mints a ticket rather than driving the password form | **No `NODE_ENV` gate** — it is a test-runner file, never in an app build, but it runs against a **real Clerk instance** with a real `CLERK_SECRET_KEY` |
+| 4 | `studio-desk/src/routes/dev.ts:83` | `studio-desk` `41ee357` | Dev login harness → `dev-accept.html` | `DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'` (`src/lib/devLogin.ts:33`) |
+| 5 | `ant-academy/code/app/api/dev/login-as/route.js:78` | `ant-academy` `22df69dd` | Dev login harness → `/dev/accept` | `DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'` (`code/src/lib/devLogin.js:29`); hard-404 otherwise |
+
+**Sites 2–5 mint a session for an arbitrary user found by email** (`users.getUserList({ emailAddress })`
+then `createSignInToken({ userId })`) — none of them is admin-scoped, and none of them is "admin
+impersonation". Sites 2, 4 and 5 hard-404 outside local dev, so a **production-scoped** reading of the old
+sentence was defensible; the sentence was not production-scoped, and site 3 is not `NODE_ENV`-gated at all.
+
+**Site 3 is the one worth reading twice.** `e2e/auth.setup.ts:55-62` states its own reason: the e2e
+account *"enforces 2FA (email_code as second factor); password signin returns `needs_second_factor` and
+never produces a session"*, and *"Clerk treats it as fully authenticated and **skips both factors**."* A
+sign-in token is therefore a **documented, deliberate second-factor bypass** against a real Clerk instance
+— which is precisely the kind of fact an emphatic **only** on one unrelated site hides.
+
+**A sixth consumer is an operator recipe, not checked-in code**, and this corpus already documents it in
+three other places: the staging/CI `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens` bypass for
+Clerk's "new device" challenge — [`staging-clerk.md:58`](../ops/staging-clerk.md),
+[`staging_from_dump.md:384`](../ops/staging_from_dump.md), and
+[`staging-bringup.md:461`](../ops/staging-bringup.md) (*"Quirk #13"*). It mints against whichever
+instance the operator's key points at.
+
+**The "chosen over Enterprise-tier Actor Tokens" half is correct** and stays: `manager.go:6-11` says so in
+the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.
+
+**Corpus cross-references for the harness half** (this page previously mentioned it nowhere):
+[`ant-academy.md:324`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair) and
+[`studio-desk.md:90`](./studio-desk.md) (*"Dev-only acceptance harness"*).
 
 ## How It Works (Deep Dive)
 
