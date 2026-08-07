@@ -207,11 +207,63 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 
 | Echo group | declared | middleware stack |
 |---|---|---|
-| `/api/invitations` | `internal/invitations/handlers.go:31` (mounted `web.go:148`) | **`cors` ONLY — no authentication.** `web.go:145-146` says so in as many words: *"Public invitation JSON endpoints (no auth required)"* |
+| `/api/invitations` | `internal/invitations/handlers.go:31` (mounted `web.go:148`) | **`cors` is the only middleware — and that is NOT the same as no authentication.** ⚠️ **Corrected at run 82 — see the box below this table.** The credential is the path segment: a 256-bit `base64url(HMAC-SHA256(email\|org_id\|invited_at, INVITATION_HMAC_SECRET))` (`internal/invitations/token.go:29-34`), **checked before any data is returned** — `invite.go:159` / `:194` filter on the stored `token` column and a miss returns `404 not_found` |
 | `/content/admin` | `internal/web/backend/content_admin.go:35` (mounted `backend.go:289`) | **no Clerk `authn`** — a bearer shared secret (`ACADEMY_CONTENT_API_TOKEN`) is the entire gate |
 | `/v1/labs` | `internal/web/backend/labs_admin.go:31` (mounted `backend.go:301`) | **no Clerk `authn`** — a group-level org **API key + `labs:write` scope** check |
 | `/academy/embeddings` | `internal/web/backend/academy_embeddings_admin.go:41` (mounted `backend.go:295`) | `cors` + `authn` |
 | `/api/workforce` | `internal/web/backend/emailpreview/handler.go:66` (mounted `web.go:162`) | `cors` + `authn` — **grouped off the ROOT `e`**, so despite the `/api/` prefix it does **not** inherit the `/api` group's swagger/authn stack |
+
+> ⚠️ **CORRECTED AGAIN at run 82 — this time the alarm was too loud, not too quiet.** Run 81's row for
+> `/api/invitations` read *"`cors` ONLY — no authentication"*, and that overstates it. **Settled at `app`
+> `ad9f3c498` by reading the `RegisterRoutes` call site and the manager, not the mount comment:**
+>
+> - **What is absent is Clerk, and deliberately.** `RegisterRoutes(srv.e, cors.EchoCORSMiddleware(...))`
+>   (`internal/web/web.go:148`) passes exactly one middleware, because next-web-app renders the
+>   invite-landing and unsubscribe pages **before the caller has an account** and calls these
+>   cross-origin (`web.go:145-146`). The group mounts `GET /:token` and `POST /:token/opt-out`
+>   (`internal/invitations/handlers.go:31-33`).
+> - **A credential IS required, and it is checked before anything is disclosed.** The token is minted at
+>   invite time as `base64url(HMAC-SHA256(email|org_id|invited_at, INVITATION_HMAC_SECRET))`
+>   (`internal/invitations/token.go:29-34`; `main.go:423-427` refuses to boot without the secret) and
+>   stored on the row. `GetInviteDetailsByToken` and `OptOutByToken` filter on it —
+>   `Where(membershipinvitation.Token(token))` at `internal/invitations/invite.go:159` and `:194` — so a
+>   non-matching token yields `404 not_found` / `already_opted_out` and **no row, no email, no org name**.
+> - **The mechanism is a stored bearer capability, not a re-verified signature.** `TokenManager.ValidateToken`
+>   (`token.go:38`, constant-time) is called by **nothing outside its own test** — measured repo-wide,
+>   `git grep -n ValidateToken ad9f3c498 -- '*.go'` returns 8 hits, all in `token.go` + `token_test.go`.
+>   The HMAC supplies 256 bits of unguessability and determinism; the *check* is an equality match on an
+>   indexed column.
+> - **Both handlers bypass the Ent privacy layer on purpose** — `privacy.DecisionContext(ctx, privacy.Allow)`
+>   at `invite.go:157` and `:190` — and the source states the model in its own words:
+>   *"It backs a public endpoint — **token possession is the authorization**"* (`:154-155`, `:187-188`).
+>
+> **So the accurate sentence is *token-authenticated, deliberately pre-login* — not *unauthenticated*.**
+> No defect is filed: the design is stated, the credential is required, and the disclosure it gates
+> (invited email, org name, inviter name) is the content of the invitation the token was mailed with.
+> *(Two observations that are not defects and are recorded so nobody re-derives them: the token is
+> written to application logs on both the miss path and the opt-out success path — `handlers.go:59`,
+> `:62`, `:99` and `invite.go:203`, `:218`; and `/api/invitations` is the second of two public token endpoints, the other
+> being the root-mounted one in the next box, which **does** verify the signature.)*
+
+> ⚠️ **AND THE ENUMERATION ITSELF IS NARROWER THAN THE SURFACE.** *"Eleven groups"* is correct **for
+> groups** — re-derived independently at run 82, `git grep -nE '\.Group\("' ad9f3c498 -- '*.go' | grep -v
+> _test.go` returns exactly those 11. But `app` also mounts **seven routes directly on the root `e`,
+> inside no group at all**, so no group-level middleware statement reaches them:
+>
+> | root-mounted route | declared | gate |
+> |---|---|---|
+> | `/graphql/query` | `backend.go:317` | **no Echo middleware** — authn/authz happen inside the GraphQL chain (the *"fail-open"* viewer gate above) |
+> | `/api/webhook/directus` | `backend.go:324` | handler self-authenticates via the shared secret; mounted only when the Directus edge is configured |
+> | `/ai-readiness/unsubscribe/:token` | `internal/aireadiness/notifications/handlers.go:41` (mounted `web.go:153`) | `cors` + **the HMAC signature is verified in-handler**, `401` on mismatch (`handlers.go:71-81`, verifier at `:156`) — the invitations group's sibling, and the contrast is instructive: **this one re-derives the signature, `/api/invitations` matches a stored token** |
+> | `/api/schema.json` | `backend.go:117` | **none** — serves the OpenAPI document; registered on the root before the `/api` group, so it inherits none of that group's stack |
+> | `/content/catalog.json` | `internal/web/backend/content.go:23` | **none, by design** — `content_admin.go:32` says so: it *"stays open by design"* |
+> | `/graphql` (Apollo Sandbox) | `backend.go:315` | **`colony.Development` only** |
+> | `/api/*` (API docs) | `backend.go:309` | **`colony.Development` only** |
+>
+> **Rule 57 applied to rule 57's own repair:** run 81 widened the search from one file to the whole
+> service and got the group count right; it did not widen from *groups* to *routes*. The honest shape of
+> the REST surface is **11 groups + 7 ungrouped root mounts**, and two of the ungrouped ones are open by
+> design.
 
 > **`cbGate` is also not the only group-level authorization**: `/v1/labs` carries a group-level *scope*
 > check and `/content/admin` a group-level shared-secret check. **This is the THIRD correction to this
@@ -236,8 +288,12 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 - **It is not a blanket applied to every request.** The GraphQL middleware is a *viewer* gate with a
   narrow cross-user check bolted on; the REST surface has **no blanket authz middleware** — two of its
   **eleven** groups opt into `cbGate`, two more carry a non-Clerk group gate (an API-key scope, a shared
-  secret), **one (`/api/invitations`) has no authentication at all**, and the rest authorize per handler
-  or not at all. *(Said "six" until run 81 — an under-count of the REST attack surface by five groups.)*
+  secret), **one (`/api/invitations`) is token-authenticated and deliberately pre-login** rather than
+  Clerk-gated, and the rest authorize per handler or not at all. **And the group count is not the whole
+  surface**: seven further routes are mounted on the root `e` inside no group, two of them open by
+  design (`/api/schema.json`, `/content/catalog.json`) and two Development-only. *(Said "six" until
+  run 81 — an under-count of the REST attack surface by five groups; said `/api/invitations` had "no
+  authentication at all" until run 82, which is the opposite error, and both boxes above record it.)*
 - **Where isolation actually comes from** is the three layers *together* — Layer 1 on the 31 schemas
   that declare a policy, per-resolver and per-handler checks elsewhere, and Layer 3's org-scoped
   session. Reading Layer 2 as universal is what let the M207 port ship an IDOR.

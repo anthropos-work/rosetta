@@ -1823,8 +1823,22 @@ defect, it was arguing for it.*
     `security_compliance.md` said the REST surface has **"six"** Echo groups, two of which opt into
     `cbGate`. `app` mounts **eleven** non-test groups on the one Echo instance
     (`internal/web/web.go:124-163` @ `ad9f3c498`). Three of the five missing never touch the Clerk
-    `authn` middleware, and **`/api/invitations` has no authentication at all** — `web.go:145-146` says
-    so in as many words.
+    `authn` middleware.
+
+    > **The rule bit its own worked example, twice, and both corrections are the rule restated.**
+    > (a) iter-128 wrote that `/api/invitations` *"has no authentication at all"*, citing the **mount
+    > comment** (`web.go:145-146`, *"no auth required"*). Run 82 read the `RegisterRoutes` **call site
+    > and the manager** instead and found a required credential: a 256-bit HMAC-derived token checked by
+    > lookup before anything is returned (`invite.go:159`, `:194`), with the source's own model
+    > *"token possession is the authorization"* (`:154-155`). **A comment is testimony; the call site is
+    > evidence** — the same distinction rule 22 draws for commit messages, applied to code comments.
+    > *No Clerk middleware* is not *no authentication*, and the corrected sentence is **token-authenticated,
+    > deliberately pre-login**.
+    > (b) The count itself was widened from one file to the whole service — but **not from *groups* to
+    > *routes***. `app` mounts **seven** further routes directly on the root `e`, in no group; a
+    > group-level statement reaches none of them. Both are booked in
+    > [`security_compliance.md` § Layer 2](../architecture/security_compliance.md#layer-2-authorization).
+    > **The widest instrument that can see the population is rarely the one you widened to last time.**
 
     **The paragraph had already been corrected TWICE.** iter-120 over-stated it (*"every Echo group …
     and nothing else"*); iter-121 corrected the quantifier and cited the exact lines. **Both re-derived

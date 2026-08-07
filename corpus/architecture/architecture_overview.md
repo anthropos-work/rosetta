@@ -402,7 +402,10 @@ isolation is enforced at three layers:
    (`internal/authorization/gqlauthz/gqlauthz.go:222`) — including *"viewer has no active org"* (`:190-191`)
    and *"the operation carries no `userId` variable"* (`:196-197`) — and the REST surface has **no
    BLANKET authz middleware**: authorization there is opt-in per group or per handler, and only 2 of its
-   6 Echo groups carry a group-level one (`cbGate`, `internal/web/backend/gate.go:27-49`). The platform's
+   **11** Echo groups carry a group-level one (`cbGate`, `internal/web/backend/gate.go:27-49`) — **plus
+   seven routes mounted on the root outside any group, so no group-level statement reaches them at all**
+   (⚠️ this line said *"6 Echo groups"* until M257x run 82; the denominator was re-measured repo-wide at
+   `app` `ad9f3c498`, and run 81's own correction of the same count did **not** reach this file). The platform's
    own source calls the blanket gate **fail-open**
    (`graph/resolver_skiller_taxonomy_authz.go:53-66`). See
    [Security & Compliance → Layer 2](./security_compliance.md#layer-2-authorization) for the enumerated
