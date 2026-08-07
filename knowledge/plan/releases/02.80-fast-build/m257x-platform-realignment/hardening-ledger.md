@@ -2273,3 +2273,101 @@ a healthy one**, and a whole-suite claim that had only ever been quoted once wou
 
 **Guard family, re-run after this iter's corpus edits: 21 members · 17 GREEN · 0 RED · 4 not-run** (the
 commit-/input-scoped members). Still **not a whole-family green**, and the summary line still says so.
+
+---
+
+## Pass 27 — 2026-08-07 — incremental
+
+**Iters hardened this pass:** iter-121 … iter-131 (11 closed iters; iter-132 was in-flight and excluded).
+**Tiks covered since prior pass:** 12.
+**Scope:** the 25 `rosetta-extensions` files changed since pass 26's terminating commit `b9bb2b6` —
+3 net-new guards (`blocking_state_guard`, `claim_census_guard`, `tests/progress_beacon`), 6 modified
+(`anchor_construct_guard`, `gen_override`, `guard_family`, `platform_alignment_guard`,
+`unreadable_repo_claim_guard`, `gen_injected_override`) and one Go comment repair (`isolation.go`).
+
+### Three defects, all live, none caught by the controls that shipped with them
+
+**1. `blocking_state_guard` — "represented" was two independent whole-document substring searches.**
+The fence exists because a sweep keyed on ONE grading field reported zero and was wrong. Its own
+representation test was `it in body and field in body` over a 60 KB audit, so **the fence built to
+close *green over something it never checked* had the same defect one level in**. Two false greens,
+both constructed:
+
+  * **association never checked** — an audit naming `iter-19` for an unrelated reason, with `re-scope`
+    in a paragraph about `iter-07`, satisfied both conjuncts → `represented: True`, exit 0;
+  * **substring iter ids** — `"iter-11" in body` is satisfied by `iter-119`. Measured on this
+    milestone's own `deferrals-audit.md`: **`iter-10`, `iter-11` and `iter-12` are absent from the
+    document and read as present**, purely by collision with `iter-10x`/`11x`/`12x`.
+
+Fixed as block-scoped association (`represented_in`) over a word-boundaried id (`iter_token`). Block,
+not line, so a heading-plus-prose entry still reads GREEN — **all 8 live blocking pairs associate at
+both granularities**, so the rule costs no real green and the real tree stays exit 0. (`4ca7670`)
+
+**2. `claim_census_guard` — the ratchet went RED for a corpus file with ZERO defects.**
+The `[new-file]` arm of C2 had **no control at all** — present in the guard, absent from its 21 tests —
+and was also wrong. `per_file` carries an entry for every in-scope file (`setdefault(rel, 0)`), so a
+brand-new file whose every assertion is cited produced `[new-file] x.md: 0 unevidenced assertions` and
+exit 1. C2 asserts a count *RISES*; 0 has not risen. **Worse than an ordinary false positive because of
+what it teaches:** the operator's only remedy is `--update-baseline`, which re-seals every *other*
+file's debt at its current level. A guard whose false alarm is cured by disarming the guard trains the
+operator to disarm it — and iter-123 added two corpus files, so the next one would have fired it.
+Latent, not live: the shipped baseline covers all 41 in-scope files, real tree exit 0 before and after.
+(`c8ec339`)
+
+**3. `gen_override` — the dev emitter deleted postgres's data mount, and the comment said it couldn't.**
+The severe one. iter-129 fixed a real defect (the `$HOME/.aws` mitigation was keyed on the DELETED
+`jobsimulation` literal and had gone dead on `backend`) and introduced a worse one doing it:
+
+  * **the predicate was widened, not mirrored.** The demo twin matches the **unexpanded literal**
+    `^($HOME|${HOME}|~)/` — *"Unexpanded on purpose"*, `platform_topology.py:84` — a precise proxy for
+    *the compose author wrote a path into the operator's home directory*. The dev twin reads the
+    **resolved** compose, where that literal is gone, and tested `src.startswith(home + "/")`. **That is
+    a different predicate: *anything under the user's home directory*, which on a normal dev box is the
+    entire workspace.** `common.yml` gives `postgresql` one volume, `./data/postgresql`, which resolves
+    `$HOME`-rooted → `postgresql` was selected.
+  * **the comment asserted a guard the code did not have.** *"(`postgresql` is handled above and never
+    reaches here with a home bind.)"* — there was no `elif` and no `continue`. Step 2b overwrote the
+    per-stack data bind step 2 had just repointed with `[]`, which `to_yaml` emits as
+    `volumes: !override`: **the mount REMOVED.** Postgres runs on the container's writable layer, every
+    byte lost on recreate, and the per-`dev-N` data-root repoint silently does nothing.
+
+Measured: predicate selected `{postgresql, backend}`, override emitted `postgresql: {volumes: []}`.
+Both halves fixed independently. Live on the `/dev-up N` path — but **`415240f` is in NO TAG**, so no
+stack consumed it. **Caught before it shipped.** (`9ab7590`)
+
+### Coverage delta on touched files
+
+| module | before | after |
+|---|---|---|
+| `tests/test_blocking_state_guard.py` | 10 | **17** |
+| `tests/test_claim_census_guard.py` | 21 | **24** |
+| `tests/test_gen_override_home_binds.py` | 5 | **16** |
+| in-scope scoped invocation | 139 | **160** |
+
+**Tests added:** +21 across 3 modules (7 · 3 · 11).
+**Bugs surfaced + fixed inline:** 3 (`4ca7670`, `c8ec339`, `9ab7590`).
+**Flakes stabilized:** none found.
+**Regression check:** `stack-core/tests/test_gen_override.py` 22 passed (the base override suite the
+`elif` could have broken) and the whole `dev-stack` suite **151 passed in 100.46 s** — gen_override is
+dev's shared engine, so its consumer suite is the one that had to stay green.
+
+### Every fix carries a mutation control that ISOLATES it (§5 rule 53), verified by running the mutant
+
+| mutant | kills | leaves standing |
+|---|---|---|
+| restore the whole-document conjunct | the association arm | the collision arm |
+| boundary-free `iter_token` | the collision arm | the association arm |
+| drop the `cnt > 0` guard | `test_15` clean-new-file | `test_16` dirty-new-file |
+| delete the `[new-file]` branch | `test_16` dirty-new-file | `test_15` clean-new-file |
+| predicate → *anywhere under $HOME* | the 4 predicate arms | the postgres end-to-end arm (the `elif` saves it — which is what makes the `elif` genuine defence in depth, not a duplicate) |
+| `elif` → `if` | ONLY the defence-in-depth arm | everything else |
+
+**`test_17` is the pass's other kind of finding, and it is a coverage one, not a bug:** the census
+guard's 21 controls all fixture their baseline via `monkeypatch`, so **the one artifact the guard
+actually ships — `claim_census_baseline.json` against this repo's own `corpus/` — was asserted by
+nothing in the suite**, only by running `guard_family` by hand. Now pinned, with an anti-vacuity floor
+(≥ 30 files, ≥ 500 tier-1 pairs) and a check that no in-scope file is missing from the baseline.
+
+**Stop condition: continue-to-next-pass** — three first-order defects in one pass is not a plateau, and
+the dimension scan has not yet come up empty on the remaining modified guards
+(`unreadable_repo_claim_guard`, `platform_alignment_guard`, `anchor_construct_guard`, `progress_beacon`).
