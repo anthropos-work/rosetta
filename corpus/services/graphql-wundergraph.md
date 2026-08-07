@@ -4,7 +4,7 @@
 >
 > | | production | a fresh local stack @ platform origin HEAD |
 > |---|---|---|
-> | the router | **still declared** — `graphql-wundergraph/terraform/main.tf:20` `service_desired_count = 1` | **deleted** — no `graphql` compose service, no `repos.yml` entry |
+> | the router | **DESTROYED** (corrected iter-123) — `module.wundergraph_euwest1` is **deleted** from `infrastructure/terraform/production/services.tf` @ `13c248e6`; `:509-517` records that the apply destroyed *"its ECS service, task definition, target group, ALB rule (priority 810), Cloud Map entry, log group, ACM cert and the `wundergraph.anthropos.work` alias"*, leaving only a `removed{}` for the ECR (`:521`) which was hand-deleted **2026-08-05** — *"so production-wundergraph is gone and this block is now inert."* **This cell previously read "still declared — `graphql-wundergraph/terraform/main.tf:20` `service_desired_count = 1`", and that line is ORPHANED DEAD CODE** | **deleted** — no `graphql` compose service, no `repos.yml` entry |
 > | the repo | **ARCHIVED on GitHub, 2026-07-30** (read-only) | not cloned by `make init` |
 > | what a frontend talks to | the router | **`backend` directly**, `http://localhost:8082/graphql/query` |
 >

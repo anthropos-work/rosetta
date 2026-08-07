@@ -35,7 +35,7 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and servic
 Production-only:
 | Service | Depends On (Direct) | Infrastructure |
 | :--- | :--- | :--- |
-| **db-backup** | - | Postgres, **S3**, **Azure**, **Hetzner** |
+| **db-backup** | - | Postgres, **S3**, **Hetzner** — **no Azure, ever** (0 hits across all 157 objects in the repo's history). And **nothing triggers it**: rule + target commented out at `7dd1b80` (2025-05-29), which is the commit prod pins |
 
 ### Shared Libraries
 

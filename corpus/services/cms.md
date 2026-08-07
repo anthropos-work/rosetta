@@ -34,9 +34,12 @@
 > **compose now sets zero `*_RPC_ADDR` values**, and the cms domain is reached in-process.
 > *(Until `2adcf71` all of the above was false, and this banner said so; the M809 re-point is what
 > changed it.)* **Scope note: this is the LOCAL compose topology only.** Whether production's
-> `module.cms_euwest1` rollback path has also been torn down (**M810**) was not measured here — do not
-> read the local removal as the production one. See
-> [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+> `module.cms_euwest1` rollback path has also been torn down (**M810**) is now MEASURED and the answer is
+> **yes** — `infrastructure` `13c248e6` (2026-08-07) declares no `module "cms_euwest1"` at all. Still do not
+> read the local removal *as* the production one; read the production one from
+> `infrastructure/terraform/production/services.tf:64-70`, which is where it is recorded. See
+> [`platform-migration-status.md`](../architecture/platform-migration-status.md) and
+> [`org-repos.md` § 3](../architecture/org-repos.md).
 >
 > **The Directus content edge stays external.** The merge moved the *Go service*; the authored content still
 > lives in Directus at `content.anthropos.work`, which `app` reads over HTTP.
@@ -83,10 +86,16 @@
 >   **⚠️ Do NOT extend "the module block has not moved" to "the rollback path is intact".** `6efa1d5`
 >   (merged `f38c0c4`, 2026-08-04) deleted this repo's build-production workflow under the subject *"the cms
 >   ECR repository is decommissioned (M810)"*, because it *"would try to push an image into a registry that
->   no longer exists"* — so the two measured facts in this repo point opposite ways. Whether
->   `infrastructure/terraform/production/services.tf` still declares `module.cms_euwest1` is **not visible to
->   this corpus** — the `infrastructure` repo has never been in the clone set — and it is now not visible
->   *with evidence on both sides*, which is the honest state: report both, assert neither.
+>   no longer exists"* — so the two measured facts in this repo appeared to point opposite ways.
+>   **They never did, and iter-123 settled it by cloning the repo this bullet said could not be read:**
+>   `infrastructure` `13c248e6` declares **no `module "cms_euwest1"`**, and
+>   `terraform/production/services.tf:64-70` records what its deletion destroyed (ECS service, task
+>   definition, ECR repository, IAM roles, security group, Cloud Map entry, log group, alarms, ten
+>   `/production/cms/*` SSM parameters), with a `removed { destroy = false }` for the Atlas tracker at
+>   `:88-94` and the legacy **schema** deliberately untouched (`:85-86` — that drop is a separate,
+>   still-pending M810 step). **The CI commit was the correct signal; `cms/terraform/main.tf:39` is
+>   ORPHANED DEAD CODE**, an input to a module no root module instantiates. The general rule and the
+>   three sibling repos it also settles: [`org-repos.md` § 3](../architecture/org-repos.md).
 > * **Repo** — the `cms` git repo still exists but is **frozen/legacy**; make changes in `app`.
 >
 > For current documentation of this domain, see [Backend (`app`)](./backend.md).

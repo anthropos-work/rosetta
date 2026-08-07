@@ -4,7 +4,14 @@
 > There is no separate container or subgraph. **There IS a separate repo, and this doc used to deny it**
 > (v2.8 M257x): `anthropos-work/AI-Labs` is the live Go control plane the sections below already call
 > **`labs-api`** — the thing behind `anthroposlabs.com` that owns the Firecracker microVM lifecycle. What is
-> in `app` is the *consumer* half. Code lives under `app/internal/labs/`,
+> in `app` is the *consumer* half. **Where labs-api RUNS was still missing until iter-123 and is now in
+> [`org-repos.md` § 7](../architecture/org-repos.md)**: two stdlib-only Go modules (~8 kLOC, zero external
+> `require`s), deployed by **Ansible + systemd + Cloudflare Tunnel + Caddy onto a single tailnet VM** —
+> there is **no Terraform in that repo** (the `anthroposlabs.com` DNS is Terraformed in `infrastructure`),
+> and `STATUS.md:3-6` records it as single-worker with the fleet still pending. Its catalog is **96
+> scenario templates, each with a `meta.json` — measured. The repo's own README, its `STATUS.md:11` and
+> its GitHub description all say "15", and all three are stale**; a repo's self-description is testimony,
+> the tree is evidence. Code lives under `app/internal/labs/`,
 > `app/internal/credits/`, `app/internal/payments/`, `app/internal/subscriptions/`, plus the top-level
 > `app/stripe/` fixtures.
 

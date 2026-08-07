@@ -320,3 +320,26 @@ let `onboarding.enterprise-workforce-standard.UC1` be a Playthrough. With it blo
 **scrapes a live public third-party profile** on a site that blocks automation — so the use case carries a
 machine-checked `disposition: will-not-build` verdict instead (M256 `D104`/`D122`). **The two fixture files
 ARE the evidence for that verdict**, which is why they ship despite having no consumer.
+
+---
+
+### `PLATFORM-M257x-directus-ext-logs-env` — a shipped Directus operation writes the whole environment to the log
+**Found:** M257x iter-123 (2026-08-07) · **Repo:** `anthropos-work/directus` · **Status:** open ·
+**Severity:** high — it is at the **deployed** pin
+
+`directus/extensions/directus-extension-youtube-meta/src/directus-extension-youtube-meta-operation/api.ts:9`
+is a bare **`console.log(env);`** inside the operation handler. It is present at `d6325731` = tag **`v0.20.15`**,
+which is exactly the pin production runs (`infrastructure/terraform/production/services.tf:24`).
+
+A Directus operation handler's `env` carries the instance configuration. For this deployment
+`services.tf:47-57` threads in `SECRET`, `KEY`, the Postgres connection and password, the admin credentials
+and `GCLOUD_SERVICE_ACCOUNT` — so **every invocation of the YouTube-meta operation writes all of them to the
+container log group.**
+
+**Rosetta cannot fix this (zero platform edits binding), and it is filed rather than escalated** — the
+register is where a platform defect this corpus measures goes. Two things make it *reportable* rather than
+merely noted: the value is not inferred (the line is a literal `console.log(env)`), and the pin is not
+guessed (`services.tf` names `v0.20.15`).
+
+**Not measurable from here:** whether the operation is actually reachable in the production flow set, and
+what the log group's retention and access policy are. Both change the exposure and neither is in a clone.

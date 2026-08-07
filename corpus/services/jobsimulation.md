@@ -74,9 +74,17 @@ Report both, assert neither. State: **frozen legacy repo,
 >   **owns the LiveKit and Chime recording S3 buckets**, which `backend` reuses by literal name (the Chime
 >   S3 → SNS → https webhook points at `backend` too), plus the `/production/jobsimulation/*` SSM parameters
 >   and the atlas migration tracker (`:24-40`) — move bucket ownership before destroying any of it. The
->   **remaining M810 step** here is dropping the legacy `jobsimulation` schema (`:38-40`). Whether
->   `infrastructure/terraform/production/services.tf` still declares `module.jobsimulation_euwest1` is not
->   something this corpus can see — `infrastructure` has never been in the clone set.
+>   **remaining M810 step** here is dropping the legacy `jobsimulation` schema (`:38-40`).
+>   **MEASURED at `infrastructure` `13c248e6` (iter-123), and it confirms this bullet exactly:**
+>   `module "jobsimulation_euwest1"` **IS still declared**, at `terraform/production/services.tf:475`
+>   (`ref=v0.254.0`) — and deliberately, as an **assets-only** module. Its own header says why: the
+>   LiveKit/Chime recording buckets `backend` reuses by literal name, the Chime SNS topic + S3
+>   notification, the `/production/jobsimulation/*` SSM parameters and the atlas tracker
+>   (`:455-474`), while *"jobsimulation >= v0.254.0 deletes its `base_internal_service` call, so every
+>   input that only fed the task definition … has been dropped from both sides. The ECR repository is
+>   destroyed outright rather than forgotten from state."* **So the surviving module block is not a
+>   surviving service** — the same shape as `storage`, and the opposite of `cms`, whose block is gone.
+>   Do not generalise any of the three onto the others: [`org-repos.md` § 3](../architecture/org-repos.md).
 > * **Repo** — the `jobsimulation` git repo still exists but is **frozen/legacy**; make changes in `app`.
 >
 > For current documentation of this domain, see [Backend (`app`)](./backend.md).

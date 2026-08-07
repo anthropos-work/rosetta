@@ -231,7 +231,7 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
 `838d907`; see the archived list below.)
 
 Production-only / deployed-only (not in local docker-compose):
-- db-backup: Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner
+- db-backup: a **43-line Bash script** (not Go) that `pg_dump`s Postgres to **S3 + a Hetzner Storage Box** — **two** destinations, never Azure. **Its schedule and trigger have been commented out since `7dd1b80` (2025-05-29) and production pins that commit**, so the task definition is deployed and nothing fires it. The long-quoted *"every 6 h to S3, Azure, Hetzner"* was wrong on five counts and **"6 h" never had a source at all** (the disabled value was `rate(12 hours)`). RDS multi-AZ + an hourly AWS Backup plan with PITR still cover durability; what is lost is the **offsite, non-AWS** leg. See `corpus/services/db-backup.md`
 
 Archived / merged (removed from local orchestration; repo dirs may still exist on disk):
 - Chronos (was: scheduling & time-based events) — removed via platform commit `045857c`
@@ -425,6 +425,8 @@ Usage: `make up PROFILE=core`
 ### Architecture Documentation
 - `corpus/architecture/architecture_overview.md`: High-level system design
 - `corpus/architecture/platform-migration-status.md`: **Where the microservice-into-`app` consolidation actually is** — one row per service the platform has ever had, **two states per row** (production vs a fresh local stack), every claim cited to a sha or `file:line`, plus the **net-new** org repos that appear in neither `repos.yml` nor the corpus. **Machine-fenced against the platform's own `repos.yml` in both directions** (`rosetta-extensions/stack-core/platform_alignment_guard.py`, v2.8 M257x) — a service entering *or leaving* the clone set turns a guard RED. **Read it before trusting any per-service claim below about whether that service still runs**; the merge banner in this file is prose and the map is fenced
+- `corpus/architecture/org-repos.md`: **The `anthropos-work` org repo register — all 93, measured 2026-08-07, each with a home and an ADVISORY verdict (nothing deleted or archived).** The denominator this corpus never had: it documented the ~13 repos a stack clones and had never enumerated the rest. **It settles the standing `cms` M810 question** (there is no `module "cms"` in `infrastructure`; `cms/terraform/main.tf:39` is orphaned dead code), and it is the home for `infrastructure`, `directus`, `judge0`, `metabase`, the five `livekit-agent*` repos, `sim-qa`, `hyper-studio`, `analytics-go` and **`anthropos-knowledge-base` — a second org corpus that contradicts this one on the taxonomy figures in 14 unsourced places**
+- `corpus/ops/observability.md`: **The observability tier this corpus documented NOWHERE until 2026-08-07.** What the platform emits (**no metrics pipeline**; Sentry-protocol traces at 15 %; the error tier is a **self-hosted GlitchTip**) vs what `ant-observability` runs (live outside-in `product-monitoring/` asserting on **body content**, because gqlgen, Next ISR and the LB health check can all return 200 for a failure)
 - `corpus/architecture/service_taxonomy.md`: Three-tier service categorization
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
 - `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime

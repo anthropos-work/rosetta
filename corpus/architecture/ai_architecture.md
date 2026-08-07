@@ -198,13 +198,26 @@ The primary voice engine uses **LiveKit rooms** with **OpenAI GPT Realtime** age
 Player → LiveKit Room → GPT Realtime Agent (anthropos-agent [EU] / anthropos-agent-us)
 ```
 
-> **The agents have repos, and this corpus has never named one (v2.8 M257x).** The org holds **five**
+> **The agents have repos, and they are now documented (v2.8 M257x iter-123).** The org holds **five**
 > LiveKit agent repositories — `livekit-agent`, `livekit-agent-chain`, `livekit-agent-azure-us`,
-> `livekit-agent-azure-eu`, `livekit-agent-azure-eu-fr` — none of which appear in `repos.yml`, in any
-> corpus document, or in the deployment picture below. Everything here documents the LiveKit *engine* and
-> the *platform side* of the call; the agent process itself is undocumented. `azure-eu` and `azure-eu-fr`
-> were measured at M257x iter-01 as dispatching nothing. Enumerated in
-> [`platform-migration-status.md` §3](./platform-migration-status.md).
+> `livekit-agent-azure-eu`, `livekit-agent-azure-eu-fr` — none of which appear in `repos.yml`. Everything
+> here documents the LiveKit *engine* and the *platform side* of the call; **the agent side now has a
+> home**, [`org-repos.md` § 8](./org-repos.md), with the agent-name → repo map, the `livekit.toml` ids,
+> and the mechanism.
+>
+> **This paragraph used to end *"none of which appear in `repos.yml`, in any corpus document, or in the
+> deployment picture"* — a sentence that named all five while denying any corpus document names them, and
+> then cited the table that enumerates them two lines later. Only the `repos.yml` clause was ever
+> measured-true; corrected iter-123.** A universal quantifier falsified by its own sentence is the defect,
+> not the staleness.
+>
+> **The finding the enumeration was hiding:** `azure-eu` and `azure-eu-fr` dispatch nothing not because
+> they were abandoned but because they were **ABSORBED** — `livekit-agent` is now one agent serving four
+> endpoints selected by dispatch metadata (`app`'s `metadata["endpoint"]`,
+> `internal/jobsimulation/calls/livekit.go:148` ↔ `livekit-agent/src/agent.py:268`), and the three
+> azure-* repos never read that key at all. The absorption is **incomplete**: US is still dual-routed, so
+> `app` sets both `agentName="anthropos-agent-us"` and `metadata["endpoint"]="azure-us"`
+> (`livekit.go:126-127`) and the receiving agent ignores the second.
 
 - **Audio**: Real-time voice conversation, recorded as MP3
 - **Transcript**: Generated from LiveKit conversation events

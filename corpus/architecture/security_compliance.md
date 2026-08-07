@@ -240,7 +240,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 | **Deployment** | Multi-AZ with auto-scaling |
 | **CDN** | Worldwide (Vercel for frontend) |
 
-The `db-backup` service runs on a schedule, dumping PostgreSQL to three geographically separate locations for resilience.
+**RETRACTED 2026-08-07.** `db-backup` does **not** run on a schedule and does **not** write three geographies. Its EventBridge rule and target have been commented out since `7dd1b80` (2025-05-29) — the commit production pins (`infrastructure/terraform/production/services.tf:571`, `ref=v0.3.3`) — and it has only ever had **two** destinations, S3 and a Hetzner Storage Box; **Azure appears in none of the 157 objects the repo has ever contained**. **Durability today is AWS-native only**: RDS `multi_az = true` with `backup_retention_period = 7` plus an hourly AWS Backup plan with continuous PITR (`infrastructure/modules/core/storage/rds.tf:6,19,78-89`). **The offsite, non-AWS copy has not been written for over a year**, so *"resilient to a full AWS region failure"* no longer holds. Full derivation: [`db-backup.md`](../services/db-backup.md).
 
 ---
 
