@@ -245,16 +245,35 @@ Archived / merged (removed from local orchestration; repo dirs may still exist o
 - Messenger (was: email notifications via Brevo/Sendinblue) — **merged into `app`** (v9.0); no compose service since `838d907`, and out of `repos.yml`. See the banner above + `corpus/services/messenger.md`
 - CustomerIO Sync (was: background data sync to Customer.io — the one service built straight from a GitHub URL, never cloned locally) — **merged into `app`**; no compose service since `838d907`. See the banner above + `corpus/services/customerio-sync.md`
 
-**Shared Libraries** — five repos, of which **four are imported as private Go modules** (`ai`, `colony`, `proto`, `taxonomy`; **not** cloned by `make init`/`repos.yml` — pulled at Docker build via `GH_PAT`/`GOPRIVATE`). **`authn` is imported by nothing** — see its row. Full picture: `corpus/architecture/shared_libraries.md`.
+**Shared Libraries** — **do not read this list as `app`'s dependency set; it is not one.** Measured at
+`app` `3eaadae6` (v1.371.1), `app/go.mod:14-18` requires **five** org-private modules, **all direct, zero
+`// indirect`, and no org `replace`** — `analytics-go` `v0.3.1`, `colony` `v0.35.2`, `proto` `v1.210.0`,
+**`storage` `v0.15.2`**, `taxonomy` `v1.2.0`. **`ai` is NOT among them** and **`authn` never was.** None
+are cloned by `make init`/`repos.yml` — they are pulled at Docker build via `GH_PAT`/`GOPRIVATE`. Full
+picture: `corpus/architecture/shared_libraries.md`.
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
 - proto: Protobuf definitions (RPC contracts) + hand-written domain types
-- ai: AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, Bedrock, Mistral). NOTE: cost tracking lives in `app/internal/aiusage`, and **vendor selection** lives in each consumer's wrapper — **not** in this library, and it is a caller-supplied switch rather than an EU-first fallback ladder
-- authn: Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone `authn` repo is legacy)
 - taxonomy: **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills / ≥22,470 job roles** — public subset, measured 2026-06-29; ["60K / 18K" is not a measurement](corpus/architecture/shared_libraries.md#taxonomy-figures)) lives in `app` (backend — the `public` schema, since the skiller→app merge)
+- **storage** (`go.mod:17`): a **TYPE SHIM, not an RPC edge.** `app` imports `sdk/storage` (the `Client`/`PublicClient` structs) and `sdk/storage/v1` (the three-method `Service` interface) at 36 import lines across 32 files, then **implements that interface itself** — `internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}` with its own in-process manager. No SDK RPC client is ever constructed and `STORAGE_RPC_ADDR` occurs in **zero** Go source
+- **analytics-go** (`go.mod:14`): a two-file Brevo product-event tracker (`Init`/`Track` fan-out). Wrapped by `app/internal/tracking`, and it carries **Stripe subscription-lifecycle events → Brevo** at `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired at `main.go:507-508`. The repo has been untouched since **2025-02-12** and `v0.3.1` **is its newest tag** — dormant, and load-bearing
+- ~~ai~~: **folded INTO `app`** at `1e457fa70` (2026-08-04) from tag `v1.40.2`, now `app/internal/ai/` with **84 importing files**, and kept out by `.github/workflows/ai-module-guard.yml` — a **PR-time CI job** running `TestNoExternalAIModuleImports`, *not* a build-time failure, and it **passes** when its merge conflicts (`:96-100`). Cost tracking is `app/internal/aiusage`; **vendor selection** lives in each consumer's wrapper — a caller-supplied switch, not an EU-first fallback ladder
+- ~~authn~~: Clerk JWT authentication — shipped **inside colony** as `colony/authn`; in no repo's `go.mod`
 
+> **⚠️ "Merged into `app`" describes the RUNTIME, not the module graph — and the two came apart.**
+> `ai` left `go.mod`; **`storage` did not.** A cleanup driven by this file as it read before 2026-08-07
+> would have deleted **two** repos `app` cannot build without: `storage` (a direct require, *and* still
+> maintained — HEAD 2026-08-05, tags out to `v0.15.8`, six past app's pin) and `analytics-go`, which
+> nothing guards at all. **`ai` must not be deleted either**, for a reason that lives in this repo:
+> `rosetta-extensions/stack-seeding` pins `ai v1.40.1`, so a doc-driven "app doesn't import it any more"
+> deletion breaks **Rosetta's own tooling**. (`app/internal/ai/module_import_guard_test.go:15-17` and
+> `app/CLAUDE.md:289-294` both say so.) The org-module block is **actively shrinking** — at `b948604f`
+> it was **seven** (`ai` at `:14`, `messenger` at `:17`) — so treat any list here as a dated measurement,
+> never as a standing fact.
+>
 > Since the merges these libraries are imported by **app**, **sentinel**, **storage** and **messenger**
 > only — but the last two are frozen legacy repos since `838d907` (no compose service, not in
-> `repos.yml`), so only **app** and **sentinel** are still built. **`customerio-sync` is not in that
+> `repos.yml`), so only **app** and **sentinel** are still built. **`storage` is a supplier as well as a
+> consumer here, and the old wording hid that.** **`customerio-sync` is not in that
 > measurement either way**: its repo has never been in the clone set, so nothing here has read its
 > `go.mod` — the same blind spot the `customerio-sync` row of
 > `corpus/architecture/platform-migration-status.md` records.
@@ -410,7 +429,7 @@ Usage: `make up PROFILE=core`
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
 - `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime
 - `corpus/architecture/dependency_map.md`: Service inter-dependency matrix with Redis Streams events
-- `corpus/architecture/shared_libraries.md`: The five internal Go libraries — but only **four are imported as private modules** (`ai`, `colony`, `proto`, `taxonomy`); **`authn` is a dependency of no service** (it ships inside colony as `colony/authn`; the standalone repo is legacy)
+- `corpus/architecture/shared_libraries.md`: the internal Go libraries. **Its subject set is the five historical "shared libraries" and that is NOT `app`'s require set** — measured at `app` `3eaadae6`, `app/go.mod:14-18` is `analytics-go`, `colony`, `proto`, `storage`, `taxonomy`. `ai` was folded into `app` (`1e457fa70`); `authn` ships inside colony as `colony/authn` and is a dependency of no service
 - `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
 - `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
 - `corpus/architecture/alignment_testing.md`: The alignment test class + framework (`rosetta-extensions/alignment/`) — measuring how faithfully a mirror engine (e.g. Clerkenstein) reproduces a source engine as a 0–100% score

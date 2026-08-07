@@ -1,9 +1,48 @@
 # Shared Libraries
 
+> ## ⚠️ This document's subject set is NOT `app`'s require set — corrected M257x iter-123
+>
+> The "five shared libraries" is a **historical grouping**, and every count below is taken over it.
+> `app`'s actual org-private module requirements, measured at `app` **`3eaadae6`** (v1.371.1),
+> `app/go.mod:14-18` — **all five DIRECT, zero `// indirect`, and the file's one `replace` (`:295`) is
+> `getsentry/sentry-go/echo`, not an org module**:
+>
+> | Module | `go.mod` line | Version | In the "five"? |
+> |---|---|---|---|
+> | `analytics-go` | `:14` | `v0.3.1` | **no — this doc had no section for it** |
+> | `colony` | `:15` | `v0.35.2` | yes |
+> | `proto` | `:16` | `v1.210.0` | yes |
+> | **`storage`** | `:17` | `v0.15.2` | **no — this doc had no section for it** |
+> | `taxonomy` | `:18` | `v1.2.0` | yes |
+>
+> `go.sum:64-73` carries exactly those five, two lines each — **no `ai`, no `authn`, no `messenger`.**
+>
+> **The one sentence to carry away: "merged into `app`" describes the RUNTIME, not the module graph.**
+> `ai` left `go.mod`; **`storage` did not.** Read the two as one rule and you conclude `storage` is
+> deletable, which is false twice over — it is a compile-time requirement of the backend monolith *and*
+> the repo is still maintained (HEAD **2026-08-05**, tags out to **`v0.15.8`**, six past `app`'s pin).
+>
+> **`analytics-go` was the sharpest gap**: a live private Go dependency carrying Stripe
+> subscription-lifecycle events, with **no** section here and **no** guard anywhere. It is not, however,
+> undocumented corpus-wide — [`external_services.md:554`](./external_services.md) already carried the
+> correct `go.mod:14-18` enumeration. **The defect was that the library model and the external-services
+> doc disagreed and nothing reconciled them**, which is the same failure mode as two corpora
+> disagreeing, one file apart. Both new modules are described in `CLAUDE.md`'s Shared Libraries block;
+> full sections here are owed and **not yet written** — that is a named gap, not a silent one.
+>
+> **Do not delete `ai` either.** `rosetta-extensions/stack-seeding` pins `ai v1.40.1`, so the deletion
+> this doc's old text invites would break Rosetta's own tooling
+> (`app/internal/ai/module_import_guard_test.go:15-17`; `app/CLAUDE.md:289-294`).
+>
+> **The block is actively shrinking**, so date every reading of it: at `b948604f` it was **seven**
+> modules — `ai` at `:14` and `messenger` at `:17` — and at `ad9f3c49` and `3eaadae6` it is the five above.
+
 This document covers **five** internal library repos. **The Go services do not share five**
 (corrected M257x iter-102; this line previously said *"The Anthropos Go services share five
 internal libraries"*): measured at platform `0c91421`, the two Go repos a stack clones and
-builds — `app` and `sentinel` — require **three**, colony + proto + taxonomy. The other two
+builds — `app` and `sentinel` — require **three OF THE FIVE**, colony + proto + taxonomy (`app`
+requires **five modules in total**; the other two are outside this doc's subject set — see the
+banner). The other two of the five
 arrived by **absorption, not dependency**: `authn` ships *inside* colony as `colony/authn`
 and is a `require` in **no** repo's `go.mod`, and `ai` was folded into `app` as
 `app/internal/ai` at `1e457fa70` (2026-08-04), which dropped its module requirement — it
@@ -23,14 +62,19 @@ third-party dependency"*). Counting `go.mod` requires over the seven Go repos on
 their pinned refs: colony **7/7**, proto **7/7**, taxonomy **6/7** (all but roadrunner),
 ai **2/7** (only the frozen cms + jobsimulation), authn **0/7**. So **four** of the five are
 pulled by at least one repo, and only **three** by the two repos a stack actually builds.
+**Those ratios are over THE FIVE, and the denominator hides two live modules** — `app` also requires
+`storage` and `analytics-go` (banner above), so *"three"* is the answer to *"how many of the five"*,
+never to *"what does `app` depend on"*.
 
 | Library | One-liner |
 |---------|-----------|
 | **colony** | The framework: DB/Redis, logging+Sentry, GraphQL/RPC servers, CORS, pub/sub, feature flags — and it now contains **authn** |
 | **proto** | The single source of truth for service-to-service RPC contracts (Protobuf → Connect-RPC) + hand-written domain types |
-| **ai** | A thin wrapper over OpenAI/Azure/Anthropic/Bedrock/Mistral behind one `ai.AI` interface |
+| **ai** | A thin wrapper over OpenAI/Azure/Anthropic/Bedrock/Mistral behind one `ai.AI` interface. **Folded into `app` at `1e457fa70`; in no live `go.mod`** |
 | **authn** | Clerk JWT authentication (now shipped **inside colony** as `colony/authn`; the standalone repo is legacy) |
 | **taxonomy** | The **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset |
+| **storage** *(not one of "the five" — added M257x iter-123)* | `app/go.mod:17` `v0.15.2`. A **type shim**: `app` imports `sdk/storage` + `sdk/storage/v1` (32 files / 36 import lines) and implements the three-method `Service` interface **itself** (`app/internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}`). **No SDK RPC client is constructed; `STORAGE_RPC_ADDR` occurs in zero Go source.** The service is gone; the module is not |
+| **analytics-go** *(not one of "the five" — added M257x iter-123)* | `app/go.mod:14` `v0.3.1`. Two files (`analytics.go` + `brevo/brevo.go`): a `sync.Once` `Init`/`Track` fan-out to Brevo's `EventsApi.CreateEvent`. Wrapped by `app/internal/tracking`; the load-bearing consumer is **Stripe subscription lifecycle → Brevo**, `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired `main.go:507-508`. Repo untouched since **2025-02-12**; `v0.3.1` is its newest tag — **dormant, not dead** |
 
 > ### How they are consumed (this matters)
 > **None of these are cloned by `make init`** — they are **absent from
