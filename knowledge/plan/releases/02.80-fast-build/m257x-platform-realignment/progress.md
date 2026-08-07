@@ -2115,3 +2115,38 @@ defect and would also explain why no amount of accessor work has helped.
   adjudication; 4/4 verdicts committed unedited; 54 booked → 50 upheld / 4 rejected. All 14 clones
   identical at close and open, fetch times unchanged. **No repair taken inside the pass.** Gate **4 of
   5**; clause 5 **NOT met** — see iter-116/progress.md + iter-116/adjudication.md
+
+- iter-117 (tik · `iter_shape: census`, **`TOK-08` class 1 — the USER's re-scope, sealed in this iter's
+  FIRST commit `577446b` before any sweep work**): **the corpus stops mis-citing itself.**
+  **1,520 intra-corpus citations enumerated over 92 source documents** — C1 path 1,337 · C2 anchor 179 ·
+  C3 line-pin 4, denominator **`corpus-derived-per-arm`**, stated in the report and in `--json` per
+  iter-114's rule. **8 already false, all 8 in the anchor arm, 8 of 8 repaired**; `corpus_citation_guard`
+  ships green over **100 % of the enumerated population** and is registered in the postcondition ratchet
+  at **zero** sites, not a tolerated count. **Zero** false of 1,337 path citations and **zero** of 4
+  line-pins: the whole class lives in the one arm **no reader exercises**, because a broken `#fragment`
+  still lands you on the right file — which is how 8 defects survived four graded readings. The eight:
+  `platform-migration-status.md` ×4 (one extra hyphen in every deep link into the protocol doc — `## 6.`
+  slugs the `.` to a SINGLE separator), `secrets-spec.md` (anchor stale by two milestones, M27–M28 for a
+  heading reading M27–M30), `staging-bringup.md` (paraphrased from memory), `architecture_overview.md`
+  (*"see AI Providers below"* for a heading that does not exist), and `coverage-protocol.md` — **a literal
+  `[serve-grant](#…)` ellipsis placeholder that shipped**. **Four census passes ran before one line of
+  prose was repaired**, three of them only to kill a false-positive class: basename-as-path (~180 false
+  REDs), bare-`:NN`-as-corpus-pin (256), other repos' `knowledge/` (5), heading-only anchor model (22,
+  including **CLAUDE.md's own retraction link**) — ~460 correct citations that a fence shipped on any one
+  draft would have turned RED. Every exclusion is annotated **with the number it cost** and pinned by a
+  regression test. **The mutation control earned its keep on its first run**, catching a **silent vacuity
+  bug in this very guard** (an unresolved root made the cross-document arm enumerate nothing under a
+  symlinked tree and report a clean pass) — the ninth vacuous fence caught here, and the first caught
+  before shipping. **Reported against the pre-registration and before the reading that will grade it:
+  the machine-reachable half of class 1 is largely DISJOINT from the 10 predicates iter-116 booked** —
+  those are *construct* defects, and of 387 bare-pin lines only **4** are machine-resolvable — so little
+  `P` movement should be expected from this class (`D-M257x-117-2`). Side finding, **pre-existing at rext
+  HEAD** and proven so by read-only `git archive`: `test_repair_reach_guard.py` hid **14 tests** below its
+  `__main__` guard since iter-114, printing OK over 16 of 30; `test_test_collection_fence` had been RED on
+  it the whole time and the RED was invisible because the suite does not complete on this host. Fixed;
+  30/30 collect. **`state.md` repaired by RELOCATION, not trimming** — `phase:` measured **2,230 B against
+  its 900 B budget**, carrying a reading already written down here; now 895/900 and the file has **1,929 B
+  of headroom** where it had ~200. Tests: 19/19 guard · 27/27 + 25/25 postcondition · 34/34 provenance ·
+  41/41 guard_family · 8/8 collection-fence · guard_family live **14 GREEN / 0 RED**, every count naming
+  its invocation. **No reading was taken and no `N`/`P` movement is claimed** (§9's UNMEASURED rule).
+  Gate unchanged at **4 of 5** — see iter-117/progress.md + decisions.md
