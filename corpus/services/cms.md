@@ -213,7 +213,9 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 ### Downstream dependencies
 * Directus (content storage)
 * PostgreSQL (Ent ORM, **`public` schema** — the cms tables were re-created there at cms-in-app v8.0; the
-  legacy `cms` schema is non-authoritative. Consistent with the **Data** bullet, :44-47 above)
+  legacy `cms` schema is non-authoritative. Consistent with the **Data** bullet of the *Where everything
+  went* list in the banner at the top of this doc — **named, not pinned:** this said `:44-47`, which at
+  M257x iter-120 was the **Domain** bullet, one bullet off)
 * Redis (cache, Watermill streams)
 * AI providers — **OpenAI / Azure OpenAI / Anthropic** for the `studio/` Python generation pipeline
   (`services/ai.py:705-708`). **Mistral is NOT one of them**: every use of it is **OCR**, never generation. The Go one —
@@ -237,7 +239,8 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 
 > **⚠️ HISTORICAL — `cd cms; make init-studio` is NOT the onboarding path any more.** Since cms-in-app v8.0
 > the studio-room pipeline is pulled into the **`app`** image by CI via the `additional_repo` mechanism (app
-> v1.360.1) — see the **Studio** bullet, :70-71 in the banner at the top of this doc. Work on this domain in **`app`**, not in the
+> v1.360.1) — see the **Studio** bullet of the *Where everything went* list in the banner at the top of this
+> doc (**named, not pinned:** this said `:70-71`, which at M257x iter-120 was the **Events** bullet). Work on this domain in **`app`**, not in the
 > frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
 
 The Python studio submodule had to be cloned **before** any docker build, otherwise `make up` failed with `"/studio": not found`:

@@ -52,13 +52,20 @@
 > therefore named by construct above — the **`⚠⚠ M51 iter-08/09`** block, identified by the quoted
 > parenthetical *"(now `aireadiness/readiness.go`, formerly `workforce/ai_readiness.go:512`)"*.
 > ⚠️ **And the third generation rotted too, which is why this passage no longer carries a line pin at all
-> (M257x iter-115).** iter-102 replaced `:459` with **`:496`**; re-derived at iter-115, `:496` is the
-> **closing line of the `> **✅ CORRECTED M219 …**` blockquote** (`:476-496`) — the very blockquote the two
-> sentences above name as the *wrong* target for the previous generation. The block opens at `:498` and the
-> quoted parenthetical is at `:500`. **The pin is deleted rather than re-derived to `:498`**: three
-> generations of one anchor in one file, each off by a handful of lines, is not three accidents — a
+> (M257x iter-115).** iter-102 replaced `:459` with **`:496`**; re-derived at iter-115, `:496` was the
+> **closing line of the `> **✅ CORRECTED M219 …**` blockquote** — the very blockquote the two sentences above
+> name as the *wrong* target for the previous generation. **The pin was deleted rather than re-derived**:
+> three generations of one anchor in one file, each off by a handful of lines, is not three accidents — a
 > same-file line pin in a document that grows will rot again, and the self-heal clause (*"when the two
 > disagree, the name wins"*) lowers a reader's cost without making the number true. **Search the construct.**
+>
+> ⚠️ **A FOURTH generation, and it was inside this very paragraph (M257x iter-120).** iter-115 deleted the
+> *cross-reference* pin and then spent three sentences describing where things were, in bare line numbers —
+> *"(`:476-496`)"*, *"the block opens at `:498`"*, *"the parenthetical is at `:500`"*. Re-derived at iter-120
+> those are **`:512`**, **`:538`** and **`:540`**: the passage arguing that same-file pins rot had three of
+> its own rot inside five iterations. They are now gone. **The surviving numbers — `:458`, `:459`, `:496` —
+> are QUOTED HISTORY, not citations**: they are what the doc once *said*, which is a fixed fact, and that is
+> the only kind of line number this paragraph is allowed to carry.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 

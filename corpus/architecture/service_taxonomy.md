@@ -400,11 +400,14 @@ baked against `backend`.)
 
 > **⚠️ Not a local service.** Platform `2adcf71` (2026-07-31) deleted the `graphql` compose service **and** the
 > `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30** (a dated snapshot — see
-> the archive-state note above the *Archived / merged* table, `:142`; the clone is consistent with it, no commit after that date). **There is no `:5050` on
+> the archive-state note above the *Archived / merged* table — the **⚠️ *"Two different fates shared this
+> table"*** blockquote, **named, not pinned** (this said `:142`, which at M257x iter-120 was a middle line of that blockquote, not its start); the clone is consistent with it, no commit after that date). **There is no `:5050` on
 > a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
 > describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
-> and in the archived repo; **do not follow it as a local-development instruction.** Consistent with `:67-68` above
-> (*"There is no `graphql` profile"*).
+> and in the archived repo; **do not follow it as a local-development instruction.** Consistent with the
+> *"**There is no `graphql` profile**, and no cms / …"* sentence in the **Tier 1** deep-dive section above —
+> **named, not pinned** (this said `:67-68`, which at M257x iter-120 was the *Communication* + *Database*
+> characteristic bullets, not that sentence).
 > Fenced source of truth: [`platform-migration-status.md`](./platform-migration-status.md).
 
 | Property | Value |

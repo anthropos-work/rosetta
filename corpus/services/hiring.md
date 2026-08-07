@@ -45,7 +45,9 @@
 >    deleted it; `app` (`repos.yml:14-17`) is the only `migrations: true` entry. Qualified M257x iter-52,
 >    re-anchored in the M257x sweep)
 >    — as the twins [`service_taxonomy.md`](../architecture/service_taxonomy.md)'s Tier-1 **Database**
->    characteristic bullet (`:62` — *"one schema, `public`, owned by `app`, which is the only repo with
+>    characteristic bullet (**named, not pinned** — this said `:62`, which when re-derived at M257x iter-120
+>    was that file's *Tier 1: Core Backend Services* **heading**, not the bullet; find it by its own words,
+>    *"one schema, `public`, owned by `app`, which is the only repo with
 >    migrations"*, the `cms` / `jobsimulation` / `skillpath` schemas *"legacy husks"*) and
 >    [`dependency_map.md:78`](../architecture/dependency_map.md) (§ *2. Job Simulation* — session state goes
 >    *"directly to the **`public`** schema (the legacy `jobsimulation` schema is non-authoritative)"*)
