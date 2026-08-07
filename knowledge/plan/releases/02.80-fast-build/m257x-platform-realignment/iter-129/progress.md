@@ -206,13 +206,13 @@ against source at refs. **`fix = 0` was 0-because-unread. It is no longer zero.*
 | slice 1 (`service_taxonomy`, `ai_architecture`, `shared_libraries`, `dependency_map`, `jobsimulation`, `coursebuilder`, `cms`, `security_compliance`) | 205 | **6** | 18 |
 | slice 2 (`external_services`, `studio-desk`, `architecture_overview`, `org-repos`, `frontend_architecture`, `hiring`, `gotenberg`, `clerk-integration`) | 204 | **8** | 20 |
 | slice 4 (`ai-readiness`, `sentinel`, `studio-room`, `backend`, `askengine`, `storage`, `next-web-app`, `clerkenstein`, `academy-backend`) — **returned AFTER the close commit; folded in rather than dropped** | 206 | **11** | 1 |
-| slice 3 | 205 | **not in the record — still running** | — |
-| **reported** | **615 of 820 (75.0 %)** | **≥ 25** | 39 |
+| slice 3 (`alignment_testing`, `ant-academy`, `graphql-wundergraph`, `ai-labs`, `chronos`, `roadrunner`, `messenger`, `customerio-sync`, `platform-migration-status`, `skiller`, `db-backup`) — also **post-close** | 205 | **21** | 22 |
+| **820 of 820 — EXHAUSTIVE** | **820** | **46 = 5.6 %** | 61 |
 
-**Quote it as a floor with its denominator: ≥ 25 false claims over 615 read = ≥ 4.1 % on the read portion,
-`fix` over the full 820 still a floor.** Slice 3 did not return and **its absence is stated rather than
-filled** — a 3-of-4 read reported as 4-of-4 is exactly the substitution this milestone exists to catch.
-Routed as `FIX-M257x-iter129-complement-slice-3`.
+**`fix` over the complement is 46 of 820 = 5.6 %, measured, not a floor of unread.** All four slices
+returned; the two that landed after the close commit were **folded in rather than dropped**, and the record
+says which. The `chronos`/`db-backup` un-cloned class dominates `UNCHECKABLE` (19 of 61 are chronos
+internals alone) — the same class § 3a's R3 audit found, now counted rather than inferred.
 
 Four of slice 1's six cluster in **one** place — the *Embeddings & RAG* section of `ai_architecture.md`,
 which is that document's own EU-residency argument: the embeddings client is **Azure EU, not OpenAI** (17
@@ -235,8 +235,36 @@ time this milestone has caught that exact shape (run 81's ant-academy regex, run
 Both sites now name all eleven. Two further slice-4 findings repaired in the same pass, both in
 `next-web-app.md`: *"`apps/web` is the only frontend in platform compose"* (**`studio-desk` is a second
 compose frontend**, `docker-compose.yml:112`) and `GRAPHQL_SCHEMA_FOR_GEN` *"used by `graphql-codegen`"*
-(**read by nothing** — 4 hits, all `.env.example`; `codegen.ts:9` hardcodes the endpoint). The remaining
-eight join the routed residual.
+(**read by nothing** — 4 hits, all `.env.example`; `codegen.ts:9` hardcodes the endpoint).
+
+### 3c. And slice 3's headline is a defect **in the fenced map** — clause 3's own deliverable
+
+**`platform-migration-status.md:108`, the `ai` row, still read `library | library`.** Measured at
+`ad9f3c498`: `app` **folded the library in-tree as `internal/ai` at `1e457fa70`** (2026-08-04) and dropped
+the requirement — `app/go.mod`'s `anthropos-work` requires are `analytics-go`, `colony`, `proto`, `storage`,
+`taxonomy`, **no `ai`**, and `go.sum` has **0** hits. By the map's own § 1 vocabulary (*a `library` is
+imported as a private Go module*), **no repo a stack builds imports it**; only the frozen `cms` and
+`jobsimulation` still require it, and nothing builds either. `internal/ai/module_import_guard_test.go:18-38`
+is a one-way door against re-acquiring it.
+
+**The corpus already knew and the map did not.** `shared_libraries.md` recorded the fold at **iter-102**, and
+the *neighbouring* `authn` row in this very table carries exactly the right caveat — **the `ai` row is the
+only library row iter-102's repair never reached.** `§5` rule 54 again, and this time inside the artifact
+clause 3 is graded on. **The map's guard could not have caught it**: `platform_alignment_guard` fences the
+map against `repos.yml` in both directions, and `ai` **is not in `repos.yml`** — it is a module, not a
+clone. *A fence is green over its reach, and a library row is outside this one's.*
+
+Four more repaired from slice 3, each verified at the ref before touching anything: `messenger.md:13-15`
+(*"sends **and schedules**"* — 0 scheduler hits, `Schedule` is `CodeUnimplemented`, which the page said 4
+lines down; and *"Liquid templating for the bodies"* — **Brevo** renders), `chronos.md:122-124` (the only
+present-tense block on the page with no local fence, refuted by `wiring.go:192` and 0 platform hits) and
+`:214`, `ant-academy.md:19` (the mobile bundler ships **nothing** — its deep-dive already said so) and
+`:314` (**31** e2e specs and ~2,700 Vitest cases, not "~26" and "1000+" — the naive grep returns 38 by
+catching `-snapshots/*.png`, so the invocation is stated), and `graphql-wundergraph.md:182` (the historical
+subgraph set was **five**, not two — contradicting its own ladder 137 lines up).
+
+**The remaining ~24 findings across slices 2–4 join the routed residual**, each with `file:line` on both
+sides — including `ant-academy.md:356`, a **16th** site of the `@anthropos.work` predicate.
 
 ---
 

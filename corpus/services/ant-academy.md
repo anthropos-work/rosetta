@@ -16,7 +16,11 @@ engineering, Claude Code, agent frameworks and related topics.
 
 Think of it as **a training product with a company tier**:
 - A web portal where employees take short, structured chapters
-- A companion **iOS / Android app** (Expo / React Native) that bundles the same content for offline reading
+- A companion **iOS / Android app** (Expo / React Native) **intended to** bundle the same content for offline
+  reading — ⚠️ **its bundler is inoperative at `22df69dd8`**: `mobile/scripts/bundle-content.ts:27-28` reads a
+  repo-root `content/` that does not exist (**0** entries; the content is at `code/public/content/`, 3,406
+  files), so it ENOENTs and ships nothing. **This page's own deep-dive already said so** — the summary
+  contradicted it until M257x iter-129
 - Authored content lives **inside the repo** as JSON, so curriculum changes ship through normal PRs
 
 It is **not** a platform microservice. It is a standalone product that *uses* the platform's identity provider (Clerk) — and, since **v0.5.1**, **reads its course catalog from the platform's academy backend over GraphQL**. Without that backend it still boots and authenticates, but the catalog **degrades to empty**: the home grid renders **0 cards**. (This is exactly why the academy looks blank in a demo — see [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7) below.)
@@ -311,7 +315,7 @@ used to dismiss it on a premise that was never true). It decomposes into:
 | **Fonts** | **Work Sans + Instrument Serif** — and those two only (`code/app/layout.jsx:1` imports exactly `{ Work_Sans, Instrument_Serif }` from `next/font/google`; `:41`, `:51`). **Neither DM Sans nor JetBrains Mono is loaded** — this row named both until M257x iter-98; `code/academy.css:1` says display + mono usages *"fall back to system fonts."* Plus Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
 | **PWA** | **manifest only** (`public/academy-manifest.json`, `display: standalone`, wired at `code/app/layout.jsx:132`) — installable but online-only. The Serwist 9 service worker was removed at v0.5 M1 and is regression-fenced against |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
-| **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
+| **Testing** | Vitest (happy-dom + node), Playwright (e2e). **~2,700 Vitest cases across 245 test files + 31 Playwright e2e spec files** (`code/tests/e2e/`, `playwright.config.js:13` pins that dir). ⚠️ Read *"1000+ Vitest tests + ~26 Playwright e2e spec files"* until M257x iter-129; the naive `grep -c 'tests/e2e/.*spec'` returns 38 because it also catches 7 `*.spec.js-snapshots/*.png`, so **state the invocation**: `git ls-tree -r --name-only 22df69dd8 \| grep -cE '^code/tests/e2e/[^/]*\.spec\.js$'` → **31**. |
 | **Deployment** | Vercel native (minimal `code/vercel.json` — only `{"framework": "nextjs"}`; Next.js handles routing). Mobile builds via Expo. |
 | **Node** | `>= 22` (declared in `code/package.json` `engines`) |
 

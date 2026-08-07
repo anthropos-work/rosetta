@@ -119,9 +119,15 @@ message EventTimerWentOff {
 
 ### Dependencies
 
-*   **Upstream Consumers**:
-    *   **Jobsimulation**: Schedules simulation timeouts, deadline reminders
-    *   Any service needing delayed/scheduled events
+*   **Upstream Consumers (HISTORICAL — corrected M257x iter-129).** ⚠️ This block was the only
+    present-tense section on the page with no local fence, while the page's own top banner says Chronos was
+    removed from orchestration. Refuted by readable code: `app/internal/jobsimwiring/wiring.go:192`
+    *"chronos/roadrunner/realtime clients are gone"*, `internal/jobsimulation/simulator/stream_handlers.go:30-31`
+    *"chronos, realtime, and the roadrunner-submission pubsub event were all removed upstream"* (both @
+    `ad9f3c498`), and **0 chronos hits repo-wide** in `platform` @ `0c91421df`.
+    *   **Jobsimulation** *(until 2026)*: scheduled simulation timeouts and deadline reminders here; that
+        moved to in-process Asynq and now runs inside `backend`
+    *   Any service needing delayed/scheduled events — **there are none left**
 *   **Downstream Dependencies**:
     *   **PostgreSQL**: Timer persistence
     *   **Redis**: Event publishing via Redis Streams
@@ -211,7 +217,8 @@ go test ./...
 
 ## Usage Example
 
-**Scheduling a simulation timeout** (from Jobsimulation service):
+**Historical usage example — Scheduling a simulation timeout** (from the Jobsimulation service, before the
+fold; retained to document the interface, not as a live recipe):
 
 ```go
 // Schedule a timeout 30 minutes from now

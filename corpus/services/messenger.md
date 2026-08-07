@@ -11,8 +11,14 @@
 ## Role & Responsibility
 
 Messenger is the platform's **centralized notification subsystem** — a standalone service until the v9.0
-fold, a domain inside `backend` since. It sends and schedules transactional emails, using **Brevo**
-(formerly Sendinblue) as the delivery backend and **Liquid** templating for the bodies.
+fold, a domain inside `backend` since. It **sends** transactional email through **Brevo** (formerly
+Sendinblue), **which renders the bodies** from Brevo-hosted templates. ⚠️ **Two words here were wrong until
+M257x iter-129.** *"schedules"*: there is no scheduler — 0 non-test hits for `cron|Ticker|asynq|time.AfterFunc`
+at `e9421c68f`, and `MessengerService.Schedule` returns `CodeUnimplemented` (`internal/rpcsrv/rpcsrv.go:29`),
+which **this page already said two paragraphs down and again under § Interface**. *"Liquid templating for the bodies"*: the Brevo
+sender posts a `TemplateId` + `Params` (`brevo.go:288-310`) and **Brevo** renders; Liquid is used only by the
+console sender (`console/console.go:71`) and for inline-composed whitelabel / CMS bodies
+(`flow/whitelabel.go:17`, `flow/assignments.go:489`).
 
 Callers don't talk to Brevo directly — they **publish Redis Stream events that the messenger flow consumes** (`messenger/internal/flow/flow.go:72-104` @ `fa47850` adds a subscriber on the `backend` stream with **21** handlers — 22 `pubsub.EventHandler(…)` lines of which one, `OrgJobSimulationAssignmentPastDueHandler`, is commented out *"not implemented"*; `app` runs that same subscriber now, on messenger's own consumer group). Messenger then decides whether to send immediately, apply org-level whitelabel branding, or skip the message entirely based on per-domain notification rules (e.g., it skips job-sim emails for stale/re-triggered sessions). (Scheduling RPCs exist in the proto but are not yet implemented — they return Unimplemented.)
 

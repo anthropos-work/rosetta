@@ -179,7 +179,7 @@ configs still contain these rows and a reader will find them there.
   the router service no longer exists in compose. Those line numbers move on every compose
   clean-up — they were `:220`/`:236` at `0dab54d` and `:334`/`:352` at `2adcf71` — so grade the
   construct, not the offset.
-* **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, `jobsimulation` and `cms`.
+* **Downstream (composed subgraphs)**: `app` (as `backend`) — and, historically, **`skiller`, `skillpath`, `jobsimulation` and `cms`**: `git show 749dc86~1:supergraph-config-prod.yaml | grep -c '  - name:'` → **5**. ⚠️ Named only two of the four until M257x iter-129, contradicting this page's **own** ladder at `:45` and block-quote at `:162-166`. Same defect class as `:184`, repaired at iter-49 — **the neighbour was missed**, which is `§5` rule 54.
 * ~~**Compose `depends_on`**~~ — moot: there is no compose service. Historically `backend`, `jobsimulation`, `cms`, **`storage`** (note `storage` was **not** a GraphQL subgraph but was in the startup-order list).
 * **CI/prod**: GitHub Releases on **`anthropos-work/app` only** (schema artifacts) + `anthropos-work/infrastructure` Terraform + `release-service.yml`. `ci/update-subgraph.sh:9` carries **exactly one** `gh release download`, `-R anthropos-work/app`; the `jobsimulation` and `cms` downloads were **deleted at `915da06`** when those subgraphs folded into `backend`. (This bullet claimed all three until M257x iter-49 — the two bullets above it already carried their historical fence; this one did not.)
 
