@@ -255,9 +255,10 @@ overwrites — while `roadmap.md` and this file carried the *numbers* without th
 were taken. A measurement whose provenance lives in an index that gets rewritten is one close away from being
 un-reproducible, so it moves to the milestone that made it.
 
-- **Taken 09:59–11:37Z on 2026-07-27, PRE-freeze**, with no overlap with third-party activity on the host
-  (user-confirmed). Three totals across two sessions cluster within 2 % — **658 / 666 / 672 s** — which is why
-  the published figure is an `n=3 p50` (666.29 s) and never a mean.
+- **Taken on `billion`, 09:59–11:37Z on 2026-07-27, PRE-freeze**, with no overlap with third-party
+  activity on that host (user-confirmed). Three totals across two sessions cluster within 2 % —
+  **658 / 666 / 672 s on `billion`** — which is why the published figure is an `n=3 p50` (666.29 s on
+  `billion`) and never a mean.
 - **On the first post-freeze campaign, re-confirm three timing-derived claims**: the n=3 p50, spike (a)'s
   146.8 → 2.9 s export, and spike (d)'s disk-bound attribution.
 - **The barrier verdict needs no re-confirmation.** 4.84 GB → 379 MB is bytes on disk, not a stopwatch —
