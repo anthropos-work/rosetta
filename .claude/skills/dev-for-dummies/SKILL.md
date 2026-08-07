@@ -54,10 +54,14 @@ This work is only worth doing on a strong, high-effort session. Before anything 
 
 The environment baseline must be current and unpolluted before you build on it. This covers **two** repos:
 
+Resolve the corpus root from where you are — **never hardcode a box's path**. `ROSETTA=$(git rev-parse
+--show-toplevel)` from anywhere in the corpus; the two paths below are relative to it. (This table used to
+name `/home/devops/rosetta` outright, which is one specific VM and wrong on every other box.)
+
 | Repo | Path | What "clean" means |
 |------|------|--------------------|
-| **rosetta** (this corpus) | `/home/devops/rosetta` | on `main`, no pending changes, == `origin/main` |
-| **rosetta-extensions** (authoring copy) | `/home/devops/rosetta/.agentspace/rosetta-extensions` | on `main`, no pending changes, == `origin/main` (clone it if absent) |
+| **rosetta** (this corpus) | `$ROSETTA` | on `main`, no pending changes, == `origin/main` |
+| **rosetta-extensions** (authoring copy) | `$ROSETTA/.agentspace/rosetta-extensions` | on `main`, no pending changes, == `origin/main` (clone it if absent) |
 
 For **each** repo: `git fetch origin`, then check the branch and working tree.
 
@@ -92,12 +96,16 @@ For **each** repo: `git fetch origin`, then check the branch and working tree.
 ### Phase 2 — Decide the TARGET repo(s) and branch names
 
 1. **TARGETs** — if repos were passed as arguments, use them. **If not, ASK the user** which repo(s) they want
-   to work on live. Offer the common ones and let them pick one or more:
-   `next-web-app` (the main frontend — the usual answer), `app` (Go backend/API + AI-readiness + skills),
-   `cms`, `jobsimulation`, `skillpath`, `studio-desk`, `ant-academy`. (Frontend/UI targets are the smooth path;
-   a backend Go target has extra wiring caveats — see [`reference.md`](reference.md) § *Backend targets*.)
-   **Validate each pick** with `test -d stack-demo/<repo>`; if it doesn't exist, reject it and show the
-   valid-repo list (reference.md § *Port map*) — don't let an opaque `git worktree` error surface later.
+   to work on live. There are **exactly five** live targets — offer these and no others:
+   `next-web-app` (the main frontend — the usual answer), `app` (the Go backend monolith: API, AI-readiness,
+   skills, **and** the merged cms / jobsimulation / skillpath / roadrunner / storage / messenger domains),
+   `sentinel` (authorization), `studio-desk`, `ant-academy`. (Frontend/UI targets are the smooth path;
+   a backend Go target has an extra wiring caveat — see [`reference.md`](reference.md) § *Backend targets*.)
+   **Validate each pick against that five-name list — NOT with `test -d`.** `stack-demo/` still holds stale
+   pre-merge clones of `cms`, `jobsimulation`, `roadrunner`, `messenger`, `storage` and `graphql-wundergraph`,
+   so the directory check **passes for all six** and the session goes on to build a worktree over a repo whose
+   service has no compose entry, no port and no consumer. If the user names one, reject it and route them:
+   *"that was merged into `app` — the live code is `stack-demo/app/internal/<domain>/`; target `app`."*
    **`hiring` is not its own repo** — it lives inside `next-web-app` (target `next-web-app`, run `pnpm
    dev:hiring` on `3001+OFF`).
 2. **Branch name per target** — you work on a dedicated branch, never on the repo directly. Names are
@@ -179,9 +187,11 @@ the summary below is the shape, not a substitute.
      `tailscale serve` on that port**. Serving HTTPS **directly** keeps the origin consistent so Clerk's rewrite
      stays internal (no self-proxy loop); `tailscale serve` (HTTPS→HTTP) is what loops it. Recipe: reference.md § *frontend*.
    - **Backend (more caveated):** `go run .` reaches **nothing** until you **rewrite**
-     `DB_CONNECTION`/`REDIS_ADDR`/`*_RPC_ADDR` to `localhost:<base+off>` (they live in `docker-compose.yml`, not
-     `.env`). And router→native-subgraph federation needs host-gateway wiring on the router — **flag that as a
-     tooling gap to raise, don't hack the stack.**
+     `DB_CONNECTION` / `REDIS_ADDR` / `AUTHORIZATION_ADDRESS` to `localhost:<base+off>` (they live in
+     `docker-compose.yml`, not `.env`). That is the **whole** caveat — there is no router to wire. The Cosmo
+     gateway was deleted at platform `2adcf71`, so `next-web-app` calls `backend` directly at
+     `:8082/graphql/query` and a native `app` serves the browser's GraphQL itself. **Do not raise the old
+     "router federation / host-gateway" tooling gap** — it describes a container that no longer exists.
 4. **Reach it at the SAME tailnet URL as the rest of the demo** — `https://<host>:<offset>` (no SSH tunnel;
    Tailscale itself is the access control). *(Pure on-box dev also works with `-H localhost` over
    `http://localhost:<offset>` — loop-free — but that isn't tailnet-reachable.)*

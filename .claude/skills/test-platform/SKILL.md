@@ -35,8 +35,8 @@ Pick the scope you want via the argument: `live`, `repos`, `census`, `full`. Def
 | Scope | Requires | Verify with |
 |---|---|---|
 | `live` | Platform running (`make ps` shows containers up) | `cd stack-dev/platform && make ps` |
-| `repos` | All non-studio repos cloned (`make init`); language toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
-| `census` | All repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
+| `repos` | The 4 `repos.yml` repos cloned by `make init` — `app`, `sentinel`, `next-web-app`, `studio-desk` (studio-desk **is** one of them); toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
+| `census` | Same 4 repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
 | `full` | All of the above | — |
 
 If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/dev-up` first instead of probing a dead stack.
@@ -62,12 +62,16 @@ driver with two env vars:
   so reports land where this skill has always written them.
 
 ```bash
-ROSETTA=/Users/kirality/Dropbox/Workspaces/swarm/rosetta
-# Verification toolkit: prefer the target stack's own clone; else the authoring copy.
-VERIFY="$ROSETTA/.agentspace/rosetta-extensions/stack-verify"
-# (or "$ROSETTA/stack-dev/rosetta-extensions/stack-verify" once the dev stack has its own clone)
-# If neither exists: git clone https://github.com/anthropos-work/rosetta-extensions.git \
-#   --branch v1.2.0 "$ROSETTA/.agentspace/rosetta-extensions"
+# Resolve the corpus root — NEVER hardcode a box's path (this line used to name one specific
+# developer's home dir, which is wrong on every other machine).
+ROSETTA=$(git rev-parse --show-toplevel)
+# Verification toolkit: prefer the target stack's own pinned clone; else the authoring copy.
+VERIFY="$ROSETTA/stack-dev/rosetta-extensions/stack-verify"
+[ -d "$VERIFY" ] || VERIFY="$ROSETTA/.agentspace/rosetta-extensions/stack-verify"
+# If neither exists, clone the authoring copy at the release pin in .agentspace/rext.tag:
+#   git clone https://github.com/anthropos-work/rosetta-extensions.git "$ROSETTA/.agentspace/rosetta-extensions"
+#   git -C "$ROSETTA/.agentspace/rosetta-extensions" checkout "$(cat "$ROSETTA/.agentspace/rext.tag")"
+# (Do NOT pin a literal tag here — `.agentspace/rext.tag` is the single source-of-truth pin, M49 #1.)
 
 STACK_ROOT="$ROSETTA/stack-dev" \
 REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
