@@ -78,7 +78,10 @@
     *   **Upstream (callers)**: the Next.js Workforce/Hiring "Talk to Data" UI (via the `/ask/*` SSE + REST
         endpoints).
     *   **Downstream**: **AWS Bedrock** (Claude Sonnet 4.6, eu-west-1); **PostgreSQL** (read-only, org-scoped); the
-        shared **`ai`** library (`CreateEmbeddings`, text-embedding-3-small, for RAG golden-example retrieval);
+        **in-tree `app/internal/ai`** (`CreateEmbeddings`, text-embedding-3-small, for RAG golden-example
+        retrieval) — ⚠️ **this said *"the shared `ai` library"* until M257x iter-133; it is not a shared
+        module any more**, `app` folded it in-tree at `1e457fa70` (2026-08-04) and `app/go.mod` requires
+        it no longer;
         [`internal/coursebuilder`](./coursebuilder.md) (author mode); `internal/organization`
         (`GetTalkToDataCustomRules`); `internal/authorization`.
 

@@ -54,6 +54,7 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 | `net-new` | exists in the org, is not in `repos.yml`, and the corpus has never described it |
 | `external` | third-party or separately-deployed; never in the local Go clone set |
 | `library` | imported as a private Go module, never a process |
+| `library-unimported` | the repo exists and the module is published, but **no `go.mod` a stack builds requires it** — the live copy lives somewhere else (vendored in-tree, or shipped inside another module). Added **M257x iter-130** with assertion G, which fired on `ai` and `authn` the first time it ran. ⚠️ **This row was missing from this table for three iterations while assertion C's description already said "nine"** — the vocabulary change reached the checker (`ALLOWED_STATES`) and not the definition, so the guard was green over a document that defined eight. Caught by two independent seats at M257x iter-131 (P7) and repaired at iter-133. **`library` is not its superset and `decommissioned` is not its synonym**: `library` asserts an import that does not exist, and `decommissioned` describes an orchestration lifecycle a library was never in |
 
 **Two traps this table exists to keep straight:**
 

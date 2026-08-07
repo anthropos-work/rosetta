@@ -104,9 +104,20 @@ stable). It mints against whichever instance the operator's key points at.
 > `staging_from_dump.md` 384 → **421** and `staging-bringup.md` 468 → **528**, both because the routed
 > residual repair grew the sections above them; the `staging-clerk.md:58` pin held. The paragraph already
 > told its reader to cite the stable *quirk number* rather than the line — **so quote the anchor, not the
-> offset**: all three sites are the literal `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens`, and
-> `grep -n sign_in_tokens corpus/ops/*.md` re-derives every pin in one command. A line number is a
-> convenience; the grep is the contract.
+> offset**. **But the three anchors are NOT one anchor, and saying they were is the defect this note
+> now records** (M257x iter-131 P19, repaired iter-133): **two** of the three are the literal
+> `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens` (`staging-clerk.md:58`,
+> `staging_from_dump.md:421`); the third, `staging-bringup.md:528`, is a **prose bullet** —
+> *"**Quirk #13 …** Bypass with `POST /v1/sign_in_tokens`"* — which carries neither `curl` nor the
+> host. A reader who greps the literal finds two of three and concludes a pin rotted.
+>
+> **The robust re-derivation is the shared substring, and only that:** `grep -n sign_in_tokens
+> corpus/ops/*.md` returns all three in one command. A line number is a convenience; **the grep is the
+> contract, and the grep term must be the part every site actually shares.**
+>
+> **Recorded rather than quietly fixed, because of where it happened:** the over-claim was written into
+> the sentence whose entire purpose was to make a citation robust against drift. *An anchor claim needs
+> the same enumeration discipline as the claims it anchors.*
 
 **The "chosen over Enterprise-tier Actor Tokens" half is correct** and stays: `manager.go:6-11` says so in
 the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.

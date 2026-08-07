@@ -26,7 +26,7 @@ Complete architecture documentation for the Anthropos platform.
 *   [Frontend Architecture](./architecture/frontend_architecture.md): Deep dive into the Next.js monorepo.
 *   [External Services](./architecture/external_services.md): Third-party integrations (Clerk, Directus, GraphQL).
 *   [Dependency Map](./architecture/dependency_map.md): Matrix of service inter-dependencies.
-*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries — but only **four are imported as private modules** (`ai`, `colony`, `proto`, `taxonomy`). **`authn` is a dependency of no service**: it ships inside colony as `colony/authn`, and the standalone repo is legacy.
+*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries — **and that is not the imported set.** A service a stack builds imports **five private modules: `analytics-go`, `colony`, `proto`, `storage`, `taxonomy`** (`app/go.mod:14-18` @ `app` `ad9f3c498`, all direct). ⚠️ **This line said *"four — `ai`, `colony`, `proto`, `taxonomy`"* until M257x iter-133**: `ai` was folded into `app` in-tree at `1e457fa70` (2026-08-04), and `analytics-go` and `storage` were never listed at all. **`authn` is a dependency of no service**: it ships inside colony as `colony/authn`, and the standalone repo is legacy.
 
 *   [Security & Compliance](./architecture/security_compliance.md): Data protection, EU compliance, multi-tenancy isolation.
 *   [AI Architecture](./architecture/ai_architecture.md): Models, provider routing, voice engine, recording, cost tracking.
