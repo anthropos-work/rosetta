@@ -274,7 +274,7 @@ Both recordings are stored in S3 and linked to the simulation session.
 ## Simulation AI Flow
 
 1. **Load**: Simulation definition fetched from CMS (actors, tasks, rubrics, AI model config per sequence)
-2. **Route**: Selected model from the CMS `ai_model` / `ai_vendor` fields per sequence (e.g. `gpt-5`, `gpt-4.1`, `anthropic-45-sonnet-aws` — the enum is `app/internal/cms/directus/collections/jobsimulation.go:983-990`). **There is no single "default model", and `gpt-5` is not a default anywhere.** Three distinct defaults apply at three different points — see below
+2. **Route**: Selected model from the CMS `ai_model` / `ai_vendor` fields per sequence (e.g. `gpt-5`, `gpt-4.1`, `anthropic-45-sonnet-aws` — the enum is `app/internal/cms/directus/collections/jobsimulation.go:983-990` @ `2035f9a` — re-pinned M257x iter-126). **There is no single "default model", and `gpt-5` is not a default anywhere.** Three distinct defaults apply at three different points — see below
 3. **Generate**: Per task type (voice/chat/code/document), AI generates responses or analysis
 4. **Record**: LiveKit captures voice; AWS Chime captures video
 5. **Score**: deterministic rubric *arithmetic* (0-100 scale) over **per-check verdicts that are mostly LLM-produced** (the `EngineTextDiff` minority is deterministic) — see [Evaluation System](#evaluation-system); this is NOT an AI-free scoring path

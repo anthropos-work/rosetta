@@ -263,7 +263,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 | **Sentry** | Error tracking, performance monitoring, cron job monitoring |
 | **PostHog** | Product analytics |
 | **Better Stack** | Incident escalation, uptime monitoring |
-| **AI Token Tracking** | Centralized usage, latency, and cost tracking in **`app/internal/aiusage`** — **not** the shared `ai` library, which only wraps providers (consistent with `README.md:21` + `ai_architecture.md`) |
+| **AI Token Tracking** | Centralized usage, latency, and cost tracking in **`app/internal/aiusage`** — **not** the shared `ai` library, which only wraps providers (consistent with the shared **`ai`** library's own README + [`ai_architecture.md`](ai_architecture.md)). **The line pin was REMOVED at M257x iter-126, not re-pinned.** It read a bare `README.md:21`, which is ambiguous across every repo; qualifying it to the `ai` repo's README at line 21 made it *worse* — the resolver bound it to **`studio-desk` @ `41ee357`**, a repo with nothing to do with the shared Go library, and landed on a blank line. **`ai` is a private Go module that no stack clones** — not in `repos.yml`, pulled at Docker build via `GOPRIVATE` — so **no `file:line` into it is verifiable from here**, and an anchor that resolves to the wrong repo is more expensive than no anchor at all |
 
 - Structured logging uses Go `slog` + Sentry integration
 - ECS auto-scales on CPU/memory metrics
@@ -293,7 +293,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 - **Anthropic is reached through AWS Bedrock `eu-west-1` from the AI manager (`:85-95`) — but "Anthropic
   Direct is not used at all" is FALSE at platform HEAD.** Course Builder routes **every** model call to
   first-party `api.anthropic.com` whenever `ANTHROPIC_API_KEY` is set:
-  `app/internal/coursebuilder/bedrock.go:109-112` (`newUnderlyingClient` → `NewAnthropicClientWithModel`),
+  `app/internal/coursebuilder/bedrock.go:109-112` @ `2035f9a` (`newUnderlyingClient` → `NewAnthropicClientWithModel`; re-pinned M257x iter-126),
   with `ModelBackendName()` (`:100`) returning `"anthropic-api"` to say so. That is a **US-terminating**
   path outside the Bedrock EU region, selected by an env var rather than a flag — so it is not covered by
   the `flag_use_azure_us` caveat below. [`external_services.md:567`](./external_services.md) carries the

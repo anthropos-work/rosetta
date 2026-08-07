@@ -242,7 +242,7 @@ regardless of data — so the seeder must replicate whatever grants the existing
 per-session competency / Job-Fit detail (`[simId]/[userId]`), which reads
 `public.validation_attempt_results` / `validation_attempt_skill_results` / `validation_criterion_results` — three
 tables (all in **`public`**, `20260722081626_jobsim_data_model.sql:336/355/376`; note the middle one is
-`validation_attempt_skill_results`, not `validation_skill_results`) the `PersonaSeeder` also writes (`persona_write.go:69-71,143-167`). These are needed **only for the
+`validation_attempt_skill_results`, not `validation_skill_results`) the `PersonaSeeder` also writes (`rosetta-extensions/stack-seeding/seeders/persona_write.go:69-71,143-167` @ rext `63ce41a` — path-qualified and re-pinned M257x iter-126; a bare basename is ambiguous and `D-M257x-122-5` refuses to resolve one by proximity). These are needed **only for the
 drill-down**, NOT for the comparison list. The anticheat badge is a **decorative icon only**, and it is **not a
 column on the session row** — it is `summary` on the separate **`public.anticheat_results`** entity
 (`ent/schema/anticheat_result.go:24`), whose `session_id` FK was re-pointed at `job_simulation_sessions` by
@@ -267,7 +267,7 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
    one of **four** required-and-undefaulted columns (`owner_id` `:6`, `sim_id` `:7`, `sim_type` `:10`,
    `token` `:13`; every other `NOT NULL` column in the DDL carries a `DEFAULT`) — so an INSERT built from the write-set as it was
    written here does not render wrong, it **errors**. The shipped seeder has always written it
-   (`persona_write.go:152-158`); the word `token` simply appeared nowhere in this document. Being UNIQUE, it
+   (`rosetta-extensions/stack-seeding/seeders/persona_write.go:152-158` @ rext `63ce41a` — path-qualified and re-pinned M257x iter-126); the word `token` simply appeared nowhere in this document. Being UNIQUE, it
    must be generated per row, not reused. (iter-47 read this passage and booked it a MINOR; iter-48's seat
    escalated it after checking the DDL, the Ent schema and the seeder.)
    ⚠️ **Get `completion_status` wrong and NOTHING catches it — the row does not vanish, it renders wrong.**

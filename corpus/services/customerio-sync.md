@@ -55,7 +55,7 @@ the DB **view** it read (`public.customer_io_sync_table`, never under migration 
 by `sync_query.sql` — verified row-for-row against the view, identical for 7,392 of 7,397 rows and
 correct where it differs.
 
-It runs on `app`'s **shared** analytics pool (`copilotDB`), not a pool of its own — one query every
+It runs on `app`'s **shared** analytics pool (`copilotDB`, `app/main.go:393-396` @ `2035f9a` — re-pinned M257x iter-126; the block named no ref, so the anchor could drift silently), not a pool of its own — one query every
 ten minutes does not earn a standing allocation against the platform's connection budget
 (`app/main.go:393-396`).
 
