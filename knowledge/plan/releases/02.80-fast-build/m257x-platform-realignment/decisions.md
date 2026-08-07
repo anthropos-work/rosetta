@@ -1855,3 +1855,66 @@ superseded**: `TOK-08` generalises it from one class to every class where a cens
 
 **Next-tik direction:** iter-117 **is** the first tik — it seals this record in its first commit, then
 sweeps **class 1, intra-corpus citation resolution**, the largest measured class at 10 of 37.
+
+---
+
+## `TOK-08` — OUTCOME: **REFUTED at iter-119 by its own sealed arithmetic** — 2026-08-07
+
+**This is NOT a `TOK-09`. No successor strategy is authored, and that is `TOK-08`'s own instruction**,
+supplied by the user and sealed at `577446b` before a single sweep line was written:
+
+> *"**`P ≥ 19`** … → **the mechanical classes are not the bulk of the pool. Enumeration-first is REFUTED
+> too. STOP. Do NOT author a successor strategy.** Report the refutation and hand the milestone back for a
+> **scope decision from the user**. The user has stated in advance that this is a legitimate outcome and
+> that they will carry it."*
+
+### The reading
+
+> ### `P = 22` · `N = 28` at corpus `194361e4` — **the `P ≥ 19` branch FIRES.**
+
+Pre-registration re-sealed unchanged in iter-119's first commit `4d4530d`, before the first seat was
+dealt. 14/14 seats, 0 lost, committed verbatim before adjudication; 4/4 verdicts unedited; 36 booked → 33
+upheld / 3 rejected (all `ref-discipline`, 0 `wrong-tree`). Full sheet: `iter-119/adjudication.md`.
+
+### The sweep completed as pre-registered — and still did not move the gate
+
+| class | population | findings | reach | denominator |
+|---|---|---|---|---|
+| 1 — intra-corpus citation | 1,520 over 92 docs | 8 false → **8 repaired** | **100 %** | `corpus-derived-per-arm` |
+| 2 — platform-source citation | 1,070 candidates | **0** | **63.1 %** | `citation-candidates-minus-non-citations` |
+
+Class list fixed at iter-117, could only grow, **did not grow**. Both fences ship a mutation control and
+an anti-vacuity control that can fire; class 1's caught a silent vacuity bug in itself on its first run.
+
+### Why it failed — and it is not the failure the number suggests
+
+**`P` fell 37 → 22 (−40.5 %) and that fall is SAMPLING, not drainage.** The corpus moved **5 in-place
+lines, zero net**; **none of iter-116's 37 predicates was repaired**. iter-119 is the milestone's **first
+true seat-level replicate** (identical partition reproduced at both refs, 14 clones frozen for a fourth
+reading), so **test-retest was measurable for the first time**:
+
+| | |
+|---|---|
+| iter-116's 37 re-found, blind on predicate | **13 (35.1 %)** |
+| net-new here | **9** |
+| **union floor** | **≥ 46** — `P` fell while the floor ROSE |
+
+**The real cause of the refutation** is `D-M257x-117-2`, recorded at iter-117 *before* either census
+closed: **the census and the reader work opposite halves of one class.** The census closed the
+**resolution** half at 100 % reach; the **construct** half — a pin naming lines that hold something else —
+is not machine-reachable at scale (4 of 387 bare-pin lines) and **grew as a share of the pool, 27 % →
+36 %** (band #7, predicted ≤ 6, measured 8).
+
+### Standing state at the hand-back
+
+- **Gate 4 of 5.** Clauses 1–4 hold; **clause 5 open and NOT met** — met only by a reading that returns
+  **zero**. Four user rulings; not re-cut here.
+- **Floors only** (Chapman retired): **≥ 24 at `8f04d3a` · ≥ 33 at `e6aed2e` · ≥ 36 at `ac48e5b` · ≥ 37 at
+  `f581de09` · ≥ 46 at `194361e4`.**
+- **Two strategies have now been refuted by their own pre-registered arithmetic** — `TOK-07`
+  (repair-and-read) at iter-116, `TOK-08` (enumerate-then-read) at iter-119. One was agent-authored, one
+  was the user's.
+- **The instrument's own recall is now a measured quantity: ~35 % against a known standing pool.** Any
+  future gate design has to account for it — `FIX-M257x-iter119-instrument-recall-is-35pct`.
+
+**Next move: a USER SCOPE DECISION.** This entry deliberately does not pre-empt it.

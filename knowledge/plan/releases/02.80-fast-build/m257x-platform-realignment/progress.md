@@ -2177,3 +2177,42 @@ defect and would also explain why no amount of accessor work has helped.
   findings, class list fixed in iter-117 and unchanged — **so iter-119 is the grading reading**, branch
   `P >= 19` refuted / `P <= 18` working against `P = 37` at `f581de09`. **No reading taken this iter and
   no `N`/`P` movement is claimed.** Gate unchanged at **4 of 5** — see iter-118/progress.md + decisions.md
+
+- iter-119 (tik · `iter_shape: reading`, **`TOK-08`'s GRADING READING**): **`P = 22` / `N = 28` — the
+  pre-registered `P >= 19` branch FIRES. `TOK-08` — the USER's re-scope — is REFUTED by its own sealed
+  arithmetic**, and per that rule **no successor strategy is authored: there is no `TOK-09`.** The
+  milestone returns to the user for a **scope decision**. Pre-registration re-sealed unchanged in the
+  iter's FIRST commit `4d4530d` before a seat was dealt; instrument copied verbatim (sha `3858ec53`,
+  `diff` empty after copy AND after the addendum, one commit ever); 14/14 seats, **0 lost**, each
+  committed verbatim before adjudication; 4/4 verdicts unedited; **36 booked → 33 upheld / 3 rejected,
+  all `ref-discipline`, 0 `wrong-tree`** (upheld rate **91.7 % raw = 91.7 % separated**). **The 40.5 %
+  fall from 37 is SAMPLING, NOT DRAINAGE, and the same reading proves it:** the corpus moved **5 in-place
+  lines, zero net**, and **none of iter-116's 37 predicates was repaired** — so band #3, the milestone's
+  **first test-retest measurement**, re-found only **13 of 37 (35.1 %)** and added **9 net-new**, meaning
+  **`P` FELL 37 → 22 while the measured floor ROSE 37 → ≥ 46.** It was measurable at all only because
+  iter-119 is the milestone's **first true seat-level replicate** — partition bit-identical to iter-116's
+  (reproduced at both refs as a control), 14 clones frozen for a **fourth** consecutive reading, and the
+  low-overlap branch was named in the pre-registration in advance as the outcome that *"would bear on the
+  refutation more than the primary itself does."* **Every `P` this milestone published (22, 22, 24, 37,
+  22) samples about a third of a standing pool**; two passes recalled **63.6 % / 77.3 %** against their
+  own union, and `P` is comparable across readings only to **±2** on adjudicator granularity alone
+  (disclosed: iter-116 split `ai_architecture.md`'s three stale self-citations into 3 predicates, this
+  panel collapsed them into 1 — split, `P = 24`; every granularity reading fires the same branch).
+  **What `TOK-08` DID achieve, stated because refuted is not worthless:** class 1 censused and closed
+  (1,520 citations / 92 docs, 8 false, 8 repaired, **100 %** reach, ratchet at zero) and class 2 censused
+  (1,070 candidates, 0 false, **63.1 %** reach, denominator named) — **8 defects closed that four graded
+  readings had missed**, all in the `#anchor` arm no reader exercises. **Why it still failed is
+  `D-M257x-117-2`, recorded before either census closed: the census and the reader work OPPOSITE HALVES of
+  one class.** Band #7 (predicted ≤ 6) **failed at 8** — the construct half grew **27 % → 36 %** of the
+  pool, and **5 of the 8 were booked at iter-116 and are still false**. **Graded by consequence:**
+  `clerk-integration.md:40` says Clerk sign-in tokens are minted *"only"* for app-native admin
+  impersonation — **two other live minting sites exist**, a security-surface understatement now standing
+  through its **second** reading. **The 16 small-class verdicts, audited as asked:** the sweep promoted
+  **0 of 16** from judged to proven (a census measures citations; a small-class verdict claims a
+  *ceiling*, which neither census measures), **P20 remains the only `SMALL-CLASS-PROVEN`**, and this
+  reading **re-books 2 of the 15 judged** (P23 Ant Academy, P08 the `⚠⚠ M51` anchor — fifth generation)
+  and **0 of the 1 proven** → measured error rate **>= 13.3 %**. **Bands 13 HELD of 15** (series 4/9 · 3/7
+  · 5/9 · 4/10 · 7/13 · 7/14 · **13/15**; all four magnitude bands held for the first time), failures #7
+  and #8 (the latter narrowly, boundary disclosed). All 14 clones **identical at close and open**, fetch
+  times unchanged, **zero corpus edits inside the measuring pass**. Gate **4 of 5**; clause 5 **NOT met**
+  — see iter-119/progress.md + adjudication.md + decisions.md
