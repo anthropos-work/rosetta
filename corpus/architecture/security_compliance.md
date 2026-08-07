@@ -247,7 +247,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 
 > ⚠️ **AND THE ENUMERATION ITSELF IS NARROWER THAN THE SURFACE.** *"Eleven groups"* is correct **for
 > groups** — re-derived independently at run 82, `git grep -nE '\.Group\("' ad9f3c498 -- '*.go' | grep -v
-> _test.go` returns exactly those 11. But `app` also mounts **seven routes directly on the root `e`,
+> _test.go` returns exactly those 11. But `app` also mounts **eight routes directly on the root `e`,
 > inside no group at all**, so no group-level middleware statement reaches them:
 >
 > | root-mounted route | declared | gate |
@@ -259,11 +259,24 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 > | `/content/catalog.json` | `internal/web/backend/content.go:23` | **none, by design** — `content_admin.go:32` says so: it *"stays open by design"* |
 > | `/graphql` (Apollo Sandbox) | `backend.go:315` | **`colony.Development` only** |
 > | `/api/*` (API docs) | `backend.go:309` | **`colony.Development` only** |
+> | **`/v1/labs/:slug/workspace.tar.gz`** | `internal/web/backend/labs_admin.go:40` (wired unconditionally at `backend.go:301`) | **OPTIONAL auth, deliberately** — it is mounted on the root `e`, *outside* the `/v1/labs` write group and therefore outside that group's `apiKeyAuthMiddleware(…, "labs:write")`. The file says so in its own words: *"Serve is OUTSIDE the write group — it has OPTIONAL auth (a public Lab's workspace is served to anyone; a tenant-private Lab requires a key with access)"* (`:36-39`). It serves a **workspace tarball**, and it is the URL the control-plane fetches at boot (`CP_WORKSPACE_BASE_URL`) |
 >
-> **Rule 57 applied to rule 57's own repair:** run 81 widened the search from one file to the whole
-> service and got the group count right; it did not widen from *groups* to *routes*. The honest shape of
-> the REST surface is **11 groups + 7 ungrouped root mounts**, and two of the ungrouped ones are open by
-> design.
+> **Rule 57 applied to rule 57's own repair — twice now.** Run 81 widened the search from one file to
+> the whole service and got the *group* count right; it did not widen from *groups* to *routes*. Then
+> the routes row said **seven** and that was wrong too: **the eighth is the Labs workspace tarball**,
+> added M257x iter-136 after three independent adjudicators converged on the count at iter-135 and one
+> of them located the route. **The seat that first reported the miscount named the WRONG route** — it
+> proposed `/ai-readiness/unsubscribe/:token`, which this table already contained — so a repair driven
+> by that report would have changed nothing. *Grade a count claim by re-enumerating, never by accepting
+> the reporter's candidate.*
+>
+> The honest shape of the REST surface is **11 groups + 8 ungrouped root mounts**. **Of the eight: two
+> are open by design (`/api/schema.json`, `/content/catalog.json`), two are development-only, three
+> self-authenticate in-handler (`/graphql/query` via the GraphQL chain, `/api/webhook/directus` via the
+> shared secret, `/ai-readiness/unsubscribe/:token` via the HMAC), and one — the tarball — carries
+> optional auth with the tenancy decision inside the handler.** That enumeration is stated rather than
+> summarised on purpose: `D-M257x-121-2` records this milestone publishing a *new* absolute quantifier
+> over a security surface inside a repair whose whole subject was absolute quantifiers.
 
 > **`cbGate` is also not the only group-level authorization**: `/v1/labs` carries a group-level *scope*
 > check and `/content/admin` a group-level shared-secret check. **This is the THIRD correction to this

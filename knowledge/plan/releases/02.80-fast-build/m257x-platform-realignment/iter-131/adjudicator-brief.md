@@ -75,9 +75,19 @@ You will be told which seat reports to adjudicate. For **every BLOCKER** in them
 For every **UPHELD** blocker, write the **PREDICATE** it falsifies — the general proposition, stated in
 one line, independent of where it appears. Examples of the level of abstraction wanted:
 
-- `"cms's production ECS state is unmeasurable / infrastructure was never in a clone set"`
+- `"cms's production ECS state is UNMEASURABLE **because** infrastructure is in no clone set"`
 - `"the ai library is imported as a private Go module by something a stack builds"`
 - `"the Cosmo/WunderGraph router still runs in production"`
+
+> ⚠️ **CORRECTED M257x iter-136 — the first example used to read *"cms's production ECS state is
+> unmeasurable **/** infrastructure was never in a clone set"*, and that slash was a defect in the
+> instrument.** It joins a FALSE proposition to a TRUE one and invites an adjudicator to book the
+> conjunction. **`infrastructure` really is in no clone set** — `make init` does not clone it and no
+> `stack-*/` holds it. What is false is the **inference** from that to *unmeasurable*, since the repo
+> was read at `13c248e6`. **Two independent adjudicators caught this** — `adj-1` at iter-131 (which
+> moved the reading's `P` from 30 to 29) and `adj-C` at iter-135, which traced it back to *this line*.
+> **A brief that models a conflated predicate teaches the error it exists to catch.** State predicates
+> so that **every conjunct is independently false**, or split them.
 
 **Two seats booking the same proposition at two different anchors share ONE predicate.** Two different
 propositions at the same anchor are TWO predicates. This distinction is the whole measurement, so state

@@ -403,9 +403,15 @@ isolation is enforced at three layers:
    and *"the operation carries no `userId` variable"* (`:196-197`) — and the REST surface has **no
    BLANKET authz middleware**: authorization there is opt-in per group or per handler, and only 2 of its
    **11** Echo groups carry a group-level one (`cbGate`, `internal/web/backend/gate.go:27-49`) — **plus
-   seven routes mounted on the root outside any group, so no group-level statement reaches them at all**
-   (⚠️ this line said *"6 Echo groups"* until M257x run 82; the denominator was re-measured repo-wide at
-   `app` `ad9f3c498`, and run 81's own correction of the same count did **not** reach this file). The platform's
+   EIGHT routes mounted on the root outside any group, so no group-level statement reaches them at
+   all** — the eighth being `/v1/labs/:slug/workspace.tar.gz`, which serves a workspace tarball under
+   **optional auth by design** (`internal/web/backend/labs_admin.go:36-40`, wired unconditionally at
+   `backend.go:301`). The enumerated table is in
+   [`security_compliance.md`](./security_compliance.md); it is stated once there and not restated here.
+   (⚠️ **this line has now been wrong twice about two different counts**: it said *"6 Echo groups"* until
+   M257x run 82 — the denominator was re-measured repo-wide at `app` `ad9f3c498`, and run 81's own
+   correction of the same count did **not** reach this file — and it said *"seven"* root mounts until
+   M257x iter-136, when three independent adjudicators converged on eight.) The platform's
    own source calls the blanket gate **fail-open**
    (`graph/resolver_skiller_taxonomy_authz.go:53-66`). See
    [Security & Compliance → Layer 2](./security_compliance.md#layer-2-authorization) for the enumerated
