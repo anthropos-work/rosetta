@@ -93,6 +93,22 @@ Internal tools and sandboxes that support team workflows but are not part of the
     *   *User*: All Engineers.
     *   *Context*: Installed as a Claude Code plugin, gives Claude full Anthropos context (product details, architecture, design system, competitor analysis) when working in any Anthropos codebase. Includes skills like `/build-feature` and auto-triggered design system enforcement.
     *   *Setup*: Clone repo, then use `/plugin marketplace add` and `/plugin install` in Claude Code.
+    *   ⚠️ **KNOWN CONTRADICTION — read before you trust its architecture context (M257x iter-125).**
+        AKB carries a **second, parallel platform-architecture corpus** (six files under `knowledge/`,
+        ≈1,773 lines) that **contradicts this one on the taxonomy figures**. It asserts *"60,000 skills
+        … mapped to 18,000 roles"* in **14 places, citing no source in any of them**, and the figure is
+        **load-bearing in four customer-facing competitor-comparison tables**. This corpus measured
+        **42,790 public skills / 22,470 public job roles** (read-only production capture,
+        `organization_id IS NULL`, 2026-06-29, reproducible against a live stack) — so **"18K roles" is
+        REFUTED** (public ⊆ total, so 18K is below the floor) and **"60K skills" is UNVERIFIED**, not
+        refuted. Derivation: [`shared_libraries.md § taxonomy figures`](../architecture/shared_libraries.md#taxonomy-figures).
+        **Installing this plugin injects the refuted figure into your editor on every Anthropos repo** —
+        which is why the warning lives on the install line rather than in a repo census nobody opens.
+        **AKB is not simply less accurate: it was RIGHT and this corpus WRONG about the WunderGraph
+        router's production residue**, because it reads the `infrastructure` repo this corpus had never
+        cloned. Reconciliation is filed as `PLATFORM-M257x-akb-taxonomy-figures-contradict-measurement`
+        in [`platform-defect-register.md`](../../knowledge/plan/platform-defect-register.md); the full
+        comparison is [`org-repos.md` § 11](../architecture/org-repos.md).
 
 *   **Anthropos Labs** (`experiments`)
     *   *Function*: Internal experiments hub for PoCs and prototypes.

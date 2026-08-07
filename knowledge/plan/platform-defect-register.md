@@ -327,19 +327,123 @@ ARE the evidence for that verdict**, which is why they ship despite having no co
 **Found:** M257x iter-123 (2026-08-07) · **Repo:** `anthropos-work/directus` · **Status:** open ·
 **Severity:** high — it is at the **deployed** pin
 
+> **RE-DERIVED AT SOURCE, M257x iter-124/125 — the finding CONFIRMS and one anchor was WRONG.** Both repos
+> were re-cloned at the exact refs this entry names (`directus` `d6325731`, `infrastructure` `13c248e6`).
+> The line and the pin reproduce **verbatim**. **The environment inventory did not**: `services.tf:47-57`
+> does *not* thread `SECRET` or `KEY` — those enter from the directus module's own terraform, and the real
+> list is **longer** than the entry claimed. Corrected below, correction first, per `D-M257x-121-1`.
+
+### The line — confirmed verbatim
+
 `directus/extensions/directus-extension-youtube-meta/src/directus-extension-youtube-meta-operation/api.ts:9`
-is a bare **`console.log(env);`** inside the operation handler. It is present at `d6325731` = tag **`v0.20.15`**,
-which is exactly the pin production runs (`infrastructure/terraform/production/services.tf:24`).
+is a bare **`console.log(env);`** inside the operation handler:
 
-A Directus operation handler's `env` carries the instance configuration. For this deployment
-`services.tf:47-57` threads in `SECRET`, `KEY`, the Postgres connection and password, the admin credentials
-and `GCLOUD_SERVICE_ACCOUNT` — so **every invocation of the YouTube-meta operation writes all of them to the
-container log group.**
+```ts
+export default defineOperationApi({                                    // :6
+	id: 'ant-youtube-operation',                                         // :7
+	handler: async ({ videoId }: Option, { env }) => {                   // :8
+		console.log(env);                                                  // :9
+		return await processUrl(videoId, true, env.GCLOUD_SERVICE_ACCOUNT); // :10
+```
 
-**Rosetta cannot fix this (zero platform edits binding), and it is filed rather than escalated** — the
-register is where a platform defect this corpus measures goes. Two things make it *reportable* rather than
-merely noted: the value is not inferred (the line is a literal `console.log(env)`), and the pin is not
-guessed (`services.tf` names `v0.20.15`).
+It is the **only** `console.log(env` in the entire repository (`git grep -n 'console\.log(env' -- '*.ts' '*.js'`
+→ 1 hit). Present at `d6325731`, which `git tag --points-at HEAD` confirms **is** tag `v0.20.15`.
+
+### The pin — confirmed, and it is named TWICE
+
+`infrastructure/terraform/production/services.tf` @ `13c248e6` pins `v0.20.15` in **both** places that
+select the deployed artifact — `:24` the module source (`?ref=v0.20.15`) and `:30` the ECR image tag
+(`production-directus:v0.20.15`). So production runs exactly the tree that carries line 9.
+
+### What the handler's `env` actually contains — CORRECTED, and it is worse than filed
+
+A Directus operation handler's `env` is the instance's resolved configuration. The task definition
+(`directus/terraform/main.tf` @ `d6325731`) injects **six secrets** via ECS `secrets` (`:224-249`):
+
+| variable | source |
+|---|---|
+| `SECRET` | `aws_ssm_parameter.directus_secret` — Directus's own signing secret |
+| `ADMIN_PASSWORD` | `aws_ssm_parameter.directus_admin_password` |
+| **`DB_PASSWORD`** | `aws_ssm_parameter.db_password` — **the Postgres password** |
+| `AUTH_GOOGLE_CLIENT_SECRET` | `aws_ssm_parameter.auth_google_client_secret` |
+| `DB_SSL__CA` | `aws_ssm_parameter.database_ca` |
+| `GCLOUD_SERVICE_ACCOUNT` | `aws_ssm_parameter.gcloud_service_account` |
+
+**Plus `KEY` (`:111-114`), which is NOT in the `secrets` block** — it is a plain `environment` entry whose
+value interpolates `aws_ssm_parameter.directus_key.value`, so it is materialised into the task-definition
+JSON in clear as well as into the container env. That is a **second, independent** exposure of the same
+value and it is recorded here because the re-derivation found it, not because it was looked for.
+
+**What `services.tf:47-57` really threads** (the anchor this entry had): `database_host`, `database_name`,
+`database_username`, `database_password`, `database_schema`, `database_ca`, `auth_google_client_id`,
+`auth_google_client_secret`, `elasticache_cluster_primary_endpoint`, `gcloud_service_account`,
+`admin_email` — the root module's *inputs*, not the container's environment. **The two are not the same
+list, and conflating them is what put `SECRET`/`KEY` at the wrong anchor.**
+
+**So: every invocation of the YouTube-meta operation writes the database password, the Directus signing
+secret, the admin password and the Google client secret to the container log group.**
+
+### Why this is reportable rather than merely noted
+
+**Rosetta cannot fix it (zero platform edits binding), and it is FILED, not escalated** — the register is
+where a platform defect this corpus measures goes (§5 rule 48). Three things make it reproducible by a
+platform engineer without re-deriving anything: the value is not inferred (a literal `console.log(env)`),
+the pin is not guessed (named twice in `services.tf`), and the environment inventory is now read from the
+task definition itself rather than from the module's call site.
 
 **Not measurable from here:** whether the operation is actually reachable in the production flow set, and
 what the log group's retention and access policy are. Both change the exposure and neither is in a clone.
+**Nothing in `corpus/` asserts the opposite** — checked at iter-125; the corpus's only statements about
+this extension are `org-repos.md`'s inventory row, which now points here.
+
+---
+
+### `PLATFORM-M257x-akb-taxonomy-figures-contradict-measurement` — a customer-facing KB asserts a taxonomy figure this corpus refuted, in 14 unsourced places
+**Found:** M257x iter-123, filed iter-125 (2026-08-07) · **Repo:** `anthropos-work/anthropos-knowledge-base` ·
+**Status:** open · **Severity:** medium — no runtime impact; the exposure is **customer-facing collateral
+and every engineer's editor**
+
+`anthropos-knowledge-base` (AKB) carries a second, parallel platform-architecture corpus (six files under
+`knowledge/`, ≈1,773 lines) covering this project's subject. It asserts **"60,000 skills … mapped to 18,000
+roles"** in **14 places and cites no source in any of them**. The figure is **load-bearing in four
+customer-facing competitor-comparison tables**, and AKB ships as a **Claude Code plugin** that injects
+*"full Anthropos context (product details, architecture, …)"* into every engineer's editor on every
+Anthropos repo.
+
+**What was measured, and how.** A read-only production capture of the **public subset only**
+(`organization_id IS NULL`), 2026-06-29, manifest `source: primary-read` / `public_only: true` /
+`predicate: org-null`; both counts reproduce exactly against a live stack database with
+`select count(*) … where organization_id is null`:
+
+| | measured | AKB |
+|---|---|---|
+| public job roles | **22,470** | 18,000 |
+| public skills | **42,790** | 60,000 |
+
+**The two rows fail differently and must not be merged.** *"18K roles"* is **REFUTED** — public ⊆ total,
+so production holds **≥ 22,470** and 18,000 is below the floor. *"60K skills"* is **UNVERIFIED, not
+refuted** — a public-only capture cannot see org-private skills, so nothing measured supports 60K and
+nothing rules it out. **A reconciliation that reports "AKB is wrong" over-claims on the skills row.**
+
+**Candidate provenance for the 18K, offered as a lead and NOT as a measurement:** `public.job_role_embeddings`
+holds **18,919** rows — a different table from the role count, and a plausible mis-transcription. Nothing
+here can measure what AKB's author read, so this stays a hypothesis; it is recorded because it gives the
+owner somewhere to start.
+
+**This is filed, not escalated, and it is explicitly NOT one corpus correcting another.** On the
+WunderGraph router's production residue **AKB was right and this corpus was wrong, in a fenced table** —
+AKB reads the `infrastructure` repo this corpus had never cloned (M257x iter-123 cloned it and confirmed
+AKB's reading). The two corpora have **different blind spots, not a ranking**: this one is authoritative
+for measured local/runtime state and ops, AKB for `infrastructure`-derived production state and
+product/GTM. **Neither cites the other.**
+
+**Why it needs an owner outside M257x:** AKB is a different repository and outside this milestone's
+two-repo scope (`rosetta` + `rosetta-extensions`), so no edit here can reach it. What M257x has done is
+the part it can: the contradiction is stated **where a reader meets the figures**
+(`corpus/architecture/shared_libraries.md#taxonomy-figures`) with both figures, both provenances and which
+is measured; and `corpus/tools/toolchain_overview.md`'s **install recommendation now carries the warning
+on the install line**, because that recommendation is what puts the refuted figure into an editor.
+
+**Not measurable from here:** which of the four comparison tables have been published externally, and to
+whom. That governs whether this is a documentation defect or a customer-communication one, and it is not
+in any clone.

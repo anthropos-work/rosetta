@@ -287,6 +287,41 @@ GraphQL servers.
 > **So how should this be written?** Say *"≥22,470 job roles and ≥42,790 skills (the public
 > subset, measured 2026-06-29; totals including org-private content are unmeasured)"*. Do
 > **not** write "42,790 skills" as though it were the total — it is a floor, not a count.
+>
+> ### ⚠️ A SECOND CORPUS ASSERTS THE REFUTED FIGURE, AND IT IS CUSTOMER-FACING (M257x iter-125)
+>
+> This is stated here, rather than only in a repo census, because **this is where a reader meets the
+> figures** — and because the contradiction is live, not historical.
+>
+> `anthropos-work/anthropos-knowledge-base` (AKB) carries a **second, parallel platform-architecture
+> corpus** — six files under `knowledge/`, ≈1,773 lines — and asserts *"60,000 skills … mapped to
+> 18,000 roles"* in **14 places, citing no source in any of them**. The figure is **load-bearing in
+> four customer-facing competitor-comparison tables**. AKB ships as a **Claude Code plugin** that
+> injects *"full Anthropos context (product details, architecture, …)"* into every engineer's editor,
+> and **this corpus's own [`toolchain_overview.md`](../tools/toolchain_overview.md) recommends
+> installing it** — so a reader following our advice is served the figure we refute. That
+> recommendation now carries this warning at the install line.
+>
+> | | this corpus | AKB |
+> |---|---|---|
+> | job roles | **≥ 22,470** — public subset, read-only prod capture (`organization_id IS NULL`), 2026-06-29, reproducible against a live stack DB | **18,000** — no source given, in any of 14 occurrences |
+> | skills | **≥ 42,790** — same capture, same date, same predicate | **60,000** — likewise unsourced |
+>
+> **Which is measured is not a matter of opinion: ours is, and its provenance is above.** "18K roles"
+> is **REFUTED** (public ⊆ total, so the true count is at or above 22,470); "60K skills" is
+> **UNVERIFIED, not refuted** — a public-only capture cannot see org-private skills, so nothing
+> measured supports 60K and nothing rules it out. **Keep those two verdicts apart**; collapsing them
+> into "AKB is wrong" over-claims on the skills row.
+>
+> **And do NOT read this as one corpus correcting another.** On the WunderGraph router's production
+> residue **AKB was right and this corpus was wrong, in a fenced table** — because AKB reads the
+> `infrastructure` repo this corpus had never cloned ([`org-repos.md` § 11](org-repos.md)). The two
+> have different blind spots, not a ranking.
+>
+> **Reconciliation is not this milestone's to do** — AKB is a different repo, outside the two-repo
+> scope, and no edit here can reach it. It is filed with an owner as
+> `PLATFORM-M257x-akb-taxonomy-figures-contradict-measurement` in
+> [`platform-defect-register.md`](../../knowledge/plan/platform-defect-register.md).
 
 The whole product is the `NodeID` type and its generators/validators:
 

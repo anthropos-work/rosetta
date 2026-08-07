@@ -188,7 +188,7 @@ paths.)*
 | `directus-extension-ant-skill-path-uuid` v1.0.2 | `interface` (Vue) | A `uuid-generator` field: mints a `uuidv4()` when the field is empty (`src/index.ts:4-12`, `src/interface.vue:18-22`) |
 | `directus-extension-image-import` v1.0.0 | `operation` | Flow op `file-import` → `FilesService.importOne(url, {folder})` (`src/api.ts:9-53`) |
 | `directus-extension-metalink` v1.2.1 | `bundle` → operation | Fetches **OpenGraph** metadata for a URL (`src/…/api.ts:6-11`) |
-| `directus-extension-youtube-meta` v1.0.2 | `bundle` → operation | Resolves **YouTube** metadata, authenticating with `env.GCLOUD_SERVICE_ACCOUNT` (`src/…/api.ts:6-13`) |
+| `directus-extension-youtube-meta` v1.0.2 | `bundle` → operation | Resolves **YouTube** metadata, authenticating with `env.GCLOUD_SERVICE_ACCOUNT` (`src/…/api.ts:6-13`). ⚠️ **`:9` is a bare `console.log(env)` at the pin production runs**, so an invocation writes the DB password, Directus signing secret, admin password and Google client secret to the log group — filed as `PLATFORM-M257x-directus-ext-logs-env` |
 
 **They exist nowhere else** (0 hits for each name across `corpus/`, `.claude/`, `stack-demo/`,
 `stack-dev/`) and **no stack installs them** — the per-stack Directus emitter
@@ -388,9 +388,13 @@ files.** Of this corpus's 27 service docs: **18 have a full counterpart, 6 produ
 1. **WunderGraph router — agree on the drop, contradict on residue.** AKB `07b:199` says *"Residue |
    Nothing. The ECS module, ALB rule (priority 810), Cloud Map entry and `wundergraph.anthropos.work`
    were destroyed at retirement"*; this corpus says the module is **still declared** at
-   `graphql-wundergraph/terraform/main.tf:20` `service_desired_count = 1`. **AKB is better positioned
-   here** — it cites the `infrastructure` repo this corpus admits it has never cloned. Unresolved, and
-   it bears on § 9.
+   `graphql-wundergraph/terraform/main.tf:20` `service_desired_count = 1`. **RESOLVED AT M257x iter-124,
+   IN AKB'S FAVOUR: AKB was right and this corpus was wrong** — § 3 above measured
+   `module.wundergraph_euwest1` as **deleted** from `infrastructure/terraform/production/services.tf`
+   @ `13c248e6` (`:509-517`), and the count this corpus quoted is orphaned dead code. **This item read
+   *"Unresolved"* until iter-125, one screen below the § 3 measurement that had already settled it** —
+   the same one-cell-reach failure iter-124 found 24 more of. AKB was better positioned for a structural
+   reason worth keeping: **it read the repo this corpus had never cloned.**
 2. **The taxonomy figures — direct contradiction, and this is the headline.** AKB asserts *"60,000
    skills… mapped to 18,000 roles"* in **14 places**, **citing no source anywhere**. This corpus marks
    **"18K roles" REFUTED** (measured **22,470** public job roles — public ⊆ total, so 18K is below the
