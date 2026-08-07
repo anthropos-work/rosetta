@@ -2371,3 +2371,76 @@ nothing in the suite**, only by running `guard_family` by hand. Now pinned, with
 **Stop condition: continue-to-next-pass** — three first-order defects in one pass is not a plateau, and
 the dimension scan has not yet come up empty on the remaining modified guards
 (`unreadable_repo_claim_guard`, `platform_alignment_guard`, `anchor_construct_guard`, `progress_beacon`).
+
+---
+
+## Pass 28 — 2026-08-07 — incremental
+
+**Iters hardened this pass:** iter-121 … iter-131 (same scope, second pass).
+**Scope this pass:** the modified guards pass 27 had not yet attacked — `unreadable_repo_claim_guard`,
+`platform_alignment_guard`, `anchor_construct_guard`, `tests/progress_beacon`.
+
+### The finding: pass 27's defect shape was not a one-off
+
+`unreadable_repo_claim_guard` gained a second satisfaction route at iter-123 — a paragraph may report a
+**ref-pinned reading** of `infrastructure` instead of hedging about it. The test was
+
+```python
+any(p in block for p in MEASURED_PHRASES) and bool(_SHA.search(block))
+```
+
+**two independent whole-paragraph searches that never have to co-refer** — the *identical* shape
+`blocking_state_guard.represented_in` carried, found one pass earlier in a different fence. Constructed
+and confirmed: a paragraph naming `infrastructure` as an **English noun** (*"the observability
+infrastructure around it is unchanged"*) and carrying the **platform's** sha about a different fact
+(*"deleted at `838d907`"*) satisfies both halves and reads as a ref-pinned measurement — an unmeasured
+claim through the very boundary the fence exists to hold.
+
+**A character window would not have separated them, and would have been fitted rather than derived:**
+the false green sits ~70 characters apart and the **widest true site at 61**. Any constant between the
+two is tuned to the fixture — precisely the "control aimed at something adjacent to its claim" that §5
+rule 53 names. What actually distinguishes them is that **a citation NAMES ITS SUBJECT**, and both real
+idioms were measured off the live corpus rather than invented:
+
+  * the repo as a **backticked code artifact** — 12 of the 13 live sites;
+  * bound to its ref by **`@`** — the 13th, inside a mermaid diagram comment where backticks are not
+    the idiom. (A backticks-only rule would have false-RED'd it; that is why the second clause exists
+    and why a control fails for it alone.)
+
+An English noun does neither. Live corpus unchanged: 23 mentions, 9 hedged + 13 measured, exit 0 before
+and after. (`be5b21f`)
+
+### The pattern was then SWEPT, not assumed absent
+
+Two instances in two passes justified asking whether the shape was endemic. A tree-wide grep for
+co-presence conjunctions (`X in blob and Y in blob`, `.search(…) and .search(…)`, `any(…) and any(…)`)
+across every non-test `.py` in `rosetta-extensions` returns **only the two docstrings describing the
+fixes**. So: two instances, both closed, no third — and the sweep is on the record so a future pass
+does not re-derive it.
+
+### The remaining in-scope guards were attacked and HELD
+
+* **`tests/progress_beacon`** (net-new, iter-121) — already carries pass 26's two lessons: an
+  anti-vacuity floor on the AST site-walk, and `assertEqual(applied, 2, "MUTATION DID NOT APPLY")`
+  before its mutant is read. Nothing to add.
+* **`platform_alignment_guard` assertion G** (net-new, iter-130) — checked for vacuity, and it is not:
+  *"read 2 go.mod file(s), 5 org module require(s) (analytics-go, colony, proto, storage, taxonomy),
+  and graded 4 library row(s)"*. Real subjects on both sides. The `unclonable` vs `unresolvable` split
+  (iter-126) prints its 10 unread citations by head, which is disclosure rather than a silent pass.
+* Bad and missing argv both exit **2**, not 0 — spot-checked because an earlier reading of `EXIT=0`
+  turned out to be `tail`'s exit code, not the guard's. Worth recording: a piped exit code is not the
+  guard's exit code.
+
+### Coverage delta on touched files
+
+| module | before | after |
+|---|---|---|
+| `tests/test_unreadable_repo_claim_guard.py` | 18 | **25** |
+
+**Tests added:** +7. **Bugs surfaced + fixed inline:** 1 (`be5b21f`).
+**Flakes stabilized:** none found. **Flake gate:** 3 consecutive runs of the pass-27+28 modules →
+**104 passed** at 1.36 / 1.28 / 1.30 s.
+
+**Stop condition: continue-to-next-pass** — the dimension scan still produced a first-order defect, so
+no plateau has been measured. `guard_family` and `anchor_construct_guard` remain un-attacked, and no
+whole-suite total has been taken since the fixes landed.
