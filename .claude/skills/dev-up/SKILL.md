@@ -16,7 +16,8 @@ Brings a DEV stack to a running, set-dressed state. One skill for the whole dev 
   the real public reference data, a light `dev-min` seed, and the per-stack-Directus firewall check.
   The per-stack Directus itself is **opt-in for dev** via `--local-content` (v1.5 M22/M23): with the flag,
   the recipe is **EXECUTED** (bootstrap → apply-structure → replay → boot a per-stack Directus on an offset
-  port) and `cms`'s `DIRECTUS_BASE_ADDR` is **cut over** to it, so the stack's content is **self-contained**;
+  port) and **`backend`'s cms domain** has its `DIRECTUS_BASE_ADDR` **cut over** to it (there is no `cms`
+  service — the domain is `app/internal/cms/`), so the stack's content is **self-contained**;
   without the flag (the dev default), the recipe is print-only and the stack reads content **live from prod**
   (the documented fallback). See [`corpus/ops/directus-local.md`](../../../corpus/ops/directus-local.md).
 
@@ -51,27 +52,42 @@ before/after each step, request confirmation before installs or destructive ops,
 
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
-   cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
-   init-studio`) → `platform/.env` configured → services up (`make up` — **re-derive the container count from `make ps`**;
-   the long-quoted "11" predates the merges. Gone from compose at origin `2adcf71`: `skiller` (July 2026,
-   taxonomy tables merged into `app`'s `public` schema), `skillpath` (M502→M507) and the `graphql`
-   Cosmo router. `cms`/`jobsimulation`/`roadrunner` do **not** start either — platform `d11a403` (2026-08-03)
-   deleted all three compose services *and* their `repos.yml` entries, and that, not M810, is what removed
-   them) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   cloned → the **4** `repos.yml` repos via `make init` (`app`, `sentinel`, `next-web-app`, `studio-desk`)
+   → `platform/.env` configured (use `/stack-secrets`) → services up (`make up` — **re-derive the container
+   count from `make ps`**; expect **5** on the default `core` profile, and the long-quoted "11" is three
+   merge waves stale) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
-   → health. **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
-   — it bootstraps the extensions + schemas, atlas-migrates the 4 merged services (`app:public`/`cms`/
-   `jobsimulation`/`skillpath`), and loads the casbin policy in one call (mirrors `demo-stack/migrate-demo.sh`;
-   closes the M25-D9 gap where the un-editable platform `make migrate` doesn't create `extensions` → a cold
-   `make reset-db`/`make migrate` fails `schema "extensions" does not exist`). See `corpus/ops/setup_guide.md`
-   § Full Database Reset.
-4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the containers are healthy via `make ps` — **re-derive the count; the
-   long-quoted "11" predates the merges** (it counted the now-gone `skillpath` and `graphql` services).
-   This is the merged **single-subgraph** platform (no `skiller`, `skillpath`, `cms`, `jobsimulation`
-   or `roadrunner` subgraph). **GraphQL is `backend` itself on `localhost:8082/graphql/query`** — the Cosmo
-   router was deleted from compose at platform `2adcf71` (2026-07-31); nothing listens on `:5050`.
+   → health.
+
+   > **Two steps that used to be here are DEAD — do not run them.**
+   > **(a) `ant-academy` is NOT cloned by `make init`.** It is deliberately absent from `repos.yml`
+   > (v1.10b M49 #5), so for a dev stack you `git clone` it by hand only if you need it (native-only,
+   > port 3077, never in docker-compose).
+   > **(b) There is no CMS studio submodule step.** `cd cms && make init-studio` **fails outright** — `cms`
+   > is not cloned and has no compose service. `studio-room` is pulled into the `app` image by CI, not by a
+   > local submodule.
+
+   **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
+   — it bootstraps the extensions + schemas, atlas-migrates **the set it DERIVES from `repos.yml`**, and loads
+   the casbin policy in one call (mirrors `demo-stack/migrate-demo.sh`; closes the M25-D9 gap where the
+   un-editable platform `make migrate` doesn't create `extensions` → a cold `make reset-db`/`make migrate`
+   fails `schema "extensions" does not exist`). **At `0c91421` that set is ONE pair — `app:public`** —
+   because `app` is the only repo `repos.yml` marks `migrations: true`. This step used to be described as
+   *"atlas-migrates the 4 merged services (`app:public`/`cms`/`jobsimulation`/`skillpath`)"*, which was the
+   old **hardcoded** list and is wrong on 3 of its 4 entries: `cms` and `jobsimulation` are `migrations:
+   false` with their `schema:` keys deleted, and `skillpath` is not in `repos.yml` at all. The tooling was
+   changed to derive rather than hardcode (M257x iter-02/iter-16) precisely so this could not drift again.
+   See `corpus/ops/setup_guide.md` § Full Database Reset.
+4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the containers are healthy
+   via `make ps` — **expect 5 on the default `core` profile** (`postgresql`, `redis`, `sentinel`, `backend`,
+   `gotenberg`); **re-derive it rather than trusting memory**, and know that the long-quoted "11" is three
+   merge waves stale. This is the merged platform with **one subgraph** (no `skiller`, `skillpath`, `cms`,
+   `jobsimulation` or `roadrunner` subgraph). **GraphQL is `backend` itself on
+   `localhost:8082/graphql/query`** — the Cosmo router was deleted from compose at platform `2adcf71`
+   (2026-07-31); nothing listens on `:5050`. Full expected-service table + the three merge waves:
+   [reference.md](reference.md) § *Expected service set*.
    Then **start native processes in tmux** (required —
    these are not in the default Docker profile — `core` at `0dab54d` — and must outlive the Claude session):
    ```bash

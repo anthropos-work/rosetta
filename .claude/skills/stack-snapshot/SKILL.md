@@ -71,7 +71,8 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
    **`--local-content` stack** (demo **default-on**; dev **opt-in** via `--local-content`; `N=0` behind
    `--force`): the bring-up's set-dress pass EXECUTES the recipe — M21 captures the content-model structure and
    **auto-provisions** the bootstrap gap (the content-schema step is no longer a manual gap), M22 boots the
-   per-stack Directus compose service, and M23 cuts `cms`'s `DIRECTUS_BASE_ADDR` over to it — so the **directus
+   per-stack Directus compose service, and M23 cuts **`backend`'s cms domain** (`app/internal/cms/` — there is
+   no `cms` service or container) over to it via `DIRECTUS_BASE_ADDR` — so the **directus
    replay exits 0** and the stack is content-self-contained (asset plane stays on prod). On a stack **without**
    `--local-content` (the **fallback**), there is no per-stack Directus: the directus replay skips with
    **exit 4** and the stack reads public content **live from prod**. Either way the per-stack Directus env

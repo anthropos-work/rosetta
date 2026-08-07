@@ -26,9 +26,12 @@ a pinned tag, not updated in place.
 # Running services (main dev stack):
 docker ps --filter "name=anthropos-" --format "table {{.Names}}\t{{.Status}}"
 
-# Git status across repos:
+# Git status across repos — the platform clone + the 4 repos.yml repos @ 0c91421.
+# (This loop used to name `cms` and `jobsimulation` and omit `sentinel` + `studio-desk`. Both of those
+#  are frozen legacy since the merges; `make init` no longer clones them, so they printed "Not found"
+#  while two repos that DO need updating were never checked.)
 cd stack-dev
-for repo in platform app cms jobsimulation next-web-app; do
+for repo in platform app sentinel next-web-app studio-desk; do
   echo "=== $repo ==="
   (cd "$repo" && git status -s) 2>/dev/null || echo "  Not found"
 done
@@ -51,7 +54,10 @@ make pull
 (cd studio-desk && npm install)
 (cd ant-academy/code && npm install)   # internal learning portal, native only
 
-# Apply migrations (4 services: app, cms, jobsimulation, skillpath):
+# Apply migrations — `app` is the ONLY repo with any (`repos.yml` @ 0c91421 marks exactly one
+# `migrations: true`, schema `public`). The old "4 services: app, cms, jobsimulation, skillpath"
+# comment was wrong on 3 of its 4: cms/jobsimulation are `migrations: false` with their `schema:`
+# keys deleted, and skillpath is not in repos.yml at all.
 make migrate
 
 # Rebuild and start:
