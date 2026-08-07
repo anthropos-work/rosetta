@@ -1737,3 +1737,121 @@ floor.
 
 **Next-tik direction:** iter-111 lands step 0 — the two hardening items with teeth — and **decides** where
 provenance belongs rather than leaving an undocumented env var holding the suite green.
+
+---
+
+## TOK-08: census the mechanical classes; stop sampling them — 2026-08-07
+
+**Tok type:** **USER-SUPPLIED RE-SCOPE — not agent-authored, and not a triggered tok.** `TOK-07`'s own
+pre-registered falsification fired at iter-116 (`P = 37` against a `P ≥ 15` threshold sealed in `85f6f1c`
+before the first seat), and that rule routed the milestone to a **re-scope conversation with the user**
+rather than to an eighth agent-authored strategy revision. The user supplied the re-scope on 2026-08-07.
+**This entry records the user's strategy verbatim in substance; it is binding, and the agent did not
+author it.** Recorded here in the `TOK-NN` chain's next slot so every following tik can name its
+controlling strategy, exactly as with `TOK-01`…`TOK-07`.
+
+**Prior strategy:** [`TOK-07`](#tok-07-enumerate-the-predicate-not-the-anchor--2026-08-06) — enumerate the
+predicate corpus-wide, repair whole predicates, read last.
+
+**Why it stopped working — and the separation is the point.** `TOK-07`'s *mechanism* worked and its
+*premise* was wrong, and iter-116 measured both:
+
+| what iter-116 measured | number |
+|---|---|
+| iter-109 predicates re-found by a blind reading (the repair holding) | **3 of 24** |
+| anchors per predicate, `N`/`P` (twins being caught) | **1.50 → 1.108** |
+| `wrong-tree` rejections (the fences holding) | **0** (series 4 → 1 → 1 → 0 → 0) |
+| adjudicator upheld rate, raw and `wrong-tree`-separated | **92.6 %**, identical |
+| **predicates never detected by ANY of four prior readings** | **25 of 37** |
+| induction rate as repair volume went **+48 → +177** lines | **5.6 % → 22.0 %** |
+
+**The denominator premise is what failed. Volume is the answer, and sampling cannot supply it.** A
+14-seat paired reading at ~60 % per-pass recall cannot enumerate a standing pool of this size. And
+*"repair harder"* is closed by the same measurement: induction buys defects roughly proportionally to
+repair volume, with the fences firing four times on iter-115 and 9 defects landing anyway.
+
+### New strategy — enumerate the mechanical classes EXHAUSTIVELY instead of sampling them
+
+**The lead this run exists to test:** **intra-corpus mis-citation is now the largest single class — 10 of
+37.** The corpus **mis-cites itself more than it mis-describes the platform**, and that class is
+*mechanical*: a citation either resolves to what it claims or it does not. No sentence has to be
+interpreted.
+
+> **A reading SAMPLES; a fence CENSUSES.**
+
+For each mechanical class — **intra-corpus citation resolution first**, then the other
+mechanically-decidable classes the readings have named — **build or extend a fence that enumerates every
+instance in the corpus, run it to zero, and keep it green.** The readings then only have to catch what is
+genuinely semantic.
+
+Work the classes in **descending measured size**. **Report, per class: the enumerated population, how
+many were already false, and the fence's reach — and state the denominator**, per iter-114's rule (a
+reach metric names its denominator or prints no percentage).
+
+**Strategy class:** `new-direction` — a change of **discovery method**, not another repair-and-read
+revision. `TOK-03` through `TOK-07` all varied the *unit* or the *order* of a sample-then-repair loop;
+this one replaces the sample with a census over the sub-population where a census is possible.
+
+### Pre-registered falsification of THIS strategy, sealed in this iter's FIRST commit
+
+Stated as a falsifiable numeric rule before any sweep work, exactly as `TOK-07` sealed its own.
+
+> **Baseline: `P = 37`** — iter-116's reading, corpus `f581de09`, rule sealed at `85f6f1c`.
+>
+> **After ONE FULL MECHANICAL SWEEP, take a reading.** Then, and the branch is arithmetic:
+>
+> - **`P ≥ 19`** (i.e. `P` fell by **less than half** of 37) → **the mechanical classes are not the bulk
+>   of the pool. Enumeration-first is REFUTED too. STOP. Do NOT author a successor strategy.** Report the
+>   refutation and hand the milestone back for a **scope decision from the user**. The user has stated in
+>   advance that this is a legitimate outcome and that they will carry it.
+> - **`P ≤ 18`** (fell by **half or more**) → the method is working. **Say so with the number** and
+>   continue sweeping classes.
+>
+> A strategy that cannot fail is not a strategy. This milestone has proven that about instruments nine
+> times over; it applies to plans.
+
+**"One full mechanical sweep" is defined, so the trigger cannot be argued afterwards:** every class on
+the pre-registered class list of iter-117's `overview.md` has a fence that (a) enumerates its population
+corpus-wide, (b) is at zero findings, and (c) ships with a mutation control and an anti-vacuity control
+that can actually fire. The class list is fixed in iter-117 and may only **grow**, never shrink.
+
+**Distance-to-gate context:** **4 of 5**. Clauses 1 and 2 proven at platform `0c91421` (clause 2 **MET
+WITH DISCLOSURE**, never a clean pass); 3 and 4 hold; **5 open at `P = 37` / `N = 41`, corpus
+`f581de09`.** Clause 5 is **NOT re-cut, reinterpreted, narrowed or argued** — four user rulings; it is met
+only by a reading that returns **zero**. A change of method revises how we work, never the gate.
+**Chapman stays retired**; only floors — **≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`, ≥ 36 at `ac48e5b`,
+≥ 37 at `f581de09`.**
+
+### Carried findings the user directed us to act on
+
+- **Three sites publishing an enumerated predicate were not in iter-115's enumeration** (P02's third
+  instance, P22's second anchor, P10's twin); iter-116 added a fourth (the Ant-Academy predicate, live at
+  five sites, enumeration reached none). These are measured evidence for
+  `FIX-M257x-iter113-adjudication-is-judgement` — **15 of 16 "small class" verdicts still rest on one
+  agent's readings.** The enumeration sweep is the natural way to settle several; do it where it falls
+  out, and **say which remain judged rather than proven**.
+- **The guard family's one RED at iter-116's open was a FALSE red sitting on a line that carried a
+  different, genuinely false proposition.** *Do not let a correct verdict for a wrong reason count as a
+  working fence.*
+- iter-115 found a `bash -c` claim that had **inverted a shipped security property**. Expect the
+  mechanical sweep to surface more of that severity — **grade by consequence, not by class.**
+
+### What is NOT changed
+
+Clause 5. The read instrument. The union-of-two discipline, the blind second reading, the
+pre-adjudication verbatim commit. §5 rule 41a (no clone fetching while a reading is in flight). Zero
+platform-repo edits; `stack-demo/**` untouched (`demo-1` is up and green, and clauses 1–2 are proven on
+it); `rosetta-extensions` stays on `main`. No legal/compliance/policy escalations (§5 rule 48). Every
+fence ships with a mutation control **and** an anti-vacuity control that can fire — eight vacuous fences
+have been caught here.
+
+**Cross-refs to prior TOKs:** `TOK-01` built instruments · `TOK-02` fenced a mechanizable prose class ·
+`TOK-03` attacked coverage · `TOK-04` pinned the target · `TOK-05` changed the unit of repair from the
+claim to the predicate · `TOK-06` changed the order of the loop · `TOK-07` changed the repair's
+*denominator*. **`TOK-08` changes the DISCOVERY METHOD** — from reading a sample to fencing a census —
+and it is the first entry on this chain the agent did not author. `TOK-02` is its nearest ancestor in
+kind (*fence a mechanizable class rather than repair its instances*) and is **vindicated, not
+superseded**: `TOK-08` generalises it from one class to every class where a census is possible.
+
+**Next-tik direction:** iter-117 **is** the first tik — it seals this record in its first commit, then
+sweeps **class 1, intra-corpus citation resolution**, the largest measured class at 10 of 37.
