@@ -145,8 +145,27 @@ bundle resolves the right hostname.
 ```bash
 pnpm test            # turbo test → jest in apps/web and apps/hiring
                      # (integration & maintenance have no test script)
-# E2E: Playwright suite under e2e/ (needs E2E_TEST_EMAIL / E2E_TEST_PASSWORD for Clerk login)
+# E2E: Playwright suite under e2e/ (needs E2E_TEST_EMAIL for the Clerk sign-in ticket — see below)
 ```
+
+### The two Clerk sign-in-token minting sites in this repo (added M257x iter-121)
+
+**This repo holds 2 of the 5 sign-in-token minting sites in the whole clone set** — a token that buys a
+**genuine session as any named user**, so the complete list matters. It is enumerated once, in
+[`clerk-integration.md` § Sign-in tokens](./clerk-integration.md#sign-in-tokens--every-minting-site-enumerated);
+this section exists so the repo's own page is not silent about it. Both at `next-web-app` `8297c684`:
+
+| site | what it is | gate |
+|---|---|---|
+| `apps/web/src/app/api/dev/login-as/route.ts:79` | dev *"log in as a real Clerk user"* route → `/dev/accept` | `DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'` (`apps/web/src/lib/devLogin.ts:28`); hard-404 otherwise. **The same boolean adds `/api/dev/login-as` + `/dev/accept` to the PUBLIC route list** (`apps/web/src/proxy.ts:56`) — it must be reachable before a session exists |
+| `e2e/auth.setup.ts:72` | the Playwright auth fixture — it mints a ticket instead of driving the password form | **no `NODE_ENV` gate.** It is a test-runner file, never in an app build, but it runs against a **real Clerk instance** |
+
+**Why `auth.setup.ts` needs no `E2E_TEST_PASSWORD`, stated because the old testing note implied one:** the
+e2e account *"enforces 2FA (email_code as second factor); password signin returns `needs_second_factor` and
+never produces a session"*, and the ticket path means *"Clerk treats it as fully authenticated and **skips
+both factors**"* (`e2e/auth.setup.ts:57-62`, the file's own words). So the suite needs `E2E_TEST_EMAIL` +
+`CLERK_SECRET_KEY`, and the token is a **deliberate second-factor bypass** — the platform-side reading of
+that is filed in `knowledge/plan/platform-defect-register.md`, not asserted here.
 
 ## Notable Gotchas
 

@@ -1918,3 +1918,103 @@ is not machine-reachable at scale (4 of 387 bare-pin lines) and **grew as a shar
   future gate design has to account for it — `FIX-M257x-iter119-instrument-recall-is-35pct`.
 
 **Next move: a USER SCOPE DECISION.** This entry deliberately does not pre-empt it.
+
+---
+
+## iter-121 — five decisions, none of which touches clause 5
+
+### `D-M257x-121-1` — a defect report is re-derived at source before it is filed, and a false premise is corrected IN the filing
+
+`ant-academy/code/app/api/dev/login-as/route.js:78` was routed for filing as *"a sign-in-token minting site
+with **no `NODE_ENV` gate**."* Re-derived at `ant-academy` `22df69dd`: **it is gated** (`route.js:34` →
+`code/src/lib/devLogin.js:29`). The ungated site is `next-web-app/e2e/auth.setup.ts:72`, and the *"skips
+both factors"* comment belongs to it (`:57-62`). **Two of the five minting sites had been conflated in the
+routing.**
+
+**Decision: file what is TRUE, and put the correction first in the entry.** Not a silent re-write, and not
+a refusal to file. The corrected entry is narrower and stronger: three routes are made **public**
+(unauthenticated) by the same boolean that mounts them, there is no allowlist and no shared secret, and the
+control is a **build-mode** variable rather than a deployment gate.
+
+**Why this is a decision and not housekeeping:** a register entry a platform engineer cannot reproduce is
+worse than no entry — it spends their credibility budget on our behalf. `platform-defect-register.md`'s own
+rule (*"every entry carries `file:line` … a defect report a platform engineer has to re-derive is half a
+report"*) already implied it; this makes the re-derivation **mandatory at filing time**, including when the
+routing is our own.
+
+### `D-M257x-121-2` — the tenth quantifier defect was in iter-120's own repair, and it is recorded as such
+
+Repairing *"Sentinel validates **every** API request"* introduced *"the REST surface has **no authz
+middleware at all**"*, which is false for 2 of 6 Echo groups (`cbGate`), and cited two line ranges that each
+**stop one line short of the middleware they deny**. Repaired at all three sites with the enumerated table.
+
+**Recorded, not buried:** a pass whose entire subject was *absolute quantifiers over security surfaces*
+published a new absolute quantifier over a security surface. **The conclusion survived; the quantifier did
+not.** This is the argument for enumerated tables over adjectives, made by the repair that skipped one.
+
+### `D-M257x-121-3` — `FIX-M257x-iter108-stackcore-suite-hangs` closes on the AMBIGUITY, not the runtime
+
+iter-111 already refuted *"blocks indefinitely"* and kept the better half (*state the invocation*). What
+neither iter said is why the token stayed open for thirteen: **a running suite and a wedged suite emitted
+the same thing**, so an operator could not distinguish them, so no whole-suite total could be quoted — and
+three consecutive harden-ledger entries say exactly that in their own words.
+
+**Decision: close it by making the silence readable**, and record the standing invocation with its expected
+wall time. Both halves, because either alone leaves the claim undefensible: a progress line without an
+expected duration cannot say *"this is normal"*, and an expected duration without a progress line cannot be
+checked while it runs. → `platform-alignment.md` §5 **rule 51**.
+
+### `D-M257x-121-4` — widening `anchor_construct_guard` to "the right construct" is DECLINED, with the measurement
+
+**Fourth decline by this fence family, and the first that is not an assertion.** Of **511** backticked
+`file:line` citations in `corpus/**`, **28 (5.5 %)** supply their own expected content. On the 20 that
+supply it as an adjacent italic quote, binding the quote to the right anchor is **not** mechanical: 1
+measurably binds to a LATER anchor in the same sentence and 6 more miss at the cited line for the same
+reason — a ≥ 20 % false-positive floor on a 28-site population, decidable only by reading the sentence's
+claim.
+
+**Decision: do not widen; DISCLOSE the floor in the instrument.** `KNOWN_WEAKNESS` prints on every run
+(before the verdict, so `guard_family.run_one`'s `lines[-1]` still reports the verdict) and rides in
+`--json`, so neither a human reading a GREEN nor a machine reading `findings` can take a floor for a total.
+**iter-119's 8-item wrong-construct class stays a floor and is now labelled one by the instrument itself.**
+
+### `D-M257x-121-5` — the close gate's sweep is multi-field, and the audit is not the fix
+
+§11 diagnosed §8's zero correctly in prose. **Prose was not the fix**: the derivation stayed one field
+wide, so the next sweep would report zero again.
+
+**Decision: mechanize it** (`blocking_state_guard.py`, in the guard family, both-directions field list) and
+**enumerate every blocking grading in `deferrals-audit.md` §12**. The instrument immediately found **5**
+blocking gradings the audit had never named, in addition to the 1 §11 found by reading — which is the
+argument for the mechanization rather than a bonus from it. Seven of the eight are closed; the one that is
+open is **Q5**, the scope decision, and §8 now writes it out. → §5 **rule 52**.
+
+**Not decided here, and deliberately:** what the scope decision should be. That is the user's.
+
+### `D-M257x-121-6` — the beacon paid for itself inside one iteration, and the receipt is a RED
+
+The first whole-suite run after the silence was made readable came back **4 failed**. Three were one
+defect, live since **iter-117** and invisible across **three harden passes**: `corpus_citation_guard.py`
+joined the participating baseline in `repair_postcondition_baseline.json` and was never added to the
+mechanical-fences battery's `_COPY_FILES`, so the staged tree found 4 participating fences where its own
+baseline named 5 — and the battery reported a **RED BASELINE**, i.e. *"the fence is broken"* for *"you
+forgot a file."*
+
+**Decision: fix the site AND land the derived assertion iter-111 deferred.**
+`FIX-M257x-iter111-staged-battery-dependency-is-underived` was deferred on the ground that deriving a
+staged tree's closure *"is an import graph, not a grep."* True in general, **false for this battery**: its
+staged tree carries the baseline JSON, that file names the fences, and discovery is a glob. The contract is
+one line. `test_000_…` runs before the baseline test so the failure arrives as *"you forgot a file."*
+
+**Proven pre-existing rather than asserted** — re-run at `b9bb2b6` in a detached worktree (removed and
+pruned; rext stayed on `main`), identical three failures, identical named test. §5 rule 49's discipline
+applied to my own change.
+
+**And the timing check earned its place immediately.** Today's first run was **632.20 s**; the clean one is
+**1032.57 s**, within 6 % of iter-111's 1090.88 s. The 460 s gap **was the defect** — a battery that dies on
+its baseline never runs its mutants (45 s broken, 405.69 s fixed). Had rule 51 asked only for the
+invocation and not the expected duration, the 632 s would have been banked as the standing total.
+
+**Not claimed:** that the whole-suite total is green. It is **1 failed / 1125 passed**, the 1 being the
+standing documented `test_claim_twin_guard_iter48_answer_key::test_02` — which this run **re-attests** for
+the first time since iter-111 rather than carrying it as *"unchanged, not re-verified."*

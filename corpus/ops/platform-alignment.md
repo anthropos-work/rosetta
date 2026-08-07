@@ -1671,6 +1671,72 @@ defect, it was arguing for it.*
     such until re-run. Treat a guard verdict recorded before its runner printed its own tree the way you
     would treat a search whose stderr nobody read.
 
+51. **A suite that emits nothing is not a suite that is stuck — and until it can tell you which it is, you
+    do not have a whole-suite claim.** *(M257x iter-108 → iter-121, thirteen iters.)*
+
+    `stack-core`'s full run was booked as *"blocks indefinitely"* and carried for eleven iters. It does not
+    block. It completes. What it does is run a nested suite **8×** at ~16 s each inside one test that prints
+    a single `-q` dot for the whole of it — output sat at **522 bytes for 2 m 15 s** and then advanced. That
+    interval *is* the reported hang, and an operator watching it kills the run every time.
+
+    Read carefully, the cost was never the duration. **It was the ambiguity**: a running suite and a wedged
+    suite emitted the same thing, so no total could be quoted, so every count in eleven iters had to be
+    scoped, and the milestone's harden ledger says *"no whole-suite total is quoted anywhere in this entry"*
+    three passes in a row. **That is the defect a progress line fixes.**
+
+    > **Rule, two halves and you need both.**
+    > **(a) Make the silence readable.** Any harness that blocks on a child process announces the child
+    > before it starts and again when it returns, with elapsed time. Write to `/dev/tty` — pytest's default
+    > capture is **fd-level**, so `print(file=sys.stderr)` is captured and surfaces only on failure, which is
+    > exactly backwards. `rosetta-extensions/stack-core/tests/progress_beacon.py` is the implementation;
+    > the wiring is asserted by an **AST walk over the tree**, never a hand-kept list.
+    > **(b) State the invocation and the expected wall time with every count**, and treat a run that
+    > finishes far off that time as an unexplained measurement rather than a faster one. A count without its
+    > invocation is not reproducible, and this suite got **2.5× slower by being FIXED** (431 s → 1090 s: a
+    > battery that dies on its baseline never runs its mutants). *A fast suite is not evidence of a healthy
+    > one.*
+
+52. **A derivation scoped to ONE field of a multi-field state reports zero and is wrong.** *(M257x iter-121,
+    and it landed in the milestone's own close gate.)*
+
+    `deferrals-audit.md` §8 — the section `close-milestone` reads to learn what the user must decide —
+    carried a banner reading **"ZERO open user questions remain"** while `state.md`'s own `phase:` field
+    said **AWAITING USER SCOPE DECISION**. Nothing was stale and no field was wrong. The iter that opened
+    the question graded it **`re-scope: y`** with **`user-blocker: n`**, and the sweep behind §8 read
+    `user-blocker`.
+
+    Mechanized (`stack-core/blocking_state_guard.py`) over the three fields that route *out of the iter loop
+    to a decision the loop cannot take* — `re-scope`, `user-blocker`, `protocol-stop` — it found **8**
+    blocking gradings across 109 graded iters, of which the audit named **3**. Seven of the eight were
+    already closed; **that is not the finding.** The finding is that the one genuinely open is the one a
+    `user-blocker`-keyed sweep is structurally least able to see, because a *scope* decision is graded
+    `re-scope` — and scope decisions reach the user latest and matter most.
+
+    > **Rule.** When a state is graded across N fields, derive over **all N and check the list in both
+    > directions** — a field nothing grades must fail loudly, or the list can hold a name that never fires.
+    > *"Which field did you read?"* is the same question as *"which file did you read?"* (rule 44), one
+    > layer up.
+
+53. **Three consecutive harden passes at the cap without stabilizing is a finding about the METHOD, not a
+    request for a fourth pass.** *(M257x passes 22, 25, 26.)*
+
+    Each of the three found real, live defects and closed them; the supply did not thin. All twelve
+    green-over-nothing instruments this milestone found share one shape — **the fence's control was aimed
+    at something adjacent to its claim**: unreachable controls, the wrong noun, the wrong clause, the wrong
+    pin. **Running the suite never surfaces that.** Only mutating the named mechanism does, so a fourth
+    pass in the same mode would find a fourth instance and still not measure a plateau.
+
+    **The method finding is load-bearing and outlives the milestone:** three of pass 26's own mutations
+    **silently failed to apply** — a `.append` regex that missed multi-line calls, a name set omitting one
+    value, a single-quoted pattern against a double-quoted file — and **each read as *"the controls
+    survive."***
+
+    > **Rule.** **Every mutation asserts it APPLIED before its result is interpreted** (`assert count == 1,
+    > "MUTATION DID NOT APPLY"`). A mutant that did not apply and a mutant that survived are
+    > indistinguishable in the output, and only one of them is a finding.
+    > **And a mutation is only a control for the clause it can ISOLATE** — a mutant that leaves a second,
+    > broader clause satisfying every assertion proves nothing about the clause it targeted.
+
 ---
 
 ## 6. Classification — the map

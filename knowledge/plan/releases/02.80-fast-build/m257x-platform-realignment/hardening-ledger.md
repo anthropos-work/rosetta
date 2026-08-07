@@ -2213,3 +2213,63 @@ yet measured a coverage plateau.** A fourth pass is not requested — the remedy
 same kind. What each of the four defects has in common is that the fence's control was aimed at something
 adjacent to its claim, and no amount of running the suite surfaces that; only mutating the named mechanism
 does. **That is an input to the scope decision the milestone is holding, not a request to continue.**
+
+---
+
+## Post-pass-26 note (iter-121, 2026-08-07) — NO fourth pass was requested, and the reason is now a standing rule
+
+Pass 26's own stop condition already said it: *"the remedy is not more passes of the same kind … what each
+of the four defects has in common is that the fence's control was aimed at something adjacent to its claim,
+and no amount of running the suite surfaces that; only mutating the named mechanism does."* That reasoning
+is **promoted out of this ledger** so it outlives the milestone:
+
+- **`corpus/ops/platform-alignment.md` §5 rule 53** — three consecutive caps without stabilizing (22, 25,
+  26) is a finding about the METHOD, and carries pass 26's load-bearing method defect: **three of its own
+  mutations silently failed to apply and each read as *"the controls survive."*** Every mutation must now
+  assert `count == 1` before its result is interpreted, **and** a mutation is only a control for the clause
+  it can **isolate**.
+- Both halves were applied to iter-121's own new controls: the beacon mutant removes **both** calls
+  (removing one leaves the site still beaconing — a mutant that does not isolate the property), and the
+  `blocking_state_guard` mutant is the historical bug itself (shrink `BLOCKING_FIELDS` to
+  `("user-blocker",)` and the finding must be **lost**).
+
+**Suite-completion gap — CLOSED as stated, and here is what replaces it.**
+`FIX-M257x-iter108-stackcore-suite-hangs` was never a runtime defect (iter-111 measured the run at
+**1090.88 s**, 1 failed / 1011 passed). It was an **ambiguity**: a running suite and a wedged suite emitted
+the same thing, so three consecutive entries in this ledger had to say *"no whole-suite total is quoted
+anywhere in this entry."* iter-121 landed `tests/progress_beacon.py`, wired into all 7 nested-run sites and
+fenced by an AST walk. **The standing invocation, which any future whole-suite count in this ledger must
+name:**
+
+```
+cd .agentspace/rosetta-extensions/stack-core
+STACKCORE_PROGRESS_LOG=/tmp/m257x-beacon.log \
+  /usr/bin/python3 -m pytest tests/ -q --tb=line -p no:cacheprovider --no-header --durations=5
+```
+
+`/usr/bin/python3` is **3.9.6** and is the only interpreter on this host with pytest (`python3` on this
+shell is homebrew 3.14 and has none) — pass 26's rule, restated because the count depends on it. Expected
+wall time is recorded with the measurement in `progress.md` § iter-121; **a run far off it is an
+unexplained measurement, not a faster one.** Progress goes to `/dev/tty` live, and to
+`$STACKCORE_PROGRESS_LOG` for `tail -f` or a no-tty host.
+
+**THE MEASUREMENT, and it is the first whole-suite total this ledger has been able to quote:**
+
+```
+1 failed · 1125 passed  in  1032.57 s (0:17:12)      rext 1bb64c3 · 239 beacon lines
+```
+
+The one failure is `test_claim_twin_guard_iter48_answer_key::test_02` — the standing, documented RED,
+**re-attested by a full run** rather than carried as *"unchanged, not re-verified"* for a fourth
+consecutive pass. **Expected wall ~1030 s**, which reconciles with iter-111's 1090.88 s to within 6 %.
+
+**The check rule 51(b) asks for did not pass on the first attempt, and that is the whole point of it.**
+Today's FIRST run returned **632.20 s with 4 failures**, and the 460 s gap *was* the defect: the
+mechanical-fences battery had been dying on its baseline since iter-117 (`corpus_citation_guard.py` in the
+participating baseline but not in `_COPY_FILES`), and a battery that dies on its baseline never runs its
+mutants — `test_01_every_mutant_matches_its_DECLARED_verdict` cost **45 s** broken and **405.69 s** fixed.
+Proven pre-existing at `b9bb2b6` in a detached worktree, since removed. **A fast suite is not evidence of
+a healthy one**, and a whole-suite claim that had only ever been quoted once would have banked the 632 s.
+
+**Guard family, re-run after this iter's corpus edits: 21 members · 17 GREEN · 0 RED · 4 not-run** (the
+commit-/input-scoped members). Still **not a whole-family green**, and the summary line still says so.

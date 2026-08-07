@@ -441,7 +441,16 @@ rext pin/clone/tag state, and one live test run.
 
 ## §8 — WHAT THE USER MUST DECIDE BEFORE `close-milestone` CAN RUN
 
-> ## ✅ RESOLVED AT iter-102 — **ZERO open user questions remain.**
+> ## ⚠️ SUPERSEDED AT iter-121 — this banner said **"ZERO open user questions remain"** and it was
+> ## measured wrong. **Q5 is open.** See [§12](#12--the-blocking-state-sweep-derived-over-every-field-that-can-block) for the derivation and the full enumeration.
+>
+> The banner below was **true of Q1–Q4 and false of the milestone**, because the sweep behind it read
+> **one** grading field (`user-blocker`) and iter-119 graded its outcome **`re-scope: y` / `user-blocker:
+> n`**. §11 spotted the single instance in prose; §12 replaces the prose with a **mechanized, multi-field
+> derivation** (`rosetta-extensions/stack-core/blocking_state_guard.py`) and finds **8** blocking gradings
+> across the milestone, of which **5** this file had never named.
+>
+> ## ✅ RESOLVED AT iter-102 — **Q1–Q4 are closed.**
 >
 > All four were decided or withdrawn on 2026-08-06. This section is kept in full, with each question's
 > disposition inline, because the *reasoning* is the durable part — three of the four turned out to be
@@ -498,6 +507,17 @@ Four questions **as originally put**. **Q1 is a blocking input to this audit and
 > **Is that in M257x's scope, or does M257x close at "2 of 5 proven + the map + the fence" with clauses 1/2
 > re-proof routed to M258 (which needs a proven bring-up anyway)?**
 > A concurrent lane already owns the re-run; this question decides whether it is a *close blocker*.
+
+> **Q5 — the SCOPE DECISION, opened at iter-119 and OPEN. Added at iter-121; §8 could not see it.**
+> Both `TOK-07` (repair-and-read) and `TOK-08` (the user's own enumerate-then-read re-scope) have been
+> **refuted by their own pre-registered arithmetic** — `P = 37` vs `P ≥ 15` at iter-116, `P = 22` vs
+> `P ≥ 19` at iter-119 — and `TOK-08`'s sealed rule **bars a successor strategy**, so there is no TOK-09.
+> Clause 5 is met only by a reading that returns zero; the floor is **≥ 46** and a zero reading is not
+> near. **What M257x closes as, and what clause 5 is re-scoped to (if anything), is the user's call.**
+> `state.md` `phase:` has read **AWAITING USER SCOPE DECISION** since iter-119.
+> **It is graded `re-scope: y`, `user-blocker: n`** — which is exactly why a `user-blocker`-keyed sweep
+> reported zero. The recommendation is the milestone's; the decision is the user's, and this row does not
+> pre-empt it.
 
 **Also for signature, but not blocking (they can ride Q1–Q4):** a single destination for the ~320 corpus
 minors (§4), and the Fate-3 list in §4 as a block.
@@ -681,3 +701,65 @@ Three defects closed this pass were **booked and carried**, and two were **never
   could ever have surfaced them.** That is the boundary of what this instrument measures.
 
 **New token booked here:** `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong`.
+
+---
+
+## §12 — THE BLOCKING-STATE SWEEP, derived over EVERY field that can block
+
+**§8's zero was a MEASUREMENT ERROR, not a stale note.** §11 caught the single instance in prose —
+*"a sweep keyed on the `user-blocker` field alone reports zero and is wrong."* That sentence was right and
+it stopped one layer short: it fixed the *reading* of one iter and left the *derivation* one-field-wide.
+So §12 replaces the prose with an instrument.
+
+**The instrument** (`rosetta-extensions/stack-core/blocking_state_guard.py`, FENCE-M257x-iter121). For the
+milestone named in `state.md`'s `active_milestone:`, it parses the **Phase-5 grading** of every
+`iter-*/progress.md` and asserts that every grading which routes *out of the iter loop to a decision the
+loop cannot take* is **named in this file**. Three fields do that, and the list is checked in **both
+directions** — a field no grading uses is `exit 2`, so it cannot hold a name that can never fire:
+
+```
+BLOCKING_FIELDS      re-scope · user-blocker · protocol-stop
+NON-BLOCKING, by decision   gate-met · triggered-tok · cap-reached · budget-exhausted   (they end a
+                            SESSION, not the milestone's ability to proceed)
+```
+
+**Invocation and result** — `/usr/bin/python3 blocking_state_guard.py --repo-root <rosetta>`, run from
+`.agentspace/rosetta-extensions/stack-core`, at corpus `a95a356` + this commit:
+
+```
+109 graded iter(s) in m257x-platform-realignment
+fields seen: budget-exhausted, cap-reached, gate-met, protocol-stop, re-scope, triggered-tok, user-blocker
+```
+
+**8 blocking gradings. This file named 3 of them.** The other **5** were invisible to every sweep this
+audit has ever run — including §11's, which found one of the five by reading rather than by deriving.
+
+| iter | field | what it routed to | disposition |
+|---|---|---|---|
+| iter-47 | `user-blocker` | the 7-blocker reading escalated for a ruling | **CLOSED** — answered in-session; the loop continued at iter-48 |
+| iter-48 | `user-blocker` | *"the reading is mostly NOT repair-induced"* — the stronger form of iter-47's question (`EXIT_REASON: user-blocker`) | **CLOSED** — superseded by TOK-04, which re-scoped the unit of repair |
+| iter-49 | `user-blocker` | the same question a third time | **CLOSED** — same route as iter-48 |
+| iter-55 | `user-blocker` | clause 1 RED root-caused to a platform-side version skew | **CLOSED** — the concurrent lane re-proved clauses 1–2 at `0c91421` |
+| iter-57 | `user-blocker` | *"the user paused the session"* — an exit, not a question | **CLOSED** — session resumed at iter-58. Recorded because the FIELD cannot tell a pause from a question, and a sweep that reads the field must not silently drop either |
+| iter-68 | `protocol-stop` | the harden cadence hit 10 tiks; the loop stops so a harden pass can run | **CLOSED** — harden pass ran; 26 passes exist today |
+| iter-116 | `re-scope` | `TOK-07` refuted by its own pre-registration (`P = 37` vs `P ≥ 15`) → a user re-scope conversation | **SUPERSEDED** by iter-119 — the conversation happened and produced `TOK-08` |
+| iter-119 | `re-scope` | `TOK-08` refuted the same way (`P = 22` vs `P ≥ 19`); no successor strategy is permitted | **🔴 OPEN — this is Q5.** The milestone is holding on it |
+
+**What the enumeration says that the count does not.** Seven of the eight are closed, and closing them is
+not the finding. The finding is that **five of eight were unrepresented in the file a close gate reads**,
+and that the one that is genuinely open is the one a `user-blocker`-keyed sweep is structurally least able
+to see — because a *scope* decision is graded `re-scope`, and scope decisions are the ones that reach the
+user latest and matter most.
+
+**The class, named:** this is *green over something never checked* — the same class as the twelve
+instruments harden pass 26 counted — landing in the milestone's **own close gate**. The audit was not
+wrong about `user-blocker`. It was wrong about what it had measured.
+
+**Controls** (`tests/test_blocking_state_guard.py`, 10 tests). The mutation that matters is the historical
+bug itself: shrinking `BLOCKING_FIELDS` back to `("user-blocker",)` must **lose** the iter-119 finding —
+a control that survives that mutant is not isolating the mechanism (harden pass 26's `_NOT_A_CITATION`
+lesson). Anti-vacuity: breaking the grading header in all 25 fixture iters must exit 2, not sweep clean.
+Every mutation asserts **it applied** before its result is read.
+
+**New tokens booked here:** `FENCE-M257x-iter121-blocking-state-sweep` (landed) ·
+`FIX-M257x-iter121-audit-sweep-was-one-field-wide` (closed by this section).

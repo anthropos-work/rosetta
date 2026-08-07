@@ -90,8 +90,16 @@ instance the operator's key points at.
 the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.
 
 **Corpus cross-references for the harness half** (this page previously mentioned it nowhere):
-[`ant-academy.md:324`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair) and
-[`studio-desk.md:90`](./studio-desk.md) (*"Dev-only acceptance harness"*).
+[`ant-academy.md:324`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair),
+[`studio-desk.md:90`](./studio-desk.md) (*"Dev-only acceptance harness"*), and — added at **iter-121**, the
+**pair-half iter-120 left open** — [`next-web-app.md` § the two minting sites in this repo](./next-web-app.md#the-two-clerk-sign-in-token-minting-sites-in-this-repo-added-m257x-iter-121). That page held **2 of the 5 sites, including the
+only ungated one**, and said nothing about either; a repaired enumeration whose per-repo pages stay silent
+is half a repair.
+
+**The platform-side reading of sites 2–5 is FILED, not asserted here** (M257x iter-121):
+`knowledge/plan/platform-defect-register.md` →
+`PLATFORM-M257x-dev-login-routes-mint-a-full-session-for-any-email-behind-one-NODE_ENV-boolean`. This page
+documents what the integration *does*; the register holds what a platform engineer would want to change.
 
 ## How It Works (Deep Dive)
 

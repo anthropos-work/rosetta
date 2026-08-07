@@ -186,18 +186,35 @@ is one hardcoded variable name, `grapqlTargetVar = "userId"` (`gqlauthz/target.g
 differs from the viewer's own id, and (iii) the viewer has a non-nil active org. **An id inlined as a
 document literal rather than passed as a variable does not reach Sentinel at all.**
 
-**And there is no Sentinel middleware on the REST surface.** Every Echo group in
-`app/internal/web/backend/backend.go` is `cors` + (`swagger`) + `authnEcho.EchoAuthnMiddleware` and
-nothing else (`:121-141`, `:172-173`, `:195-196`, `:211-212`, `:230-231`, `:274-275`); `git grep -nE
-'AuthzMiddleware|EchoAuthzMiddleware' -- '*.go'` over `app` @ `ad9f3c49` returns **0**. REST
-authorization is **per-handler** (`requireAdmin`, `OrganizationReadPermissionCheck`,
-`checkTaxonomyWritePermission`, …).
+**And there is no BLANKET authz middleware on the REST surface.** `git grep -nE
+'AuthzMiddleware|EchoAuthzMiddleware' -- '*.go'` over `app` @ `ad9f3c49` returns **0**, and REST
+authorization is opt-in **per group or per handler**, never applied to the surface as a whole:
+
+| Echo group | `backend.go` | middleware stack |
+|---|---|---|
+| `/api` | `:121-141` | `cors` + `swagger` + `authn` (10 skipped paths: 8 webhooks, `/api/skills`, `/api/health`) |
+| `/ask` | `:171-173` | `cors` + `authn` — the `admin/auto-rules/*` routes are gated **per handler** by `requireAdmin`, which the source says in place (`:183-185`) |
+| `/assignment-builder` | `:194-196` | `cors` + `authn` + a 2 MB body limit |
+| `/admin/backfill` | `:210-212` | `cors` + `authn` — *"gated on the admin Sentinel permission"* per handler (`:207-209`) |
+| `/coursebuilder` | `:229-232` | `cors` + `authn` + **`cbGate`** |
+| `/credits` | `:273-276` | `cors` + `authn` + **`cbGate`** |
+
+> ⚠️ **CORRECTED at iter-121, in the OTHER direction.** iter-120's own repair of this paragraph said
+> *"every Echo group … and nothing else"*, and cited `:230-231` / `:274-275` — **each one line short of
+> the third middleware**. `cbGate := courseBuilderAccessGate(authorizationManager)` (`backend.go:227`,
+> defined `internal/web/backend/gate.go:27-49`) **is** a Sentinel-backed group middleware: it requires a
+> user, a non-nil active org, and `OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID)`, returning
+> 401/403 before the handler. Two of the six groups carry it. The conclusion — no blanket, authorization
+> is opt-in — survives; the absolute quantifier did not. **Same defect class as the sentence it replaced,
+> pointing the other way**, and a citation that stops one line short of its own subject is exactly the
+> wrong-construct class `anchor_construct_guard` does not detect.
 
 **The honest statement of Layer 2:**
 - **Sentinel is the centralized authorization *engine*** (Casbin RBAC/ABAC, PostgreSQL-backed policy
   store), and its policies are centrally managed and auditable — that part always held.
 - **It is not a blanket applied to every request.** The GraphQL middleware is a *viewer* gate with a
-  narrow cross-user check bolted on; the REST surface has no authz middleware at all.
+  narrow cross-user check bolted on; the REST surface has **no blanket authz middleware** — two of its
+  six groups opt into one (`cbGate`), the rest authorize per handler or not at all.
 - **Where isolation actually comes from** is the three layers *together* — Layer 1 on the 31 schemas
   that declare a policy, per-resolver and per-handler checks elsewhere, and Layer 3's org-scoped
   session. Reading Layer 2 as universal is what let the M207 port ship an IDOR.

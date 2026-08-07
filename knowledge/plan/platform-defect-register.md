@@ -30,6 +30,139 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-M257x-graphql-authz-middleware-FAILS-OPEN-and-REST-has-no-blanket-gate`
+**Found:** M257x iter-120 (2026-08-07) · **Filed here:** iter-121 (2026-08-07) · **Repo:** `app` ·
+**Status:** open · **Severity:** high (the platform's own source calls one half of it *"fail open"* and
+attributes a shipped cross-tenant IDOR to it) · **Provenance: SOURCE READ, line by line, at `app`
+`ad9f3c49` (`origin/main`).** No live request was issued and this entry does not claim one was.
+
+**This is not the corpus defect.** iter-120 repaired four Rosetta claims that said *"Sentinel validates
+**every** API request"* — that repair is done. What is filed here is the underlying platform property,
+which the corpus repair does not address and Rosetta cannot fix.
+
+**1 — The blanket GraphQL gate fails open, and the platform says so in a post-mortem comment.**
+`internal/web/backend/graphql/graph/resolver_skiller_taxonomy_authz.go:53-66`:
+
+> *"The skiller-in-app M207 port dropped every one of those guards and leaned on app's blanket
+> `AuthorizationMiddleware` — but that gate is keyed on a `userId` operation variable and **FAILS OPEN**
+> for taxonomy operations (which carry `{jobRoleId, organization}` and no `userId`): an authenticated
+> caller with no org short-circuits to allow, and one with an org hits `errUnknownTarget` → allow. That
+> left every taxonomy read/write reachable by any authenticated caller (**cross-tenant IDOR + privilege
+> escalation**). … **Do NOT rely on the blanket gate for this surface — it fails open here.**"*
+
+**2 — Six paths reach the resolver before the single Sentinel call.** The call is
+`authorizationManager.OrgCheckUserPermission` at `internal/authorization/gqlauthz/gqlauthz.go:222`. Every
+row below returns `next(ctx)` without it:
+
+| `gqlauthz.go` | condition |
+|---|---|
+| `:160-161` | the operation failed to parse/validate |
+| `:174-178` | no viewer **and** the op is `@public` / a federation query / dev introspection |
+| `:190-191` | **the viewer has no active org** (`org == nil \|\| org.ID() == uuid.Nil`) |
+| `:196-197` | `errUnknownTarget` — the operation carries **no `userId` variable** |
+| `:202-203` | the target is nil, or the target **is** the viewer |
+| `:209-219` | `@resolverAuthorized` — grants `authorization.Allow` **without calling Sentinel** |
+
+The target is **one hardcoded variable name** — `grapqlTargetVar = "userId"`
+(`internal/authorization/gqlauthz/target.go:11`), read as `ctx.Variables["userId"]` (`:20`). **An id
+inlined as a document literal rather than passed as a variable does not reach Sentinel at all.** The
+middleware's own doc comment (`gqlauthz.go:149`) says it *"gates every operation **on a viewer**"* —
+authentication, which is what it does and not what a blanket authorization gate would do.
+
+**3 — There is no blanket authz middleware on the REST surface.** `git grep -nE
+'AuthzMiddleware|EchoAuthzMiddleware' -- '*.go'` at `ad9f3c49` returns **0**. Per-group, in
+`internal/web/backend/backend.go`: `/api` (`:121-141`), `/ask` (`:171-173`), `/assignment-builder`
+(`:194-196`) and `/admin/backfill` (`:210-212`) are `cors` + (`swagger`) + `authnEcho.EchoAuthnMiddleware`
+only; `/coursebuilder` (`:229-232`) and `/credits` (`:273-276`) additionally carry `cbGate`
+(`courseBuilderAccessGate`, `internal/web/backend/gate.go:27-49`), which **is** a Sentinel-backed group
+middleware (`OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID)`). Everything else authorizes
+per handler (`requireAdmin`, `checkTaxonomyWritePermission`, …) — the source states that intent inline at
+`:183-185` and `:207-209`.
+
+**What this does NOT claim.** Not a live vulnerability. The named taxonomy hole **was closed** by
+restoring skiller's per-resolver checks (`checkTaxonomyWritePermission` et al, same file `:68-` onward).
+The report is that the **general** property remains: a surface added to this codebase is authorized only
+if its author writes the check, the blanket gate will not catch the omission, and **no enumeration exists
+of which surfaces currently depend on a per-resolver or per-handler check**. That enumeration is the
+thing a platform engineer can produce and we cannot.
+
+**Also recorded, without editorialising** (it is a fact about the deciding line, not a recommendation):
+the **admin impersonation mutation** — which mints a Clerk sign-in token for an arbitrary user by email —
+gates on `permission.ActionObjectTaxonomy` / `permission.UserActionWrite`
+(`internal/web/backend/graphql/graph/resolver_admin_audit.go:20-24`). That is a **taxonomy-write**
+permission rather than a dedicated impersonation one. The sibling `adminAuditLogs` query at `:50-54` uses
+the identical pair. Everything else on that path is present: a non-nil actor is required (`:25-28`), a nil
+manager is refused (`:29-31`), and `internal/admin/impersonation/manager.go:1-4` writes an audit row on
+**every** attempt, success or failure.
+
+**Why it is filed rather than fixed:** every deciding line is platform source, and zero platform-repo
+edits is a standing constraint of this milestone.
+
+---
+
+### `PLATFORM-M257x-dev-login-routes-mint-a-full-session-for-any-email-behind-one-NODE_ENV-boolean`
+**Found:** M257x iter-119/120 (2026-08-07) · **Filed here:** iter-121 (2026-08-07) · **Repos:**
+`next-web-app`, `studio-desk`, `ant-academy` · **Status:** open · **Severity:** medium-high (a
+full-authentication bypass whose only control is one process-environment comparison) · **Provenance:
+SOURCE READ across the whole clone set with three independent instruments** (`/usr/bin/grep -rn`,
+per-clone `git grep` at each ref, and a Python `os.walk` — all three return the same five sites, per §5
+rule 44). **Never driven.** No token was minted and no session was created.
+
+> **⚠️ ONE PREMISE OF THIS FILING WAS RE-DERIVED AND IS FALSE — stated first, because the correction is
+> the useful part.** The item was routed here as *"`ant-academy/code/app/api/dev/login-as/route.js:78` has
+> **no `NODE_ENV` gate**."* **It does.** `route.js:34` refuses on `!DEV_LOGIN_ENABLED`, and
+> `code/src/lib/devLogin.js:29` is `export const DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'`.
+> The **ungated** minting site is a different one: `next-web-app/e2e/auth.setup.ts:72`, a Playwright
+> runner file. The *"skips both factors"* comment is that file's too (`:57-62`), not ant-academy's. The
+> two had been conflated. What follows is what is true.
+
+**The five minting sites, enumerated** (a Clerk sign-in token is a one-shot ticket a browser exchanges via
+`signIn.create({ strategy: 'ticket' })` for a **genuine session as the named user**):
+
+| # | site | ref | gate |
+|---|---|---|---|
+| 1 | `app/internal/admin/impersonation/manager.go:101` | `ad9f3c49` | the product feature — Sentinel check + non-nil actor + an audit row on every attempt (see the entry above for the permission it uses) |
+| 2 | `next-web-app/apps/web/src/app/api/dev/login-as/route.ts:79` | `8297c684` | `NODE_ENV !== 'production'` (`apps/web/src/lib/devLogin.ts:28`) |
+| 3 | `next-web-app/e2e/auth.setup.ts:72` | `8297c684` | **none** — a test-runner file, never in an app build |
+| 4 | `studio-desk/src/routes/dev.ts:83` | `41ee357` | `NODE_ENV !== 'production'` (`src/lib/devLogin.ts:33`) |
+| 5 | `ant-academy/code/app/api/dev/login-as/route.js:78` | `22df69dd` | `NODE_ENV !== 'production'` (`code/src/lib/devLogin.js:29`) |
+
+**What is worth a platform engineer's attention, stated as properties rather than as alarm.**
+
+1. **Sites 2, 4 and 5 are UNAUTHENTICATED by design.** The same `DEV_LOGIN_ENABLED` boolean that mounts
+   the route also adds it to the **public** route list in middleware — `ant-academy/code/proxy.js:178` and
+   `next-web-app/apps/web/src/proxy.ts:56` both append `/api/dev/login-as` and `/dev/accept` to the
+   unauthenticated set. So when the gate is open, `GET /api/dev/login-as?email=<anyone>` needs no
+   credential of any kind.
+2. **There is no allowlist and no shared secret.** The email is taken straight from the query string
+   (`route.js:39`) and resolved with `users.getUserList({ emailAddress })` against whatever instance
+   `CLERK_SECRET_KEY` points at. **Any** user of that instance can be assumed, not a fixed test account.
+3. **The whole control is one comparison against a process-environment variable.** It is a *build-mode*
+   gate, not a *deployment* gate: it holds because `next build`/`next start`, `npm start` and Vercel
+   (Production **and** Preview) all set `NODE_ENV=production` — which the source comments state and which
+   is true of those paths. It does not hold for anything that serves a dev-mode process, and **ant-academy
+   is documented as running natively via `npm run dev`**. A second, independent control (an allowlist, a
+   shared secret, or an explicit opt-in variable that is not `NODE_ENV`) would make the property depend on
+   something other than how the process was started.
+4. **Site 3 is a deliberate second-factor bypass against a real Clerk instance, and says so.**
+   `e2e/auth.setup.ts:57-62`: the e2e account *"enforces 2FA (email_code as second factor); password
+   signin returns `needs_second_factor` and never produces a session"*, and via a ticket *"Clerk treats it
+   as fully authenticated and **skips both factors**."* That is a correct description of the primitive.
+   It is recorded because it is the clearest statement in the codebase of what a leaked
+   `CLERK_SECRET_KEY` buys, and because it means MFA enforcement is not a property of accounts that any
+   holder of that key can reach.
+
+**Not claimed:** that any deployed environment is currently exposed. Nothing here was driven, and whether a
+given host serves a dev-mode process with a real secret key was not measured. **A sixth consumer is an
+operator recipe, not code** — the `curl -X POST https://api.clerk.com/v1/sign_in_tokens` bypass Rosetta
+documents in `corpus/ops/staging-clerk.md:58`, `staging_from_dump.md:384` and `staging-bringup.md:461`;
+it mints against whichever instance the operator's key points at.
+
+**Rosetta's side, already done:** `corpus/services/clerk-integration.md:40` claimed sign-in tokens are
+minted *"only"* for admin impersonation. That word is retracted and the page now enumerates all five.
+
+---
+
 ### `PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`
 **Found:** M257x iter-80 (2026-08-05) · **Filed here:** iter-102 (2026-08-06), after 21 iterations escalated
 and undecided · **Repo:** `platform` · **Status:** open · **Severity:** high (a default `make up` writes into

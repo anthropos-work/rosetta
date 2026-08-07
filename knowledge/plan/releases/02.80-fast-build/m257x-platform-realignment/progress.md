@@ -2283,3 +2283,140 @@ is **≥ 13.3 %**.
 - **No claim that the remaining pool is small, or large.** It is unmeasured above the floor.
 - **No successor strategy.** `TOK-07` and `TOK-08` were each refuted by their own pre-registered
   arithmetic; per `TOK-08`'s sealed rule there is **no `TOK-09`**, and none is authored here.
+
+---
+
+## iter-121 — the work that is needed under EITHER scope outcome (2026-08-07)
+
+**Type:** tik · `iter_shape: instrument + filing` · **No reading was taken and none is implied. `P` is
+UNMEASURED, exactly as after pass 26.** No successor strategy is authored; clause 5 is not re-cut,
+reinterpreted, narrowed or argued. **No fourth harden pass was requested** — see §3 below.
+
+### 1. Two PLATFORM findings filed — they are not documentation defects, and the corpus repair did not address them
+
+iter-120 repaired the corpus's flattering security claims. Two of the underlying facts are **platform**
+concerns in their own right. Both are now in
+[`platform-defect-register.md`](../../platform-defect-register.md) with `file:line` and their measurement,
+which takes that file from 5 M257x-era entries to 7 — and it is worth naming that the register **had zero
+M257x entries until iter-102**, having been created by M256's deferral audit for exactly this class.
+
+- **`PLATFORM-M257x-graphql-authz-middleware-FAILS-OPEN-and-REST-has-no-blanket-gate`** — the six paths
+  that reach the resolver before the single Sentinel call, the one hardcoded target variable, the REST
+  surface, and the platform's own post-mortem comment. Re-derived line by line at `app` `ad9f3c49`.
+  Carries, **without editorialising**, the impersonation mutation's gate:
+  `ActionObjectTaxonomy` / `UserActionWrite` (`resolver_admin_audit.go:20-24`) — a taxonomy-write
+  permission rather than a dedicated one; the sibling `adminAuditLogs` query uses the identical pair.
+- **`PLATFORM-M257x-dev-login-routes-mint-a-full-session-for-any-email-behind-one-NODE_ENV-boolean`** —
+  and **one premise of the routing was re-derived and is FALSE, which is recorded first in the entry
+  rather than quietly dropped.**
+
+  > The item came in as *"`ant-academy/…/login-as/route.js:78` has **no `NODE_ENV` gate**."* **It does** —
+  > `route.js:34` refuses on `!DEV_LOGIN_ENABLED`, and `code/src/lib/devLogin.js:29` is
+  > `NODE_ENV !== 'production'`. The **ungated** site is `next-web-app/e2e/auth.setup.ts:72`, and the
+  > *"skips both factors"* comment is that file's (`:57-62`), not ant-academy's. **Two of the five minting
+  > sites had been conflated** — which is itself an instance of the class this milestone measures, arriving
+  > in the routing rather than in the corpus.
+
+  What was filed instead is what is true, and it is still worth a platform engineer's attention: three of
+  the five sites are made **public** (unauthenticated) in middleware by the same boolean that mounts them
+  (`ant-academy/code/proxy.js:178`, `next-web-app/apps/web/src/proxy.ts:56`); the email is taken from the
+  query string with **no allowlist and no shared secret**; and the whole control is one comparison against
+  a **build-mode** variable, not a deployment gate.
+
+### 2. A TENTH quantifier defect — in iter-120's own repair, pointing the other way
+
+iter-120 replaced *"Sentinel validates **every** API request"* with *"the REST surface has **no authz
+middleware at all**"*. **Also false.** `cbGate := courseBuilderAccessGate(authorizationManager)`
+(`backend.go:227`, defined `internal/web/backend/gate.go:27-49`) IS a Sentinel-backed **group** middleware
+(`OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID)`), applied to `/coursebuilder` (`:229-232`) and
+`/credits` (`:273-276`). The repair's own citations — `:230-231` and `:274-275` — **each stop one line
+short of it.**
+
+Repaired at all three sites that carried it (`security_compliance.md`, `architecture_overview.md`,
+`backend.md`), with the full six-group table replacing the assertion. **Two things this is evidence for,
+and they point in opposite directions:** the repair *class* is right — the conclusion (no blanket gate)
+survives — and **a repair of an absolute quantifier introduced a new absolute quantifier in one pass.**
+Also: a citation that stops one line short of its own subject is precisely the wrong-construct class
+`anchor_construct_guard` does not detect, found here by reading rather than by any fence.
+
+### 3. Three instruments closed or floored — see the rext commit for the full derivations
+
+| item | outcome |
+|---|---|
+| `FIX-M257x-iter108-stackcore-suite-hangs` | **closed as stated** — the ambiguity, not the runtime, was the defect. `progress_beacon.py` + 7 wired sites + an AST-derived wiring fence. §4 below records the standing invocation |
+| `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong` | **DECLINED with a measurement, floor DISCLOSED in the instrument.** Only **28 of 511** backticked citations (5.5 %) supply their own expected content, and binding that content to the right anchor needs the sentence's claim — 1 of 20 measurably binds to a LATER anchor. Fourth decline by this fence family, first with numbers. `KNOWN_WEAKNESS` now prints on every run and rides in `--json` |
+| `audit-deferrals` §8 read one field | **closed** — `blocking_state_guard.py` derives over all three blocking-capable fields. It found **8** blocking gradings across 109 graded iters where the audit named **3**; `deferrals-audit.md` §12 enumerates all eight with dispositions, and §8's banner is superseded with **Q5** written out |
+
+**Standing rules added** (they outlive the milestone): `platform-alignment.md` §5 **rules 51, 52, 53**.
+
+### 3b. The whole-suite claim, and it is now defensible — with the invocation it rests on
+
+```
+cd .agentspace/rosetta-extensions/stack-core
+STACKCORE_PROGRESS_LOG=/tmp/m257x-beacon2.log \
+  /usr/bin/python3 -m pytest tests/ -q --tb=line -p no:cacheprovider --no-header --durations=5
+      ->  1 failed · 1125 passed  in  1032.57 s (17:12)   [rext 1bb64c3, corpus mid-iter-121]
+```
+
+`/usr/bin/python3` is **3.9.6** and is the only interpreter on this host with pytest. The single failure is
+`test_claim_twin_guard_iter48_answer_key::test_02` — the standing, documented RED, **and it is now
+genuinely re-attested by a full run** rather than carried as *"unchanged, not re-verified"* for a fourth
+consecutive pass. **239 beacon lines** were emitted; the formerly-silent stretch is now eight timestamped
+nested-run pairs.
+
+**The expected wall time is ~1030 s and it reconciles with iter-111's 1090.88 s to within 6 %** — which is
+the check rule 51 asks for, and it did not pass on the first attempt. **The FIRST run today returned
+632.20 s with 4 failures, and the 460 s gap IS the defect** (§3c): a battery that dies on its baseline
+never runs its mutants, so `test_01_every_mutant_matches_its_DECLARED_verdict` cost **45 s** while broken
+and **405.69 s** once fixed. *A fast suite is not evidence of a healthy one* — iter-111's own words,
+re-measured. **That first run was also tree-edited mid-run and is disclosed as confounded**, exactly as
+iter-111 disclosed its run A; the 1032.57 s reading above is the clean one.
+
+### 3c. The first whole-suite run found a RED that four iters of scoped runs could not
+
+**Not introduced by this iter, and that was PROVEN rather than argued:** re-run in a detached worktree at
+`b9bb2b6` (iter-121's parent) → identical 3 failures, identical named test. Worktree removed and pruned;
+rext stayed on `main`.
+
+`corpus_citation_guard.py` (FENCE-M257x-iter117) joined the participating baseline in
+`repair_postcondition_baseline.json` and was **never added** to the mechanical-fences battery's
+`_COPY_FILES`. `discover_fences()` globs `*_guard.py` on disk, so the staged tree found **4** participating
+fences while its own staged baseline named **5** →
+`test_21_the_shipped_baseline_records_EVERY_participating_fence` RED → **ANTI-THEATRE #1 reports a RED
+BASELINE**, i.e. *"the fence is broken"* for *"you forgot a file."* **This is iter-111's defect recurring
+four iters later on a different file** (§8 rule 7's recurrence corollary: the class, not the site).
+
+Fixed, and the second half is the one that matters: `test_000_the_copy_list_stages_every_fence_the_baseline_names`
+is the **ABSENCE direction** iter-111 booked as `FIX-M257x-iter111-staged-battery-dependency-is-underived`
+and deferred as *"an import graph, not a grep."* **For this battery it is not an import graph** — the
+staged tree carries its own baseline, the baseline names the fences, and discovery is a glob. Battery:
+3 failed / 1 passed / 1 skipped → **6 passed in 433.27 s**.
+
+**This is the argument for the beacon, made by the tree rather than by me.** The defect was live for four
+iters and three harden passes, every one of which ran scoped suites and each of which recorded *"no
+whole-suite total is quoted anywhere in this entry."* The first whole-suite run after the silence was made
+readable found it in one pass.
+
+### 3d. Guard family after the corpus edits
+
+**21 members · 17 GREEN · 0 RED · 4 not-run** (`anchor_offset_guard`, `repair_leak_guard`,
+`repair_reach_guard`, `value_change_guard` — the commit- and input-scoped members, no `--range`/`--ledger`
+supplied). **Not a whole-family green, and the runner's own summary line says so.** The family grew 20 → 21
+with `blocking_state_guard`. Invocation: `guard_family.py --repo-root <rosetta> --platform
+<rosetta>/stack-demo/platform`.
+
+### 4. The harden cap fired at 3-in-a-row (22, 25, 26) — recorded as a standing finding, NOT a fourth pass
+
+Pass 26 gave the sound reason not to repeat in the same mode: *only mutating the named mechanism surfaces
+this class, and running the suite never will.* That is now **rule 53**, together with the pass's
+load-bearing method finding — **three of its own mutations silently failed to apply and each read as "the
+controls survive"** — which is why every mutation added this iter asserts `count == 1` before its result
+is interpreted, and why the beacon mutant removes **both** calls (removing one leaves the site still
+beaconing, i.e. a mutant that does not isolate the property).
+
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n (**a successor strategy is FORBIDDEN by
+`TOK-08`'s sealed rule and none is authored**) — (3) re-scope: **y — unchanged and carried: the milestone
+is still holding on the iter-119 scope decision. This iter neither advances nor argues it** —
+(4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome:
+**exit-3**
+**Decisions:** `D-M257x-121-1` … `D-M257x-121-6` (see [`decisions.md`](decisions.md))
