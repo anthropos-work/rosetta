@@ -2094,3 +2094,24 @@ defect and would also explain why no amount of accessor work has helped.
   invocation stated, the failure the **known pre-existing** iter-48 answer-key one over its own
   synthetic fixtures. **No reading was taken; `P` is UNMEASURED, not unmoved** — `TOK-07` step 3 is
   iter-116's entire content and is unblocked. Gate unchanged at **4 of 5** — see iter-115/progress.md
+
+- iter-116 (tik · reading): **`TOK-07` step 3 — THE READ. `P = 37` / `N = 41`, against a rule sealed in
+  `85f6f1c` before the first seat was dealt.** The pre-registered **`P ≥ 15` branch fired at more than
+  double the threshold**, meeting **`TOK-07`'s OWN falsification: repair-and-read is REFUTED as a path
+  to clause 5 under this instrument**, and routing the milestone to a **user re-scope conversation** —
+  `TOK-08` is deliberately NOT authored. The reading separates *why*, and that separation is the
+  deliverable: **iter-115's repair HELD** (band #3 blind-on-predicate = **3 re-found of 24**; band #11
+  `N`/`P` **1.50 → 1.108**), so **DENOMINATOR is falsified and VOLUME is the answer** — **25 of the 37
+  are standing pool no prior reading ever detected**, and **9 were induced by iter-115's own repair**,
+  whose induction rate rose **5.6 % → 22.0 %** as volume went **+48 → +177** lines with the fences firing
+  four times and still leaking. Series by predicate **22 → 22 → 24 → 37**; by anchor **24 → 33 → 36 →
+  41**. **7 of 14 bands held** (6 of 8 mechanism, 0 of 3 magnitude); upheld rate **92.6 % raw / 92.6 %
+  `wrong-tree`-separated** (`wrong-tree` **0**, series 4 → 1 → 1 → 0 → 0). Two failures are findings:
+  **intra-corpus mis-citation is now the LARGEST class at 10 of 37** — the corpus mis-cites itself more
+  often than it mis-describes the platform — and net-new band #12 shows **multi-pin blocks concentrate
+  defects (6 of 41)**, the sharpest case being the guard-family **FALSE RED** disclosed at the open,
+  which flagged `sentinel.md:5` for a proposition that is **true at the ref it names** while the line
+  carried a **different, genuinely false** one. 14/14 seats, **0 lost**, each committed verbatim before
+  adjudication; 4/4 verdicts committed unedited; 54 booked → 50 upheld / 4 rejected. All 14 clones
+  identical at close and open, fetch times unchanged. **No repair taken inside the pass.** Gate **4 of
+  5**; clause 5 **NOT met** — see iter-116/progress.md + iter-116/adjudication.md
