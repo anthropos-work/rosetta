@@ -1953,6 +1953,39 @@ defect, it was arguing for it.*
     > **The corollary for the harden pass itself:** the whole-suite run is not a formality at the end,
     > it is an *instrument*, and on this milestone it is the only one that finds this class.
 
+61. **"Not in the clone set" is a fact about our habits. It never entailed "not measurable" — and the
+    corpus inferred one from the other for four iterations, at 15 sites.** *(M257x iter-132.)*
+
+    Six passages said cms's production disposition was UNMEASURABLE, *because* the deciding declaration
+    lands in `infrastructure` and `infrastructure` **"has never been in any clone set."** Both conjuncts
+    were true. The inference was not: iter-123 had already cloned the repo and settled the question, and
+    the corpus cited that read 28 times **while eleven other sites kept publishing the limit it
+    retired.** iter-132 spent one `--depth 1 git clone` — well under a minute — and settled a *second*
+    standing hedge from the same tree (the production RPC address, hedged in seven more places).
+
+    > **Rule.** When a claim turns on a repo that is merely **not habitually cloned**, the remedy is a
+    > `git clone`, not a hedge. Write *"not in the standing clone set, therefore not re-derivable in
+    > place"* — which is about **re-checkability** — and never *"not measurable"*, which is about the
+    > world. A hedge that outlives its premise is worse than a wrong claim, because it **advertises that
+    > somebody checked.**
+    >
+    > **Two riders, both earned by this iter's own prose.**
+    >
+    > *(a) The fence catches you at exactly this.* `unreadable_repo_claim_guard` flagged **three
+    > paragraphs of the repair itself** — assertions about `module.messenger_euwest1` (deleted at
+    > `infrastructure` `13c248e6`, `terraform/production/services.tf:618-621`) with no ref in the
+    > paragraph. **The third was this very rule**, which fired on its own worked example. A sweep that
+    > retires a hedge must carry the ref *into every paragraph it touches*, not only into the one where
+    > the reading is narrated.
+    >
+    > *(b) A substring fence cannot tell a RETRACTION from a live hedge, and will report your repair as
+    > the disease.* The NOTE read **"11 sites still hedge"** — of which **8 also carried a ref-pinned
+    > reading**, i.e. they quote the retired wording precisely in order to retract it. The fix is **not**
+    > to launder the prose until the substring disappears; that is tuning the corpus to the instrument.
+    > The fix is a **third bucket, disclosed** (`hedged` / `mixed` / `measured`), so the NOTE counts live
+    > hedges and the mixed count is published as a thing the guard **cannot** decide — `D-M257x-121-4`'s
+    > precedent, applied a second time. **Do not read a marker count as a defect count.**
+
 ---
 
 ## 6. Classification — the map

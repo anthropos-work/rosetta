@@ -23,10 +23,13 @@
 >   tense and unpinned, while four other docs declared the same value unmeasurable; it was the last site
 >   still asserting it. No `.tf` file in any clone names that literal (0 hits over all 44 tracked `.tf`
 >   files in the 13 `stack-demo` repos, each at its own HEAD, 2026-08-06), and the deciding declaration
->   lives in the `infrastructure` repo, which has never been in any clone set — see
->   [`backend.md`](./backend.md) for the derivation and
->   [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced
->   unmeasurable-claims convention. **Locally that variable is now set by nothing**: the last block to carry it was
+>   lives in the `infrastructure` repo, which is not in the standing clone set and **has been read**:
+>   production names the literal **exactly once**, and **not as a `skiller_rpc_address`** — it is
+>   `module "backend_euwest1"`'s `cms_rpc_address` input
+>   (`infrastructure/terraform/production/services.tf:346` @ `13c248e6`, M257x iter-132). **So the old flat
+>   assertion was wrong about the variable as well as the tense**, and no `skiller_rpc_address` survives in
+>   production terraform at all. Derived once in [`backend.md`](./backend.md); not restated here.
+>   **Locally that variable is now set by nothing**: the last block to carry it was
 >   `messenger`'s, and platform `838d907` (merged `0c91421`, 2026-08-05) deleted that service — so
 >   there is no out-of-process consumer left to address, and the surface is reached in-process. The
 >   externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,

@@ -10,7 +10,7 @@
 > | [skillpath](./skillpath.md) | skillpath-in-app (M502→M507) | skill-path progression engine, session state |
 > | [roadrunner](./roadrunner.md) | with jobsim-in-app | Judge0 code execution (called directly via `JUDGE0_BASE_URL`) |
 > | [jobsimulation](./jobsimulation.md) | jobsim-in-app (prod ECS teardown **M810 — LANDED**, `6092c6d2`) | the simulation session engine — `internal/jobsimulation/`, wired by `internal/jobsimwiring/wiring.go` |
-> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (prod teardown **M810 — NOT MEASURABLE here**; report both, assert neither — see the *M810 prod teardown is UNEVEN* bullet below) | content layer + Directus edge + Studio — `internal/cms/` |
+> | [cms](./cms.md) | cms-in-app v8.0, app **v1.360.0** (prod teardown **M810 — the ECS service is DESTROYED**, measured at `infrastructure` `13c248e6`; the legacy *schema* drop is the step still pending — see the *M810 prod teardown is UNEVEN* bullet below) | content layer + Directus edge + Studio — `internal/cms/` |
 > | [storage](./storage.md) | v9.0 "support-in-app", 2026-08-04 | the private + public object-storage managers — `internal/storage/`, `internal/storagens/`, `internal/publicstorage/` |
 > | [messenger](./messenger.md) | v9.0 "support-in-app", 2026-08-04 | transactional email (Brevo + Liquid) and messenger's **own** Redis consumer group — `internal/messenger/`; switch-gated by `MESSENGER_ENABLED` |
 > | [customerio-sync](./customerio-sync.md) | v9.0 "support-in-app" | the one-way Brevo marketing-contact push — `internal/customeriosync/`; switch-gated by `CUSTOMERIO_SYNC_ENABLED` |
@@ -83,10 +83,14 @@
 >   (M810)"*, and its body states that M810 *"deletes `module "cms_euwest1"` from the platform's
 >   `services.tf`, which destroys the ECS service and the production-cms ECR repository"* — the workflow
 >   went because it *"would try to push an image into a registry that no longer exists."*
->   **Whether that infrastructure-side deletion has actually been applied is NOT MEASURABLE from any clone
->   set we have** — `infrastructure` has never been in one. So do not assert either way: what is measured is
->   a `cms`-repo commit asserting the destruction, and a `cms`-repo terraform block that still declares the
->   module. The fenced map states this limit explicitly and is authoritative
+>   **That infrastructure-side deletion HAS been applied — measured, not inferred.** `infrastructure` was
+>   read at `13c248e6` (M257x iter-123; sha re-confirmed as origin `HEAD` at iter-132): **no `module "cms"`
+>   declaration exists anywhere in it**, and `infrastructure/terraform/production/services.tf:64-70` states
+>   what the apply destroyed. So of the two `cms`-repo facts, the CI commit was the correct one and the
+>   terraform block that still declares the module is **orphaned dead code** — no root module instantiates
+>   it. **This bullet said *"NOT MEASURABLE from any clone set we have — do not assert either way"*: the
+>   premise (`infrastructure` is not in the standing clone set) is TRUE and the inference was FALSE.** A
+>   repo we do not habitually clone is one `git clone` away, not beyond measurement. The fenced map is authoritative
 >   ([`platform-migration-status.md`](../architecture/platform-migration-status.md), the `cms` row). This
 >   bullet previously said *"`module.cms_euwest1` is still declared as the rollback path"* as a flat fact,
 >   which the map already said it could not see. **`jobsimulation`'s ECS service is already
@@ -182,10 +186,36 @@ containerized bring-up + migrate, and read-only prod.
   skiller surfaces at `http://backend.internal.anthropos:8081`, and folding it in at v9.0 closed that
   edge"*, under the heading *"**There are no external callers of app's RPC mux left.**"* **This paragraph
   is the single derivation of the count; other docs cite it rather than restate it** — a restated
-  cardinality is what multiplied the previous error across five sites. **And the one tree that could settle the production value is not measurable from here:** the
-  deciding declaration lives in the `infrastructure` repo, which is in no clone set — see
-  [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced
-  unmeasurable-claims convention.
+  cardinality is what multiplied the previous error across five sites. **And the one tree that settles the
+  production value has now been READ. This is the corpus's single derivation of it** — every other doc
+  cites this bullet rather than restating it.
+
+  > **PRODUCTION DOES name `http://backend.internal.anthropos:8081`, and exactly once.** Measured at
+  > `infrastructure` `13c248e6` (M257x iter-132, a `--depth 1` clone whose `HEAD` is that sha):
+  > `terraform/production/services.tf:346` sets `cms_rpc_address =
+  > "http://${local.private_dns_services_2.backend}:8081"` **as an input to `module "backend_euwest1"`**,
+  > and `terraform/production/locals.tf:22` binds `backend = "backend.internal.anthropos"`. Two
+  > independent searches (`rpc_addr` repo-wide; `8081` over every `*.tf`) agree it is the **only**
+  > `.tf` occurrence in the repo. **So M809 landed in production too, and its shape is the local one:
+  > the address the platform hands `backend` for "cms" is `backend` itself.**
+
+  **The clone-set premise was true and the conclusion drawn from it was not.** `infrastructure` is not in
+  the standing clone set — `make init` does not clone it, no `stack-*/` holds it, and the ~31 corpus lines
+  citing it are **sound but not re-derivable in place** without cloning the repo again. That is a fact
+  about our habits, not a limit on measurement; this bullet declared the value closed to measurement from
+  here until iter-132 spent one `git clone` on it. **Two riders the same read established, both at
+  `infrastructure` `13c248e6`:**
+  - `infrastructure/terraform/production/services.tf:352-355` still explains the absent
+    `jobsimulation_rpc_addr` input by saying *"messenger reaches jobsim on backend's mux via its own
+    `jobsimulation_rpc_address`, wired in `module.messenger_euwest1`"* — **and `:618-621` of the same
+    file, at the same `13c248e6`, says that module is deleted.** The comment is stale **in the
+    platform's own terraform**.
+  - `infrastructure`'s own narrative docs @ `13c248e6` (`CLAUDE.md:85-86`,
+    `knowledge/architecture.md:87-88`, `knowledge/service-dependencies.md:115-116`) all describe
+    `module.messenger_euwest1` wiring **four** RPC addresses to backend. That module does not exist.
+    **Grade against `services.tf`, never against those pages** —
+    [`platform-alignment.md` § 6](../ops/platform-alignment.md), *the platform's CONFIG is
+    its documentation of record; its NARRATIVE docs are not.*
   **What IS measurable is only the shape the address would be built from, and it is a derivation, not a
   reading:** the `app` service deploys as `local.project = "backend"` (`app/terraform/locals.tf:6` @
   `b948604f`, unchanged at `ad9f3c49`); it takes a Cloud Map service-discovery namespace **id** as an
@@ -324,7 +354,7 @@ internal/
 ## Interface Discovery
 
 * **GraphQL Federation**: schemas at `internal/web/backend/graphql/graph/schemas/*.graphqls`. Federated into the supergraph as the `backend` subgraph — **the only one left**, and on a local stack the frontends now reach it directly at `:8082/graphql/query` rather than through a router.
-* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. **There is no external caller left, and no address to be one with.** `messenger` was the last, and it reached four surfaces — `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`, `SKILLER_RPC_ADDR` — all reading `http://backend:8083` — **but only two of them because `d11a403` moved them** (`CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR`; the other two already held that value at `d11a403^`, and `BACKEND_USERS_RPC_ADDR` never addressed anything but `backend` from `3e85fce` on). *"…pointed at `http://backend:8083` by `d11a403`"* over all four was the false form and is corrected at M257x iter-115; M809 did land, on two variables. All four were set on messenger's own compose block and nowhere else, under compose's own comment *"cms + jobsimulation are folded into app: all four RPC edges are the one backend mux"*. `838d907` deleted that block, so **compose now sets zero `*_RPC_ADDR` variables** and the only cross-process **Connect-RPC** edge out of `backend` on a `core` stack is `backend → sentinel` (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48` @ platform `0c91421`). **It is not the only cross-process edge:** `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31`), and Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The earlier two-of-four split (`http://cms:8091` / `http://jobsimulation:8401`, true at platform `2adcf71`) is history twice over. `app`'s own source comment still says *"additive + DORMANT: external callers (messenger) keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**"* (`app/main.go:1205-1211` @ `b948604` v1.366.0) — **that comment is now stale in `app`**; grade the address against compose, not against the comment. **This bullet used to close by naming a production terraform address. That assertion is DROPPED, not softened.** Measured 2026-08-06 by two mechanisms — `git grep` at each clone's own HEAD over the 44 tracked `.tf` files in the 13-repo `stack-demo` clone set, and a raw filesystem grep over the 59 `.tf` files in the same working trees — **no terraform anywhere in the clone set names `http://backend.internal.anthropos:8081`**. The literal does occur **6 times** across the clone set, none in terraform — the count and its per-repo derivation are stated **once**, in the *RPC re-pointed, then un-set* bullet of the fact-sheet above, and are deliberately not restated here; the `app` occurrence is a past-tense markdown KB page, which is not terraform and must not be cited as if it were. **And the one tree that could settle the production value, `infrastructure`, is in no clone set** — see the *RPC re-pointed, then un-set* bullet in the fact-sheet above for the full derivation, and [`platform-migration-status.md`](../architecture/platform-migration-status.md) for the fenced unmeasurable-claims convention. Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
+* **Connect-RPC**: `rpc.go` is the top-level wire-up. Look there for the implemented services. **There is no external caller left, and no address to be one with.** `messenger` was the last, and it reached four surfaces — `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR`, `SKILLER_RPC_ADDR` — all reading `http://backend:8083` — **but only two of them because `d11a403` moved them** (`CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR`; the other two already held that value at `d11a403^`, and `BACKEND_USERS_RPC_ADDR` never addressed anything but `backend` from `3e85fce` on). *"…pointed at `http://backend:8083` by `d11a403`"* over all four was the false form and is corrected at M257x iter-115; M809 did land, on two variables. All four were set on messenger's own compose block and nowhere else, under compose's own comment *"cms + jobsimulation are folded into app: all four RPC edges are the one backend mux"*. `838d907` deleted that block, so **compose now sets zero `*_RPC_ADDR` variables** and the only cross-process **Connect-RPC** edge out of `backend` on a `core` stack is `backend → sentinel` (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48` @ platform `0c91421`). **It is not the only cross-process edge:** `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31`), and Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The earlier two-of-four split (`http://cms:8091` / `http://jobsimulation:8401`, true at platform `2adcf71`) is history twice over. `app`'s own source comment still says *"additive + DORMANT: external callers (messenger) keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**"* (`app/main.go:1205-1211` @ `b948604` v1.366.0) — **that comment is now stale in `app`**; grade the address against compose, not against the comment. **This bullet used to close by naming a production terraform address. That assertion is DROPPED, not softened.** Measured 2026-08-06 by two mechanisms — `git grep` at each clone's own HEAD over the 44 tracked `.tf` files in the 13-repo `stack-demo` clone set, and a raw filesystem grep over the 59 `.tf` files in the same working trees — **no terraform anywhere in the clone set names `http://backend.internal.anthropos:8081`**. The literal does occur **6 times** across the clone set, none in terraform — the count and its per-repo derivation are stated **once**, in the *RPC re-pointed, then un-set* bullet of the fact-sheet above, and are deliberately not restated here; the `app` occurrence is a past-tense markdown KB page, which is not terraform and must not be cited as if it were. **The tree that settles the production value, `infrastructure`, is not in the standing clone set — and it HAS been read: production names `http://backend.internal.anthropos:8081` exactly once, at `infrastructure/terraform/production/services.tf:346`, as `module "backend_euwest1"`'s `cms_rpc_address` input** (M257x iter-132). The derivation, the two independent searches behind the *exactly once*, and the two stale-comment riders are stated **once**, in the *RPC re-pointed, then un-set* bullet of the fact-sheet above; do not restate them here. Services include `lab.v1.LabSessionService`, `SkillerService` (`internal/rpc/skillerrpc/`), `JobSimulationService` and `CMSService`. Note the RPC server runs with a **60s write timeout** — the ported skiller RAG/LLM methods can exceed the old 10s default.
 * **HTTP** (port 8082): Clerk webhooks, payment webhooks, document upload/convert endpoints, "Talk to Data" SSE.
 
 ### Upstream consumers
