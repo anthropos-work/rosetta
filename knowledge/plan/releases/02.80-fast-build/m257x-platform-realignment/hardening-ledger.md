@@ -2561,3 +2561,18 @@ were invisible to every scoped invocation and fell out of the first whole-suite 
 **That is an input to the scope decision the milestone is holding, not a request for a fourth pass.**
 The cheapest change is not another harden pass: it is that **an iter's close should run the whole suite,
 or the milestone should say out loud that it does not.**
+
+**Knowledge backfill (`a027bd9`).** All three classes are promoted out of this ledger into
+`corpus/ops/platform-alignment.md` §5, following pass 26's precedent with rule 53 — the ledger outlives
+the pass, not the milestone:
+
+* **rule 58** — a conjunction of two whole-document predicates is not an association check, *plus the
+  trap*: do not reach for a character window, it is the obvious fix and it is fitted. Carries the
+  tree-wide sweep result so no future pass re-derives it.
+* **rule 59** — a fence that FALSE-REDs is worse than one that misses when its only remedy disarms it.
+  The sibling of rule 8 facing the other way: 8 is a green that checked nothing, 59 is a red that found
+  nothing.
+* **rule 60** — nothing runs the whole suite per-iter, so a fence can go RED and stay RED; iter-121 made
+  a 20-minute run *watchable*, and watchable is not *watched*.
+
+Guard family re-run after the corpus edit: 22 members, **18 GREEN · 0 RED**, unchanged.
