@@ -114,3 +114,111 @@ direction R4 was declared generous in *before either sample was drawn*. Full tab
 to a code block and imperative checklist steps (all 4 drops); and *"the subject is a repo no clone set
 contains"* — `chronos`, `db-backup` (all 3 hedges), which `R2` never learned about because its
 `UNCHECKABLE` list is keyed on vendor-internal phrases, not un-cloned first-party repos.
+
+---
+
+## 3. Priority 1 — the consequence-class false claims, found and repaired
+
+**Method.** Six independent readings, one slice each, over the sealed consequence class
+(**`|C1|` = 340**, the tier-2 members whose sentences touch security, data-handling, identity,
+tenancy, residency, backup or access). **340 / 340 read.** Every clone was read **at a ref** via
+`git show <ref>:<path>` / `git grep <ref>` — never a working tree, because **five of thirteen clones are
+behind their own origin** (`storage` by 20 commits) and the standing rule is that a stale substrate
+*manufactures evidence against a true claim*. Nothing in `stack-demo/` was written.
+
+**Result: 13 distinct false claims → 30 repaired sites**, because four of the thirteen are **predicates**
+whose twins had to be swept (§5 rule 54). 17 files, +137/−38 lines.
+
+### 3a. The headline — the third security-surface UNDERSTATEMENT of this milestone
+
+> `security_compliance.md` said the REST surface *"has no blanket authz middleware — two of its **six**
+> groups opt into one (`cbGate`), the rest authorize per handler or not at all."*
+
+`app` mounts **ELEVEN** non-test Echo groups on the **one** REST instance
+(`internal/web/web.go:124-163` @ `ad9f3c498`). The table enumerated only the six declared inside
+`backend.go`. Of the five it never saw, **three never touch the Clerk `authn` middleware**, and one has
+**no authentication at all**:
+
+| missing group | gate |
+|---|---|
+| **`/api/invitations`** | **`cors` ONLY.** `web.go:145-146`: *"Public invitation JSON endpoints (no auth required)"* |
+| `/content/admin` | no Clerk authn — a bearer shared secret is the whole gate |
+| `/v1/labs` | no Clerk authn — an org API key + `labs:write` scope |
+| `/academy/embeddings` | `cors` + `authn` |
+| `/api/workforce` | `cors` + `authn`, but grouped off the **root** `e`, so despite its `/api/` prefix it does **not** inherit the `/api` stack |
+
+**This is the THIRD correction to that one paragraph.** iter-120 over-stated it (*"every Echo group … and
+nothing else"*); iter-121 corrected the quantifier; run 81 found the **denominator** had been six all
+along. **Both earlier repairs re-derived from `backend.go` — because that is where the previous sentence
+pointed.** A count is only as wide as the search that produced it, and a repair that inherits its
+predecessor's search inherits its blind spot.
+
+### 3b. The four predicates, and the widest one
+
+| predicate | sites | note |
+|---|---|---|
+| *"Ant Academy is an internal `@anthropos.work`-only portal"* | **14 in 9 files** | refuted at **iter-115 in `ant-academy.md`'s own Clerk bullet** — which then sat **469 lines below an opening sentence that still said it**. `CLAUDE.md` carried it too |
+| *"the Clerk org role set is {`admin`, `basic_member`}"* | **5** | there are **three**; `content_creator` is set on Clerk memberships, read back from webhooks, **synced into Sentinel**, and gates studio-desk entirely. The file already named it in its SDK table — enumeration and counter-example in one document |
+| the REST group count | 3 | above |
+| *"OAuth / social — not used, mobile is email+password only"* | 1 | **both halves false** — Google **and** Microsoft Clerk OAuth, at `origin/main` `f97ba6599` **and** at `8297c684`, the ref the page pins, so not clone drift |
+
+**My first reach regex found 4 of the 14.** Widening it found the rest. **The near-miss was the
+enumeration, not the repair** — recorded because it is the same failure the headline describes, committed
+by me, one hour after writing it down.
+
+### 3c. The nine singletons, by consequence
+
+- **`clerkenstein.md`** — remote reach called *"opt-in via `--public-host`"*; it has been **DEFAULT-ON
+  (opt-out) on the demo path since M220** (`D-DESIGN-3`). **The exposure axis** — a reader believed a
+  bare `/demo-up N` stayed local when it auto-publishes an unauthenticated, authz-weakened stack.
+- **`cms.md`** — `StudioDocument` glossed *"(simulation blueprints)"*; it is a **customer-uploaded
+  attachment and its extracted full text**. A **data-classification error in the very doc that declares
+  those tables 100 % customer data**, and the schema notes it carries no Ent privacy policy.
+- **`messenger.md`** — Redis credited with *"scheduled-message storage"*. Messenger stores nothing in
+  Redis and `Schedule` is `CodeUnimplemented` — which this page already said 12 lines above. A
+  retention/GDPR reader was sent to a store that holds no payloads.
+- **`backend.md`** — `jobsimfeedback` called *"signals routed back to the skills domain"*. It is a
+  **satisfaction survey**: no skill field, no skill edge, no route into the skills domain at all — and
+  the mislabel hid that the table holds **user-authored free text**.
+- **`ai-labs.md`** — grader/solution assets attributed to `s3_workspace_store.go`, which backs exactly
+  one object kind. **The privacy claim it wrapped is TRUE**; it was bolted to the wrong file, sending an
+  auditor of that asset's access control to a store that never holds it.
+- **`ant-academy.md`** — the mobile bundler *"bundles `code/public/content/`"*. It reads
+  **`<repo-root>/content/`**, deleted at `8199ea5d`: **0** entries there against **3,406** under
+  `code/public/content/`. The script ENOENTs and bundles nothing.
+- **`graphql-wundergraph.md`** — `/graphql` serves Apollo Sandbox **in development only**; unqualified,
+  it over-stated production exposure.
+- **`ant-academy.md`** — *"the platform's `/ant-*` skills in Rosetta"*: **there are none** (16 skills, 0
+  matching).
+- **`hiring.md`** — two in-file pins landed on the wrong construct because **iter-102 re-derived them by
+  adding +23 and +16 to the old numbers instead of re-measuring**. *Arithmetic on a citation is not a
+  citation.* Re-measured: `:196-209` and `:176-187`.
+
+### 3d. Reach — with its denominator, and its limit
+
+| statement | number | denominator |
+|---|---|---|
+| C1 read | **340 / 340 = 100 %** | the sealed consequence class at this tree |
+| distinct false claims | **13** | of 340 read |
+| sites repaired | **30**, 17 files | 13 claims × their predicate twins |
+| census movement | **1,160 → 1,150** | the repairs added evidence; ratchet holds |
+| **C1's share of the corpus's consequence surface** | **37.1 %** | 1,598 consequence-class sentences in the census's 41 files vs 2,714 in `corpus/ops/**` + `corpus/tools` + `CLAUDE.md`, which the census **never reads**. `CLAUDE.md` alone holds **108**, 0 enumerated |
+
+**That last row is the honest limit of this reading, and it is the one to quote.** The census scope is
+`corpus/services/*.md` + `corpus/architecture/*.md`. **`corpus/ops/**` and `CLAUDE.md` are outside it
+entirely** — and `CLAUDE.md` is the file every agent loads. (Caveat, stated because the two numbers are
+different measures: 1,598 counts *all* consequence-class sentences in scope, while `|C1|` = 340 counts
+only the **unevidenced** subset. The 37.1 % is a statement about **which files the census reads**, not a
+defect rate.) Predicate B was found *inside* C1 but **8 of its 14 sites were outside the census scope**
+— the enumeration only reached them because the repair was driven by predicate rather than by the
+census's own list.
+
+### 3e. Against the prediction
+
+iter-124 printed `fix = 4` over `|C1| = 344` and recall-corrected it to **≈ 11**. This run read the same
+class exhaustively and found **13**. The estimate was **good** — but note what it was an estimate *of*:
+iter-124's own `fix` sites were *repaired*, so they had left tier-2 before this run began (the triage
+prints `fix = 0` now). **13 is a fresh count over a re-derived population, not 4 + 7**, and the two must
+not be added. The agreement is evidence the recall correction was sound; it is not a measurement that
+the class is now empty — **`fix` remains a floor**, and 8 of the 13 were found only because the reading
+went outside the census's own flagged set.
