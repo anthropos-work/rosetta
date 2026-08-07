@@ -454,6 +454,19 @@ Genuinely-deferred work, no target version, not scheduled:
   **auto-runs** a token-less `npm install` when `node_modules` is absent. A fresh `/demo-up` now brings ant-academy up
   automatically (**proven live on :33077**).
 
+**Dropped, and this file is now their OWNER (moved out of `state.md` at M257x iter-129).** They were recorded
+in `state.md`'s rotating § Standing backlog and **nowhere else** — a `phase:`-adjacent index every close
+overwrites, which is one close away from being unattributable. Three items, one line each, so the drop is
+attributable without reading a plan record:
+
+- **`DEF-M250-01`** — dropped at the v2.7 close (2026-07-25). Recorded here so the drop survives the index that
+  carried it.
+- **`CAVEAT-1`** — a v1.x-era vision caveat, never scheduled, never re-proposed. Still unscheduled; re-proposal
+  requires a fresh `/developer-kit:design-roadmap` run like every other item on this page.
+- **`PT-M256-resume-fixture-pair`** — **premise dissolved** at the M256 close: the resume-fixture pair it was
+  proposed for stopped existing when the Playthrough it belonged to was re-shaped, so there is nothing left to
+  build. Dropped rather than carried, per the three-fate rule.
+
 **Dropped from tracking (2026-06-11, user instruction — re-proposal requires a fresh `/developer-kit:design-roadmap` run):**
 the former v1.4 seeds **AI-generated content** and **more mirror engines**; the **deployment/injection CI gate** (a
 local-only alignment surface; gates nothing in the demo/dev workflow); and the **`/dev-up` frontend-image pre-warm**

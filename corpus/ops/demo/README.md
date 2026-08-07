@@ -242,7 +242,8 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   provably clean** — residual re-identification risk is real and **ACCEPTED by the data-controller (2026-07-19)**;
   the control is the **VPN/tailnet scope**. **Re-tenanted**, **non-manager-played** (owner = a seeded player
   member), **source-pinned** (deterministic reseed; disclosed in the `content_sessions` manifest block). The full
-  result fan-out (session + the `local_jobsimulation_sessions` MIRROR + attempt/skill/criterion/check results +
+  result fan-out (the one canonical `public.job_simulation_sessions` row — the `local_*` MIRROR it named until
+  M257x iter-129 was dropped by `app` `20260729133514.sql` — + attempt/skill/criterion/check results +
   transcript actors/interactions + the net-new **CODE**/**DOCUMENT** substrate + the **INTERVIEW** report), all
   G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
   aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8

@@ -349,7 +349,7 @@ org-intelligence seat.
 | **quiet** — an `organization_id`-bearing row for a user with no org | nothing at all; it is simply wrong | **measurement**: reseed, then sweep the live DB for her uuid across every uuid column |
 
 Both arrived inside one iter. The loud one was the succession seeder FK-ing a population session she no longer
-had. The quiet one was two `jobsimulation.sessions` rows carrying an `organization_id`, plus activity events,
+had. The quiet one was two `public.job_simulation_sessions` rows carrying an `organization_id`, plus activity events,
 skill-path sessions, assignments and bookmarks that made a *day-0* user look like a returning one. **Say which
 half a fence covers.** A static scan cannot see an `organization_id` write, and a fence that implied otherwise
 would be more dangerous than none — the half it misses is the half that fails silently.
@@ -1350,7 +1350,7 @@ spec that writes and only checks a toast, a closed modal, or in-page client stat
 that state exists and why it is not a synonym for "probably fine". The fence exists because the count was wrong
 in **both** directions when it was merely read off the specs:
 - `pt-aisim-chat-launch` was assumed to mutate ("clicks Start Simulation"). It writes **nothing**: reaching
-  `/sim/<slug>/start` and rendering the launch confirmation created **0** `jobsimulation.sessions` rows. The
+  `/sim/<slug>/start` and rendering the launch confirmation created **0** `public.job_simulation_sessions` rows. The
   session is written past the welcome dialog, on the far side of the §5.8 live-AI boundary.
 - `pt-skillpath-legacy` does mutate, but not observably where its own comment implied: `Start` writes a
   `public.skill_path_sessions` row that lands `progress=0, started_at=NULL`, and next-web's CTA needs one of
@@ -1567,8 +1567,9 @@ specified in [`coverage-protocol.md` § "Content stories — the (session × act
 the same `loginAs()`, exploiting its **`landingPath`** option to enter directly on the result URL. As with
 Playthroughs, the seat-switch was **reused, never forked**.
 
-**Where they meet:** the manager-view MIRROR trap. Both suites depend on `local_jobsimulation_sessions` /
-`local_skill_path_session` being seeded — a manager scoreboard reads the mirror, not the source table
+**Where they meet:** the manager-view trap — ⚠️ **it was a MIRROR trap until M257x iter-129 and the mirrors
+are gone.** Both suites depend on the canonical `public.job_simulation_sessions` /
+`public.skill_path_sessions` rows being seeded — a manager scoreboard reads them
 (`content-stories-routes.md`). M236 found the mirror correctly populated (13/13) while the manager
 scoreboard still rendered `No data` + `undefined undefined`, proving the mirror is **necessary but not
 sufficient** for the manager vantage.

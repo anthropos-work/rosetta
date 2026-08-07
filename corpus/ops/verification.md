@@ -245,7 +245,9 @@ candidate-comparison scoreboard is populated **entirely from the auto-set-dress*
 HIRING sims ride along in the **standard** directus content-surface capture; there is **no** separate 5-sim capture and
 **no `directus.job_position` replay** — 0 rows, unread by the scoreboard, M222 BA-6 / M223 D4) as the org's
 `organization_sim_invitation_links` **positions**, and the `HiringFunnelSeeder` writes each candidate's scored
-`local_jobsimulation_sessions` **mirror** row (the score the scoreboard reads).
+`public.job_simulation_sessions` row (the score the scoreboard reads). ⚠️ **This said "the
+`local_jobsimulation_sessions` MIRROR row" until M257x iter-129** — `app` `20260729133514.sql` dropped that
+table, so a probe written against the old name would have counted a relation that does not exist.
 
 The silent failure it catches: a **cold snapshot cache** (or a starved HIRING-typed pool) leaves `readHiringSimPool`
 **empty** → the seeders **honestly degrade** to 0 positions / 0 sessions (never fabricate) → the recruiter comparison
@@ -257,7 +259,7 @@ downstream M224/M226 render gate as the loud catch; this cheap-win brings that c
   hiring-less demo (a non-stories preset, or `DEMO_STORIES=0`) **skips cleanly**, never false-warns (the same
   discipline as the directus container-presence gate).
 - **Floors:** `≥ 5` positions (the shared-positions contract, `reservedHiringSimRefs`; `< 5` is the cold-cache /
-  starved-pool "dangerous middle") **and** `≥ 40` candidate `local_jobsimulation_sessions` for the hiring org (a full
+  starved-pool "dangerous middle") **and** `≥ 40` candidate `public.job_simulation_sessions` for the hiring org (a full
   comparable cohort — a robust weak lower bound; the ~200 the funnel seeds is the healthy number, and the **strong**
   per-sim `≥ 40` floor is the M224/M226 render probe, not this cheap bring-up assert).
 

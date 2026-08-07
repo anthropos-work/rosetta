@@ -10,10 +10,10 @@ your people level up" demo.
 
 The believability of a progression demo is entirely in the **backdated activity**. The seeder's activity
 generator (the M7c fleet) emits, per user:
-- **job-sim sessions** (`jobsimulation.sessions`) — 1–3 per user, each with a backdated `created_at` spread
+- **job-sim sessions** (`public.job_simulation_sessions`) — 1–3 per user, each with a backdated `created_at` spread
   deterministically across the activity span, a `pass/fail` result per the blueprint's `pass_rate`, and a score;
-- **skill-path sessions** (`skillpath.skill_path_sessions`) — 0–2 per user, with progress;
-- **activity events** (`jobsimulation.activity_events`) — a per-session event trail (started → tasks → ended);
+- **skill-path sessions** (`public.skill_path_sessions`) — 0–2 per user, with progress;
+- **activity events** (`public.activity_events`) — a per-session event trail (started → tasks → ended);
 - **assignments** (`public.organization_assignments`) — the admin assigned content to ~half the members.
 
 All of it is time-distributed across `activity.months`, so the growth charts show a curve, not a spike.
@@ -41,10 +41,10 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
 2. **Confirm the activity landed** (the seed output shows the row counts):
    ```bash
    docker exec demo-1-postgresql-1 psql -U postgres -d postgres -tAc \
-     "select 'jobsim_sessions='||count(*) from jobsimulation.sessions;
-      select 'skillpath_sessions='||count(*) from skillpath.skill_path_sessions;
-      select 'activity_events='||count(*) from jobsimulation.activity_events;
-      select 'earliest='||min(created_at)||' latest='||max(created_at) from jobsimulation.sessions;"
+     "select 'jobsim_sessions='||count(*) from public.job_simulation_sessions;
+      select 'skillpath_sessions='||count(*) from public.skill_path_sessions;
+      select 'activity_events='||count(*) from public.activity_events;
+      select 'earliest='||min(created_at)||' latest='||max(created_at) from public.job_simulation_sessions;"
    ```
    You should see thousands of sessions/events with `created_at` spread across the full year.
 

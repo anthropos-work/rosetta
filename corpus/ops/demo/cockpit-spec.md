@@ -258,7 +258,8 @@ redirect (`UserStatusContext`, by design) the moment her org reads as hiring (cl
 "reachable inside `apps/web`" are **mutually exclusive on the real platform**. Rather than fake it with a re-skin,
 the demo **runs the genuine `apps/hiring` as a second UI container** (built from the untouched clone, offset port,
 same fake FAPI + same Cosmo backend + same seeded Postgres). The platform's **own** symmetric guard keeps the
-recruiter *in* the hiring app; she reads the **same** seeded `local_jobsimulation_sessions` the scoreboard reads.
+recruiter *in* the hiring app; she reads the **same** seeded `public.job_simulation_sessions` rows the
+scoreboard reads (this named the dropped `local_jobsimulation_sessions` mirror until M257x iter-129).
 No forcing, no fiction — see [`../../services/hiring.md`](../../services/hiring.md) § the render path and
 [`demopatch-spec.md`](demopatch-spec.md) § the four hiring-image patches.
 

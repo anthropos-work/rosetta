@@ -84,7 +84,8 @@ moment a human presses play. The demo holds only a **reference** (`bunny_video_i
 
 To exhibit a recording the `ContentStorySeeder` writes, into the **per-stack demo Postgres only**:
 
-1. `jobsimulation.sessions.chime_status = 'completed'` on the re-tenanted content-story session, and
+1. `public.job_simulation_sessions.chime_status = 'completed'` on the re-tenanted content-story session
+   (read `jobsimulation.sessions.…` until M257x iter-129; a demo stack never creates that schema), and
 2. a `ChimeRecording` row for that session carrying the **real `bunny_video_id`** captured (read-only) from the
    pinned source session.
 

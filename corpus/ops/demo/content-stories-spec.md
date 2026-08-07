@@ -139,7 +139,7 @@ Every SIMULATION row carries two language fields (the non-simulation exhibits ca
 real played sessions):
 
 - **`language`** ∈ `english | italian` — the REAL language the source session was played in (the source's
-  `jobsimulation.sessions.language`, copied onto the pin and written to the clone's session row so the demo
+  `public.job_simulation_sessions.language`, copied onto the pin and written to the clone's session row so the demo
   renders the story in its intended language). The fixture `Validate` requires a valid language on every pin
   (a missing/unknown one fails loud at load — the seeder never falls back to a wrong label). Before M241 the
   seeder hard-coded every clone to `english`, mislabeling the 11-of-13 Italian pins.

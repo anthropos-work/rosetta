@@ -281,14 +281,20 @@ tmux attach -t anthropos-academy   # detach with Ctrl+B D
 
 ### Verify
 
-Open <http://localhost:3077>. You should land on the Clerk sign-in page; sign in with an `@anthropos.work` Google account.
+Open <http://localhost:3077>. **You land on the public catalog, not a sign-in page** — `/` is an explicitly
+public route (`ant-academy` @ `22df69dd8`, `code/proxy.js:170`, in the `createRouteMatcher` list at `:112`
+with the comment *"M4 public catalog — the front door"*; `isPublic(req)` returns before `auth()` is ever
+called). Sign in from the account menu when you want the org tier. ⚠️ **This said *"you should land on the
+Clerk sign-in page; sign in with an `@anthropos.work` Google account"* until M257x iter-129** — the
+`@anthropos.work`-only predicate was refuted at iter-115 and this guide was one of the sites the repair
+sweep did not reach.
 
 ### Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Redirect to `/no-organization` | Org-membership gate (default ON) | Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` in `code/.env` for solo dev |
-| Sign-in fails with "domain not allowed" | Account not on `@anthropos.work` | Sign in with a work account, or update the Clerk app's allowed domain |
+| Sign-in fails with "domain not allowed" | **Not an app gate** — there is no email-domain allowlist in `ant-academy` (`git grep -n "allowedDomain\|emailDomain\|endsWith('@anthropos" 22df69dd8 -- code` → **0 hits**). If you see this, it is the **Clerk instance's own** sign-up restriction | Check the Clerk app's allowed domains in the Clerk dashboard. The only gate in the app itself is `REQUIRE_ORGANIZATION_MEMBERSHIP` (the row above) |
 | 401 from `/api/ai/chat` | Missing `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` server-side | Fill `code/.env` with the server keys (different from the in-app Cosmo's localStorage key) |
 
 ### Mobile App (Optional)

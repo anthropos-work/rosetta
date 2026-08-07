@@ -432,7 +432,8 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
    *execution at bring-up* — booting the Directus as a per-stack compose service — landed in **M22**
    (`prop-room-m22`): a `--local-content` stack executes bootstrap → apply-structure → replay → boot. The
-   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at it — **landed in M23** (`prop-room-m23`): a
+   *cutover* — re-pointing the data-plane consumers' `DIRECTUS_BASE_ADDR` at it (`DIRECTUS_DATA_CONSUMERS =
+   ("cms", "backend")`, and **`backend` is the one that reads**) — **landed in M23** (`prop-room-m23`): a
    `--local-content` stack now serves its catalog from its OWN Directus, content-self-contained. See the
    known-state note below.)
 3. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
@@ -455,7 +456,7 @@ executes no step — and reads public content live from prod. See [`directus-loc
 
 **Known state (post-M23) — two paths: the self-contained `--local-content` path (the converged end-state) and
 the prod-read fallback.** Since M23 a **`--local-content` stack is content-self-contained**: it boots its own
-per-stack Directus, the directus replay **exits 0**, and `cms`'s `DIRECTUS_BASE_ADDR` is cut over to the
+per-stack Directus, the directus replay **exits 0**, and **`backend`'s** `DIRECTUS_BASE_ADDR` is cut over to the
 in-network instance (asset plane stays on prod). This is the **default for every demo** and **opt-in for any
 dev-N≥1**. The **prod-read path is now the documented *fallback*** — taken by a stack **without** local content
 (a plain dev bring-up, or `DEMO_NO_LOCAL_CONTENT=1`). On that fallback path the stack has **no local Directus**:
@@ -476,7 +477,7 @@ and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved 
 query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
 **collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
 **executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
-own Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
+own Directus (re-point **`backend`'s** `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
 #M23-D5) so closure is **measured, not assumed**. The taxonomy capture is **full-public** (`organization_id IS NULL` — every
 public node), so closure is maximal by construction; the only residual is a content ref pointing at a *non-public*
 node, which is a **prod data inconsistency** the gene surfaces (prod has exactly **1**: `K-AIFUNX-E658`,
@@ -808,7 +809,7 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
    when the bring-up passes **`--local-content`** (dev opt-in; demo default), the pass **executes** the recipe
    (bootstrap → apply-structure → replay → boot the per-stack Directus compose service) behind that
    now-**load-bearing executed** firewall gate, and since **M23** the same `--local-content` pass also performs the
-   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
+   *cutover* — re-pointing **`backend`'s** `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
    and stripping its prod token, so a `--local-content` dev stack reads its catalog from its OWN Directus (asset
    plane stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` unchanged). **Without** `--local-content` the recipe is
    printed + the env validated but no step runs (the M9b/M10 "operator's step" discipline) and the dev CMS still

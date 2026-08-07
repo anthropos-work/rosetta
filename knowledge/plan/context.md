@@ -148,9 +148,42 @@ because a field that cannot grow cannot become a sink:
 | `last_closed` | ≤ 120 | ID + date |
 | `phase` | ≤ 900 | the CURRENT blocker/gate state + **a pointer to `progress.md`** |
 | `last_updated` | ≤ 40 | ISO date |
-| **frontmatter total** | **≤ 2,600** | |
-| **body total** | **≤ 12,000** | |
-| **file total** | **≤ 15,360** | unchanged; blocking at every close |
+| **frontmatter total** | **≤ 1,860** | ⚠️ was 2,600 until M257x iter-129 — see the box below |
+| **body total** | **≤ 13,500** | ⚠️ was 12,000 until M257x iter-129 — **raised against a measurement, once** |
+| **file total** | **≤ 15,360** | unchanged; blocking at every close, and **the only one of the three that binds** |
+
+> ### The body budget was raised at M257x iter-129, and here is the whole derivation
+>
+> **The old triple was arithmetically incoherent.** `12,000 + 2,600 = 14,600 ≠ 15,360` — 760 bytes belonged
+> to no budget at all, so "every field in budget" and "the file in budget" could both be true while 760 bytes
+> sat unaccounted. The new pair **sums exactly to the file cap**, which is the property a partition needs.
+>
+> **12,000 was set without measuring what the body uniquely owns**, and iter-128 found it was unmeetable by
+> this contract's own method (*"move it to its owner"*) — the body sat at 13,163 and three probes found
+> `state.md` was the sole owner of the content. **iter-129 re-ran those probes and two of the three had
+> targets after all:**
+>
+> | iter-128's probe | iter-129's re-measurement |
+> |---|---|
+> | § Standing backlog — *"7 of 14 items appear nowhere else"* | **3, not 7.** `PERF-M256-parallel-lane`, `PT-M257-self-evaluation` and `PT-M257-talk-to-data` are each in `roadmap.md`; `platform-defect-register` is its own file. The probe searched `roadmap-vision.md` and concluded *nowhere else* |
+> | M255 provenance — *"`roadmap.md` has the numbers, not the provenance"* | **true of `roadmap.md`, and it asked the wrong file.** The owner this table already names for per-milestone measurements is **that milestone's `progress.md`** — which is where it now lives |
+> | § Process flags | **genuinely sole-owned**, and rule 4 sanctions it as a body section. No target, correctly |
+>
+> **That is rule 57 (`corpus/ops/platform-alignment.md` § 5) pointed at a plan probe: a "no owner exists"
+> verdict is only as wide as the search that produced it.** A mirror-search finds only content that is
+> *already* duplicated — which is exactly the content that does not need moving. The question is not *who
+> else already owns this?* but ***who does this table say should own it?***
+>
+> **The measured floor after both moves: 13,069 bytes across the 11 pre-existing sections, every one of them
+> content this contract assigns to `state.md`** (13,281 once iter-129's own budget-disclosure line is
+> counted — stated, because quoting the pre-edit number as the post-edit state is the exact defect class
+> this milestone exists to catch). 13,500 is that floor plus ~1.7 %.
+>
+> **The re-raise guard, because "raise the budget" is the obvious way to make this control meaningless.**
+> A future breach is **not** licence to raise it again. It re-runs the ownership probe **against every file
+> under `knowledge/plan/`, not two of them**, and raises only if the floor moved for a reason it can name.
+> The per-field budgets — `phase:` above all — remain the real control, because a field that cannot grow
+> cannot become a sink.
 
 **`phase:` is the field that breaks first, every time.** It is written by the run that just finished, while
 that run's findings feel load-bearing — so it accretes the whole reading rather than its verdict. In

@@ -128,7 +128,7 @@ names are used only as scrub targets and are **dropped** — the fixture stores 
 
 > **The names it sources (M235 leak fix, 2026-07-19; #M235-B1).** The candidate's real first name is threaded all through
 > the LLM feedback, and it comes from the **session OWNER's `public.users` identity** (`sessions.owner_id` →
-> `firstname`/`lastname` + the email local-part) — **not** from `jobsimulation.actors` (whose `username`/`alias`
+> `firstname`/`lastname` + the email local-part) — **not** from `public.actors` (whose `username`/`alias`
 > are empty for these sessions). The original capture sourced only the (empty) actor names, so it removed **zero**
 > names and **8 of the then-9** fixtures shipped a real first name (USER-BLOCKER-M235-01; the pinned set is
 > **13** today — §2). The capture now sources the owner's
@@ -158,7 +158,7 @@ seat**. It fills the `<<ACTOR_i>>` placeholders with a minted synthetic display 
 with the demo org name, then writes, in FK order, all idempotent on `id`:
 
 ```
-jobsimulation.sessions                               (ended, completed, passed/failed — G14 enums, org-scoped)
+public.job_simulation_sessions                       (ended, completed, passed/failed — G14 enums, org-scoped)
   ├─ validation_attempt_results                      (the REAL summaries, filled; evaluation_status = the gate)
   │    ├─ validation_attempt_skill_results           (the REAL skill node-ids + the REAL feedback)
   │    │    └─ validation_criterion_results           (the REAL titles + input_data; input_format per capture)
@@ -167,12 +167,11 @@ jobsimulation.sessions                               (ended, completed, passed/f
   ├─ interactions                                    (the REAL transcript; action_type ∈ {email,call}; filled payload)
   ├─ code_submissions + collaborative_assets         (the REAL code / document work-product)
   └─ interview_extraction_results                    (the REAL user_report + manager_report, filled)
-public.local_jobsimulation_sessions                  ← THE MIRROR (the score source the manager scoreboard reads)
 ```
 
 ### The three seeding landmines it honors (M231 §7)
 
-1. **Co-write the manager MIRROR** (`public.local_jobsimulation_sessions`) or the manager scoreboard is blank.
+1. **Co-write the app-canonical session row** (`public.job_simulation_sessions` — ⚠️ this said *"the manager MIRROR `public.local_jobsimulation_sessions`"* until M257x iter-129; `app` `20260729133514.sql:62-63` DROPPED it) or the manager scoreboard is blank.
 2. **Reference only public-anchored sims** — the pinned `sim_id` IS public-published, so it resolves.
 3. **Enable the interview PostHog flags** — §5.
 

@@ -141,28 +141,24 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
   prove-on-billion a–h live; **zero carry-forward**; 0 platform edits.
 - **v2.6** 2026-07-23 (`v2.6`) · **v2.5** 2026-07-20 (`v2.5`).
 
-## Standing backlog (fated destinations)
-- **Consumed by v2.8:** the reserved Playthrough futures **M206** / **M207** were re-fated inside M256's
-  clause 3 — each has a **written verdict** rather than a sixth consecutive re-reservation.
-- **Awaiting the user's signature** (M256 close, roadmap calls not routing ones): `PERF-M256-parallel-lane`
-  (needs a cookie-scoped Clerkenstein registry or one fake-FAPI per worker — a real build; no v2.8 gate needs
-  it) · `PT-M257-self-evaluation` (re-homing an M206 reservation) · `PT-M257-talk-to-data` (blocked on
-  `ask_*` migrations **plus live Bedrock credentials**).
-- **Platform defects** (Rosetta cannot fix; zero platform edits binding) → the net-new
-  [`platform-defect-register.md`](platform-defect-register.md), **7** entries with `file:line`
-  — **3 of them M257x** (the prod-bucket compose default, the fail-open authz gate, the dev-login
-  session-mint routes). It had **zero** M257x entries until iter-102.
-- **DROPPED:** DEF-M250-01 · DEF-M215-03(a)/F11 · DEF-M239-01 · `PT-M256-resume-fixture-pair` (premise dissolved).
-- **Still unscheduled (vision):** DEF-M10-01 (S3/Bunny voice media) · DEF-M21-01 · CAVEAT-1 · M314b (platform)
-  · **M205** residual.
+## Standing backlog (fated destinations — this is an INDEX; each row's owner is the link)
+
+Every item below is owned by the linked file. iter-129 closed the last three that were owned by **this
+section and nothing else**, so no fate now depends on a field the next close overwrites.
+
+| class | owner |
+|---|---|
+| **Consumed by v2.8** — the M256-clause-3 re-fating of the reserved Playthrough futures M206 / M207, each with a written verdict rather than a sixth re-reservation | [`roadmap-vision.md`](roadmap-vision.md) |
+| **Awaiting the user's signature** — `PERF-M256-parallel-lane` · `PT-M257-self-evaluation` · `PT-M257-talk-to-data` (roadmap calls, not routing ones) | [`roadmap.md`](roadmap.md) § M256 closure |
+| **Platform defects** Rosetta cannot fix (zero platform edits binding) — **7** entries with `file:line`, **3 of them M257x**; it had **zero** until iter-102 | [`platform-defect-register.md`](platform-defect-register.md) |
+| **DROPPED** + **still unscheduled** — incl. the three moved out of here at iter-129 (`DEF-M250-01` · `CAVEAT-1` · `PT-M256-resume-fixture-pair`) | [`roadmap-vision.md`](roadmap-vision.md) § Unscheduled backlog |
 
 ## Process flags (do NOT auto-push)
 
-- 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z 2026-07-27, PRE-freeze**, with no
-  overlap with third-party activity (user-confirmed; three totals across two sessions cluster within 2 % —
-  658/666/672 s). **On the first post-freeze campaign, re-confirm three timing-derived claims:** the n=3 p50,
-  spike (a)'s 146.8 → 2.9 s export, spike (d)'s disk-bound attribution. The **barrier verdict needs no
-  re-confirmation** — 4.84 GB → 379 MB is bytes on disk, not a stopwatch.
+- 📌 **Provenance of every `billion`-measured M255 number now lives with the milestone that took it** —
+  [`m255…/progress.md`](releases/02.80-fast-build/m255-build-bench-host-headroom/progress.md) § Provenance
+  (moved there at iter-129, its first durable owner): the window, the pre-freeze condition, the 658/666/672
+  cluster, and the three claims owed a re-confirmation on the first post-freeze campaign.
 - ⚠️ **The stack's PINNED `stackseed` can be older than the authoring copy.** M256 added three `Persona`
   fields, so a `--reset` with the stack's binary **truncates the world and then fails to re-seed**, leaving it
   EMPTY. Shadow the authoring build on `PATH` for any reset. Cost the M256 close one run before it was found.
@@ -175,8 +171,10 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-08-07 — M257x iter-128. Both trees clean and pushed; `demo-1` up._
+_Last updated 2026-08-07 — M257x iter-129. Both trees clean and pushed; `demo-1` up._
 
-> **Budgets:** file + frontmatter + all six fields **within budget**; the **body is over and is not
-> trimmable by the contract's own method** — measured, derived and routed in
-> [`iter-128/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md) § 1.
+> **Budgets: every one of them met** — file 14,935/15,360 · frontmatter 1,656/1,860 · body 13,281/13,500 ·
+> all six fields in budget. The body budget was **raised once against a measurement** at iter-129 (12,000 →
+> 13,500, and the frontmatter 2,600 → 1,860 so the two now sum *exactly* to the file cap, which the old
+> triple did not). Derivation, the two probes that were narrower than their own conclusion, and the
+> **re-raise guard**: [`context.md` § state.md contract](context.md).

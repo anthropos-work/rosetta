@@ -55,7 +55,7 @@ would have produced after Maya passed a batch of simulations, **without running 
 
 ### A verified skill is a 7-table fan-out, not one row
 
-The platform produces a verified skill asynchronously: a passed `jobsimulation.session` fires a Redis-Streams
+The platform produces a verified skill asynchronously: a passed `public.job_simulation_sessions` row fires a Redis-Streams
 event that the `app` service's `JobsimulationSessionEndedHandler` turns into validation rows and the public
 profile mirrors. The `PersonaSeeder` **short-circuits** that pipeline and writes the terminal rows directly —
 per (hero × verified skill), across **three Postgres schemas**:
@@ -67,7 +67,6 @@ per (hero × verified skill), across **three Postgres schemas**:
         └─ validation_attempt_skill_results ◄───────────┘ │   (skill=NodeID, competency_level_score>0)
              └─ validation_criterion_results (3/session)  │
  ───────────────────────────────────────────────────────  │
-                                                          ├─ local_jobsimulation_sessions (the app mirror)
                                                           ├─ user_skills (is_verified=true, job_simulation_id)
                                                           └─ user_skill_evidences (UPSERT: levels+counts+verified)
  public.skills.node_id ── supplies the skill_id string (a loose ref, NOT a FK) ──┘
@@ -107,7 +106,9 @@ constraint the app layer normally enforces. Two classes:
   defaults to 5 — no settings seed needed). Store ~80 to read as 4/5. *(Two distinct scales: the
   `user_skill_evidences.*_level` columns + validation scores are 0–100; `user_skills.level` is a separate
   ~1–5 convention with no DB bound. Don't conflate.)*
-- The misspelled column **`local_jobsimulation_sessions.completition_status`** (sic) — copy it exactly.
+- ⚠️ **The misspelled column `local_jobsimulation_sessions.completition_status` (sic) is GONE** — the whole
+  table was dropped by `app` `20260729133514.sql` (M257x iter-129). Nothing to copy; the canonical row is
+  `public.job_simulation_sessions`.
 - The session `token` is a free-text varchar but the app-layer validator bounds it to `^[a-z0-9]{5,10}$` ⇒ the
   seeder writes a 7-char hex token, not a 36-char UUID.
 
@@ -407,9 +408,10 @@ Two **fixes** (not new seeders) round out the spine:
   `active` / no `due_date` / no session, so the dashboard bucketed **all** of them as `not_started`. M36 gives
   each a deterministic lifecycle bucket (~35% completed / ~15% overdue / ~35% in-progress / ~15% not-started)
   realized via `status` + a past/future `due_date` + (for completed/in-progress) an
-  `organization_assignment_sessions` row carrying progress. That session FKs a `local_skill_path_sessions` row
-  the seeder also writes — the dashboard reads the **app mirror** `local_skill_path_sessions`, NOT
-  `skillpath.skill_path_sessions` (#M36-D2), and the population has no `local_jobsimulation_sessions` mirror, so
+  `organization_assignment_sessions` row carrying progress. That session FKs a **`public.skill_path_sessions`**
+  row the seeder also writes (⚠️ `#M36-D2` said *"the app mirror `local_skill_path_sessions`, NOT
+  `skillpath.skill_path_sessions`"*; the mirror was DROPPED and `20260729133514.sql` re-pointed
+  `organization_assignment_sessions.session_id` at the canonical table — `assignments.go:75-78`, `:312`), and so
   the session takes the skill-path arm of the table's check constraint (#M36-D3).
 - **Skillpath completed share** (`skillpath_sessions.go`) — the learning-session seeder marked `completed`
   only on an exact `progress=100` (~1%), starving the learning/my-growth surfaces. M36 makes ~30% complete.
@@ -649,8 +651,9 @@ candidates) + the Clerkenstein `publicMetadata.isHiring` wiring (the browser re-
 dual-write).
 
 > **The render-gate trap (why the read-model is documented before the seeder).** The scoreboard's score renders
-> from the MIRROR table **`app.public.local_jobsimulation_sessions.score`**, **NOT** `jobsimulation.sessions.score`.
-> Seeding only `jobsimulation.sessions` yields a scoreboard that renders its chrome with every score blank — the
+> from **`public.job_simulation_sessions.score`** (⚠️ read *"the MIRROR table
+> `local_jobsimulation_sessions`, NOT `jobsimulation.sessions`"* until M257x iter-129 — the mirror is dropped).
+> Failing to seed that row yields a scoreboard that renders its chrome with every score blank — the
 > same **render-gate-bypasses-the-seed** class M219 hit with AI-readiness. Full read-model + write-set contract:
 > [`../../services/hiring.md`](../../services/hiring.md).
 
@@ -671,7 +674,8 @@ seeders build the recruiter surface (both DAG level 2, `depends=[org users conte
   position (the M219 R-3 disjoint reservation). No `directus.job_position` replay — 0 rows captured, unread by
   the scoreboard (M222 D4).
 - **`HiringFunnelSeeder`** — the candidate-assessment funnel. **CRITICAL: it writes the MIRROR pair like the
-  `PersonaSeeder` does (`persona.go` — `jobsimulation.sessions` + the `public.local_jobsimulation_sessions`
+  `PersonaSeeder` does (`persona.go` — the ONE canonical `public.job_simulation_sessions` row; ⚠️ this said
+  "the MIRROR pair … + the `public.local_jobsimulation_sessions`
   mirror), NOT the `AIReadinessFunnelSeeder` shape** (which deliberately skips the mirror and scores off frozen
   `ai_readiness_snapshots`). The recruiter scoreboard reads the score from the mirror, so skipping it renders an
   EMPTY comparison — a test **RED-proves** the fence. Per (candidate × position) it co-writes the pair,
@@ -685,14 +689,14 @@ seeders build the recruiter surface (both DAG level 2, `depends=[org users conte
   trivially). The 5 admins inherit `org:feature:insights` from the **global `p3` admin Casbin policy** via their
   standard `admin` g2 grant — no net-new grant (M223 D1). New reset surface:
   `organization_sim_invitation_links` (child-first); the session pair reuses the already-reset
-  `jobsimulation.sessions` + `local_jobsimulation_sessions`.
+  `public.job_simulation_sessions` (`resetTables` names no mirror and no `jobsimulation` schema).
 
 **Hiring-org believability (v2.4 "casting call" M227 "the notes" — seed/content only, 0 platform edits).** Three
 corrections make the hiring org *read* as real: **(#M227-D1) hiring-only content** — the generic workforce activity
 seeders (`PersonaSeeder`, `ActivitySeeder`, `JobsimSessionsSeeder`, `SkillpathSessionsSeeder`, `AssignmentsSeeder`,
 `HeroActivitySeeder`) **skip a hiring org** via the shared `hiring_scope.go` `IsHiringOrg()` guard, so its *entire*
 simulation footprint is the HiringFunnel's HIRING-typed sims and the recruiter's AI-Simulations list (fed by the
-`local_jobsimulation_sessions` mirror) shows **hiring-only** rows — no training/assessment leakage. The candidate
+canonical session row) shows **hiring-only** rows — no training/assessment leakage. The candidate
 heroes' usable profile then comes from the HiringFunnel `/home` assignment + scored positions, not the (admin-gated,
 unreachable) verified-skill chain, so the skip loses nothing visible. **(#M227-D2) external candidate emails** — the
 email domain is keyed on **role**, not story: a `candidate` gets a deterministic **external** consumer domain
@@ -832,8 +836,8 @@ seeded, set-dressed world.
 
 ## Safety
 
-Every table the chain writes — `jobsimulation.sessions`, `validation_attempt_*`,
-`validation_criterion_results`, `public.local_jobsimulation_sessions`, `public.user_skills`,
+Every table the chain writes — `public.job_simulation_sessions`, `validation_attempt_*`,
+`validation_criterion_results`, `public.user_skills`,
 `public.user_skill_evidences` — is **`PerStackIsolated`** (the stack's own offset-port Postgres container), so
 the chain inherits the existing zero-pollution posture: it cannot touch production or another stack, and the
 seeding run's audit log proves it. See [`../safety.md`](../safety.md) §2.1. The taxonomy it reads is the

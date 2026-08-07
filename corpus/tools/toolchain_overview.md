@@ -51,7 +51,7 @@ Tools specific to developing, building, and running the Go-based microservices.
 *   **Atlas**
     *   *Function*: Database Schema Management.
     *   *User*: Backend Engineers.
-    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations (`public`, `cms`, `jobsimulation`, `skillpath`) and versioning. Used via `atlas migrate apply`.
+    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations — **two pipelines, both declared in `app`**: `env "local"` → the **`public`** schema (`app/atlas.hcl:6-19`, dir `terraform/migrations`) and `env "sentinel"` → the **`sentinel`** schema (`:50-64`, dir `terraform/migrations-sentinel`, `revisions_schema = "sentinel"`, added 2026-08-04). Used via `atlas migrate apply --env local` / `--env sentinel`. ⚠️ **This said `public, cms, jobsimulation, skillpath` until M257x iter-129** — `cms`/`jobsimulation`/`skillpath` are legacy husks whose repos are out of the clone set, and `repos.yml` @ platform `0c91421df` lists exactly one migrating repo (`app`, `schema: public`). A fresh stack never creates those three schemas.
 
 ## 3. Web Development (Frontend)
 Tools specific to the Next.js monorepo and web applications.

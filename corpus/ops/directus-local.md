@@ -1,8 +1,17 @@
 # The Per-Stack Local Directus
 
 **What this is.** By default a stack reads its public content (the simulation catalog, skill-path library, etc.)
-**live from production** — `cms` (the only platform service that talks to Directus directly) points
-`DIRECTUS_BASE_ADDR` at `content.anthropos.work`. The **"prop room"** release (v1.5) makes each stack able to
+**live from production** — **`backend`** (the cms domain, in-process since cms-in-app v8.0) points
+`DIRECTUS_BASE_ADDR` at `content.anthropos.work`. ⚠️ **This page said `cms`, "the only platform service that
+talks to Directus directly", until M257x iter-129 — and there is no `cms` service.** `app` reads
+`DIRECTUS_BASE_ADDR` in-process and `log.Fatalf`s without it (`app/main.go:1090-1092` @ `ad9f3c498`;
+`app/cms_reader_switch.go:24-29` swaps the reader onto the in-process cms server, *"a DIRECT domain call …
+no internal traffic to a standalone cms"*). The tooling recorded the correction and the corpus did not:
+`rext stack-injection/gen_injected_override.py:79` states in as many words that the `cms` branch *"never
+matches it on a current clone"*, and `:86` is `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` — `cms` retained
+only as an inert rollback key. The measured cost of the stale sentence is recorded at `:70-75`: on `demo-1`,
+2026-08-01, `backend` logged **96 Directus lines, all 403**, because the reader that actually reads was left
+pointing at prod. The **"prop room"** release (v1.5) makes each stack able to
 stand up its **own local Directus** that serves the **captured public library**, so a stack's content is
 self-contained with no live prod dependency at runtime. **Since M23 this is the realized end-state for a
 `--local-content` stack** (demo default; dev opt-in): its `cms` reads the catalog from the per-stack instance,
@@ -20,7 +29,9 @@ model that makes the catalog serveable, and the version-skew rule. It is the com
 > `stack-verify`, tag `prop-room-m22`), and the **cutover** (tag `prop-room-m23`) are all **built**. M22 turned
 > the print-only recipe into an **executed** bring-up step: a per-stack Directus boots as a **compose service**
 > (offset port, torn down with the stack), provisioned idempotently, with verify probes — **demo default-on / dev
-> opt-in (`--local-content`)**. M23 cut the **data plane** over: `cms`'s `DIRECTUS_BASE_ADDR` now points at the
+> opt-in (`--local-content`)**. M23 cut the **data plane** over: the data-plane consumers' `DIRECTUS_BASE_ADDR`
+> (`DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` — and **`backend` is the one that matters**; the `cms` key is
+> an inert rollback) now points at the
 > in-network local instance (`http://directus:8055`), studio-desk is wired to it with a locally-minted token, and
 > `directus_files` refs are captured so the asset plane resolves — so a `--local-content` stack is
 > **content-self-contained** (asset plane stays on prod public links → images stay real). The firewall is a
@@ -272,9 +283,11 @@ a `--no-ui` demo).
 M22 booted + served the per-stack Directus; M23 (`prop-room-m23`) **cut the platform over to it** so a
 `--local-content` stack reads its catalog **locally**, not live from prod. Four moves:
 
-- **`cms`-only re-point (`#M23-D1`).** `cms` is the **only** platform service that talks to Directus directly
-  (HTTP API); `jobsimulation` reads it *through* `cms` over RPC, and next-web through `cms`/the router. So
-  re-pointing **one** env — `cms`'s `DIRECTUS_BASE_ADDR` → the in-network `http://directus:8055` (the compose
+- **Single-consumer re-point (`#M23-D1`).** ⚠️ **This decision was authored as *"`cms`-only"* and its premise
+  died at cms-in-app** — there is no `cms` service, `jobsimulation` no longer reads *through* it over RPC, and
+  there is no router for next-web to read through. **The decision's SHAPE survives** (one data-plane env, no
+  per-service sprawl); its subject is now **`backend`**, the in-process Directus reader. Re-pointing
+  **`backend`'s** `DIRECTUS_BASE_ADDR` → the in-network `http://directus:8055` (the compose
   service name on `app-network`, **not** the host-side `localhost:<offset>`) — cuts the **whole data plane** over
   with no per-service env sprawl. The injected override does the re-point and strips the inherited prod token.
 - **studio-desk's static token (`#M23-D2`).** studio-desk Bearer-auths Directus with a **static** token. Directus

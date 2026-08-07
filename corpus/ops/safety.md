@@ -198,7 +198,7 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 
 | Store(s) | Class | Why / guard action |
 |---|---|---|
-| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points `cms`'s `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
+| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points **`backend`'s** `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
 | **S3 PRIVATE bucket** | ⚠️ **unclassified — the guard does not cover it** | Since platform `0dab54d` (2026-08-03) compose also hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` on `backend` (`docker-compose.yml:82` @ `0c91421`). `PreflightEnv` forces the **public** bucket only (`stack-seeding/isolation/audit.go:146`) — there is **no** entry for the private one, so a stack with working AWS credentials writes private uploads into the **production** private bucket. This contract **names** that exposure; its disposition is an open escalated item (`DEF-M257x-iter80-storage-prod-bucket`, severity high) and is deliberately **not** resolved here. |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
@@ -207,17 +207,20 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 | **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and is removed FROM THIS TABLE** — it is not per-stack-isolated at platform `0c91421`; see its own row above. ⚠ **The CODE still classes it `PerStackIsolated`** (`stack-seeding/isolation/isolation.go:106`, *"falls back to local /tmp on demo"*). This row asserted the registry had been changed; **it has not been**, and M257x iter-98 withdraws that assertion rather than making it true — re-classing the store is part of the open escalation `DEF-M257x-iter80-storage-prod-bucket`, which is the user's call and is deliberately unresolved. **Until it is decided, the doc and the registry disagree, and that disagreement is stated here rather than hidden.** |
 
 > **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
-> `jobsimulation.{sessions, validation_attempt_results, validation_attempt_skill_results,
-> validation_criterion_results}`, `public.local_jobsimulation_sessions`, `public.user_skills`,
-> `public.user_skill_evidences` — are all the stack's own offset-port Postgres, declared `PerStackIsolated`,
+> `public.{job_simulation_sessions, validation_attempt_results, validation_attempt_skill_results,
+> validation_criterion_results}`, `public.user_skills`, `public.user_skill_evidences` (⚠️ **six became
+> five and the schema changed at M257x iter-129**: these read `jobsimulation.{…}` + a
+> `public.local_jobsimulation_sessions` mirror, and `app` `20260729133514.sql` dropped the mirror while
+> jobsim-in-app moved the fan-out to `public`) — are all the stack's own offset-port Postgres, declared `PerStackIsolated`,
 > so the chain cannot touch prod or another stack and the seeding-run audit log proves zero pollution
 > (`AssertClean`). The taxonomy it reads to draw skill node-ids is the **public** reference data the snapshot
 > firewall already guaranteed public-only at capture. See [`demo/stories-spec.md`](demo/stories-spec.md) § Safety.
 >
 > **The v1.9 M36 dashboard surfaces inherit it too.** The six new dashboard seeders' write surfaces —
 > `public.{membership_skills, tags, membership_tags, organization_target_roles, user_target_roles,
-> organization_assignment_sessions, local_skill_path_sessions, job_simulation_feedbacks}` and
-> `jobsimulation.interview_extraction_results` — are likewise the stack's own offset-port Postgres, all
+> organization_assignment_sessions, job_simulation_feedbacks, interview_extraction_results}` (⚠️ the
+> `local_skill_path_sessions` mirror was dropped and `interview_extraction_results` is in `public`, not
+> `jobsimulation` — corrected M257x iter-129) — are likewise the stack's own offset-port Postgres, all
 > `organization_id`-scoped per story and declared `PerStackIsolated` + audited. No new shared store is touched,
 > so the zero-pollution posture is unchanged.
 
@@ -270,7 +273,7 @@ fenced twice over:
   store by class, and the injected override empties `DIRECTUS_TOKEN` on every demo container (fix17) — so the
   shared `content.anthropos.work` instance is **never written** from any non-prod stack. **Reads (M23 cutover):**
   a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — the override
-  re-points `cms`'s `DIRECTUS_BASE_ADDR` at the in-network instance (`http://directus:8055`) and studio-desk's
+  re-points **`backend`'s** `DIRECTUS_BASE_ADDR` at the in-network instance (`http://directus:8055`) and studio-desk's
   `DIRECTUS_BASE_URL` + a locally-minted token at it — so the **data plane is local, not a live-prod read**.
   Only the **asset plane** still touches prod: `DIRECTUS_PUBLIC_BASE_ADDR` stays `content.anthropos.work` so
   browser images load real assets (a public, anonymous, read-only GET — within the read-side boundary). A
