@@ -1,0 +1,44 @@
+B06-001	UNRESOLVABLE	Pin is explicitly sha-qualified ("true at 0dab54d, where the block began at docker-compose.yml:156"); tree is at 0c91421 where :156 is next-web-app's env_file, and the messenger block the unit describes no longer exists to check.
+B06-002	SUPPORTS	Census resolved to app/go.mod (1.26.4), but the sentinel.md bullet cites sentinel's own go.mod:3, which reads exactly "go 1.26.0".
+B06-003	SUPPORTS	Census resolved to app/terraform/locals.tf; sentinel/terraform/locals.tf:4-5 is service_cpu = 256 / service_memory = 128, exactly the "256 CPU / 128 MB" claim.
+B06-004	SUPPORTS	Lines 8-15 carry exactly four MembershipRole constants (admin, member, candidate, content_creator) and the const block closes at :16, so "the four values" is exact.
+B06-005	SUPPORTS	The content_creator block runs 88 (banner) through 118 (last p5 row); :119 is the terminating semicolon, so 88-118 bounds it precisely.
+B06-006	SUPPORTS	:48 is AUTHORIZATION_ADDRESS=http://sentinel:8087 in backend's block; measured 1 occurrence across docker-compose.yml/common.yml/.env_example and 0 *_RPC_ADDR, matching the unit's quantifiers.
+B06-007	SUPPORTS	:57 is GOTENBERG_URL=http://gotenberg:3200 on the backend block, exactly as quoted.
+B06-008	SUPPORTS	Line 31 is the plain-HTTP POST to gotenbergURL+"/forms/libreoffice/convert" — the plain-HTTP gotenberg consumption site the unit points at.
+B06-009	SUPPORTS	:59 is JUDGE0_BASE_URL=http://52.48.139.23:2358 on the backend block, as claimed.
+B06-010	SUPPORTS	:48 is the only AUTHORIZATION_ADDRESS in compose (verified 1 occurrence), so "the only compose block given its address" holds against the citation.
+B06-011	SUPPORTS	:63-66 is the explicit NOTE that org:feature:taxonomy:write is NOT seeded as a default and points at local_superadmin_grants.sql.
+B06-012	SUPPORTS	:205-206 is the "cms-in-app deseam: cms is in-process" comment and :207 calls u.cms.GetSkillPathDomain, with u.cms typed contentread.CmsContentReader at session.go:50.
+B06-013	SUPPORTS	The unit asserts CLAUDE.md:109 "still lists the service"; line 109 does list SkillPathSessionService in the RPC mux, which is precisely the stale-doc claim.
+B06-014	SUPPORTS	The unit asserts architecture.md:28 still lists the service; line 28's RPC row does list SkillPathSessionService.
+B06-015	SUPPORTS	Same anchor as B06-012: the in-process comment plus the u.cms.GetSkillPathDomain read-by-ID, backing the content-vs-runtime split with no RPC hop.
+B06-016	SUPPORTS	88-89 is the "cms-in-app deseam: cms is in-process" comment and :95 is u.cms.GetSkillPathDomain; the cited range covers both.
+B06-017	SUPPORTS	:1144 is the InsightsSkillPathByMemberships definition and :1159-1170 is the m.ent.SkillPathSession query with SkillPathID, StatusIn(active, completed) and the TenantID predicate.
+B06-018	SUPPORTS	:63 is DROP TABLE "local_skill_path_sessions" and :62 is the jobsim mirror, exactly as the retraction states.
+B06-019	PARTIAL	Line 12 is the storage-SDK import (storage/sdk/storage/v1); it evidences a storage call site inside app's jobsimulation tree but the line itself says nothing about the domain "running in-process inside backend" — the path, not the cited line, carries the proposition.
+B06-020	SUPPORTS	Line 30 is exactly the storagev1 "github.com/anthropos-work/storage/sdk/storage/v1" import, which is the sub-claim the unit spells out (the storage-SDK import lives in the sibling anticheat/ package).
+B06-021	UNRESOLVABLE	Anchor is sha-qualified "@ app 9d00a313 v1.367.0"; in this checkout main.go:1048 is a jobsim-in-app wiring comment and the named internalstorage.NewClient(storageManager, storagens.CMS) sits at :1102 (which the same doc's consumer row cites correctly).
+B06-022	UNRESOLVABLE	Claim is pinned to storage 9f8cb53 ("main.tf is 18 lines, no service block"); the checked-out storage clone is the older ref where main.tf is 101 lines with a live module "storage" (service_desired_count = 1) and :13 is use_fargate = false.
+B06-023	UNRESOLVABLE	Same storage 9f8cb53 pin; at the checked-out ref storage.tf:22-25 is the M907/M903 "KNOWN LIMIT ... that is what M903's moved blocks are for" text, not the quoted "M903 ... was never executed and the shipped design supersedes it" sentence.
+B06-024	UNRESOLVABLE	The unit qualifies the anchor itself ("It was repos.yml:18-20 at 0dab54d"); at the tree's 0c91421 those lines are the sentinel entry, so the historical pin cannot be checked here.
+B06-025	SUPPORTS	:524 is storageManager := internalstorage.NewManager(storageBucket), the in-process private manager the unit names at that line.
+B06-026	SUPPORTS	:22 is EnvBucket = "STORAGE_S3_BUCKET", i.e. an env-var NAME constant, exactly as the unit distinguishes it from a bucket name.
+B06-027	SUPPORTS	:516 is storageBucket := os.Getenv(internalstorage.EnvBucket), backing "those are still read from the environment at :516".
+B06-028	SUPPORTS	:504 carries the quoted comment "the standalone service takes no traffic and STORAGE_RPC_ADDR is gone" — one of the three comment-only hits the unit enumerates.
+B06-029	SUPPORTS	:101 is the comment "replacing the STORAGE_RPC_ADDR edge", a comment-only occurrence as the unit claims.
+B06-030	SUPPORTS	:189 is inside TestNoRPCStorageClientsRemain's comment and contains STORAGE_RPC_ADDR, the third comment-only hit the unit lists.
+B06-031	SUPPORTS	:82 sets STORAGE_S3_BUCKET to a production- bucket on the backend block, alongside :83's public bucket, backing "both managers wired to production buckets".
+B06-032	PARTIAL	:193-200 is only (*manager).getKeyPath, the PRIVATE manager; publicManager has its own separate getKeyPath at :330-337, so the cited range does not cover the unit's "for both managers".
+B06-033	SUPPORTS	:82 is the hardcoded production private bucket on the backend block, exactly the hazard's premise.
+B06-034	SUPPORTS	:100 is - $HOME/.aws/credentials:/root/.aws/credentials:ro under backend's volumes, as claimed.
+B06-035	SUPPORTS	Census resolved to the rosetta root README; the unit names platform's own README, whose :81-87 is the "backend needs AWS credentials ... .env must carry a valid AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN" block.
+B06-036	SUPPORTS	:518-523 is the log.Fatalf empty-bucket guard wrapped in if deployedEnvironment(), exactly the "empty-bucket fatal" the unit describes.
+B06-037	SUPPORTS	:37-44 is deployedEnvironment() returning false for "development" (and "", dev, local, test), as claimed.
+B06-038	SUPPORTS	:56 is - ENVIRONMENT=development on the backend block, the disarming value the unit names.
+B06-039	SUPPORTS	Census resolved to the rosetta root README; platform README.md:81-87 does instruct putting live AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN in .env.
+B06-040	SUPPORTS	:100 mounts $HOME/.aws/credentials into backend read-only, backing "the credentials are generally present".
+B06-041	SUPPORTS	:82 shows backend setting STORAGE_S3_BUCKET to the production private bucket, which is what the table cell warns not to read across from the deleted storage block.
+B06-042	UNRESOLVABLE	Anchor is explicitly "@ platform 0dab54d" (and :206 @ 2adcf71); at the tree's 0c91421 line 119 is studio-desk's VITE_GRAPHQL_ENDPOINT build arg, so the historical pin cannot be settled here.
+B06-043	SUPPORTS	:138-140 is depends_on: backend: condition: service_started with no other dependency, backing "depends_on backend alone"; :141 carries profiles: [studio-desk, all].
+B06-044	SUPPORTS	:374 is the comment "We do NOT route this through the platform's privateSkillPaths GraphQL"; a grep of src/ returns exactly the two comment lines (:374, :405) and zero 8082 hits, as the unit states.

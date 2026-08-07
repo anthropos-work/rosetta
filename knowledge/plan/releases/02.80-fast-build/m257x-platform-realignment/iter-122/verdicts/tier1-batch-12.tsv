@@ -1,0 +1,41 @@
+B12-001	SUPPORTS	studio-desk.md:20 reads "TypeScript, Vite, Express.js (vanilla TS frontend, no framework)" — the quoted contradiction of "React" is verbatim at the cited line.
+B12-002	SUPPORTS	server.js:14 is `const endpoint = process.env.NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`; the co-cited :18 is the `throw new Error('NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT is not set')`, so the compound citation lands its subject.
+B12-003	SUPPORTS	backendContent.js:36 imports createServerGraphQLClient in the module whose header (:9-10, :26-32) states "the backend is the sole published-content source" and "M7 removed the FS-as-published fallback"; the actual catalog reads are the co-cited :102-103.
+B12-004	SUPPORTS	serverTenant.js:145 resolves the catalog from `await getBackendCatalogView(eids)` first and falls to an empty view otherwise — DB-authoritative as asserted.
+B12-005	SUPPORTS	beacon/route.js:36 reads the platform GraphQL endpoint the beacon re-issues writes to; the named UPSERT_CHAPTER_PROGRESS/SET_LAST_ACTIVITY mutations are in the co-cited OPS map at :41-55.
+B12-006	SUPPORTS	The quoted words are verbatim in the cited range ("there is NO FS-as-published fallback" :128-129; "not reversible-on-error" :131-132); the env-gated FS branch visible at :145 in this clone is exactly the demo-patch demo-stack/patches/academy-fs-published-fallback the unit itself names as not-shipped.
+B12-007	SUPPORTS	next-scaffold.test.js:106 is the test 'v0.5 M1: build is plain "next build" — no serwist SW step', a regression fence on the removal as claimed.
+B12-008	SUPPORTS	react-compiler-config.test.js:41 asserts `expect(src).not.toMatch(/from '@serwist\/next'/)` — a regression fence on the Serwist removal.
+B12-009	SUPPORTS	graphql-wundergraph/terraform/main.tf:20 is `service_desired_count = 1`, backing "the router as it still exists in production ... `= 1`".
+B12-010	SUPPORTS	graphql-wundergraph/terraform/locals.tf:8 is exactly `port = 8080`; the census resolved this to app/terraform/locals.tf, but the corpus site is the router's Port row and the router repo's file matches verbatim.
+B12-011	SUPPORTS	graphql-wundergraph/terraform/main.tf:48-49 are `"containerPort": ${local.port}` / `"hostPort": ${local.port}` with local.port=8080 — container 8080 to host 8080; census mis-resolved to app/terraform/main.tf.
+B12-012	SUPPORTS	graphql-wundergraph/config.prod.yaml:5 is `listen_addr: 0.0.0.0:8080` as quoted.
+B12-013	SUPPORTS	docker-compose.yml:48 is `AUTHORIZATION_ADDRESS=http://sentinel:8087` inside the backend service block; grep confirms zero `_RPC_ADDR` in the compose file at 0c91421.
+B12-014	SUPPORTS	docker-compose.yml:57 is `GOTENBERG_URL=http://gotenberg:3200` in backend's environment, a plain-HTTP edge as asserted.
+B12-015	SUPPORTS	docker-compose.yml:183 is `profiles: [core, backend, all]` on the gotenberg service block that opens at :170 — gotenberg is in the default core profile.
+B12-016	SUPPORTS	gotenberg.go:31 is `http.NewRequestWithContext(ctx, "POST", gotenbergURL+"/forms/libreoffice/convert", &body)` — a plain HTTP call, and the tree is at the pinned app ad9f3c49.
+B12-017	SUPPORTS	docker-compose.yml:59 is `JUDGE0_BASE_URL=http://52.48.139.23:2358` in backend's environment as asserted.
+B12-018	SUPPORTS	app/go.mod:15 is `github.com/anthropos-work/colony v0.35.2` and the app clone is at the pinned ad9f3c49.
+B12-019	SUPPORTS	sentinel/go.mod:8 is `github.com/anthropos-work/colony v0.35.2` and the sentinel clone is at the pinned f2c46190 — the split is closed on both sides.
+B12-020	PARTIAL	main.go:7 does import colony and NewVersionConfig is used at :17, but "minimal" understates the repo's dependence — colony, colony/pubsub, colony/redis and colony/rpc are imported across cmd/root.go and internal/runner/runner.go.
+B12-021	SUPPORTS	roadrunner/go.mod:7 is `github.com/anthropos-work/colony v0.34.3`, the pin as stated.
+B12-022	SUPPORTS	app/go.mod:16 is `github.com/anthropos-work/proto v1.210.0` and the app clone is at the pinned ad9f3c49.
+B12-023	SUPPORTS	sentinel/go.mod:9 is `github.com/anthropos-work/proto v1.210.0` and the sentinel clone is at the pinned f2c46190 — live skew is zero as asserted.
+B12-024	UNRESOLVABLE	Pin is sha-qualified to app b948604 but the clone is at ad9f3c49, where :1187 is `Pub: cmsPub` in a struct literal; the UsersService handler is at :1297 in this tree.
+B12-025	UNRESOLVABLE	Pin is sha-qualified to app b948604, clone is at ad9f3c49 where :1188 is `Storage: cmsStorage`; the OrganizationsService handler is at :1298 in this tree.
+B12-026	UNRESOLVABLE	Pin is sha-qualified to app b948604, clone is at ad9f3c49 where :1196 is a Directus-webhook comment; the SkillerService handler is at :1306 in this tree.
+B12-027	UNRESOLVABLE	Pin is sha-qualified to app b948604, clone is at ad9f3c49 where :1204 is `cmsReaderSw.set(cmsRPCServer)`; the JobSimulationService handler is at :1314 in this tree.
+B12-028	UNRESOLVABLE	Pin is sha-qualified to app b948604, clone is at ad9f3c49 where :1228 is `aiReadinessManager` in a graph.NewHandler arg list; the LabSessionService handler is at :1337 in this tree.
+B12-029	UNRESOLVABLE	Pin is sha-qualified to app b948604, clone is at ad9f3c49 where :1212-1214 is `cmsWorker.Start(...)`; the `if cmsRPCServer != nil` guard around the CMSService handler is at :1322-1324 in this tree.
+B12-030	SUPPORTS	storage.md:129 is the heading "### Connect-RPC (`StorageService`)" and :133-144 carry the full private/public method tables, so the pointer does document the omitted service.
+B12-031	SUPPORTS	skillpaths.go:27-29 read "the drop-in for the removed skillpath RPC client (skillpath-in-app M506)" — the quoted words are verbatim in the cited range.
+B12-032	SUPPORTS	wiring.go:123 is `jsrunner.NewRunnerManager(getenv("JUDGE0_API_KEY"), getenv("JUDGE0_BASE_URL"))` with the adjacent comment "replaces the removed roadrunner RPC edge"; content matches despite the pin naming app 9d00a313 while the clone is ad9f3c49.
+B12-033	UNRESOLVABLE	The sentence pins platform 0dab54d but the clone is at 0c91421, where docker-compose.yml:118 is `VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}` in the studio-desk build args, not AWS_REGION; 838d907 deleted three service blocks so the line cannot be checked at the pinned sha here.
+B12-034	SUPPORTS	cms/go.mod:9 is `github.com/anthropos-work/ai v1.40.2` and the cms clone is at the pinned ca50c817.
+B12-035	SUPPORTS	jobsimulation/go.mod:11 is `github.com/anthropos-work/ai v1.40.2` and the jobsimulation clone is at the pinned 462343b0.
+B12-036	UNRESOLVABLE	Pin is sha-qualified to app b948604f but the clone is at ad9f3c49, where :20 is `github.com/asticode/go-astisub v0.42.0`; taxonomy v1.2.0 sits at :18 in this tree.
+B12-037	SUPPORTS	sentinel/go.mod:21 is `github.com/anthropos-work/taxonomy v1.2.0 // indirect` exactly as claimed (the pin names 88bc5592 while the clone is f2c46190, but the line matches).
+B12-038	SUPPORTS	storage/go.mod:25 is `github.com/anthropos-work/taxonomy v1.2.0 // indirect` and the storage clone is at the pinned 4ce8ece5.
+B12-039	SUPPORTS	messenger/go.mod:9 is `github.com/anthropos-work/taxonomy v1.2.0` in the direct require block (no `// indirect`) and the messenger clone is at the pinned fa47850d.
+B12-040	SUPPORTS	cms/go.mod:13 is `github.com/anthropos-work/taxonomy v1.2.0`, direct and unmarked as indirect, at the pinned ca50c817.
+B12-041	SUPPORTS	jobsimulation/go.mod:15 is `github.com/anthropos-work/taxonomy v1.2.0`, direct and unmarked as indirect, at the pinned 462343b0.

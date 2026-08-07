@@ -1,0 +1,44 @@
+B11-001	SUPPORTS	graphql-wundergraph@60c229f3 (tree HEAD) terraform/main.tf:20 is service_desired_count = 1 inside module "graphql" — exactly the "still declared = 1" claim
+B11-002	UNRESOLVABLE	citation is sha-qualified 0dab54d:docker-compose.yml:154 and the platform clone is at 0c91421, where :154 is next-web-app's ports: block, not the customerio-sync profiles line
+B11-003	SUPPORTS	app@ad9f3c49 main.go:395 is customerIOSyncManager = customeriosync.New(...) inside if customerIOSyncEnabled at :394, as claimed
+B11-004	SUPPORTS	env_guards.go:92-111 is resolveSubsystemSwitch: empty value returns an error when deployed and (false, nil) otherwise — the exact "off when unset locally, boot failure when unset deployed" semantics
+B11-005	SUPPORTS	app/terraform/main.tf:419-420 is {"name": "CUSTOMERIO_SYNC_ENABLED", "value": "true"} in the prod container environment
+B11-006	SUPPORTS	docker-compose.yml:84-92 is the in-comment rationale for setting neither switch (default OFF on a dev machine, pinning false would override .env), exactly as characterised
+B11-007	SUPPORTS	docker-compose.yml:170-171 is gotenberg: / image: gotenberg/gotenberg:8, and :183 (checked) is profiles: [core, backend, all]
+B11-008	SUPPORTS	common.yml:2 is the postgresql: service key, in the file docker-compose.yml includes — the "not in docker-compose.yml, lives in common.yml" claim
+B11-009	SUPPORTS	docker-compose.yml:1-2 is literally include: / - common.yml
+B11-010	SUPPORTS	common.yml:22 is start_period: 120s and the :19-21 comment states the grown-data-dir permission re-application outlasting the 25s (5s x 5) retries
+B11-011	SUPPORTS	common.yml:24 is the redis: service key as cited (the Watermill-transport clause is an uncited architectural aside, not attributed to this line)
+B11-012	UNRESOLVABLE	citation is sha-qualified repos.yml:18-23 @ ef32d4c; platform clone is at 0c91421 where storage and messenger have no repos.yml entries at all, so their pre-fold migrations flag cannot be read here
+B11-013	SUPPORTS	cms/terraform/main.tf:39 is service_desired_count = 0 inside module "cms" (opens :30), backing the "still declares zero" half of the report-both-assert-neither pair
+B11-014	SUPPORTS	migrate-demo.sh:81-85 is the wait_pg bounded poll and :106 a schema-creation log line — no armed-failure construct, which is precisely what the unit says the stale anchors pointed at
+B11-015	SUPPORTS	graphql-wundergraph clone IS at 60c229f3; terraform/main.tf:31 is private_subnets_ids = var.platform_private_subnets_ids, :11 base_service, :13 use_fargate=false, no public-subnet argument in the 63-line file (I re-ran the eight-tree sweep: public_subnet 0 hits, 8/8 pass the private ids)
+B11-016	SUPPORTS	clerk-integration.md:40 is the sign-in-token bullet that says "five live minting sites" and "this bullet used to say only, and it was false" — the corrected-quantifier instance cited
+B11-017	SUPPORTS	app clone is at ad9f3c49; resolver_skiller_taxonomy_authz.go:53-66 carries the quoted post-mortem verbatim including "Do NOT rely on the blanket gate for this surface — it fails open here"
+B11-018	SUPPORTS	gqlauthz.go:149 is the doc comment "AuthorizationMiddleware gates every operation on a viewer", the exact quoted text
+B11-019	SUPPORTS	gate.go:27-49 is courseBuilderAccessGate: 401 on nil user, 403 on nil/zero org, 403 on OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID) failure, before next(c)
+B11-020	DOES-NOT-SUPPORT	README.md:21 is "Project Rosetta is a documentation repository - not the Anthropos platform itself"; the file mentions neither aiusage nor AI cost tracking anywhere, so it cannot back the aiusage-not-the-ai-library claim
+B11-021	SUPPORTS	ai.go:259 getClient, :263-277 case Azure: default azureClientEu, PostHog flag_use_azure_us, swap to azureClientUs when enabled — the flag-not-fallback claim as stated
+B11-022	PARTIAL	:109-112 backs newUnderlyingClient returning an api.anthropic.com client when ANTHROPIC_API_KEY is set, but not "every model call": the cited lines are one selector (the three call sites are :229/:244/:270) and coursebuilder/imagegen/openai.go:21-22 posts to api.openai.com with gpt-image-2, outside this path
+B11-023	SUPPORTS	coursebuilder.md:48 ends "so the shipped path is the direct API", which is the phrase the unit attributes to it
+B11-024	SUPPORTS	skills.go:53-64 is calculateSkillScore tallying check.Success booleans into passed/failed, and :75 (checked) is the passed/total division
+B11-025	SUPPORTS	criterion.go:126-127 is the hardcoded switch critCheck.Engine / case check.EngineLlm feeding bulkLLMChecks into c.validateLLM at :175, with :168 dispatching validateCodeDiff as the unit also states
+B11-026	SUPPORTS	same anchor as B11-001: terraform/main.tf:20 = service_desired_count = 1 in module "graphql" at the tree's 60c229f3
+B11-027	SUPPORTS	studioManager.go:119 is return s.runCommand(ctx, pyBin, append([]string{"studio/gen.py"}, tokens...)) — argv form, gen.py, via runCommand
+B11-028	SUPPORTS	repos.yml:14-17 is the app entry with migrations: true / schema: public, and the "only" verifies over the whole 29-line file (sentinel, next-web-app, studio-desk all migrations: false)
+B11-029	SUPPORTS	docker-compose.yml:18 is sentinel's DB_CONNECTION carrying search_path=sentinel
+B11-030	SUPPORTS	repos.yml:18-20 is the sentinel entry with migrations: false, the Trap-A contrast the unit draws
+B11-031	SUPPORTS	docker-compose.yml:84-92 states both switches are deliberately unset and why pinning them to false would break opting in — the claim as written
+B11-032	UNRESOLVABLE	sha-qualified 0dab54d:docker-compose.yml:154; the platform clone is 0c91421 where :154 is next-web-app's ports:, so the customerio-sync profile line is not readable here
+B11-033	SUPPORTS	docker-compose.yml:56 at the checked-out 0c91421 is - ENVIRONMENT=development inside the backend: service block (opens :28), and the unit explicitly claims "still :56 at 0c91421"
+B11-034	SUPPORTS	env_guards.go:37-44 is deployedEnvironment() returning false for "development", as claimed
+B11-035	SUPPORTS	main.go:394 is if customerIOSyncEnabled { guarding the manager construction, the anchor the unit names
+B11-036	UNRESOLVABLE	sha-qualified app 3e5bc33ef:main.go:387; the app clone is at ad9f3c49 where :387 is a copilotDB timing comment, so the pre-switch deployedEnvironment && BREVO_KEY gate cannot be read here
+B11-037	SUPPORTS	common.yml:2 postgresql: with build: context: postgresql (:3-4) and ports 5432 (:6); the pgvector claim checks out in that build context (postgresql/Dockerfile PGVECTOR_VERSION)
+B11-038	SUPPORTS	common.yml:24 redis: with image bitnamilegacy/redis:latest (:25) and ports "6379:6379" (:30-31)
+B11-039	SUPPORTS	docker-compose.yml:5 is the sentinel: service key, the anchor the bullet uses for the floor member
+B11-040	UNRESOLVABLE	the state cited is post-6092c6d2 (the map's sibling row pins it @ 82cb66e) but the jobsimulation clone is at 462343b0, cloned 2026-07-31 before those 2026-08-04 commits — and in THIS tree the cited :15-40 contains an intact module "jobsimulation" with service_desired_count = 0 at :40, i.e. the opposite of "the module block was deleted"; not decidable here, but the anchor reads as contradicted
+B11-041	SUPPORTS	cms/terraform/main.tf:39 is service_desired_count = 0 inside module "cms" (:30) and the file is exactly 191 lines, matching the "intact 191-line module" wording
+B11-042	SUPPORTS	docker-compose.yml:112 is the studio-desk: service key and :141 (checked) is profiles: [studio-desk, all]
+B11-043	SUPPORTS	frontend_architecture.md:11 states Studio-Desk is in repos.yml and has a studio-desk compose profile at docker-compose.yml:141 — the contradiction of "not in main docker-compose" the unit cites it for
+B11-044	SUPPORTS	studio-desk.md:21 Deployment row states it runs containerized via the studio-desk docker-compose profile with profiles: [studio-desk, all] at :141 and that the profile alone exits 1

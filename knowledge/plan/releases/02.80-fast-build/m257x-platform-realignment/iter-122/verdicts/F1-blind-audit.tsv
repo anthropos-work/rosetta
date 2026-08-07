@@ -1,0 +1,60 @@
+01	corpus/services/README.md:55	ASSERTION	CITED	PLAIN	index table row still asserts Next.js 16 monorepo on Vercel + the three app packages; row carries a markdown link
+02	corpus/services/academy-backend.md:90	ASSERTION	UNCITED	PLAIN	names the academy GraphQL queries and their self-only-unless-@public gating; the sub-bullet itself pins no file (parent bullet does)
+03	corpus/services/ai-labs.md:76	ASSERTION	UNCITED	PLAIN	continuation of "every mutation in one ent.WithTx under privacy.Allow" - a checkable code fact; bullet cites only symbol names
+04	corpus/services/ai-readiness.md:202	NOT-ASSERTION	n-a	n-a	blank line between the intro sentence and the data-model table
+05	corpus/services/ai-readiness.md:391	ASSERTION	CITED	PLAIN	narrative cache calls GPT-5-Mini on miss and FE falls back to static; paragraph cites aireadiness/narrative.go
+06	corpus/services/ant-academy.md:2	NOT-ASSERTION	n-a	n-a	blank line after the H1
+07	corpus/services/ant-academy.md:16	NOT-ASSERTION	n-a	n-a	section heading "### Service Overview" - names a section, asserts nothing
+08	corpus/services/ant-academy.md:70	ASSERTION	CITED	PLAIN	writes go straight to the cross-origin GraphQL endpoint with a Clerk Bearer token; block pins store.js lines + ref 22df69dd
+09	corpus/services/ant-academy.md:230	ASSERTION	CITED	PLAIN	the demo-config includes a code/.env.local overlay setting REQUIRE_ORGANIZATION_MEMBERSHIP=0; block pins ant-academy.sh lines
+10	corpus/services/ant-academy.md:246	ASSERTION	CITED	PLAIN	ant-academy.sh verifies /library renders real course cards before keeping the process; block pins the script + autoverify.sh
+11	corpus/services/askengine.md:83	ASSERTION	CITED	PLAIN	continuation of the Downstream list - askengine depends on GetTalkToDataCustomRules and internal/authorization; bullet has a md link
+12	corpus/services/askengine.md:114	ASSERTION	CITED	PLAIN	continuation of "needs an embeddings provider for the shared ai client"; enclosing paragraph pins main.go:229 and bedrock.go:161
+13	corpus/services/backend.md:22	ASSERTION	CITED	PLAIN	the federation composes ONE subgraph and cms-in-app was the 3-to-1 step; bullet carries sha 915da06 + schemas/cms.graphqls
+14	corpus/services/backend.md:243	NOT-ASSERTION	n-a	n-a	section heading "### Key directories"
+15	corpus/services/clerk-integration.md:175	NOT-ASSERTION	n-a	n-a	blank line after the env-var code fence
+16	corpus/services/clerkenstein.md:80	ASSERTION	CITED	PLAIN	the DNAs/mirror/goldens/runners live in the clerkenstein section of rosetta-extensions - a checkable tooling-layout claim; block has md links
+17	corpus/services/clerkenstein.md:287	ASSERTION	UNCITED	PLAIN	cmd/ ships mintpk and fake-fapi/fake-bapi; paragraph's only pointer is the extensionless path alignment/cmd/deployrun
+18	corpus/services/customerio-sync.md:101	ASSERTION	CITED	PLAIN	asserts doc.go in app/internal/customeriosync is the port record (the imperative wrapper does not remove the claim)
+19	corpus/services/graphql-wundergraph.md:1	NOT-ASSERTION	n-a	n-a	document title heading
+20	corpus/services/graphql-wundergraph.md:152	ASSERTION	UNCITED	PLAIN	asserts the archived repo's configs still contain the routing rows; no path/sha in the two-line paragraph
+21	corpus/services/hiring.md:9	NOT-ASSERTION	n-a	n-a	statement about the corpus's own prior coverage gap ("had no code anchor ... the gap M222 closed"), not about the platform
+22	corpus/services/hiring.md:95	ASSERTION	CITED	PLAIN	the content-library read path does read is_hiring via GetOrganizationIsHiring; block pins resolver_cms_queries.go lines
+23	corpus/services/hiring.md:366	ASSERTION	UNCITED	PLAIN	drill-down reads public.validation_* and exists in both apps/web and apps/hiring; bullet names routes/tables but no file pin
+24	corpus/services/hiring.md:442	ASSERTION	CITED	PLAIN	recruiter AI-Simulations list reads hiring-only because generic seeders skip a hiring org; block pins hiring_scope.go
+25	corpus/services/next-web-app.md:37	ASSERTION	UNCITED	PLAIN	retraction asserts the platform fact that the scoreboard is NOT the dockerized apps/web surface; this paragraph carries no pin (the proof is in the bullets below)
+26	corpus/services/next-web-app.md:67	ASSERTION	CITED	PLAIN	@anthropos/graphql owns all data fetching incl codegen output; row names src/__generated__ and codegen.ts
+27	corpus/services/sentinel.md:21	NOT-ASSERTION	n-a	n-a	blank line under the "Why no Ent / no GraphQL?" heading
+28	corpus/services/sentinel.md:74	ASSERTION	UNCITED	PLAIN	asserts the CheckOrganizationFeature RPC method exists and does org-level feature quota checks; table row has no pin
+29	corpus/services/sentinel.md:92	NOT-ASSERTION	n-a	n-a	blank line before "## Local Development"
+30	corpus/services/skillpath.md:54	NOT-ASSERTION	n-a	n-a	empty blockquote continuation marker ">" with no content
+31	corpus/services/storage.md:217	ASSERTION	CITED	PLAIN	asserts there is no storage container to inject env into; block pins docker-compose.yml + shas 0dab54d/838d907
+32	corpus/services/studio-desk.md:67	NOT-ASSERTION	n-a	n-a	section heading "### Project Structure"
+33	corpus/services/studio-room.md:336	ASSERTION	UNCITED	PLAIN	asserts the embedded runtime image is python:3.11-slim and was the cms container before cms-in-app; bullet carries no pin
+34	corpus/services/studio-room.md:466	ASSERTION	CITED	PLAIN	post-gen targets drop no files so dialogue.json etc do not exist; paragraph pins exporter.py:513-550
+35	corpus/services/studio-room.md:494	NOT-ASSERTION	n-a	n-a	blank line before "### Performance Optimization"
+36	corpus/architecture/README.md:3	NOT-ASSERTION	n-a	n-a	statement purely about the corpus directory's own contents
+37	corpus/architecture/README.md:30	NOT-ASSERTION	n-a	n-a	navigation instruction ("Review the Dependency Map to see how services interact")
+38	corpus/architecture/ai_architecture.md:137	ASSERTION	UNCITED	PLAIN	asserts the FAST slot is azure/gpt-5-mini on both branches with no thinking; the row itself has no pin (preamble/header do)
+39	corpus/architecture/ai_architecture.md:222	ASSERTION	CITED	PLAIN	nil voice_engine defaults to gptrealtime; the line itself carries jobsimulation.go:1594-1597 @ ad9f3c49
+40	corpus/architecture/ai_architecture.md:298	NOT-ASSERTION	n-a	n-a	section heading "### Evaluation System"
+41	corpus/architecture/alignment_testing.md:123	ASSERTION	UNCITED	PLAIN	asserts the error_class operator's comparison semantics in the alignment harness; table row has no pin
+42	corpus/architecture/alignment_testing.md:149	ASSERTION	UNCITED	PLAIN	asserts Clerk is a live SaaS that cannot be hit freely/offline/deterministically - checkable about a Tier-3 dependency, though it reads as rationale
+43	corpus/architecture/alignment_testing.md:447	ASSERTION	UNCITED	PLAIN	measurement result: measure reports 100%/Critical 100% across the 4 seeded surfaces on demo-1; paragraph carries no pin
+44	corpus/architecture/architecture_overview.md:361	ASSERTION	CITED	PLAIN	0dab54d deleted STORAGE_RPC_ADDR from backend's env and dropped the depends_on; block pins main.go:504 + shas
+45	corpus/architecture/dependency_map.md:40	NOT-ASSERTION	n-a	n-a	section heading "### Shared Libraries"
+46	corpus/architecture/external_services.md:27	ASSERTION	UNCITED	PLAIN	property row asserts Clerk is external SaaS (weak but checkable: not self-hosted); no pin in the row
+47	corpus/architecture/external_services.md:68	NOT-ASSERTION	n-a	n-a	blank line under "#### Per-application integration"
+48	corpus/architecture/external_services.md:140	ASSERTION	CITED	PLAIN	continuation asserting there is still no Directus service in the platform compose at 0dab54d; block names docker-compose.yml + the sha
+49	corpus/architecture/external_services.md:199	ASSERTION	CITED	PLAIN	backend does not proxy content through a standalone cms; block pins cms_reader_switch.go and main.go:980-982
+50	corpus/architecture/external_services.md:252	ASSERTION	CITED	PLAIN	DIRECTUS_BASE_ADDR is the genuinely .env-settable address; paragraph pins docker-compose.yml:53 and .env_example:91-92
+51	corpus/architecture/external_services.md:460	NOT-ASSERTION	n-a	n-a	blank line before the dockerfile fence
+52	corpus/architecture/external_services.md:561	NOT-ASSERTION	n-a	n-a	markdown table delimiter row
+53	corpus/architecture/external_services.md:672	ASSERTION	CITED	PLAIN	the env-name block covers app's Go only and gen.py reads six other bare names; line pins app/studio/gen.py:45-48
+54	corpus/architecture/external_services.md:728	NOT-ASSERTION	n-a	n-a	blank line after the LiveKit paragraph
+55	corpus/architecture/frontend_architecture.md:36	NOT-ASSERTION	n-a	n-a	blank line after the core-packages table
+56	corpus/architecture/platform-migration-status.md:201	NOT-ASSERTION	n-a	n-a	markdown table delimiter row
+57	corpus/architecture/security_compliance.md:71	NOT-ASSERTION	n-a	n-a	blank line after a horizontal rule
+58	corpus/architecture/security_compliance.md:102	ASSERTION	CITED	PLAIN	user_resources is user-scoped not org-scoped by the ORM; block pins user_resource.go:22 with the commented-out mixin
+59	corpus/architecture/service_taxonomy.md:4	NOT-ASSERTION	n-a	n-a	blank line under the router-status callout
+60	corpus/architecture/service_taxonomy.md:365	ASSERTION	CITED	PLAIN	two-word continuation of "A freshly-built local stack reads its public content live from prod"; block pins docker-compose.yml :53 @ 0dab54d

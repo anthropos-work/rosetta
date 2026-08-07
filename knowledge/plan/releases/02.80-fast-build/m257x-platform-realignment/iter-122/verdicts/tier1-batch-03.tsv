@@ -1,0 +1,44 @@
+B03-001	SUPPORTS	studio-desk HEAD is 41ee357 as pinned and devLogin.ts:33 is verbatim DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production'
+B03-002	SUPPORTS	ant-academy HEAD is 22df69dd and route.js:78 is the createSignInToken call, i.e. the minting site the row names
+B03-003	SUPPORTS	devLogin.js:29 is the exact gate constant and the :26-27 comment carries the "hard-404s anywhere it is deployed" half
+B03-004	SUPPORTS	auth.setup.ts:57-58 and :62 carry both quoted sentences verbatim, including "skips both factors"
+B03-005	SUPPORTS	staging-clerk.md:55-58 is the curl POST /v1/sign_in_tokens recipe explicitly for the "new device" challenge (Quirk #13)
+B03-006	SUPPORTS	staging_from_dump.md:381-384 is the same curl one-shot-ticket bypass of the "new device" sign-in challenge
+B03-007	SUPPORTS	staging-bringup.md:461 is Quirk #13 and prescribes POST /v1/sign_in_tokens as the bypass, as the unit says
+B03-008	SUPPORTS	ant-academy.md:324 is the DEV_LOGIN_ENABLED row listing the /api/dev/login-as + /dev/accept public-route pair
+B03-009	SUPPORTS	studio-desk.md:90 reads "Dev-only acceptance harness (dev-accept.html; not in the prod build)" verbatim
+B03-010	UNRESOLVABLE	pinned @ app 5ba17044; clone HEAD is ad9f3c49 where clerk-sdk-go/v2 v2.7.0 sits at go.mod:29, not :31
+B03-011	SUPPORTS	run.go:134-135 is the const block defining ExitRegressed = 2 and ExitUnmeasurable = 3, exactly as cited
+B03-012	SUPPORTS	store.go:126-148 documents and implements SeedOrgIdentity registering the roster's REAL org eid over the fabricated "org_eid_"+orgID
+B03-013	SUPPORTS	src/index.ts:94-96 is the four-element STUDIO_ACCESS_ROLES array with the quoted prefixed-and-bare comment
+B03-014	SUPPORTS	userService.ts:14-16 is the identical array plus the identical comment, as the unit states
+B03-015	SUPPORTS	sentinel HEAD is f2c46190 as pinned and go.mod:8 reads github.com/anthropos-work/colony v0.35.2
+B03-016	SUPPORTS	server.go:35-67 carries the M220 from-disk/bounded-fallback block, clerkJSFetchTimeout = 15s, FAKE_FAPI_CLERKJS_CACHE and the "Explicitly NOT http.DefaultClient" + no-http.Get-test comment
+B03-017	SUPPORTS	main.tf:39 service_desired_count = 0 sits inside an intact module "cms" block, backing "scaled to zero, not deleted"
+B03-018	SUPPORTS	service-dependencies.md:52 carries the literal http://backend.internal.anthropos:8081 in past tense under the "no external callers left" heading
+B03-019	UNRESOLVABLE	pinned @ app b948604; at HEAD ad9f3c49 main.go:1205-1211 is the M805 cms-worker comment and the quoted "Additive + DORMANT ... until the M809 re-point" text is at :1317-1318
+B03-020	SUPPORTS	studioManager.go:1099-1101 at the pinned HEAD ad9f3c49 is runCommand with exec.CommandContext(ctx, name, args...) — argv form, no shell
+B03-021	SUPPORTS	session.go:205-207 has the quoted deseam comment and calls u.cms.GetSkillPathDomain where u.cms is contentread.CmsContentReader (:50)
+B03-022	SUPPORTS	cms/go.mod:3 reads go 1.26.4 exactly as quoted
+B03-023	SUPPORTS	cms/cmd/root.go:77 is cmp.Or(os.Getenv("PORT"), "8080"), the binary's own default the unit asserts
+B03-024	SUPPORTS	service-dependencies.md:52 @ ad9f3c49 (= clone HEAD) is a markdown line, past tense, under the quoted heading — exactly the unit's characterisation
+B03-025	SUPPORTS	markdownManager.go:10 imports internal/cms/studio/mistralocr, and the unit asserts the offset holds at ad9f3c49 = clone HEAD
+B03-026	SUPPORTS	pdf2md.py:24 is "from mistralai import Mistral" verbatim
+B03-027	SUPPORTS	studioManager.go:1096-1098 @ ad9f3c49 is the quoted "argv (exec) form — NEVER through a shell ... (M809b H-1/M-1)" comment
+B03-028	SUPPORTS	cms clone HEAD is ca50c817 as pinned and internal/studio/studioManager.go:967 is exec.Command("bash", "-c", command)
+B03-029	SUPPORTS	bedrock.go:105-114 is newUnderlyingClient: ANTHROPIC_API_KEY set → NewAnthropicClientWithModel(key, directModelID), else Bedrock
+B03-030	UNRESOLVABLE	pinned @ app b948604; at HEAD ad9f3c49 main.go:770 is a tasks.NewHandler argument and the coursebuilder backend log is at :880
+B03-031	SUPPORTS	variables.tf:759-763 @ ad9f3c49 (= clone HEAD) declares variable "anthropic_api_key" sensitive = true with no default, as the unit states
+B03-032	UNRESOLVABLE	pinned @ app b948604; at HEAD ad9f3c49 main.go:766-779 is the Asynq worker/tasks.NewHandler block and the two "routes disabled" warns are at :884/:888
+B03-033	UNRESOLVABLE	pinned @ app b948604; at HEAD ad9f3c49 main.go:824-826 is skiller manager wiring and the only OPENAI_KEY read is at :935
+B03-034	SUPPORTS	doc.go:4-5 reads "Ported out of the customerio-sync repository (v0.19.3), the last of the Go services to be folded into app"
+B03-035	SUPPORTS	env_guards.go:62 declares envCustomerIOSyncEnabled = "CUSTOMERIO_SYNC_ENABLED" in the guard file that implements the gate
+B03-036	SUPPORTS	main.go:286 resolves the switch via mustSubsystemSwitch under the :281-284 "before anything connects to anything" comment
+B03-037	SUPPORTS	docker-compose.yml:84-92 is the backend-block comment stating verbatim that pinning the switches there would override .env
+B03-038	SUPPORTS	main.go:395 is customeriosync.New(logger, copilotDB, os.Getenv("BREVO_KEY")) exactly as quoted
+B03-039	PARTIAL	:393-396 shows only the constructor taking copilotDB; the "SHARED analytics pool, not a pool of its own" and "one query every ten minutes"/connection-budget rationale the unit paraphrases live at :379-386, outside the cited range
+B03-040	SUPPORTS	env_guards.go:98-104 is resolveSubsystemSwitch's case "" returning an error when deployed, and :87 is the log.Fatalf as stated
+B03-041	SUPPORTS	main.go:284 is indeed only the comment pointing at resolveSubsystemSwitch, which is what the unit asserts about it
+B03-042	SUPPORTS	extract.go:77-81 converts to PDF then immediately ConvertFromReader(bytes.NewReader(pdf), "application/pdf") — the bytes are consumed, not stored
+B03-043	SUPPORTS	user_import_resume_2d.go:68-74 converts the DOCX only to set ocrInput = pdfBytes on the no-readable-text OCR fallback path
+B03-044	SUPPORTS	docker-compose.yml:183 profiles: [core, backend, all] is inside the gotenberg service block at platform HEAD 0c91421

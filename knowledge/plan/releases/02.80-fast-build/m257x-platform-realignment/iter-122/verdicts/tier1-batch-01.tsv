@@ -1,0 +1,44 @@
+B01-001	SUPPORTS	roadrunner/terraform/main.tf:19 reads `service_desired_count = 1` verbatim, exactly as the banner asserts.
+B01-002	SUPPORTS	cms/terraform/main.tf:39 reads `service_desired_count = 0`, backing the "unlike cms (= 0)" contrast.
+B01-003	SUPPORTS	wiring.go:123 constructs jsrunner.NewRunnerManager from JUDGE0_* env; jsrunner is imported at :34 as app/internal/jobsimulation/runner, and that package exists (runner.go, languages.go).
+B01-004	SUPPORTS	Same line as B01-001: prod terraform still reads `= 1` at roadrunner/terraform/main.tf:19.
+B01-005	SUPPORTS	flow.go:72 is AddSubscriber("backend", ...) and :72-104 carries exactly 21 live pubsub.EventHandler entries (one, OrgJobSimulationAssignmentPastDue, is commented out and correctly excluded).
+B01-006	DOES-NOT-SUPPORT	main.go:471-472 is the closing brace of the bedrock-error branch plus a blank line; the two storage managers are constructed at :516-517 (EnvBucket/EnvPublicBucket reads) and :524-525 (NewManager/NewPublicManager) — the anchor is ~45 lines short of its subject.
+B01-007	SUPPORTS	cmd/academyImport/main.go:239-243 carries the quoted comment verbatim and the EnvPublicBucket read; :244-246 is the hard error on an empty bucket, as claimed.
+B01-008	SUPPORTS	serverTenant.js:125-132 states in-code "there is NO FS-as-published fallback" and "the cutover is intentional, not reversible-on-error"; the default branch of :145 is emptyCatalogView(), and the unit itself attributes the on-disk env-gated branch to the demo-patch.
+B01-009	SUPPORTS	credits/handler.go:12 reads "POST /credits/purchase was removed in Wave 13", exactly the proposition.
+B01-010	SUPPORTS	The patch manifest's `path:` at :42 is internal/aireadiness/readiness.go, which is the re-anchor the unit says has landed.
+B01-011	SUPPORTS	enum/organization_settings.go:47 is `OrganizationSettingAIReadiness OrganizationSetting = "ai_readiness"` exactly.
+B01-012	SUPPORTS	:22 is `useFeatureFlagEnabled(AI_READINESS_FLAG)`; repo-wide grep (excl. node_modules) finds the symbol only in aiReadiness.constants.ts (declaration + doc comment) and this file, so "sole consumer" holds.
+B01-013	SUPPORTS	aiReadiness.constants.ts:26 is `export const AI_READINESS_FLAG = 'flag_ai_readiness';` exactly.
+B01-014	SUPPORTS	All four sub-anchors verified in the resolved file: :22 rawFlag, :25 flagEnabled (=== true), :29 useAiReadinessEnabled(flagEnabled), :32 active: flagEnabled && orgEnabled === true.
+B01-015	SUPPORTS	:185-189 returns exactly the five named ids, and :149 reads "All five are always emitted here" as quoted.
+B01-016	SUPPORTS	urls.ts:51 is `export const AI_READINESS_URL = '/ai-readiness';`; grep also confirms the useNavbarSections.tsx :4 import and :403 key.
+B01-017	SUPPORTS	urls.ts:52 is TALK_TO_DATA_URL, exactly what the retraction says the wrong anchor lands on.
+B01-018	SUPPORTS	frontend-architecture.md:15 mentions "the `AI_READINESS_URL` constant", and repo-wide grep confirms it is the only non-source, non-node_modules hit.
+B01-019	SUPPORTS	useWorkforceAIReadiness.ts:23-27 passes only `searchParams: { tag }`; the whole 36-line file has no cycle param and no /cycles call.
+B01-020	SUPPORTS	:22 is the flag read inside useAiReadinessActive, whose own docstring scopes it to the /home member hero; repo-wide grep shows no other consumer, so "employee side only" holds.
+B01-021	PARTIAL	stories-spec.md:599 is the retracted PREMISE sentence itself; the retraction the unit points to is the block at :601-606 — the anchor stops two lines short of its own subject.
+B01-022	SUPPORTS	readiness.go:289 is GetAIReadinessWithOptions, and it has exactly two calls into buildResponseFromSnapshots (:297 cycle-scoped closed, :311 default latest-closed).
+B01-023	SUPPORTS	The legacy hook at :23-27 has no cycle param and the file never calls /cycles, exactly the behaviour the correction attributes to it.
+B01-024	SUPPORTS	useAIReadiness.ts:326 is `interviewQuestions: number;` inside `export interface AIReadinessCycleTotals` opened at :323.
+B01-025	SUPPORTS	writeThrough/index.js:247 is the navigator.sendBeacon guard inside flushBeacons, and :259 is `keepalive: true` on the fetch fallback — both as cited.
+B01-026	SUPPORTS	The cited comment block says verbatim "there is NO FS-as-published fallback" and "the cutover is intentional, not reversible-on-error".
+B01-027	SUPPORTS	The on-disk :145 carries the APPLIED academy-fs-published-fallback demo-patch; the patch manifest's own drift-refuse `anchor:` quotes the pristine line as byte-exactly `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, corroborating the claim at the pinned ref.
+B01-028	SUPPORTS	serverTenant.js:116 returns exactly the five keys chapters/skillPaths/series/bundles/catalogVersion.
+B01-029	SUPPORTS	catalog.js:961 is `export const PUBLIC_BUNDLES = [` opening a populated array of bundle objects.
+B01-030	SUPPORTS	locale.js:10 is `export const SUPPORTED_LOCALES = ['en', 'it', 'es', 'fr', 'de', 'nl', 'pt']` — the 7 locales claimed.
+B01-031	SUPPORTS	:576-583 states the bypass removal in-code and the launch env at :584-585 omits both vars; grep confirms BENCHMARK_VISUAL_BYPASS / NEXT_PUBLIC_E2E_AUTH appear in ant-academy.sh only inside comments (:443, :448, :576).
+B01-032	SUPPORTS	cockpit.py:812 sets document.cookie e2e_persona inside _ACADEMY_JS (opens :804); the twin Set-Cookie is at :1496 and :327 names both, as claimed.
+B01-033	SUPPORTS	platformUrls.js:1-32 carries "The Academy is a storefront in front of the Anthropos platform", FLOW A ("a new visitor registers") and FLOW B ("subscribes for an anonymous visitor") verbatim.
+B01-034	SUPPORTS	schema.js:3 is `const SITE_URL = 'https://aiacademy.anthropos.work';` and :8 is the '@type': 'EducationalOrganization' block.
+B01-035	SUPPORTS	The census resolved a bare CLAUDE.md:11 to rosetta's (a blank line), but the unit names the ant-academy repo's own CLAUDE.md, whose :11 reads "AI Academy is an internal learning portal for Anthropic employees (`@anthropos.work` domain)" — exactly the quoted phrase.
+B01-036	SUPPORTS	main.go:467-471 is `bedrockClient, err := askengine.NewBedrockClient(...)` followed by a bare `return` in the error branch, i.e. no "disable" path.
+B01-037	SUPPORTS	`func main()` at :229 is the only top-level func declaration between :229 and :467 (main.go has 3 top-level funcs in total), and the bedrock block sits at one tab of indentation directly in main's body.
+B01-038	SUPPORTS	NewBedrockClient at bedrock.go:161 has exactly one non-nil error return — `config.LoadDefaultConfig` failing at :165-168; everything after is unconditional construction.
+B01-039	SUPPORTS	main.go:1297-1338 carries exactly six mux.Handle registrations (Users, Organizations, Skiller, JobSimulation, CMS behind `if cmsRPCServer != nil`, LabSession), of which three are folded services — the bullet's "six total / three of eight".
+B01-040	SUPPORTS	Census resolved a bare cmd/root.go to the cms repo, but the unit names storage@4ce8ece5:cmd/root.go:62-66, which is exactly `rpcMux := http.NewServeMux()` + `rpcMux.Handle(storagev1connect.NewStorageServiceHandler(rpcsrv.New(...)))` on storage's own mux.
+B01-041	SUPPORTS	Same mis-resolution: the unit names roadrunner@87d8d443:cmd/root.go:87, which is `rpcMux.Handle(roadrunnerv1connect.NewRoadRunnerServiceHandler(` on roadrunner's own mux.
+B01-042	SUPPORTS	docker-compose.yml:48 is `- AUTHORIZATION_ADDRESS=http://sentinel:8087` in backend's environment block.
+B01-043	SUPPORTS	docker-compose.yml:57 is `- GOTENBERG_URL=http://gotenberg:3200`, the plain-HTTP edge claimed.
+B01-044	SUPPORTS	docker-compose.yml:183 is `profiles: [core, backend, all]` inside the gotenberg service block (opened :170), so gotenberg is in the default core profile.

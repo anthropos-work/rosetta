@@ -1,0 +1,44 @@
+B08-001	SUPPORTS	docker-compose.yml:57 is `- GOTENBERG_URL=http://gotenberg:3200` inside backend's environment: block (46-94); gotenberg's own `profiles: [core, backend, all]` at :183 confirms the "second container on the default core profile" half.
+B08-002	SUPPORTS	gotenberg.go:31 is `http.NewRequestWithContext(ctx, "POST", gotenbergURL+"/forms/libreoffice/convert", &body)` — plain HTTP POST, not Connect-RPC, exactly as asserted; app tree IS at ad9f3c49, the named ref.
+B08-003	SUPPORTS	docker-compose.yml:59 is `- JUDGE0_BASE_URL=http://52.48.139.23:2358`, in the same backend environment: block, as the unit lists it.
+B08-004	SUPPORTS	docker-compose.yml:66 is `- REDIS_ADDR=redis:6379`, in the backend environment: block, as listed.
+B08-005	SUPPORTS	markdownManager.go:29-30 is `func NewMarkdownManager(aiKey string)` returning `&MarkdownManager{ocr: mistralocr.New(aiKey)}` — the Mistral OCR client built from a CALLER-supplied key, exactly the corrected claim.
+B08-006	SUPPORTS	graphql-wundergraph/terraform/main.tf:20 is `service_desired_count = 1` inside `module "graphql"` (:10), backing "the router still exists there".
+B08-007	UNRESOLVABLE	Pin is sha-qualified to app `9d00a313`; tree is at app origin/main `ad9f3c49` where main.go:451 is `aiReadinessNotifier := notifications.NewManager(` — the unit itself says the comment moved to :504 (which does hold here).
+B08-008	SUPPORTS	wiring.go:101 is `// replacing the STORAGE_RPC_ADDR edge.` — a comment hit, as the unit's "3 Go hits, every one a comment" enumeration says; it holds at the tree ref ad9f3c49 too.
+B08-009	SUPPORTS	callsites_test.go:189 is `// in process; the standalone storage service is scaled to 0 and STORAGE_RPC_ADDR is` — a comment hit, as enumerated; holds at ad9f3c49.
+B08-010	SUPPORTS	main.go:504 is `// now — the standalone service takes no traffic and STORAGE_RPC_ADDR is gone.` verbatim; app IS at origin/main ad9f3c49, and a repo-wide Go grep returns exactly the 3 comment hits claimed.
+B08-011	UNRESOLVABLE	Pin is sha-qualified to app `b948604` (v1.366.0); tree is at ad9f3c49 where wiring.go:115 is a comment about the S3 key prefix, so the asserted STORAGE_RPC_ADDR read cannot be decided here.
+B08-012	SUPPORTS	gqlauthz.go:222 is the file's only authorizationManager call (`OrgCheckUserPermission`), and exactly six `return next(ctx)` paths precede it (:161, :177, :191, :197, :203, :219) — the "six paths / single Sentinel call" both check out.
+B08-013	PARTIAL	gate.go:27-49 is only the `courseBuilderAccessGate` middleware body; it carries neither half of the "2 of its 6 Echo groups" quantifier — the "two groups" naming is in the doc comment at :15-16, just outside the cited range, and the 6 groups are in backend.go:121/171/194/210/229/273 (uncited). The count is true, but not from these lines.
+B08-014	SUPPORTS	docker-compose.yml:48 is `- AUTHORIZATION_ADDRESS=http://sentinel:8087`; a full read of the 187-line file confirms it is the only Connect-RPC service address and that no `*_RPC_ADDR` variable exists anywhere in it.
+B08-015	SUPPORTS	gotenberg.go:31 is a plain `http.NewRequestWithContext` POST to gotenbergURL — backs "reached over plain HTTP, not Connect-RPC"; tree is at the named ref ad9f3c49.
+B08-016	SUPPORTS	docker-compose.yml:59 is `- JUDGE0_BASE_URL=http://52.48.139.23:2358` in backend's environment: block, as listed.
+B08-017	SUPPORTS	docker-compose.yml:66 is `- REDIS_ADDR=redis:6379` in backend's environment: block, as listed.
+B08-018	SUPPORTS	docker-compose.yml:93-94 are exactly `SUPABASE_DB_CONN` and `COPILOT_DB_CONN`, both `postgresql://` DSNs, in backend's environment: block — "the two Postgres DSNs" is precise.
+B08-019	SUPPORTS	docker-compose.yml:101-109 is the whole `depends_on:` block and contains exactly redis, postgresql, sentinel; the quoted in-line comment about storage/messenger/customerio-sync sits at :102-103 as claimed.
+B08-020	UNRESOLVABLE	Pin is sha-qualified to platform `0dab54d`; platform tree is at `0c91421` where :126-131 is studio-desk's env_file/environment, so the storage depends_on and the seven-variable env block cannot be decided here.
+B08-021	UNRESOLVABLE	Pin is explicitly `0dab54d:docker-compose.yml:154`; platform tree is at `0c91421` where :154 is next-web-app's `ports:` key — the `profiles: [customerio-sync, all]` line is not reachable here.
+B08-022	SUPPORTS	docker-compose.yml:84-92 is the comment stating app gates messenger/customerio-sync behind MESSENGER_ENABLED / CUSTOMERIO_SYNC_ENABLED "which default to OFF on a developer machine"; platform tree IS at 0c91421 and no such variable is set anywhere in the file.
+B08-023	SUPPORTS	docker-compose.yml:138-140 is studio-desk's entire `depends_on:` block and names `backend` only (:141 is the next key) — "backend, and only backend" is exact.
+B08-024	SUPPORTS	cms/terraform/main.tf:39 is `service_desired_count = 0` inside `module "cms"` (declared at :30), backing "still declared in its own repo and takes no traffic".
+B08-025	UNRESOLVABLE	Unit names `6092c6d2` as the deleting commit; the jobsimulation clone is at `462343b0` where the cited :15-40 still contains `module "jobsimulation"` (:31) with `service_desired_count = 0` (:40) and a full container_definitions — the post-deletion state described cannot be verified here, and the citation itself carries no ref.
+B08-026	SUPPORTS	cms/go.mod:9 IS `github.com/anthropos-work/ai v1.40.2`, exactly as the row asserts (harness mis-resolved the bare `go.mod:9` to app/go.mod, whose :9 is gqlgen; the row's prose names cms unambiguously).
+B08-027	SUPPORTS	jobsimulation/go.mod:11 IS `github.com/anthropos-work/ai v1.40.2`, exactly as asserted (harness again mis-resolved to app/go.mod:11 = watermill; the row's prose names jobsimulation unambiguously).
+B08-028	UNRESOLVABLE	Pin is sha-qualified to app `b948604f`; tree is at ad9f3c49 where go.mod:20 is `github.com/asticode/go-astisub v0.42.0` and the taxonomy direct requirement sits at :18 — the substance holds, the line pin does not resolve here.
+B08-029	SUPPORTS	sentinel/go.mod:21 is `github.com/anthropos-work/taxonomy v1.2.0 // indirect` — both the requirement and the "indirect" qualifier land, though the sentinel clone is at f2c46190 rather than the named 88bc5592.
+B08-030	SUPPORTS	flow.go:72 is the literal `h.subServer.AddSubscriber("backend", sub.AddHandler(` and the block :74-103 carries exactly 21 live pubsub.EventHandler entries (a 22nd at :83 is commented out) — the "21 live handlers" quantifier is exact.
+B08-031	SUPPORTS	streams.go:65 is `StreamBackend = "backend"`, the literal the unit names.
+B08-032	SUPPORTS	main.go:1493 passes `msgflow.StreamBackend, msgflow.StreamJobSimulation, msgflow.StreamCMS` into the consumer-group verification — the stream literals are named from there, as claimed.
+B08-033	SUPPORTS	main.go:1442 is `// they would not be redelivered to the real backend. The switch has to sit` — a comment line at this newer ref, exactly what the unit asserts about the retracted anchor.
+B08-034	SUPPORTS	main.go:1445 is `if messengerEnabled {`, the gate the unit says the whole messenger block sits behind.
+B08-035	SUPPORTS	env_guards.go:61 is `envMessengerEnabled = "MESSENGER_ENABLED"`, verbatim.
+B08-036	SUPPORTS	main.go:1437 is `// ALL OF IT is behind MESSENGER_ENABLED. Gating only the *sender* would not be` — the quoted sentence, at the named ref ad9f3c49 which the tree is at.
+B08-037	SUPPORTS	docker-compose.yml:84-92 contains "which default to OFF on a developer machine" (:87-88) and states compose deliberately sets no variables there; platform tree is at the named 0c91421.
+B08-038	SUPPORTS	main.go:287 at the tree ref ad9f3c49 is `logger.Info("subsystem switches",` — precisely the drift the unit asserts for this anchor.
+B08-039	SUPPORTS	wiring.go:127 is `asynqClient := jsworkerclient.NewClient(getenv("REDIS_ADDR"), workerIndex)` — "an asynq-client construction", exactly as the unit's drift statement says.
+B08-040	SUPPORTS	main.go:1276 is `apiKeyManager,` at the tree ref, exactly the drift the unit asserts.
+B08-041	SUPPORTS	roles.go:791 is `func (r *RoleManager) SkillerSubscriber() *pubsub.Subscriber {` — the seventh anchor does hold; only the ad9f3c49 leg of the "byte-identical at all three refs" is checkable here.
+B08-042	SUPPORTS	main.go:1537 is `Skiller: os.Getenv("SKILLER_STREAM"),` inside `streamNamesForSubscribers := streamNames{` (:1534) — it fills a subscriber-side field, not a publisher, as claimed.
+B08-043	SUPPORTS	docker-compose.yml:71 is `- SKILLER_STREAM=skiller`; platform tree is at the named ref 0c91421.
+B08-044	SUPPORTS	flow.go:105 is `h.subServer.AddSubscriber("jobsimulation", sub.AddHandler(` — the standalone messenger's jobsimulation-stream subscriber, as claimed.

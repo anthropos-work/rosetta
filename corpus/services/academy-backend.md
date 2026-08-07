@@ -59,9 +59,16 @@
         `internal/aireadiness/suggested_path.go`.
     *   `academy.AssetUploader` (`asset.go`) — uploads path cover images + intro audio to the **public S3
         bucket**. Since the **storage-in-app v9.0 cutover** (`app` `9d00a313` = v1.367.0) that is an
-        **in-process** public storage manager, not an RPC hop: `app/main.go:471-472` constructs the two
-        managers from `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`, and `STORAGE_RPC_ADDR` is gone from
-        the Go source (3 remaining occurrences at that ref, **all comments**, zero reads).
+        **in-process** public storage manager, not an RPC hop: `app/main.go:524-525` **@ `ad9f3c49`**
+        constructs the two managers (`internalstorage.NewManager` / `NewPublicManager`) from the bucket
+        names read at `app/main.go:516-517` (`internalstorage.EnvBucket` / `EnvPublicBucket`, i.e.
+        `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET`), and `STORAGE_RPC_ADDR` is gone from the Go
+        source (3 remaining occurrences at that ref — `main.go:504`, `env/callsites_test.go:189`,
+        `internal/jobsimwiring/wiring.go:101` — **all comments**, zero reads).
+        **`:471-472` was this line's citation for four releases and it names neither construct** — at
+        `ad9f3c49` it is the closing brace of the Bedrock-error branch plus a blank line. Found by the
+        iter-122 claim census, which is why the ref is now stated with the pin rather than left to the
+        cutover sha named earlier in the sentence.
 *   **Ent tables** (`internal/data/ent/schema/`, `public` schema):
     *   **Per-user (UserMixin, owner-only)** — ⚠️ **these are Ent LABELS; the TABLE names are plural** (Ent
         pluralizes, so `SELECT … FROM academy_certificate` errors with *relation does not exist*):
