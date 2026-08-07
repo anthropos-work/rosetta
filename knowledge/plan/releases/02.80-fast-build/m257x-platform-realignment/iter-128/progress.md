@@ -327,3 +327,51 @@ remains the honest phrasing, because the family exits **2**, not 0, on the four 
 **Unchanged at 4 of 5.** **No reading was taken and `P` is unmeasured.** Clause 5 is met only by a
 reading that returns zero; **repair is not a reading**, and a triage is not a grader (`F4`). This iter
 removes confounds from a future reading and repairs 30 sites; it moves no clause.
+
+## Close — 2026-08-07
+
+**Outcome:** the three priorities treated as **three different diseases**, in the run's stated
+consequence order. **Priority 1:** the sealed consequence class read **exhaustively — 340/340, every
+clone at a ref** — yielding **13 distinct false claims repaired across 30 sites in 17 files**, four of
+them predicates swept corpus-wide. The headline is the **third security-surface UNDERSTATEMENT of this
+milestone**: the REST surface has **eleven** Echo groups, not the six the table listed, and **one has no
+authentication at all** — a paragraph already corrected twice, both times re-deriving from the file the
+wrong sentence pointed at. **Priority 2:** the 820 triaged by the same committed predicate (partition
+asserted exact, anti-vacuity control fires), **printed `cite` 99.4 % corrected to ≈ 90.0 %** by an audit
+run on *this* population, with `fix = 0` published as **a floor of unknown height because the complement
+was never read**. **Priority 3:** the suite's **counts attested and cross-checked** (1,158 collected,
+identical to run 80's independent run) and its **timing declared unavailable** with both contaminants
+measured — **mine listed first**. `state.md` is inside every budget it can meet, and the one it cannot
+is disclosed with its number rather than trimmed. **No `N` movement is claimed and no reading was
+taken.**
+**Type:** tik
+**Status:** closed-fixed
+**Gate:** NOT MET
+**Phase 5 grading:** (1) gate-met: n — **4 of 5, unchanged; `P` unmeasured** — (2) triggered-tok: n
+(**a successor strategy remains FORBIDDEN by `TOK-08`'s sealed rule; the census and the triage are
+INSTRUMENTS, and `F4` books any sentence treating either as clause 5's grader as a defect of this
+iter**) — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n (1 tik) — (6) protocol-stop: n —
+(7) budget-exhausted: **y** — Outcome: **exit-7**
+**Decisions:** `D-M257x-128-1` … `D-M257x-128-4` (see [`decisions.md`](decisions.md))
+**Side-deliverables:** `§5` **rule 57** (*a count is only as wide as the search that produced it*) —
+derived from the headline finding and committed separately; `iter-123/progress.md` § 6, which gives
+`org-repos.md` and `observability.md` their first owner in the plan.
+**Routes carried forward:**
+- `FIX-M257x-iter128-body-budget-has-no-owner` — the 12,000-byte body budget cannot be met by the
+  contract's own method; three probes found `state.md` is the sole owner. **Raise the budget or give the
+  content an owner — both are decisions, not edits.**
+- `FIX-M257x-iter128-suite-timing-unattested` — the counts are attested, the timing is not.
+- `FIX-M257x-iter128-encoding-and-link-fences` — two author-side defect classes with **no fence, and
+  none possible of the current shape** (mojibake is valid UTF-8; relative plan-doc links are not
+  citations).
+- `FIX-M257x-iter124-stale-hedges-on-infrastructure` — **still open**, untouched by this iter.
+- **The complement has not been read for falsity.** 820 members, `fix` unmeasured.
+**Lessons:** **A count is only as wide as the search that produced it, and a repair inherits its
+predecessor's search.** Two careful corrections to one paragraph both re-derived from `backend.go`
+because that is where the sentence being repaired pointed — leaving a five-group under-count of an
+authentication surface standing through both. **And the rule caught me inside the same iter:** my first
+reach regex for the ant-academy predicate was tuned to the four sites I already knew and found 4;
+widening it found **14** across nine files including `CLAUDE.md`. **The near-miss was the enumeration,
+not the repair.** The second lesson is smaller and sharper: **I checked the machine was quiet, then
+loaded it myself with six agents** — a precondition verified once at the start is not a precondition
+held for the window.
