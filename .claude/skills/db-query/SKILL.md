@@ -168,6 +168,9 @@ next-gen **simulator_sessions** / **simulator_interactions** / **simulator_valid
 / `pg_trgm`). `chronos` survives as an **archived remnant** (just `timers` — the service was removed from
 orchestration; don't treat it as live), and the old **`skiller`** schema is a **legacy remnant** of the July 2026
 skiller→app merge (data ported to `public`; not authoritative — don't query it for current data).
+**`skillpath` is in the same class** and this list used to imply otherwise by naming it unqualified: its engine
+merged into `app` and was decommissioned at platform M507, with session state moved to
+**`public.skill_path_sessions`** — prefer `public`, and see the `SKILLPATH` section below before querying it.
 
 > **Local/stack DBs differ slightly.** A `dev-N` / `demo-N` stack built from the default `core` profile carries
 > the same app schemas but **adds** an `auth` schema (a Supabase/GoTrue-style `auth.users` — a local auth artifact,
@@ -227,8 +230,16 @@ catalog-only, never full-scan). Keyed by `unode_id` + `node_id` (varchar NodeID,
 - **skill_nodes** (+ **skill_nodes_preview**): adds embedding-scoring columns (closest_score_ada/small, confidence, _signature jsonb, evidences[])
 - **skill_graph** / **skill_graph_curation** (curation surface, currently empty), **gateway_users**, **gateway_annotations**
 
-### SKILLPATH (learning paths)
+### SKILLPATH (learning paths) — ⚠️ **check `public` first; this schema is a post-M507 husk**
 - **skill_path_sessions** (root, versioned) → **chapter_sessions** → **step_sessions** (step_sessions.simulation_id = template; .last_simulation_session_id = latest attempt)
+
+> **The skillpath engine was merged into `app` and then decommissioned** ("skillpath-in-app", platform
+> M502→M507): session state now lives in **`public.skill_path_sessions`**, and the standalone `skillpath`
+> schema is a **legacy husk** — the same status this page already flags for `skiller` and `chronos`, which it
+> did not flag here. **Before querying `skillpath.*` for current data, check whether `public` carries the same
+> table** (`\dt public.skill_path_sessions`) and compare `max(created_at)` on both; prefer `public`. A local
+> `dev-N`/`demo-N` built from a fresh migrate has the tables in `public` and **no meaningful `skillpath`
+> schema at all**. Authority: `corpus/architecture/platform-migration-status.md`, the `skillpath` row.
 
 ### CMS (the app-Postgres cms schema — NOT the public Directus template library)
 - **studio_documents**, **studio_tasks** — studio-room generated, **100% org-scoped customer data** (excluded from snapshots)
