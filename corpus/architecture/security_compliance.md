@@ -149,9 +149,61 @@ Three layers of isolation ensure tenant data cannot leak:
   enforced by Layer 2 (Sentinel) and by explicit query scoping, not by the ORM
 
 ### Layer 2: Authorization
-- **Sentinel** service validates every API request using Casbin (RBAC/ABAC)
-- Authorization checks happen before any data access
-- Policies are centrally managed and auditable
+
+> ⚠️ **CORRECTED M257x iter-120 — this layer said Sentinel *"validates **every** API request"* and that
+> *"authorization checks happen before **any** data access."* Both are false, and they are false in the
+> direction that makes the platform sound MORE protected than it is.** The same class as the
+> `clerk-integration.md:40` *"only"* and the `cms.md` `bash -c` inversion: an absolute quantifier over a
+> security surface, published unhedged. Layer 1 directly above has been re-measured four times down to
+> an exact schema count and carries its caveat; **Layer 2 sat underneath it, unhedged and unfenced,
+> asserting a blanket that does not exist.**
+>
+> **The platform's own source says so, in a comment written as a post-mortem of this exact misreading**
+> (`app/internal/web/backend/graphql/graph/resolver_skiller_taxonomy_authz.go:53-66` @ `app` `ad9f3c49`):
+> the M207 skiller-in-app port dropped skiller's per-resolver guards and *"leaned on app's blanket
+> `AuthorizationMiddleware` — but that gate is keyed on a `userId` operation variable and **FAILS OPEN**
+> for taxonomy operations … That left every taxonomy read/write reachable by any authenticated caller
+> (**cross-tenant IDOR + privilege escalation**)."* It ends: ***"Do NOT rely on the blanket gate for this
+> surface — it fails open here."*** (That specific hole was closed by restoring per-resolver checks; the
+> **general** statement about the gate is what this doc got wrong.)
+
+**What is actually enforced.** `AuthorizationMiddleware`'s own doc comment says it *"gates every
+operation **on a viewer**"* (`app/internal/authorization/gqlauthz/gqlauthz.go:149` @ `app` `ad9f3c49`) —
+an **authentication** gate. The single Sentinel call is `OrgCheckUserPermission` at `:222`, and **six
+paths reach the resolver before it**:
+
+| `gqlauthz.go` | condition | effect |
+|---|---|---|
+| `:160-161` | the operation failed to parse/validate | `next(ctx)` |
+| `:174-178` | no viewer **and** the op is `@public` / federation / dev introspection | `next(ctx)` |
+| `:190-191` | **viewer has no active org** (`org == nil \|\| org.ID() == uuid.Nil`) | `next(ctx)` |
+| `:196-197` | `errUnknownTarget` — the operation carries no `userId` **variable** | `next(ctx)` |
+| `:202-203` | target is nil, or the target **is** the viewer | `next(ctx)` |
+| `:209-219` | `@resolverAuthorized` — grants `authorization.Allow` **without calling Sentinel** | `next(ctx)` |
+
+So an operation is Sentinel-checked only when it (i) carries a `userId` **GraphQL variable** — the target
+is one hardcoded variable name, `grapqlTargetVar = "userId"` (`gqlauthz/target.go:11`) — (ii) whose value
+differs from the viewer's own id, and (iii) the viewer has a non-nil active org. **An id inlined as a
+document literal rather than passed as a variable does not reach Sentinel at all.**
+
+**And there is no Sentinel middleware on the REST surface.** Every Echo group in
+`app/internal/web/backend/backend.go` is `cors` + (`swagger`) + `authnEcho.EchoAuthnMiddleware` and
+nothing else (`:121-141`, `:172-173`, `:195-196`, `:211-212`, `:230-231`, `:274-275`); `git grep -nE
+'AuthzMiddleware|EchoAuthzMiddleware' -- '*.go'` over `app` @ `ad9f3c49` returns **0**. REST
+authorization is **per-handler** (`requireAdmin`, `OrganizationReadPermissionCheck`,
+`checkTaxonomyWritePermission`, …).
+
+**The honest statement of Layer 2:**
+- **Sentinel is the centralized authorization *engine*** (Casbin RBAC/ABAC, PostgreSQL-backed policy
+  store), and its policies are centrally managed and auditable — that part always held.
+- **It is not a blanket applied to every request.** The GraphQL middleware is a *viewer* gate with a
+  narrow cross-user check bolted on; the REST surface has no authz middleware at all.
+- **Where isolation actually comes from** is the three layers *together* — Layer 1 on the 31 schemas
+  that declare a policy, per-resolver and per-handler checks elsewhere, and Layer 3's org-scoped
+  session. Reading Layer 2 as universal is what let the M207 port ship an IDOR.
+- **Nothing here should be read as a live vulnerability claim.** It is a claim about what this
+  document may assert. The named taxonomy hole is fixed; the surfaces that rely on per-resolver
+  checks have not been enumerated by this corpus, and that gap is now stated rather than papered over.
 
 ### Layer 3: Identity
 - **Clerk** JWT tokens include organization context

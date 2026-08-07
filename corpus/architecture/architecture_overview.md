@@ -387,7 +387,16 @@ isolation is enforced at three layers:
    subset of those 23, not the total) — see
    [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
    the derivation
-2. **Authorization**: Sentinel (Casbin RBAC/ABAC) validates every API request
+2. **Authorization**: Sentinel is the centralized Casbin (RBAC/ABAC) authorization **engine** — **not a
+   blanket applied to every API request.** ⚠️ This line said *"validates every API request"* until M257x
+   iter-120. Measured at `app` `ad9f3c49`: the GraphQL `AuthorizationMiddleware` is a **viewer** gate
+   with **six** paths that reach the resolver before the single Sentinel call
+   (`internal/authorization/gqlauthz/gqlauthz.go:222`) — including *"viewer has no active org"* (`:190-191`)
+   and *"the operation carries no `userId` variable"* (`:196-197`) — and the REST surface has **no authz
+   middleware at all**. The platform's own source calls the blanket gate **fail-open**
+   (`graph/resolver_skiller_taxonomy_authz.go:53-66`). See
+   [Security & Compliance → Layer 2](./security_compliance.md#layer-2-authorization) for the enumerated
+   paths and the honest statement
 3. **Identity**: Clerk JWT includes org context; sessions are org-scoped
 
 For detailed integration patterns, see [External Services](./external_services.md).

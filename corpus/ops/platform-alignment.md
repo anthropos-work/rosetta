@@ -1544,7 +1544,17 @@ defect, it was arguing for it.*
     fence, wrong twice in **opposite** directions, as precedent).
 
     **That repair was complete.** The corpus asserts nothing; the retracted bullets sit inside an explicit
-    *"what is STATED, not what this corpus asserts"* fence (`security_compliance.md:227` under `:231-256`).
+    *"what is STATED, not what this corpus asserts"* fence in
+    [`security_compliance.md`](../architecture/security_compliance.md) — **named, not pinned.** ⚠️ This
+    carried a line pin into that file (line two-two-seven, under two-three-one to two-five-six —
+    **spelled in words on purpose, so this retraction cannot itself be read as a live citation**).
+    Re-derived at M257x iter-120 those lines are a `coursebuilder/bedrock.go` citation and the tail of the
+    iter-46/48 AI-provider correction; the fence itself was **37 lines away**. A **ninth** member of iter-119's wrong-construct class, and the
+    one worth reading the guard note for: `anchor_construct_guard` was **GREEN over it for the whole
+    milestone** and only went RED when an unrelated edit above shifted `:227` onto a *blank* line. The
+    guard's qualifier is therefore weaker than even its own caveat records — it detects *resolves to
+    blank*, not *resolves to the right construct*, so every wrong pin that happens to land on prose is
+    invisible to it. Booked as `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong`.
     **Silence was the correct end state.** What went onto the ledger was not a defect but an **aspiration** —
     *that someone re-derive the true classification* — routed as *"needs an owner outside this milestone."*
 
