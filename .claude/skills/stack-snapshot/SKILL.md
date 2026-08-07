@@ -24,7 +24,9 @@ per-stack), `capture` (the rare prod-read maintenance op), `status` (list the ca
 > a freshly-migrated post-merge stack has **no `skiller` schema**. The `taxonomy` surface in
 > `rosetta-extensions/stack-snapshot/` was **re-pointed at `public`** in v2.1 M209 (the capture predicate +
 > replay target now query `public.*`), so replay/capture work against a post-merge stack. (Re-capturing the
-> live `public.*` taxonomy from a safe prod source lands in M211; until then a cached capture still replays.)
+> live `public.*` taxonomy from a safe prod source landed in M211 — this note used to say it *"lands in
+> M211; until then a cached capture still replays"*, a forward-reference that long since came due. Check
+> the cache with `stacksnap status` rather than assuming either state.)
 
 ## Where this sits in the flow
 `/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,

@@ -90,7 +90,8 @@ For **each** repo: `git fetch origin`, then check the branch and working tree.
 
 > **Not a contradiction with the "don't touch rext" rule (Phase 6).** Phase 1 *pins* rosetta + the rext
 > authoring copy to clean main as the **setup baseline**. The **demo** consumes rext from its **own** pinned
-> clone at the tag in `.agentspace/rext.tag` (currently `v2.2`) — `/demo-up` manages that; **do not** repoint
+> clone at the tag in `.agentspace/rext.tag` (**read the file — never hardcode a tag here**; this line said
+> *"currently `v2.2`"* and went stale) — `/demo-up` manages that; **do not** repoint
 > it to main. After setup, development never touches rosetta or rosetta-extensions again.
 
 ### Phase 2 — Decide the TARGET repo(s) and branch names
