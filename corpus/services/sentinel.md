@@ -94,7 +94,12 @@ Consumed via `AUTHORIZATION_ADDRESS=http://sentinel:8087`, set in exactly **one*
 
 ### First-run schema setup
 
-The `sentinel` schema must exist before sentinel can start. The `extensions` schema must also exist (pgvector is required by other migrations, not by sentinel itself — but the platform setup creates both together). See [setup_guide.md §6](../ops/setup_guide.md) for the schema-creation step. Without it, sentinel crash-loops with `pq: no schema has been selected`.
+The `sentinel` schema must exist before sentinel can start — but **you no longer create it by hand**
+(corrected M257x iter-130). `68272003` (2026-08-04) added a **second Atlas pipeline, owned by `app`**:
+`app/atlas.hcl:50-64` declares `env "sentinel"`, and `app/Makefile:59-60` records that *"`atlas migrate
+apply --env sentinel` creates the schema itself, and that is what local/CI actually run"* (@
+`ad9f3c498`). The `sentinel` repo itself still has no `atlas.hcl` and no `terraform/migrations/` at
+`f2c461903`, which is why `repos.yml` correctly marks it `migrations: false`. The `extensions` schema must also exist (pgvector is required by other migrations, not by sentinel itself — but the platform setup creates both together). See [setup_guide.md §6](../ops/setup_guide.md) for the schema-creation step. Without it, sentinel crash-loops with `pq: no schema has been selected`.
 
 ### Run in Docker
 

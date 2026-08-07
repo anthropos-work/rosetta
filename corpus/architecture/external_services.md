@@ -52,7 +52,7 @@ graph TB
     Hiring[Next.js Hiring App<br/>apps/hiring in next-web-app]
     Mobile[Expo Mobile App]
     Desk[Studio-Desk]
-    Academy[Ant Academy<br/>@anthropos.work only]
+    Academy[Ant Academy<br/>public + org tier]
     
     Web --> Clerk
     Hiring --> Clerk

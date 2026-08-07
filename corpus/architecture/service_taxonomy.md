@@ -210,8 +210,12 @@ make dev S=backend       # Stop Docker container, develop natively
   is selected — stacked on `core`, since `studio-desk` **alone** exits 1 (see *Profiles* below) — and not on
   a bare `make up`. The unqualified *"not in main docker-compose"* contradicted the Studio-Desk row above,
   `frontend_architecture.md:11` and `studio-desk.md:21`; corrected M257x iter-46
-- **Purpose**: Content creation, AI-powered generation, and internal learning
-- **Users**: Internal content creators, designers, and Anthropos employees
+- **Purpose**: Content creation, AI-powered generation, and AI-engineering learning
+- **Users**: Internal content creators and designers (Studio-Desk / Studio-Room) — **plus, for Ant
+  Academy, the general public**: it is a public storefront with an enterprise/org tier, and its access
+  gate is *any Clerk organization membership*, never an `@anthropos.work` email (`ant-academy`
+  `d5875e34`; `code/proxy.js:298` @ `22df69dd8`). See the Ant Academy row below and
+  [`ant-academy.md`](../services/ant-academy.md)
 - **Integration**: Reuse platform identity (Clerk), and **both connect to Core Services over GraphQL** — Studio-Desk via `VITE_GRAPHQL_ENDPOINT`, Ant Academy via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. **Neither is independent of the backend.** *(This page previously called Ant Academy "fully independent of the backend"; that framing was retired at v2.5 M231 — see [`ant-academy.md`](../services/ant-academy.md) — and it is the documented root cause of the "empty academy" demo bug.)*
 
 #### Studio-Desk
@@ -520,7 +524,7 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 | **Other profiles (off by default)** | Studio-Desk (`studio-desk`) and Next-Web-App (`frontend`) — **the only two left**. Storage (`storage-legacy`), Messenger (`messenger`) and CustomerIO Sync (`customerio-sync`) were here until `838d907` deleted all three services and their profiles | TypeScript | Docker Compose (opt-in profiles) | GitHub repos |
 | **Shared Libraries** | **5 libraries, 3 imported by a service a stack builds** — colony, proto, taxonomy (none of them in `repos.yml`; they are pulled at Docker build). **`ai` left this set** at `1e457fa70` (2026-08-04): `app` carries it in-tree as `app/internal/ai/`, and no `go.mod` a stack builds requires the module — only the frozen `cms` / `jobsimulation` husks (`v1.40.2`) still do. `authn` is a library but not a dependency: it ships inside colony as `colony/authn` and no service's `go.mod` requires the standalone module (0 hits across all seven Go clones; control — `colony` is required by all seven) | Go | Imported (not deployed) | GitHub repos |
 | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in the **`app`** image, orchestrated from `app/internal/cms/studio/` (it was `cms/studio/` before cms-in-app) | Local directories |
-| **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
+| **Standalone Apps** (*not* internal-only — the label said "Standalone Internal Apps" until M257x iter-130) | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | **Bash** (Alpine) | an ECS **task definition with no live trigger** — the schedule is commented out (`7dd1b80`, 2025-05-29) | GitHub repo |
 | **Archived / merged** | Chronos, Intelligence, Skiller (merged into app in July 2026), Skillpath (merged into app, M502→M507), **CMS, Jobsimulation and Roadrunner** (merged into app; their compose services and `repos.yml` entries deleted by `d11a403`), **Storage, Messenger and CustomerIO Sync** (merged into app in the v9.0 "support-in-app" program; their compose services deleted by `838d907`, which also took `storage` + `messenger` out of `repos.yml` — `customerio-sync` was never in it) | Go | Removed from local orchestration | GitHub repos still exist |
 | **External** | Clerk, Directus, AI providers, LiveKit, AWS Chime. **The Cosmo Router is not among them in either state** — deleted from local dev at platform `2adcf71`, and its production module destroyed (`infrastructure/terraform/production/services.tf:509-517` @ `13c248e6`; corrected M257x iter-124, where this cell read *"Cosmo Router (**prod only**)"*) | Various | SaaS / Docker | Configuration-driven |

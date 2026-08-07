@@ -2,9 +2,10 @@
 
 **Goal.** Complete the *interactive* demo: open a browser, log in as the demo user with **no real Clerk**, and
 land in a **seeded** org where authorized routes return **200**. This is where the two M3-deferred injection
-recipes land — the **`api.clerk.com` cert-redirect** (so the backend's orgclient trusts the fake BAPI over
-TLS) and the **browser-login walk-through** (the frontend points at the fake FAPI via a minted publishable
-key).
+recipes land — the **`api.clerk.com` redirect** (so the backend's orgclient reaches the fake BAPI instead of
+real Clerk — a compose network alias, *not* a cert-redirect; see §A's retraction) and the **browser-login
+walk-through** (the frontend points at the fake FAPI via a minted publishable key). **TLS belongs to the
+browser-facing FAPI seam only** (§B step 2), not to the BAPI one.
 
 **Prerequisite.** A stack up (`/demo-up N`) and seeded (`/stack-seed N`) — the demo identity
 `user_clerkenstein` must exist as a member (otherwise login authenticates but org-gated routes 403). See
@@ -14,30 +15,64 @@ key).
 
 | Seam | Consumer | Disarm |
 |---|---|---|
-| **Backend session verify** | the 5 Go services (`authn`) | `go.mod replace` with the disarmed `colony/authn` (done by `apply-authn.sh` at bring-up — **already wired**) |
-| **Backend org client** | `app/internal/clerk/orgclient` → `api.clerk.com` | **redirect `api.clerk.com` → the fake BAPI** (`clerk-backend`): container DNS / `extra_hosts` + a **TLS cert the app container trusts** (this recipe) |
+| **Backend session verify** | **`backend`** — the one Go service that verifies Clerk session tokens (`authn`) | `go.mod replace` with the disarmed `colony/authn` (done by `apply-authn.sh` at bring-up — **already wired**) |
+| **Backend org client** | `app/internal/clerk/orgclient` → `api.clerk.com` | **redirect `api.clerk.com` → the fake BAPI**, via a **compose network alias** on the `fake-bapi` service (this recipe, §A) |
 | **Browser login** | `@clerk/nextjs` / `@clerk/clerk-js` | a **minted publishable key** encoding the fake FAPI host → the SDK talks to the fake FAPI (`clerk-frontend`), config-only, no SDK fork (this recipe) |
 
 M3 proved the **authn seam live** (a running app accepts a Clerkenstein token on a protected route — 403, not
 401, before seeding). This recipe finishes the *interactive* loop.
 
-## A — the `api.clerk.com` cert-redirect (backend orgclient → fake BAPI)
+## A — the `api.clerk.com` redirect (backend orgclient → fake BAPI)
 
 The orgclient is app-internal + networked, so it can't be `go.mod replace`d; it's disarmed by **redirecting its
-host**. The fake BAPI (`demo-N-fake-bapi`) serves the `api.clerk.com/v1` surface; the one redirect catches both
+host**. The fake BAPI serves the `api.clerk.com/v1` surface; the one redirect catches both
 the SDK sub-clients and the three raw-HTTP methods.
 
-1. **Route the host.** Add `api.clerk.com` → the fake BAPI to the app/cms/etc. containers' resolution
-   (`extra_hosts:` in the injected compose override, or `/etc/hosts` in the container).
-2. **Trust the TLS.** The SDK calls `https://api.clerk.com/v1`, so the app container must **trust the fake
-   BAPI's certificate** for that host — mount a cert for `api.clerk.com` signed by a CA the container trusts
-   (add the CA to the container trust store), and serve it from the fake BAPI. The full mechanism +
-   cert-generation steps are in the clerkenstein repo: **`clerk-backend/doc.go`**.
+**The live mechanism is a compose NETWORK ALIAS, not `extra_hosts`, and there is no cert.**
+`gen_injected_override.py` emits the fake BAPI as a `fake-bapi` service (image `demo-N-fake-bapi:latest`)
+joined to `app-network` with `aliases: [api.clerk.com]` — `stack-injection/gen_injected_override.py:823-829`
+@ rext `415240f`. Every container on that network therefore resolves `api.clerk.com` to the fake BAPI by
+Docker DNS, with nothing to add per-service. The generator's own module header says so
+(`:8-9`: *"fake-bapi gets the network alias `api.clerk.com` so the platform's orgclient resolves to it"*), as
+does the runtime-env note at `:197-198`: `CLERK_API_URL = http://api.clerk.com:443` — **plain HTTP, no cert**.
+The one consumer that cannot use the alias is host-native ant-academy, which is why `:822` publishes the BAPI
+on `127.0.0.1:5401+offset` (loopback-bound deliberately — see [`frontend-tier.md`](frontend-tier.md)).
 
-> Status: the fake BAPI server + its behavior are **built and alignment-gated** (Go gate + real-SDK test); the
-> DNS/cert *wiring into a live demo stack* is this documented recipe (the "recipe-only" item from M3, landed in
-> M8). The backend authn seam (the 403-not-401 proof) already runs without it — the cert-redirect is needed for
-> the orgclient (org/membership reads), not for token verification.
+> ### 🔻 RETRACTED — the `extra_hosts` path, the `cms` container, and the "5 Go services" (M257x)
+>
+> This section previously said: *"Add `api.clerk.com` → the fake BAPI to the **app/cms/etc. containers'**
+> resolution (`extra_hosts:` in the injected compose override…)"*, and the seam table above named *"the 5 Go
+> services"*. Three separate things were wrong, and the file already contradicted itself on one of them —
+> step B4 below has said *"via the `api.clerk.com` **alias**"* the whole time.
+>
+> 1. **There is no `cms` container.** `stack-demo/platform` @ `0c91421df` declares **five** services in
+>    `docker-compose.yml` — `sentinel` (`:5`), `backend` (`:28`), `studio-desk` (`:112`), `next-web-app`
+>    (`:143`), `gotenberg` (`:170`) — plus `postgresql` (`:2`) and `redis` (`:24`) from the included
+>    `common.yml`. No `cms`, no `jobsimulation`; the cms domain runs in-process inside `backend`. The demo
+>    tooling reaches the same conclusion at runtime: `up-injected.sh:216` still lists
+>    `INJECT_CANDIDATES="app cms jobsimulation"`, but `derive_inject_svcs` (`:1688-1704`) **filters it
+>    against the platform compose's own build set** and logs *"injection candidate 'cms' is no longer built
+>    by the platform compose — skipping (folded into app)"*, leaving `INJECT_SVCS="app"`. So exactly **one**
+>    service is authn-disarmed, not five — hence the seam-table correction above. (`sentinel` does
+>    authorization, not Clerk token verification, and is not a candidate.)
+> 2. **`extra_hosts` is written but never applied.** `inject.py:98-108` does emit an
+>    `extra_hosts: !override / - "api.clerk.com:<ip>"` snippet — into `<stack>/docker-compose.inject.yml`,
+>    against a service named **`app`** (which does not exist; the service is `backend`). That file is passed
+>    to `docker compose` **nowhere**: the bring-up composes `-f "$PLAT/docker-compose.yml" -f
+>    "$STACK/docker-compose.injected.yml"` and nothing else (`up-injected.sh:2179-2180`), and
+>    `grep -rn "docker-compose.inject.yml"` over rext returns only `inject.py` itself and its unit test. It
+>    is a leftover M3 artifact, not the live path.
+> 3. **No TLS cert is involved on this seam.** The step that said the app container must *"trust the fake
+>    BAPI's certificate"* described a path that was never built for the demo: the alias is reached over
+>    **plain HTTP on port 443** (`gen_injected_override.py:198`, and the `fake-bapi` container's own
+>    `PORT=443` at `:794`). The browser-facing **FAPI** cert is a different seam entirely and *is* real —
+>    that is §B step 2 below. (The `clerk-backend/doc.go` cert mechanism still exists in clerkenstein for a
+>    consumer that needs HTTPS to the BAPI; the demo is not one.)
+
+> Status: the fake BAPI server + its behavior are **built and alignment-gated** (Go gate + real-SDK test), and
+> the wiring into a live demo stack is **shipped, not recipe-only** — `/demo-up` emits the alias on every
+> bring-up. The backend authn seam (the 403-not-401 proof) runs independently of it — the redirect is needed
+> for the orgclient (org/membership reads), not for token verification.
 
 ## B — the browser-login walk-through (frontend → fake FAPI)
 

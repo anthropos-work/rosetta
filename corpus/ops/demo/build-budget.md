@@ -65,10 +65,30 @@ BuildKit cache. It is reported, not gated.
 
 ## The per-phase attribution model
 
-A cycle decomposes into two top-level phases and eleven bring-up sub-phases. `buildbench` derives the
+A cycle decomposes into two top-level phases and **twelve** bring-up sub-phases. `buildbench` derives the
 sub-phases from `up-injected.sh`'s **own** progress lines against a checked-in anchor list, and the table
 **must sum back to the bring-up phase** — a sub-phase table that does not add up means something is
 unattributed and every attribution in it is suspect.
+
+> **The count is TWELVE, not eleven** — corrected M257x. `BRINGUP_ANCHORS`
+> (`rosetta-extensions/stack-core/buildbench.py:114-130`, entries at `:117-129`, @ rext `415240f`) holds **12**:
+> `host_preflight · secrets_provision · clones_and_inject · backend_builds · seed_tooling · ui_next_web ·
+> ui_studio_desk · ui_hiring · compose_up · serve_and_egress · set_dress · autoverify`. The **4.1–4.12 table
+> immediately below already listed all twelve**, and so does the p50 table in "The baseline" — only this
+> sentence was short, which is the shape a sum-back invariant is supposed to catch and a prose count is not.
+> Derived, not counted by eye:
+>
+> ```sh
+> python3 -c "import re;s=open('stack-core/buildbench.py').read();\
+> b=re.search(r'BRINGUP_ANCHORS.*?= \[(.*?)\n\]',s,re.S).group(1);\
+> n=re.findall(r'\(\"([a-z_]+)\",',b);print(len(n),n)"     # -> 12
+> ```
+>
+> **Widened once** (Rule 57): `grep -rn "BRINGUP_ANCHORS" .` across the whole rext tree returns exactly two
+> hits — the definition at `buildbench.py:114` and its single consumer at `:249`. There is no second anchor
+> list, so the number does not move. Three of the twelve are conditional (`ui_*` on the UI tier,
+> `serve_and_egress` on `--public-host`) and are reported as *not applicable* rather than missing when their
+> feature is off — a conditional phase is still a declared phase.
 
 | # | phase | what it covers |
 |---|---|---|

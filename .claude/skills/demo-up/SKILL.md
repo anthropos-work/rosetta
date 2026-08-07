@@ -189,8 +189,10 @@ single-identity demo — see the toggle list below.) Source of truth:
    install`** (no token needed — the Font Awesome Pro icons it uses are **vendored/self-hosted** in the repo, not
    pulled from the FA npm registry) when `node_modules` is absent (`storytelling-postfix-2`). The earlier "down"
    was a **blocked clone** (an empty `stack-demo/ant-academy/` stub holding only a gitignored `code/.env.local`
-   defeated `make init`'s skip-if-present), now fixed — not a missing FA token. It's a Clerk-only Vercel-deployed
-   peripheral; the cockpit/next-web/studio-desk carry the demo.)
+   defeated `make init`'s skip-if-present), now fixed — not a missing FA token. It is a Vercel-deployed peripheral, and **not** Clerk-only —
+   it is a GraphQL client of the platform too (`code/src/graphql/server.js:14` reads
+   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and **throws** at `:18` when it is unset, @ `22df69dd8`), which is the
+   mechanism behind the "empty academy" grid; the cockpit/next-web/studio-desk carry the demo.)
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.

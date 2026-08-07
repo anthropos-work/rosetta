@@ -99,7 +99,7 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
 | **coresignal** | external | read-only; writes blocked on non-prod |
-| **Postgres / Redis / pgvector** | per-stack-isolated | seed freely. (`S3-private` is removed **from this table** — not per-stack-isolated at platform `0c91421`; see its own row above. ⚠ **The CODE still classes it `PerStackIsolated`** — `stack-seeding/isolation/isolation.go:106`. This cell asserted the registry had changed; it has not. M257x iter-98 withdraws that assertion rather than making it true — re-classing the store belongs to the open escalation `DEF-M257x-iter80-storage-prod-bucket`. See [`safety.md`](./safety.md) §2.2, which carries the same correction.) |
+| **Postgres / Redis / pgvector** | per-stack-isolated | seed freely. (`S3-private` is removed **from this table** — not per-stack-isolated at platform `0c91421`; see its own row above. ⚠ **The CODE still classes it `PerStackIsolated`** — `stack-seeding/isolation/isolation.go:118`. This cell asserted the registry had changed; it has not. M257x iter-98 withdraws that assertion rather than making it true — re-classing the store belongs to the open escalation `DEF-M257x-iter80-storage-prod-bucket`. See [`safety.md`](./safety.md) §2.2, which carries the same correction.) |
 
 > **The "shared skillpaths across stacks" myth.** Legacy skillpath sessions appearing across stacks trace to
 > the *shared Clerk identity* (sessions for a shared login leaked via shared auth) — **not** a shared skillpath

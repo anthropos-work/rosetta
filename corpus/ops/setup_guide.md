@@ -369,7 +369,25 @@ All services share a **single centralized `.env` file** located in the `platform
 >
 > Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
 
-**Note**: The docker-compose configuration uses this single `.env` file for all services (`backend`, `sentinel`, and the two frontends). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
+**Note**: `env_file: .env` is declared on exactly **four** of the seven compose services — `sentinel`
+(`docker-compose.yml:15-16`), `backend` (`:44-45`), `studio-desk` (`:125-126`) and `next-web-app` (`:156-157`),
+all @ platform `0c91421df`. `gotenberg` and the always-on floor (`postgresql`, `redis`, both from `common.yml`)
+declare none — they carry inline `environment:` blocks only. All four load the **same** `platform/.env`, so no
+service gets a different subset than any other.
+
+> ⚠️ **`env_file` is RUNTIME-only — it does not reach a build, so "no repo-local `.env` is needed" is false for
+> `next-web-app`.** The build-time values come from compose **build `args:`** (`docker-compose.yml:117-120` for
+> studio-desk's `VITE_*`; `:150-153` for next-web-app's `NEXT_PUBLIC_*`), which compose fills by *variable
+> interpolation* — a different mechanism from `env_file`, reading the shell env and the project-directory `.env`.
+> And `next-web-app/Dockerfile.dev` does `COPY . .` then `pnpm turbo build` (`:11`, `:34` @ `8297c684c`), so
+> Next.js reads **repo-local** env files inside the build context: a gitignored `next-web-app/apps/web/.env.production`
+> is required before `docker compose build` or the build crashes on a statically-evaluated server route. That is the
+> troubleshooting entry *"Next.js (`next-web-app`) build crashes with `STRIPE_SECRET_KEY is not configured`"* in
+> the Troubleshooting section below — it is not an exception to this note, it is what this note gets wrong if read
+> as "the platform `.env` covers everything."
+>
+> Repo-local `.env` files are also what `/stack-secrets --provision` writes (see above): `app/.env`,
+> `studio-desk/.env`, `next-web-app/apps/web/.env`, `ant-academy/code/.env.local`, `sentinel/.env`.
 
 ### Studio-Desk Environment (Only for Native Development)
 
@@ -378,7 +396,13 @@ If running Studio-Desk **outside Docker** (natively), it requires its own `studi
 it needs: `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, the `AI_*` provider keys, `DIRECTUS_TOKEN` (written
 blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
 
-**Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
+**Note**: When Studio-Desk runs via Docker the platform `.env` is used automatically — it declares `env_file: .env`
+like every other configured service (`docker-compose.yml:125-126` @ platform `0c91421df`). **But do not reach for
+`make up PROFILE=studio-desk` to get there: that command exits 1.** `studio-desk` declares `depends_on: backend`
+(`:138-140`) while `backend` is in `profiles: [core, backend, all]` (`:110`), so the `studio-desk` profile does not
+select the service it depends on and compose rejects the project as invalid. Use `make up PROFILE=all`, which
+selects both. (The profile table later in this guide already records the exit-1 behaviour; this note used to hand
+you the failing command anyway.)
 
 ### Ant Academy Environment (Native Only — Not in Docker)
 
@@ -723,9 +747,25 @@ The backend GraphQL endpoint is `/graphql/query`. The `/graphql` path returns th
 You restored a prod DB dump and the engineer-to-Clerk rebind is incomplete. See [staging_from_dump.md](staging_from_dump.md) — typically you need to (a) apply the colony patch, (b) sync `sentinel.casbin_rules.g2` from `public.memberships`, and (c) restart sentinel.
 
 ### Blank page on first sign-in / "Clerk: infinite redirect loop" in next-web-app logs
-Clerk's Next.js middleware reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from `process.env` at runtime even though the same value is baked into the client bundle at build time. If only `VITE_CLERK_PUBLISHABLE_KEY` is in the runtime env (which is what compose's `env_file: .env` provides for Studio-Desk), the server-side Clerk init fails and trips the "infinite redirect loop" detector — pages render blank until the cookie cache rescues them.
+Clerk's Next.js middleware reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from `process.env` at runtime even though the same value is baked into the client bundle at build time. When that variable resolves **empty or absent** in the container, the server-side Clerk init fails and trips the "infinite redirect loop" detector — pages render blank until the cookie cache rescues them.
 
-Fix: add the Clerk vars to `next-web-app`'s runtime `environment:` block in `platform/docker-compose.yml`:
+> ⚠️ **Diagnose the VALUE, not the wiring — `env_file` is not the cause.** This entry used to say the runtime env
+> carries "only `VITE_CLERK_PUBLISHABLE_KEY`, which is what `env_file: .env` provides for Studio-Desk". That is
+> false: `next-web-app` declares the **same** `env_file: .env` as studio-desk (`docker-compose.yml:156-157` vs
+> `:125-126` @ platform `0c91421df`), so its container env already carries every key `platform/.env` holds —
+> including all five `NEXT_PUBLIC_CLERK_*` names, which `.env_example` ships (`:95`, `:100-103` @ the same ref).
+> `env_file` does not differentiate the two services and never withheld these keys. The realistic cause is a
+> **blank or missing value** in your `platform/.env` (`.env_example` ships `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=`
+> empty), so **check the value first**: `docker compose exec next-web-app printenv NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
+> If it prints empty, fill it in `platform/.env` (or run `/stack-secrets --provision`) and restart — that is the fix.
+
+The `environment:`-block edit below is still worth knowing, but for a **narrower** reason than "env_file misses these":
+an `environment:` entry **overrides** `env_file`, and `${VAR}` there is resolved by compose *interpolation* (shell env
+first, then the project-directory `.env`) — so it lets a shell-exported value win over a blank line in
+`platform/.env`, and its `:-` defaults supply the four URL vars that `env_file` cannot default. It cannot turn a
+blank `platform/.env` value into a real one when nothing else exports it.
+
+Optional: add the Clerk vars to `next-web-app`'s runtime `environment:` block in `platform/docker-compose.yml`:
 
 ```yaml
 next-web-app:
@@ -738,7 +778,7 @@ next-web-app:
     - NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:-/onboarding}
 ```
 
-Then `docker compose up -d next-web-app` to restart with the new env (no rebuild needed — these are runtime-only vars, the bundle was already correct). After the fix you should see all five `NEXT_PUBLIC_CLERK_*` keys in `docker compose exec next-web-app env`.
+Then `docker compose up -d next-web-app` to restart with the new env (no rebuild needed — these are runtime-only vars, the bundle was already correct). Note that all five `NEXT_PUBLIC_CLERK_*` **keys** appear in `docker compose exec next-web-app env` **before** this edit too (`env_file` puts them there) — so key-presence is not the signal. The signal is whether `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` has a non-empty **value**.
 
 If you still see blank pages in your browser after the fix, clear cookies for the staging origin (`ithacastaging`, `calypsostaging`, or your equivalent) — stale dev-browser cookies bound to a prior origin can keep the redirect loop alive client-side.
 

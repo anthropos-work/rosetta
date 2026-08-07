@@ -28,7 +28,7 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 > | shape | who owns the Dockerfile | platform repo is | example |
 > |---|---|---|---|
 > | 1 | the platform | build context, Dockerfile consumed as-is | `next-web` (`Dockerfile.dev`), `studio-desk` |
-> | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the 11 demo-patches |
+> | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the demo-patches — **23** on disk (`ls demo-stack/patches/*/*.yaml \| wc -l` at rext `415240f`), of which **18** are image-baked (11 `next-web-app` · 5 `studio-desk` · 2 `app`) and 5 are `ant-academy`, patched-then-reverted around a **native** `next dev` rather than a build. *(This cell read "the 11 demo-patches" — the M224-era distinct-manifest total, four milestones stale. The authoritative inventory is [`demopatch-spec.md` §5](demopatch-spec.md), directory-fenced by `TestPatchInventory`.)* |
 > | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`) |
 >
 > Shape 3 is *stronger* on the hard line than shape 2, not weaker: nothing in the platform repo is touched at
@@ -44,10 +44,41 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 | App | How it runs | Port (base + offset) | Auth in the demo |
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `core` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
-| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `frontend`/`studio-desk` profiles | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
+| **hiring** (the real `apps/hiring`) | per-demo **Docker** image from the **rext-owned** `frontend/hiring.Dockerfile` (build shape 3 above), built from the same unmodified `next-web-app` clone; a **net-new** compose service `hiring-app` with `profiles: [<derived-default>]` | **3001** + N×10000 | Clerk-free (minted pk baked; `CLERK_API_URL` → the fake BAPI alias) |
+| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `core` profile — **same as next-web** (see the profile note below) | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | **Clerkenstein-wired (v2.3 M220)** — the demo's minted pk + the disarmed fake BAPI, read from `<stack>/.env.demo-N`. It **shares the demo's session**: a hero who clicks through from next-web arrives at the academy **signed in as herself**. *Was keyless via the `e2e_persona` bypass — see the box below; that is now removed.* |
 
-Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
+Example: `demo-2` → next-web on `:23000`, hiring on `:23001`, studio-desk on `:29000`, ant-academy on `:23077`.
+
+> **The `hiring` row is net-new at M257x — this table listed THREE apps and called itself "what `/demo-up`
+> brings up (UI tier)".** The demo has run **four** since v2.4 M224 ("the callback" — the two-app demo): the
+> real `apps/hiring` is emitted as a `hiring-app` compose service by
+> `stack-injection/gen_injected_override.py:459-509` (called at `:736-737`) on port `3001 + offset` (`:484`, `:504`), and
+> the rest of this page already referred to its image (`demo-N-hiring`) and its build shape without it ever
+> appearing here. **An enumeration presented as complete is a claim.**
+
+> ### ⚠️ NEITHER containerized frontend rides its base-compose profile in a demo — the injection **overrides** both to `core`
+>
+> The studio-desk row used to read *"in the `frontend`/`studio-desk` profiles"*, which was wrong twice over.
+>
+> **In the base compose** (`stack-demo/platform` @ `0c91421df`) the two frontends sit in **different**
+> profiles, and `frontend` is **not** one of studio-desk's: `next-web-app` declares
+> `profiles: [frontend, all]` (`docker-compose.yml:168`) and `studio-desk` declares
+> `profiles: [studio-desk, all]` (`docker-compose.yml:141`). Neither is in `core`, the platform's default
+> (`Makefile:10`, `PROFILE ?= core`). *(Selecting either token **alone** also exits 1 — both declare
+> `depends_on: backend` (`docker-compose.yml:165-167` and `:138-140`) which those profiles do not select, so
+> compose rejects the project as invalid.)*
+>
+> **In a demo neither of those profiles is ever selected.** `up-injected.sh` derives the platform's default
+> profile from the platform's own compose and brings the stack up with **that one only**
+> (`demo-stack/up-injected.sh:2156` → `stack-injection/platform_topology.py profile`, then `:2179-2180`
+> `--profile "$COMPOSE_PROFILE"`). The two frontends reach it because the generated override **re-declares**
+> their profile: `stack-injection/gen_injected_override.py:425` emits
+> `profiles: !override [<derived-default>]` for **each** entry of `FRONTENDS`, which is why the generator's own
+> comment (`:170-174`) says they *"live in the `frontend`/`studio-desk`/`all` profiles in the platform compose,
+> NOT the demo's own default profile — so they DON'T appear in the resolved cfg this generator walks."*
+> So on a current clone **both** rows read `core`, and both read it because rext put them there — not because
+> the platform did. (`hiring` is a rext-owned shape-3 service and is emitted the same way.)
 
 > ### 🔴 The academy used to **POISON the demo session** — and one click destroyed a live demo (v2.3 M220 S5/i)
 >
@@ -424,12 +455,37 @@ and the REST-backed dashboards load.
 
 ## ant-academy — native, Clerkenstein-wired, session-detached, with a documented fallback
 
-ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
+ant-academy is **Vercel-native** (not in docker-compose). `/demo-up`
 launches it natively on `:3077+offset` **Clerkenstein-wired** — the demo's minted publishable key + the
 disarmed fake BAPI, read from `<stack>/.env.demo-N` — paired with `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip
 the org gate. The per-demo env is a **gitignored `code/.env.local`** overlay (zero academy-repo edits).
 Launching it natively (vs only documenting the step) resolved the overview's open question toward "launch it,
-fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable) and Clerk-only (#M19-D6).
+fall back if fiddly" — the academy is Vercel-native, not cleanly dockerizable (#M19-D6).
+
+> ### 🔻 RETRACTED — *"depends only on Clerk at runtime" / "Clerk-only"* (M257x)
+>
+> Both spellings stood in this section, and both were **false** — and self-contradicted three paragraphs
+> later, where this same file already says the catalog is *"DB-authoritative [read from the platform academy
+> subgraph over GraphQL]"* and names the missing endpoint as the **root cause** of the empty grid. One
+> document, two readings.
+>
+> **Measured at `stack-demo/ant-academy` @ `22df69dd8`:** the academy has a **SECOND** runtime dependency —
+> the platform GraphQL endpoint, read from `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`:
+> - `code/src/graphql/server.js:14` reads it and **throws** *"NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT is not set"*
+>   when absent (`:18`); `code/src/graphql/useGraphql.js:18`/`:33` is the client-side twin.
+> - The **course catalog** goes through it: `code/src/lib/serverTenant.js:145`
+>   `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, and
+>   `code/src/lib/backendContent.js:94-100` is the GraphQL request pair.
+> - So do the **chapter body** (`backendContent.js:146-149`), the **skill path**
+>   (`:175-178`), the beacon route (`code/app/api/academy/beacon/route.js:36`) and certificate verification
+>   (`code/app/api/verify/[certId]/route.js:48`).
+>
+> **This is not a footnote — it is the mechanism of the demo's own F4 defect.** A demo sets that variable
+> **0×**, so every one of those reads returns null and the grid falls to `emptyCatalogView()`. The
+> `academy-fs-published-*` demo-patch family below exists *because* the academy is not Clerk-only. Also
+> retracted downstream in [`content-stories-routes.md:379`](content-stories-routes.md), which already calls the
+> premise stale. *(A third runtime dependency, the AI keys behind `/api/ai/chat`, is documented in
+> [`../../services/ant-academy.md`](../../services/ant-academy.md).)*
 
 > **The demo academy is AUTHENTICATED via real Clerkenstein keys (v2.3 M220 S5/i).**
 > ⚠ **This section described the superseded KEYLESS model until M257x iter-98**, three paragraphs after `:48`

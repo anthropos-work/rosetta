@@ -89,7 +89,7 @@ corpus/
 │   ├── backend.md, cms.md, sentinel.md, ...     # Core services
 │   ├── graphql-wundergraph.md, next-web-app.md  # Gateway + main frontend
 │   ├── studio-desk.md, studio-room.md           # Studio services
-│   └── ant-academy.md                           # Internal learning portal (standalone)
+│   └── ant-academy.md                           # The AI-academy product (public + org tier, standalone)
 │
 ├── ops/                   # Operations guides
 │   ├── platform_repo.md   # The orchestrator repo (Make targets, profiles, compose)
@@ -150,9 +150,16 @@ Anthropos uses a **three-tier microservices architecture**:
 
 | Tier | Services | Technology |
 |------|----------|------------|
-| **Core Backend** | Backend (incl. the skills taxonomy domain — former Skiller service, merged in — and the skill-path progression engine — former Skillpath service, merged in via "skillpath-in-app"), CMS, Sentinel, Jobsimulation, Storage, Roadrunner | Go |
-| **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline, embedded in CMS), Ant Academy (internal learning portal) | TypeScript, Python, Next.js + Expo |
-| **External** | Clerk (auth), Directus (CMS), GraphQL/Wundergraph (gateway) | SaaS / Docker |
+| **Core Backend** | **Backend (`app`) and Sentinel — those two, and no others.** `app` is the monolith: the skills taxonomy (ex-Skiller), the skill-path engine (ex-Skillpath), **and the cms, jobsimulation, roadrunner, storage, messenger and customerio-sync domains**, all folded in. Sentinel is authorization only | Go |
+| **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline — embedded in the **`app`** image, not in CMS), Ant Academy (the AI-academy product — a **public storefront** with an enterprise/org tier) | TypeScript, Python, Next.js + Expo |
+| **External** | Clerk (auth), Directus (CMS), Gotenberg (Office→PDF, third-party image). ~~GraphQL/Wundergraph (gateway)~~ — **deleted from the platform** at `2adcf71`; `backend` serves GraphQL directly | SaaS / Docker |
+
+> Measured at platform `0c91421df`: `docker-compose.yml` declares **five** services — `sentinel`,
+> `backend`, `studio-desk`, `next-web-app`, `gotenberg` (`postgresql` + `redis` arrive via its
+> `include:`) — and `repos.yml` lists **four** repos (`app`, `sentinel`, `next-web-app`, `studio-desk`),
+> exactly one of them with migrations. There is no cms / jobsimulation / storage / roadrunner /
+> messenger / graphql service. The fenced per-service statement is
+> [`platform-migration-status.md`](./corpus/architecture/platform-migration-status.md).
 
 See [Architecture Overview](./corpus/architecture/architecture_overview.md) for the full picture.
 

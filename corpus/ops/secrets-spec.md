@@ -36,9 +36,16 @@ Two properties make it safe to trust with secrets:
    value. You see key *names* and whether each one is present — never the value itself. The one operation
    that necessarily moves secret bytes (writing a repo's `.env`) copies them straight from your source
    folder to the (git-ignored) target file and nowhere else.
-2. **It can't re-arm the production-write path.** The one secret that could leak a demo's writes onto the
-   live product (the Directus admin token) is deliberately **left blank** on any non-production stack — the
-   tool defers to the same strip the demo bring-up enforces, so it can never undo a closed safety hole.
+2. **It can't re-arm the production-write path.** The secrets that could leak a demo's writes onto the live
+   product — the Directus write tokens — are deliberately **left blank** on any non-production stack: the tool
+   defers to the same strip the demo bring-up enforces, so it can never undo a closed safety hole. **It is
+   TWO genes, not one**, and saying "the one secret" hides the second: the DNA declares
+   `platform/DIRECTUS_TOKEN` (`critical`·`required`) **and** `studio-desk/DIRECTUS_TOKEN`
+   (`standard`·`required`, noted *"SAFETY: same strip-on-non-prod class as platform/DIRECTUS_TOKEN"*) —
+   `stack-secrets/secretdna/secret-dna.json:191`, `:659` @ rext `415240f`. The second one matters on its own
+   terms: studio-desk's skill-path builder is the surface that *could have written* prod Directus (see
+   §2.2's fix16/fix17 scope note in [`safety.md`](safety.md)). The strip set itself is **three key names** —
+   `DIRECTUS_TOKEN`, `DIRECTUS_STATIC_TOKEN`, `DIRECTUS_ADMIN_TOKEN` (`stack-secrets/provision/provision.go:50-54`).
 
 A **coverage scorecard** (the "secret-DNA") tells you, repo by repo, whether your source folder carries
 everything a working stack needs — and a CI-style gate keeps that list honest as the platform's required
@@ -285,15 +292,43 @@ real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-fligh
 > sandbox/throwaway keys into the source: the **AI-simulation voice** engine (LiveKit), the **ant-academy
 > `/api/ai/chat`** assistant (`OPENAI_API_KEY`/`ANTHROPIC_API_KEY`), and the **M45 AI batch-generation**
 > (`ai v1.40.1`) all no-op gracefully — they are not on any demo gate path (the M42 coverage gate is MET on
-> both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
-> demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
-> the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
+> both vantages with **zero** AI keys present).
 >
-> **The studio-desk AI keys are the exception (v2.7 "july jitter" M252 — the KB-1 correction).** The blanket
-> above is **imprecise**: `studio-desk/AI_OPENAI_API_KEY` + `studio-desk/AI_ANTHROPIC_API_KEY` do **not** remain
-> in the waived/optional class — they are **required · standard** (warn, not waived), the **same** posture as the
-> M239 Bedrock class below, because the studio **builder GENERATE** (`/api/ai/completion`) is a live-inference
-> surface a demo now drives. See "The studio-desk AI class" below.
+> 🔴 **RETRACTED — "these keys remain in the `waived` / optional class … so `check` does not false-fail a demo".
+> `waived` is wrong for every one of them, and for two it inverts the gate.** Measured against the committed
+> `stack-secrets/secretdna/secret-dna.json` (64 genes, version `fast-build-m256`) @ rext `415240f`: **zero** of
+> the keys named above carries a `waived-*` status. The waived class is exactly the **8** genes tabulated under
+> "The waived class" above — `sentinel/DB_CONNECTION`, `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID`,
+> `platform/BREVO_KEY`, and 5 `waived-optional` — and **no AI-inference key is among them**. What the manifest
+> actually says:
+>
+> | gene | criticality | status | operators |
+> |---|---|---|---|
+> | `platform/OPENAI_KEY` | **critical** | **required** | `key-present`, `nonempty` |
+> | `platform/AZURE_OPENAI_KEY` | **critical** | **required** | `key-present`, `nonempty` |
+> | `platform/ANTHROPIC_API_KEY` · `platform/OPENAI_API_KEY` · `platform/LIVEKIT_API_KEY` · `platform/LIVEKIT_API_SECRET` | standard | **required** | `key-present`, `nonempty` |
+> | `app/OPENAI_API_KEY` · `ant-academy/OPENAI_API_KEY` · `ant-academy/ANTHROPIC_API_KEY` · `next-web-app/AZURE_OPENAI_KEY` | standard | **required** | `key-present`, `nonempty` |
+> | `platform/ELEVENLABS_API_KEY` · `platform/MISTRAL_API_KEY` · `app/ELEVENLABS_API_KEY` · `platform/SKILLER_OPENAI_KEY` | optional | optional | `key-present` |
+>
+> **The gate consequence, stated exactly.** `Critical` is the *unweighted* pass ratio over the
+> **required + critical** genes and the gate is `Critical == 1.0`; waived genes are excluded from both
+> denominators (`stack-secrets/secretdna/measure.go:32-33`, `:44-45`). `platform/OPENAI_KEY` and
+> `platform/AZURE_OPENAI_KEY` are **2 of the 13** critical·required genes and both demand `nonempty` — so a
+> source carrying neither **cannot** score `Critical == 1.0`. The retracted sentence promised the opposite of
+> what the gate does: as written, the waived class it described would have **false-failed its own gate**.
+>
+> **What survives the retraction:** the *decision* — no real AI key is minted or fabricated for a demo, the
+> AI-dependent surfaces are inert-by-design, and the M42 coverage gate is met with zero AI keys. That is a
+> statement about the **demo**, not about the **DNA**. If a demo source is meant to pass `check` without AI
+> keys, the fix is a **classification change in the manifest** (reclassify or scope those genes, the way
+> `sentinel/DB_CONNECTION` was reclassified `waived-config`), not a sentence in this doc asserting a class the
+> manifest does not carry.
+>
+> **The studio-desk AI keys were already caught (v2.7 "july jitter" M252 — the KB-1 correction).**
+> `studio-desk/AI_OPENAI_API_KEY` + `studio-desk/AI_ANTHROPIC_API_KEY` are **required · standard** (warn, not
+> waived), the **same** posture as the M239 Bedrock class below, because the studio **builder GENERATE**
+> (`/api/ai/completion`) is a live-inference surface a demo now drives. See "The studio-desk AI class" below.
+> M252 corrected one row; the retraction above is the rest of the same table.
 
 ### The Bedrock cred class for app (v2.6 M239, Talk to Data)
 

@@ -254,8 +254,11 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   the demo's next-web-app **server** signs against the **Bunny.net CDN** with `BUNNY_RECORDING_CDN_TOKEN_KEY` +
   `BUNNY_RECORDING_PULL_ZONE_HOST` and streams — **no media byte ever moves**, and only hiring-voice cells can source
   the recorded pool). The document body is inline **`input_data.text_document`** (Defect 3 — NOT an S3 blob, fully
-  landed). Gender-coherence (values-blind label) + the values-blind Bunny-key provisioning (the M239 Bedrock pattern).
-  **Current status: Bunny-key-blocked** — the recording signing keys are absent from the authoring dev-stack, so a
+  landed). Gender-coherence (values-blind label). ⚠️ **The "values-blind Bunny-key provisioning (the M239 Bedrock pattern)"
+  claimed here was RETRACTED at M257x iter-130 — no such path was ever built** (0 `BUNNY_RECORDING_*` genes in the
+  secret-coverage DNA; the M239 bridge carries a fixed five-key Bedrock list).
+  **Current status: Bunny-key-blocked on BOTH the path and the values** — the recording signing keys are absent
+  from the authoring dev-stack *and* nothing would carry them if they were present, so a
   demo ships faithful `not_available` (no broken player); the posture (safety §3.8.1, the 2026-07-21 VIDEO sign-off)
   lands ahead of the capability. (M240)
 - [`content-stories-spec.md`](content-stories-spec.md) — the **content_products manifest + honesty gate** (v2.5

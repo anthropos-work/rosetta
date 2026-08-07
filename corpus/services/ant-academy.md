@@ -357,7 +357,11 @@ Two things this table does **not** mean:
 - Node **v22+** (from `code/package.json` `engines.node`)
 - npm (web app uses npm, not pnpm)
 - pnpm — only if you also want to run the mobile app
-- Clerk credentials (use the platform's dev tenant — same `@anthropos.work` domain)
+- Clerk credentials (use the platform's dev tenant — the *same Clerk application* as the rest of the
+  platform). **The account's email domain is irrelevant** — `d5875e34` *"replace @anthropos.work email
+  gate with Clerk org-membership check"* dropped the allowlist, and at `22df69dd8` the gate is
+  **any Clerk organization membership, active or not** (`code/proxy.js:2-5`, `:298`). For solo local dev
+  set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` and no membership is needed either (`:73`, `:91`)
 - _(vestigial — NOT required)_ A Font Awesome Pro npm token. The FA Pro icons are vendored in the repo (`code/public/assets/fontawesome/`), so a fresh, token-less `npm install` succeeds and the app serves working icons. `FONTAWESOME_NPM_AUTH_TOKEN` survives in `code/.env.example` but is **not** needed to install or run.
 
 #### 1. Clone

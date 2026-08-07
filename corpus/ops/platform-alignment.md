@@ -40,26 +40,36 @@ following.
 This is the mechanism, and it is not what anyone assumed. The assumption was *"a fresh stack never creates the
 `jobsimulation` schema, so rext's writes will fail."* **False — because rext creates the schema itself.**
 
-`rosetta-extensions/demo-stack/migrate-demo.sh`:
+`rosetta-extensions/demo-stack/migrate-demo.sh` **@ `38a4214`** — the pre-fix state this section diagnoses.
+**These are historical anchors, deliberately pinned**: iter-02 (`54bccf7`) rewrote all three sites, so at rext
+`415240f` every line number below resolves to unrelated code (`:81-90` is now `wait_pg()`, `:106` a `log` line,
+`:108` an `ON_ERROR_STOP` comment). Read them at `38a4214`; the "where it lives now" pointers follow each one.
 
 - `:81-85` — `CREATE SCHEMA IF NOT EXISTS` for `extensions`, `sentinel`, `cms`, `jobsimulation`, `skillpath`.
+  *(Now `:117-130` @ `415240f`, and the list is **built** by `repos_yml_schemas_to_create` rather than spelled
+  out — see `stack-core/lib/repos_yml.sh`.)*
 - `:106` — atlas-applies a **hardcoded 4-tuple**: `app:public cms:cms jobsimulation:jobsimulation
-  skillpath:skillpath`.
+  skillpath:skillpath`. *(Now `MIG_PAIRS`, assigned from `repos_yml_migration_pairs "$PLAT_REPOS_YML"` at
+  `:41` — rationale at `:20-25` — and consumed at `:141`/`:150` @ `415240f`.)*
 - `:108` — `[ -d "$DEV/$r" ] || continue`, gated on **whether the repo directory exists** — it never consults
-  `repos.yml`'s `migrations:` flag at all.
+  `repos.yml`'s `migrations:` flag at all. *(Now `:156-160` @ `415240f`: the silent `continue` became a loud
+  `✗ … its clone is ABSENT` plus `mig_fail=1`, so the skip cannot pass as a pass.)*
 
-So rext creates the legacy schemas and migrates them out of the still-cloned legacy repos, entirely bypassing
-the file that declares the truth. The tuple is **hand-maintained**: the comment at `:96` records that someone
-edited it when skiller merged (*"skiller merged into app — the taxonomy tables live in `public` … so there is
-no skiller repo/schema pair to migrate"*). Nobody edited it for jobsimulation or cms.
+So rext created the legacy schemas and migrated them out of the still-cloned legacy repos, entirely bypassing
+the file that declares the truth. The tuple was **hand-maintained**: the comment at `:95-96` (@ `38a4214`;
+`:136-137` @ `415240f`) records that someone edited it when skiller merged (*"skiller merged into app — the
+taxonomy tables live in `public` … so there is no skiller repo/schema pair to migrate"*). Nobody edited it for
+jobsimulation or cms.
 
-**The time bomb.** The legacy repos are kept in `repos.yml` only *"as the rollback reference until M810."* The
-day they leave the clone set, `[ -d ] || continue` **silently skips** them, both schemas become empty shells,
-and **13 write targets fail with 42P01 at once** — the M257/B1 shape, twice over.
+**The time bomb** *(as diagnosed at `38a4214`; defused — see below)*. The legacy repos were kept in `repos.yml`
+only *"as the rollback reference until M810."* The day they left the clone set, `[ -d ] || continue` would
+**silently skip** them, both schemas would become empty shells, and **13 write targets would fail with 42P01 at
+once** — the M257/B1 shape, twice over.
 
-**The canary is already visible.** `skillpath` is still in the tuple but absent from origin `repos.yml`, so it
-is never cloned, so the schema is created and left empty. That is harmless today only because rext writes zero
-`skillpath.*` tables. It is a live preview of what jobsimulation and cms will do.
+**The canary was already visible** *(also at `38a4214`)*. `skillpath` was still in the tuple but absent from
+origin `repos.yml`, so it was never cloned, so the schema was created and left empty. That was harmless only
+because rext writes zero `skillpath.*` tables. It was a live preview of what jobsimulation and cms would do.
+It is gone at `415240f` — `migrate-demo.sh:112-116` records the removal in as many words.
 
 > **Rule.** A hand-maintained list of the platform's services is a list that will silently disagree with the
 > platform. Derive it, or fence it. Never both-hand-maintain-and-trust it.
@@ -309,9 +319,26 @@ Rules, in order of how often they actually catch something:
     on that surface, not on a neighbour.** M257x iter-10. `autoverify`'s academy check read
     `:PORT/library/` and printed *"✓ AI Academy renders its catalog"*. Measured on a live demo:
     `/library/` answered **200 in 9 ms** while `/` — the page the demo's own "AI Academy" link opens —
-    answered **500 after 30.0 s**. `/library` is public and short-circuits in Clerk's middleware *before*
-    the code path that was broken; `/` does not. The one route the check read was the one route the defect
-    spared, so a demo whose landing page was a 500 graded green for four releases.
+    answered **500 after 30.0 s**. The one route the check read was the one route the defect spared, so a
+    demo whose landing page was a 500 graded green for four releases.
+
+    > **Correction — it is NOT a public-vs-gated split in the middleware.** This rule used to explain the
+    > divergence as *"`/library` is public and short-circuits in Clerk's middleware before the code path
+    > that was broken; `/` does not."* **Both routes are public**, in the same matcher: ant-academy
+    > `code/proxy.js:139-140` (`"/library"`, `"/library/(.*)"`) and `:170` (`"/"` — commented *"M4 public
+    > catalog — the front door"*), all @ `22df69dd8`, and `:282` short-circuits them identically with
+    > `if (isPublic(req)) return embedResponse(req, embed);`. The middleware cannot be what separated a
+    > 9 ms 200 from a 30 s 500.
+    >
+    > What actually separates them is the **route group, i.e. which layout renders**: `/` resolves to
+    > `app/(authed)/page.jsx`, wrapped by `app/(authed)/layout.jsx:24` `<ClerkProvider …>` plus a
+    > `QueryProvider` and six sync providers; `/library` resolves under `app/(public)/layout.jsx`, a
+    > seven-line pass-through whose own header states it *"renders ZERO Clerk-aware components so anonymous
+    > visitors never hit Clerk's dev-browser handshake"* (`:1-4`). The probe read the one route with no
+    > Clerk-bearing layout at all. **The rule is unchanged and the measurements stand — only the mechanism
+    > was wrong**, and it was wrong in the direction that makes the probe look better-targeted than it was:
+    > "public" was never the discriminator, so "we checked the public one" was never a reason to expect the
+    > gated one to behave the same.
 
     The cause was a **security tightening** (M221 tightened `next dev`'s bind `0.0.0.0` → `127.0.0.1`, a
     real and correct de-exposure) whose *literal* had a second, invisible effect: next@16 normalizes every

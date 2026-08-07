@@ -108,7 +108,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 **Four entries** at `0c91421`, each with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
 
-* **Go**: `app` — `migrations: true`, `schema: public`, and the only migrating repo. `sentinel` — `migrations: false`, yet very much alive, because it creates its own `sentinel` schema rather than going through `atlas` here.
+* **Go**: `app` — `migrations: true`, `schema: public`, and the only migrating repo. `sentinel` — `migrations: false`, yet very much alive. **The second clause of what this line used to say — *"rather than going through `atlas`"* — is FALSE since 2026-08-04** (corrected M257x iter-130): `68272003` added a **second Atlas pipeline** and it lives in **`app`**, not in `sentinel`. `app/atlas.hcl:50-64` declares `env "sentinel"` (`revisions_schema = "sentinel"`, `dir = file://terraform/migrations-sentinel`, `src = file://terraform/sentinel/schema.sql`), and `app/Makefile:59-60` states that *"`atlas migrate apply --env sentinel` creates the schema itself, and that is what local/CI actually run"* (@ `ad9f3c498`). `migrations: false` is still right **about the `sentinel` repo** — it carries no `atlas.hcl` and no `terraform/migrations/` at `f2c461903` — which is exactly why the flag and the pipeline can both be true at once.
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm).
 
 > **What left the clone set, and when.** `intelligence` (`fdfa189`) · `chronos` (`045857c`) ·

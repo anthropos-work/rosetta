@@ -43,11 +43,14 @@ customer-scoped rows as if they were shareable reference data.**
 
 ### The public-vs-customer split (prod-verified 2026-06-06, catalog-grounded)
 
-> *(Note: the monolith merges moved **every** application table into the `public` schema — same table names, same
-> public/customer split. Taxonomy came in with skiller→app (July 2026); skill-path sessions with skillpath-in-app;
-> the 23 simulation run-state tables with jobsim-in-app; the similarity + Studio tables with cms-in-app v8.0. The
-> old `skiller`, `skillpath`, `jobsimulation` and `cms` schemas are legacy and no longer authoritative. Counts below
-> are the 2026-06-06 verification.)*
+> *(Note: the monolith merges gave **every** application table a home in the `public` schema — same table names,
+> same public/customer split. Taxonomy came in with skiller→app (July 2026); skill-path sessions with
+> skillpath-in-app; the 23 simulation run-state tables with jobsim-in-app; the similarity + Studio tables with
+> cms-in-app v8.0. The old `skiller`, `skillpath`, `jobsimulation` and `cms` schemas are legacy and no longer
+> authoritative **for the platform**. Counts below are the 2026-06-06 verification — i.e. they were taken in the
+> pre-merge schemas, so a row prefixed `public.` here is a re-label of a legacy-schema measurement, not a
+> re-measurement. **Do not re-label a row whose number is still tied to the legacy schema** — the
+> `cms.similarities` row below is exactly that case, and the note under the table says why.)*
 
 | Surface | public (`org_id IS NULL`) | customer (`org_id` set) | snapshot rule |
 |---|---|---|---|
@@ -58,7 +61,19 @@ customer-scoped rows as if they were shareable reference data.**
 | `public.{skill,job_role}_embeddings` | — (no org col) | — | via public parent; rebuild index on replay |
 | `public.studio_documents` *(was `cms.`)* | **0** | 3,060 | **exclude (all customer)** |
 | `public.studio_tasks` *(was `cms.`)* | **0** | 2,353 | **exclude (all customer)** |
-| `public.similarities` *(was `cms.`)* | 274 | 733 | public only |
+| **`cms.similarities`** *(see the attribution note)* | 274 | 733 | public only |
+
+> ⚠️ **The 274 / 733 split was measured in the `cms` schema, and `cms` is still what the tooling captures — do
+> not re-label this row `public.`** The measurement is the 2026-06-06 verification, taken before cms-in-app
+> moved the table (app's `terraform/migrations/20260724132049_cms_data_model.sql` creates `similarities` in
+> `public`, and `scripts/cms-data-sync/sync.sql:46`, `:53-55` copies `cms.similarities` → `public.similarities`;
+> both @ app `ad9f3c498`). So **both tables exist**, and only the `cms` one was counted. The snapshot capture
+> surface still reads the `cms` one: `stack-snapshot/simembeddings/simembeddings.go:44` @ rext `415240f` is
+> `const Schema = "cms"`, and the surface's four tables (`similarities` + `similarity_categories` /
+> `_features` / `_skills`, `:85-108`) are all captured from it. Attaching this number to `public.similarities`
+> breaks the one link that makes it useful — it is the size of the surface the tooling *captures*, and that
+> surface is `cms`. The other two former-`cms` rows above (`studio_documents`, `studio_tasks`) are **0** public
+> either way, so their re-label is inert; this one is not.
 
 The **public content template library** (global simulations/skill-paths) is **not** in any of the merged app
 tables — it lives in the **`directus` schema inside the SAME `postgres` database** (served at

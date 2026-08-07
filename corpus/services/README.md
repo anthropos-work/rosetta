@@ -55,7 +55,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js **16** monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
 | [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the `app` (backend) container** since cms-in-app |
-| [`ant-academy.md`](ant-academy.md) | Ant Academy | Internal Next.js 16 + Expo learning portal for `@anthropos.work` staff. Vercel-deployed, native-only, DB-authoritative catalog |
+| [`ant-academy.md`](ant-academy.md) | Ant Academy | The AI-academy learning product (Next.js 16 + Expo) — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only. Vercel-deployed, native-only, DB-authoritative catalog |
 
 ## Cross-cutting subsystems & domains
 

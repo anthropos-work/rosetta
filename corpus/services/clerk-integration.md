@@ -96,10 +96,17 @@ sign-in token is therefore a **documented, deliberate second-factor bypass** aga
 **A sixth consumer is an operator recipe, not checked-in code**, and this corpus already documents it in
 three other places: the staging/CI `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens` bypass for
 Clerk's "new device" challenge — [`staging-clerk.md:58`](../ops/staging-clerk.md),
-[`staging_from_dump.md:384`](../ops/staging_from_dump.md), and
-[`staging-bringup.md:468`](../ops/staging-bringup.md) (*"Quirk #13"* — cite the **quirk number**, which is
-stable; the line moved 461 → 468 on 2026-08-07 when § 2 grew). It mints against whichever
-instance the operator's key points at.
+[`staging_from_dump.md:421`](../ops/staging_from_dump.md), and
+[`staging-bringup.md:528`](../ops/staging-bringup.md) (*"Quirk #13"* — cite the **quirk number**, which is
+stable). It mints against whichever instance the operator's key points at.
+
+> **All three line pins moved again on 2026-08-07 (M257x iter-130) and this is the third recorded move.**
+> `staging_from_dump.md` 384 → **421** and `staging-bringup.md` 468 → **528**, both because the routed
+> residual repair grew the sections above them; the `staging-clerk.md:58` pin held. The paragraph already
+> told its reader to cite the stable *quirk number* rather than the line — **so quote the anchor, not the
+> offset**: all three sites are the literal `curl -s -X POST https://api.clerk.com/v1/sign_in_tokens`, and
+> `grep -n sign_in_tokens corpus/ops/*.md` re-derives every pin in one command. A line number is a
+> convenience; the grep is the contract.
 
 **The "chosen over Enterprise-tier Actor Tokens" half is correct** and stays: `manager.go:6-11` says so in
 the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.

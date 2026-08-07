@@ -187,7 +187,12 @@ prod is **not required** — you can **migrate the existing captured cache**: re
 new merged **schema digest** (the taxonomy surface probes the digest, so the migrated cache HITs on the next
 replay). The payloads are hardlinked (bytes unchanged → SHA256s still valid); the column set is verified to match
 the merged target first (M209's names-only/type-agnostic capture makes this safe). v2.1 M211 used this to recapture
-the 42,790-row public taxonomy + 274 sim-embeddings with **no prod access** — a faithful re-key of real captured
+the 42,790-row public taxonomy + 274 **`cms.similarities`** sim-embeddings (the schema matters and was
+unattributed until M257x iter-130 — `stack-snapshot/simembeddings/simembeddings.go:44` is
+`const Schema = "cms"`, and the surface's four tables are declared against it at `:85-108` @ `415240f`.
+`public.similarities` is a *separate* table the cms-in-app fold created, populated by
+`scripts/cms-data-sync/sync.sql:53-55` copying `cms`→`public`; the tooling still captures the `cms` one)
+with **no prod access** — a faithful re-key of real captured
 data, never a fabrication. This is the sanctioned no-prod-capture-source path when a merge is a pure schema-prefix
 move; a genuine schema/column change still needs a real recapture (`snapshot-cold-start.md`).
 

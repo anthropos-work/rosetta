@@ -145,7 +145,7 @@ You will end up with this layout:
 │                                  #   roadrunner, skillpath, skiller, storage, messenger
 │                                  #   and customerio-sync in-process
 ├── sentinel/                      # Go authz (casbin)
-├── next-web-app/                  # Next.js 15 frontend monorepo
+├── next-web-app/                  # Next.js 16 frontend monorepo (`~16.2.12`)
 ├── studio-desk/                   # TypeScript content design tool
 ├── rosetta/                       # this corpus
 ├── anthropos-knowledge-base/      # knowledge layer
@@ -198,7 +198,9 @@ AWS_REGION=eu-west-1
 
 Production keys are NOT used here. Only dev/test keys. The AWS creds are an exception — Talk to Data calls Bedrock via the prod inference profile (no dev tenancy yet), so use the dedicated staging IAM user Stefano keeps for this. Ask Stefano if you don't have those.
 
-**Quirk #4** — Next.js 15 statically evaluates server routes at build time (`/api/create-subscription`, `/api/wundergraph/*`). Compose `env_file` is **runtime-only**, so build-time evaluation will crash with `STRIPE_SECRET_KEY is not configured` etc. Drop a gitignored `.env.production` into `next-web-app/apps/web/`:
+**Quirk #4** — Next.js statically evaluates server routes at build time. Compose `env_file` is **runtime-only**, so build-time evaluation will crash with `STRIPE_SECRET_KEY is not configured` etc. Drop a gitignored `.env.production` into `next-web-app/apps/web/`:
+
+> **Two corrections, 2026-08-07, measured at `next-web-app` `8297c684c`.** (a) The version is **16**, not 15 — `apps/web/package.json:46` `"next": "~16.2.12"`. (b) The two example routes were *"`/api/create-subscription`, `/api/wundergraph/*`"*; only the first exists (`apps/web/src/app/api/create-subscription/route.ts`, plus a sibling `apps/web/src/app/api/teams/create-subscription/route.ts`). **There is no `/api/wundergraph/` directory at all** — it went with the router at platform `2adcf71`. The quirk itself is unchanged; it was the example that rotted.
 
 ```bash
 cat > ~/next-web-app/apps/web/.env.production <<EOF
@@ -305,15 +307,46 @@ atlas migrate apply --env local \
   --url "postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=<schema>"
 ```
 
-Per-service `<schema>` values (this is the `search_path` Atlas writes the `atlas_schema_revisions` table into and treats as default):
+The `<schema>` values per Atlas env (this is the `search_path` Atlas writes the `atlas_schema_revisions` table into and treats as default). **Both live envs are declared in `app`** — there is no longer a per-service walk:
 
-| Service           | `search_path=` | Why                                                          |
-| ----------------- | -------------- | ------------------------------------------------------------ |
-| `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs — plus the merged skiller taxonomy (skills, job roles, translations, embeddings) since July 2026 |
-| `cms`             | `cms`          | Directus / content schema                                    |
-| `jobsimulation`   | `jobsimulation`| Job sims, interview extraction results                       |
+| Atlas env               | Run from | `search_path=` | Why                                                          |
+| ----------------------- | -------- | -------------- | ------------------------------------------------------------ |
+| `--env local`           | `~/app`  | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs — plus the merged skiller taxonomy (skills, job roles, translations, embeddings) since July 2026 |
+| `--env sentinel`        | `~/app`  | `sentinel`     | **`sentinel.casbin_rules`** — see the correction below        |
+| `cms` / `jobsimulation` | —        | —              | **Do not run these.** Their schemas were folded into `public` under `app`'s own migrations; `repos.yml` states it outright — *"`app` is the ONLY repo with migrations to run"* (`platform/repos.yml:7-8` @ `0c91421d`) — and `make init` no longer clones either repo. A dump taken before the folds still *carries* the legacy `cms` / `jobsimulation` schemas, but nothing migrates them any more. (The frozen clones do still hold an `atlas.hcl` + `terraform/migrations/`; that is pre-merge source, not a live pipeline.) |
 
-Apply in any order — schemas don't cross-reference at the migration level. `sentinel` is not in the table because it uses raw Casbin schema management, not Atlas.
+Apply in any order — schemas don't cross-reference at the migration level.
+
+> **⚠️ Corrected 2026-08-07 — `sentinel` IS Atlas-managed now, and the migrations live in `app`.**
+> This section used to end *"`sentinel` is not in the table because it uses raw Casbin schema
+> management, not Atlas."* That was true until 2026-08-04 and is now false. `app` `68272003`
+> (2026-08-04, *"feat(atlas): second Atlas pipeline for the sentinel schema (M1001)"*) added a
+> **second Atlas env** to `app/atlas.hcl` — `env "sentinel"` (`atlas.hcl:50`) with its own
+> `revisions_schema = "sentinel"` (`:64`), its own `sentinel_url` variable (`:45`), its own
+> migration dir `file://terraform/migrations-sentinel` (`:62`), and a hand-written DDL source
+> `file://terraform/sentinel/schema.sql` (`:60`) rather than an Ent tree. The single migration in it,
+> `app/terraform/migrations-sentinel/20260804151548_adopt_casbin_rules.sql`, **adopts** the
+> long-existing table (every statement `IF NOT EXISTS`), so the first apply against a restored prod
+> dump is a genuine no-op that just records revision 1. On a blank DB it builds the table from
+> nothing — which is why `app/Makefile:59` records that *"`atlas migrate apply --env sentinel`
+> creates the schema itself, and that is what local/CI actually run."* All anchors at `app`
+> `ad9f3c498`.
+>
+> What stays true: the **`sentinel` repo** still has no `atlas.hcl` and no `terraform/migrations/`
+> (measured — `git ls-tree -r f2c461903 -- terraform` lists only `CHANGELOG.md`, `locals.tf`,
+> `main.tf`, `ssm.tf`, `variables.tf`), and `repos.yml` marks it `migrations: false`
+> (`platform/repos.yml:20` @ `0c91421d`). The custody moved to `app`; it did not appear in `sentinel`.
+> Run it from `~/app`, not `~/sentinel`:
+>
+> ```bash
+> cd ~/app
+> atlas migrate apply --env sentinel \
+>   --var sentinel_url="postgresql://postgres@localhost:5432/postgres?sslmode=disable&search_path=sentinel"
+> ```
+>
+> Note the `--var sentinel_url=`, **not** `--url` — `env "sentinel"` deliberately reads its own
+> variable so a stray `--var url=…search_path=public` cannot retarget it at the wrong schema
+> (`app/atlas.hcl:39-41`, one of the three separations `:33-34` calls load-bearing).
 
 ### Baselining (only if `atlas migrate apply` complains about non-linear history)
 
@@ -343,11 +376,13 @@ atlas migrate apply --exec-order linear-skip --env local --url "..."
 
 ```bash
 cd ~/platform
-docker compose restart backend jobsimulation
-# replace with whatever services you applied migrations for
+docker compose restart backend        # `public` (env local)
+docker compose restart sentinel       # only if you applied env sentinel
 ```
 
 A `restart` is enough — the Go services re-open DB connections on boot. No rebuild needed unless the migration came with a code change (it usually does, but the daily sync's `docker compose build` covers that path).
+
+> **Corrected 2026-08-07.** This block used to read `docker compose restart backend jobsimulation`. **There is no `jobsimulation` compose service** — the engine runs in-process inside `backend`, and platform `0c91421d`'s `docker-compose.yml` declares only `sentinel`, `backend`, `studio-desk`, `next-web-app`, `gotenberg` (plus `postgresql` + `redis` from the included `common.yml`). `docker compose restart jobsimulation` exits non-zero with *no such service*.
 
 ### Reference
 
@@ -394,9 +429,16 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 4. **Quirks #4 + #5 — Next.js needs build-time env vars** — already addressed in §3. Drop `apps/web/.env.production` before first build. Make sure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also in compose's runtime `environment:` block (not just `env_file:`) — see Quirk #15.
 
-5. **Quirk #6 — Backend CORS doesn't trust your staging origin.** Hardcoded in `app/internal/cors/cors.go`. Two ways:
-   - **Until [`anthropos-work/app#feat/cors-extra-origins-env`](https://github.com/anthropos-work/app/pulls) is merged:** unmark skip-worktree, edit `cors.go` to append `"http://<yourhost>staging:3000"` (and `:8000`, `:9000` if you use them) in the `colony.Development` branch, rebuild backend.
-   - **Once merged:** set `CORS_EXTRA_ORIGINS=http://<yourhost>staging:3000` in `platform/.env` and restart backend — no rebuild needed.
+5. **Quirk #6 — RESOLVED UPSTREAM, do not edit `cors.go`.** Backend CORS doesn't trust your staging origin out of the box, but the fix is now **an env var, not a code patch**. `CORS_EXTRA_ORIGINS` landed in `app` at **`f664473`** (2026-05-14, *"feat(cors): add CORS_EXTRA_ORIGINS env-var support"* — the PR this doc used to describe as pending), and was hardened at **`13410de`** (2026-05-19, *"hard-gate CORS_EXTRA_ORIGINS to non-production environments"*). Both are ancestors of `app` `ad9f3c498` (`git merge-base --is-ancestor` → true), and the var is read at `app/internal/cors/cors.go:24` (`const extraOriginsEnvVar`) and applied at `:78-82` inside an `if !environment.IsProduction()` guard.
+
+   ```bash
+   # platform/.env
+   CORS_EXTRA_ORIGINS=http://<yourhost>staging:3000,http://<yourhost>staging:8000
+   ```
+
+   Then `docker compose restart backend` — **no rebuild**. Comma-separated; whitespace around commas is tolerated; empty entries are skipped (`parseExtraOrigins`, `cors.go:88-100`).
+
+   > **⚠️ Retire the old patch when you meet it.** Every staging brought up before 2026-05-14 carries a hand-edited `internal/cors/cors.go` under `skip-worktree` (it is listed as such in [`staging-sync.md` § Skip-worktree handling](./staging-sync.md#skip-worktree-handling)). That patch is now dead weight *and* a merge hazard: unmark it (`git update-index --no-skip-worktree internal/cors/cors.go`), `git checkout -- internal/cors/cors.go`, move the origin into `CORS_EXTRA_ORIGINS`, restart backend. The var is **ignored in production** by design, so there is no prod blast radius.
 
 6. **Quirk #7 — `studio-desk` host port 9100 collides with `node_exporter`** if you run any observability stack (Prometheus etc.). Remap to `9101:9100` in `platform/docker-compose.yml`:
 
@@ -410,9 +452,16 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 8. **Quirk #10 — Backend GraphQL endpoint is `/graphql/query`**, not `/graphql`. The `/graphql` path returns Apollo Sandbox UI; CORS preflight + auth happen at `/query`. Tools that expect `/graphql` directly need to know. **⚠️ This quirk is now the WHOLE story:** platform `2adcf71` (2026-07-31) deleted the WunderGraph/Cosmo router, so there is no `:5050` federating layer in front — clients talk to `backend:8082/graphql/query` directly, and the path half is the one that bites (a wrong host refuses loudly; a wrong path connects, resolves and 404s).
 
-9. **Quirk #11 — `colony` has two separate Clerk auth bugs.** Both bite every staging today; the working fix on Ithaca + Calypso is a single vendored copy of `colony` that patches both. **Read both halves before reaching for the vendor recipe** — the recipe is identical, but knowing what each piece fixes is what lets you keep it pruned over time.
+9. **Quirk #11 — `colony`'s two Clerk auth bugs. ⚠️ THE VENDOR RECIPE BELOW IS DEAD — do not run it.** Kept as the *diagnosis* (the symptoms and the token anatomy are still exactly what you will see if you ever meet an old build), but the remedy has moved upstream and the recipe now targets services that no longer exist. **Read this box first; then read the rest as history.**
 
-   **Bug 1 — nil-client / nil-email panic** (`colony@v0.34.0`). `authn/provider/clerk.GetUser` constructs `&User{}` without wiring the `client` field; `u.client.Get()` panics if the JWT lacks custom claims (which dev Clerk apps don't ship by default). Same panic in `Email()` when `PrimaryEmailAddressID` is nil. The 2026-05-14 cleanup opened [`anthropos-work/colony#fix/clerk-getuser-nil-client`](https://github.com/anthropos-work/colony/pulls) to fix upstream — that branch fixes the panic but NOT bug 2 below.
+   > **Measured at `app` `ad9f3c498` (2026-08-06).** `app/go.mod:15` pins **`github.com/anthropos-work/colony v0.35.2`** and has **no colony `replace` directive** (the file's only `replace` is `:295`, for `sentry-go/echo`). There is **no `vendor-colony/`** and **no `.colony-fork/`** anywhere in the tree. The staging vendoring layer this quirk prescribes is not what the platform runs.
+   >
+   > - **Bug 1 (nil-client) is FIXED UPSTREAM at colony `v0.34.4`.** Its changelog entry reads `## v0.34.4 - 2026-06-15 / #### Bug Fixes / - (**clerk**) ensure client is not nil when fetching user - (b810b28)` (read from the fork copy checked into `app` at `fc5607a`, `.colony-fork/CHANGELOG.md`). `app` took the bump the same day at **`b30f25e`** (*"fix: update colony dependency to v0.34.4"*, `go.mod` `v0.34.3` → `v0.34.4`) and has since moved to `v0.35.2`.
+   > - **Bug 2 (v2-JWT) no longer has a workaround in `app`, and the fork that carried one was deleted.** `app` briefly shipped its own fork (`fc5607a` 2026-06-16 added `.colony-fork/` + `replace github.com/anthropos-work/colony => ./.colony-fork`; `de5cfb7` added the eid cache). **`984c50b6`** (2026-06-17, *"…clean up authorization and API logic for v2-JWT compatibility"*) then deleted all 55 fork files, removed the `replace` from `go.mod` and the `COPY .colony-fork/` from `Dockerfile.dev`, **and stripped app's own hand-rolled v2 claim reader** — `internal/web/backend/api/api.go`'s `workforceOrgID` went from base64-decoding the `Authorization` header to read the v2 `o.id` claim, back to a plain `user.GetOrganization()`. At `ad9f3c498` there is no `Extra["o"]` / `claimOrgV2` / `"slg"` anywhere under `internal/` (measured: 0 hits).
+   > - **What we could NOT measure:** whether colony `v0.35.2` itself reads the v2 claim shape. `colony` is not in the clone set and only **`v0.34.3`** is in the local module cache (`~/go/pkg/mod/cache/download/github.com/anthropos-work/colony/@v/` holds v0.34.3 and nothing else) — and v0.34.3 does still have both bugs (`clerk.go:62-66` builds `&User{}` with no `client`; `clerk_user.go:148-167` reads only `org_id` / `org_role` / `org.eid`). **Do not assert either way from this corpus.** What is certain is that `app` runs stock upstream colony with no patch of any kind, so if you hit a v2-JWT symptom, the fix is a colony version bump — not a vendored tree.
+   > - **And the recipe's shape is impossible now regardless:** it loops `for svc in app cms jobsimulation` and ends with `docker compose up --build -d backend cms jobsimulation`. There is no `cms` and no `jobsimulation` compose service — both are folded into `app` — so that last line fails with *no such service*. `platform/repos.yml` (@ `0c91421d`) does not clone either repo.
+
+   **Bug 1 — nil-client / nil-email panic** (`colony@v0.34.0`–`v0.34.3`; **fixed at `v0.34.4`**, see the box above). `authn/provider/clerk.GetUser` constructs `&User{}` without wiring the `client` field; `u.client.Get()` panics if the JWT lacks custom claims (which dev Clerk apps don't ship by default). Same panic in `Email()` when `PrimaryEmailAddressID` is nil. Verified still present in the last version we can read locally — `colony@v0.34.3/authn/provider/clerk/clerk.go:62-66` returns `&User{sessClaims, tokenClaims, provider}` with `client` unset, and `clerk_user.go:49` declares the `client UserClient` field that `fetchUser()` dereferences at `:59`.
 
    **Bug 2 — Clerk v2-JWT claim shape unsupported.** New Clerk apps (including `national-elk-17`) default to a v2 session-token format (`"v": 2`) that nests org info under a single `o` key:
 
@@ -425,7 +474,18 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
    }
    ```
 
-   `colony` v0.34.0 (and the `fix/clerk-getuser-nil-client` branch on top) only reads v1 names: `org_id`, `org_role`, `org.eid`. On a v2 token, `GetOrganization()` returns `nil` → every `colony.User.GetOrganization()`-gated endpoint (Talk to Data `/ask/*`, Members listing, Workforce Intelligence, anything else REST-backed) 403s with `missing organization context`. The GraphQL ent privacy layer is unaffected, so the bug *looks* like "REST is broken, GraphQL is fine," which is misleading — it's a single common root cause.
+   `colony` v0.34.0 (and the `fix/clerk-getuser-nil-client` branch on top) only reads v1 names: `org_id`, `org_role`, `org.eid`. On a v2 token, `GetOrganization()` returns `nil` → every `colony.User.GetOrganization()`-gated endpoint (Talk to Data `/ask/*`, Members listing, Workforce Intelligence, anything else REST-backed) 403s with `missing organization context`.
+
+   > **⚠️ RETRACTED 2026-08-07 — "the GraphQL ent privacy layer is unaffected" is FALSE, and it is the most dangerous sentence in this quirk.** It told operators the blast radius was REST-only. Measured at `app` `ad9f3c498`: a nil `GetOrganization()` **denies GraphQL too**, on **30** Ent schemas.
+   >
+   > The chain is three hops and each one is in the tree:
+   > 1. `internal/data/ent/rule/organization.go:15-25` — `getOrganization(ctx)` calls `authn.UserFromContext(ctx).GetOrganization()` (the import at `:11` is `github.com/anthropos-work/colony/authn` — **the very function bug 2 nils out**) and returns `nil` when the org is nil or its ID is `uuid.Nil`.
+   > 2. `:29-37` — `DenyIfNoOrganizationInContext()` turns that `nil` into `privacy.Denyf("org-context is missing")`.
+   > 3. `internal/data/ent/schema/mixin.go:137-141` — `OrganizationMixin.Policy()`'s **Query** policy opens with exactly that rule (`:138`); its Mutation policy does too (`:128-136`, deny at `:129`).
+   >
+   > **30 schemas embed `OrganizationMixin{}`** — measured `git grep -l "OrganizationMixin{}" ad9f3c498 -- internal/data/ent/schema | wc -l` → `30`. Widened to `git grep -l "OrganizationMixin" …` the number moves to **47**, but the extra 17 are the mixin's own definition plus comments that explicitly say a schema does **not** attach it (e.g. `askautorule.go:17` *"No OrganizationMixin: rows are intentionally tenant-agnostic"*; `skiller_mixins.go:150` *"NOT attach backend's OrganizationMixin privacy policy"*), so **30 is the number that bites**. Among them: `askconversation.go` (Talk to Data), `org_assignment.go`, `org_membership_role.go`, `org_tag.go`, `credit_transaction.go`, `coursebuildersession.go` and the nine `ai_readiness_*` schemas.
+   >
+   > So the honest symptom is **not** "REST is broken, GraphQL is fine." It is: every org-scoped resolver in `backend`'s single GraphQL schema fails too, while the un-mixed public taxonomy reads (skills, job roles, categories — the files whose comments above disclaim the mixin) keep working. That partial-green is what made the old sentence look true.
 
    The dashboard "Customize session token" template (per [`staging-clerk.md`](./staging-clerk.md#customizing-the-dev-clerk-session-token-recommended)) could in principle inject `org.eid` directly and sidestep bug 2, but the dev app currently has no template configured, the REST `PATCH /v1/instance` for `session_token_template` is silently dropped (dashboard-only as of 2026-05), and `POST /v1/jwt_templates` creates a template that only takes effect if the frontend explicitly calls `getToken({template: 'colony'})` — which it doesn't. So a code-side fix is the only viable path until upstream colony lands.
 
@@ -435,7 +495,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
    - `clerk_user.go`: new constant `claimOrgV2 = "o"`, new `OrganizationClient` interface (one-method `Get(ctx, idOrSlug)`), new process-wide `orgEidCache` (clerk-org-id → eid). `GetOrganization()` reads v1 claims first, then falls back to `tokenClaims.Extra["o"].{id, rol, public_metadata.eid}` for any field v1 didn't supply. If `orgEid` is still empty (the realistic case — v2 tokens omit `public_metadata` by default), a new `lookupOrgEid(clerkOrgID)` helper fetches the org from the Clerk Backend API, reads `public_metadata.eid` from `clerk.Organization.PublicMetadata` (a `json.RawMessage`), caches it, and returns it. Errors return `""` quietly so the caller sees the existing "no org context" → 403, never a panic.
    - `clerk_user_test.go`: three new tests (`TestUser_ValidOrgClaims_V2`, `TestUser_V2Claims_LazyFetchEID` with cache-hit assertion, `TestUser_V1ClaimsStillWork` regression check). All pass; full clerk suite stays green.
 
-   **Until both upstream changes land (the nil-client PR + a v2-claim follow-up that doesn't exist yet)**, vendor it. Same Ithaca recipe as before — the layout in §6 / Dockerfile.dev `COPY vendor-colony` lines / `replace` directive in each `go.mod` is unchanged; just make sure the source `colony` tree you copy from has the patch applied:
+   **The historical Ithaca / Calypso vendor recipe — DO NOT RUN, see the box at the top of this quirk.** Reproduced only so an operator who finds a `vendor-colony/` on an old host can recognise what made it and unwind it (unmark the `skip-worktree` on `go.mod`/`go.sum`/`Dockerfile.dev`, `git checkout --` all three, `rm -rf vendor-colony/`, drop the `.git/info/exclude` line, rebuild):
 
    ```bash
    # one-time on each new staging clone
@@ -459,9 +519,9 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
    cd ~/platform && docker compose up --build -d backend cms jobsimulation
    ```
 
-   Three services vendor `colony` because all three call `colony.User.GetOrganization()`: `app`, `cms`, `jobsimulation` (`skiller` used to be the fourth, until its July 2026 merge into `app`). `go.mod` colony pins (v0.34.0 / v0.33.2 / v0.33.0 respectively) stay unchanged — the `replace` directive overrides them. The `go.mod`, `go.sum`, `Dockerfile.dev` get `skip-worktree`'d so the daily sync doesn't reset them; `vendor-colony/` goes in `.git/info/exclude` so it survives `reset --hard` as an unknown file.
+   That loop assumed **three** services vendoring `colony` because all three called `colony.User.GetOrganization()`: `app`, `cms`, `jobsimulation` (`skiller` was a fourth until its July 2026 merge into `app`). **All three collapsed into one.** `cms` and `jobsimulation` are folded into `app`, are not in `platform/repos.yml` (@ `0c91421d`) and have no compose service, so two-thirds of the loop iterates over directories `make init` never creates. The surviving service, `app`, carries no `vendor-colony/`, no `.colony-fork/` and no colony `replace` — see the box at the top of this quirk.
 
-   **Why two PRs, not one:** the nil-client PR is small and obviously correct — likely lands soon. The v2-claim fallback needs a follow-up upstream because it adds a real dependency on the Clerk Backend API at request time (rate-limited), and the long-term fix is the dashboard session-token template plus a colony switch that prefers it. Until then, the lazy fetch + cache works fine at staging-scale traffic.
+   **What to do instead when a colony auth bug bites a staging.** Bump the pin, don't vendor. Confirm what `app` is actually on (`grep colony ~/app/go.mod`), compare against the upstream tag that fixed your symptom, and raise it there. The one time the platform *did* vendor — `app` `fc5607a` → `984c50b6`, 2026-06-16 to 06-17 — the fork lived **one day** before being deleted in favour of an upstream version. A staging-local vendor tree is a fork of a fork, and the daily `git reset --hard origin/main` is permanently at war with it.
 
 10. **Quirk #12 — Dev Clerk needs Organizations enabled + per-user/org `external_id` set.** Documented as the rebind procedure in §6 below.
 
@@ -471,7 +531,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
 13. **Quirk #16 — Disable third-party analytics on staging.** `apps/web/src/app/layout.tsx` eagerly loads ~10 third-party blocking scripts (Plausible, GTM → GA + FB + LinkedIn + Google Ads, BetterStack, analytics.bellasio.com, plus PostHog). Drags page-load over Tailscale and pollutes prod analytics with staging traffic. Already addressed in §3 via `NEXT_PUBLIC_DISABLE_ANALYTICS=true`.
 
-14. **Quirk #17 — Tailscale ACL `hosts:` for friendly aliases** — addressed in §1. Each new alias also needs: (a) Clerk allowed_origins, (b) backend CORS (or `CORS_EXTRA_ORIGINS` env once the upstream PR lands).
+14. **Quirk #17 — Tailscale ACL `hosts:` for friendly aliases** — addressed in §1. Each new alias also needs: (a) Clerk allowed_origins, (b) an entry in `CORS_EXTRA_ORIGINS` in `platform/.env` (the env var landed at `app` `f664473`; see Quirk #6 — do **not** edit `cors.go`).
 
 15. **Quirk #18 — `ssh: ["default"]` in compose breaks builds on hosts without `SSH_AUTH_SOCK`.** Vestigial — Dockerfiles use `GH_ACCESS_TOKEN` over HTTPS. On Calypso (no SSH agent in the shell), build fails immediately with `invalid empty ssh agent socket`. Strip with `sed -i '/ssh: \["default"\]/d' docker-compose.yml`. The 2026-05-14 cleanup opened [`anthropos-work/platform#chore/drop-ssh-default-compose-directives`](https://github.com/anthropos-work/platform/pulls) to fix upstream.
 
@@ -503,9 +563,20 @@ The fix is the engineer-rebind procedure documented at length in `corpus/ops/sta
 > (`git log --all --diff-filter=A` → 0), and **no file matching that name exists anywhere in the
 > `anthropos-work` org** (GitHub code search, `org:anthropos-work` → `total_count: 0`). The
 > `knowledge/singularity-catalog/` directory is real and holds ~20 `auto-*.md` entries — none of them a
-> staging dev loop. **The SQL and Clerk REST material is in THIS document and in
-> [`staging-clerk.md`](./staging-clerk.md); there is no other copy to go and read.** A wrong-org URL
-> looks like a one-token typo; this one was hiding a citation to a document that was never written.
+> staging dev loop. A wrong-org URL looks like a one-token typo; this one was hiding a citation to a
+> document that was never written.
+>
+> **Corrected 2026-08-07 — where the material actually is.** This box used to end *"The SQL and Clerk
+> REST material is in THIS document and in [`staging-clerk.md`](./staging-clerk.md); there is no other
+> copy to go and read"* — which contradicted the very sentence four lines above it, the one telling you
+> to read [`staging_from_dump.md`](./staging_from_dump.md) § 3 end-to-end. The sentence above is the
+> correct one. Measured by `grep -c` over the three files: `staging-bringup.md` (this file) contains
+> **1** `api.clerk.com` occurrence — and it is the `clerk-fetch-fix.js` note in Quirk #17, not a rebind
+> call — and **zero** rebind SQL (no `UPDATE public.users`, no `INSERT INTO sentinel.casbin_rules`).
+> `staging_from_dump.md` has **7** and carries all three rebind SQL statements in § 3a–3c;
+> `staging-clerk.md` has **13**. **The runnable material is in `staging_from_dump.md` § 3 (SQL + Clerk
+> REST) and `staging-clerk.md` (session token, allowed origins, sign-in tokens). This file points at
+> them; it does not duplicate them.**
 
 ---
 

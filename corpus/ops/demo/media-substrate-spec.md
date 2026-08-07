@@ -102,7 +102,7 @@ constrained so the two align.
 
 ---
 
-## 4. Provisioning the Bunny recording keys into a demo (values-blind, the M239 pattern)
+## 4. The Bunny recording keys — what a demo would need, and why **no path exists to supply it**
 
 Exhibiting a recording requires the demo's next-web-app to hold **`BUNNY_RECORDING_CDN_TOKEN_KEY`** +
 **`BUNNY_RECORDING_PULL_ZONE_HOST`** (the recording pull-zone; the non-recording `BUNNY_CDN_TOKEN_KEY` /
@@ -110,10 +110,32 @@ Exhibiting a recording requires the demo's next-web-app to hold **`BUNNY_RECORDI
 CDN-token keys** — they grant the demo server the ability to *sign a fetch* of an existing recording, never to
 write, replace, or delete one.
 
-They are provisioned into the demo the same way M239 provisioned the AWS Bedrock creds ([`../safety.md` §2.10](../safety.md)):
-**values-blind** — the secret-coverage DNA / the demo env bridge carries the *key names* and copies the *bytes*
-source→target; **no verb ever reads, echoes, logs, or commits a value**. A key never enters git, a fixture, or an
-agent's context.
+> ### ⚠️ RETRACTED M257x iter-130 — this section claimed a provisioning path that **does not exist**
+>
+> It said these keys *"are provisioned into the demo the same way M239 provisioned the AWS Bedrock
+> creds — the secret-coverage DNA / the demo env bridge carries the key names."* **Both named
+> mechanisms are measurably absent at rext `415240f`:**
+>
+> | the claim | measured |
+> |---|---|
+> | the secret-coverage DNA carries the key names | `grep -n BUNNY stack-secrets/secretdna/secret-dna.json` → **2 genes, neither of them a recording key**: `BUNNY_STREAM_API_KEY` (`:425`) and `BUNNY_CDN_TOKEN_KEY` (`:779`). **`BUNNY_RECORDING_*` = 0 occurrences in all of rext.** `provision.go:120` writes only DNA-declared genes, so a gene that does not exist is a key that is never written |
+> | the demo env bridge carries them | `bridge_bedrock_creds` (`demo-stack/up-injected.sh:1358`) iterates a **fixed five-key list** at `:1362` — `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN`, `CLAUDE_CODE_USE_BEDROCK`. No Bunny key, and the function is Bedrock-specific by name and by body |
+>
+> **Widened once (§5 rule 57):** `grep -rniE bunny` over rext moved the count **0 → 39** — so the
+> narrow regex was not the reason. None of the 39 is a recording-key provisioning site; the hits are
+> `BUNNY_API_KEY` in tests plus the two waived-optional genes above.
+>
+> **So the exhibit is blocked on TWO things, not one** — the key *values*, and a *path* to carry them.
+> The earlier text disclosed only the first, which made a missing mechanism read like a missing
+> secret. `DEF-M240-01` (player-presence-only) is unaffected in outcome and better explained by this.
+
+**What a real path would have to add** (unbuilt, stated so nobody re-derives it): a
+`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST` gene pair in the secret-coverage DNA,
+targeted at next-web-app, **or** an explicit bridge entry. It would be **values-blind** like every other
+gene — the DNA carries *key names* and `provision` copies *bytes* source→target; **no verb ever reads,
+echoes, logs, or commits a value**, and a key never enters git, a fixture, or an agent's context. That
+discipline is the standing contract; what is retracted above is only the claim that it had already been
+applied to these two keys.
 
 ---
 
@@ -131,7 +153,10 @@ also remain **public-anchored** (the M231 contract: its `sim_id` resolves in the
 ## 6. Current status (M240, honest) — Bunny-key-blocked, faithful `not_available`
 
 The render path is live and the seed-side exhibit is specified, but exhibiting a recording depends on the **Bunny
-recording signing keys** being provisioned into the demo — and those key **values are absent from this authoring
+recording signing keys** reaching the demo — and **two independent things are missing, not one** (corrected
+M257x iter-130; §4 carries the retraction and the measurements). **(a) There is no provisioning PATH**: no
+`BUNNY_RECORDING_*` gene in the secret-coverage DNA (0 occurrences in rext @ `415240f`) and no entry in the
+demo env bridge, whose key list is Bedrock-only. **(b)** The key **values are absent from this authoring
 box's entire dev-stack** as of 2026-07-21:
 
 - no populated value in any real `.env` under `stack-dev/` (platform, next-web-app, studio-desk, app),

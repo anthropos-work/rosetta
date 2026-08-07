@@ -62,7 +62,7 @@ Phase 1 of `anthropos-staging-sync.sh` is the force-main loop. Per repo:
 6. **Re-apply skip-worktree marks** for every captured file that still exists upstream. Files that vanished upstream (e.g., a removed Dockerfile or moved config) are logged but not re-marked.
 7. Default branch is auto-detected via `git symbolic-ref refs/remotes/origin/HEAD` — works for repos that use `master` instead of `main`.
 
-Untracked staging-local files (`vendor-colony/`, `apps/web/.env.production`, `clerk-fetch-fix.js`, etc.) listed in `.git/info/exclude` survive `reset --hard` naturally — git doesn't touch ignored or unknown files.
+Untracked staging-local files (~~`vendor-colony/`~~ — **dead, see below**, `apps/web/.env.production`, `clerk-fetch-fix.js`, etc.) listed in `.git/info/exclude` survive `reset --hard` naturally — git doesn't touch ignored or unknown files.
 
 ---
 
@@ -136,9 +136,17 @@ git diff --name-only | while read f; do
 done
 
 # Untracked dirs/files → local-only ignore (.git/info/exclude is per-repo, never committed)
-echo 'vendor-colony/' >> .git/info/exclude
+echo 'vendor-colony/' >> .git/info/exclude   # ← DEAD, see below; harmless but pointless
 echo 'apps/web/.env.production' >> .git/info/exclude
 ```
+
+> **The `vendor-colony/` line is dead — corrected M257x iter-130.** The colony fork existed to carry a
+> nil-client crash, and **the fix landed upstream in colony `v0.34.4`** (*"fix(clerk) ensure client is
+> not nil when fetching user"*, `b810b28`, 2026-06-15). At `ad9f3c498` `app/go.mod:15` requires
+> `colony v0.35.2` and carries **no colony `replace`** — the only `replace` in the file is
+> `getsentry/sentry-go/echo` at `:295` — and there is no `vendor-colony/` or `.colony-fork/` in the
+> tree. Excluding a directory that is never created is harmless; **following the vendor recipe is
+> not**, because it would pin you behind eight months of colony fixes.
 
 After: `git status` shows only what the agent actually changed; `git add .` stages just that; `git diff main` is empty until the agent edits something real.
 
@@ -148,11 +156,25 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 
 | Repo                       | Skip-worktree files                                                                                                  |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, `internal/cors/cors.go`, `internal/web/backend/graphql/graph/handler.go`       |
-| `cms`                      | `Dockerfile.dev`, `go.mod`                                                                                           |
-| `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
-| `next-web-app`             | `Dockerfile.dev`                                                                                                     |
+| `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, ~~`internal/cors/cors.go`~~, `internal/web/backend/graphql/graph/handler.go`   |
+| ~~`cms`~~, ~~`jobsimulation`~~, ~~`storage`~~, ~~`messenger`~~ | **RETIRED — `make init` no longer clones any of these** |
+| `sentinel`                 | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                                                      |
+| `next-web-app`, `studio-desk` | `Dockerfile.dev`                                                                                                  |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
+
+> **Corrected M257x iter-130, two ways.**
+>
+> **1. The `internal/cors/cors.go` mark is retirable — the patch it protected LANDED upstream.**
+> `CORS_EXTRA_ORIGINS` is in `app` at `ad9f3c498`: the const at `internal/cors/cors.go:24`, applied at
+> `:78-82` behind a `!environment.IsProduction()` hard-guard, parsed at `:86-100`. It arrived in
+> `f664473` (2026-05-14) + `13410de` (2026-05-19), both ancestors of `ad9f3c498`. **Unmark the file and
+> set the env var instead** — keeping the mark now hides real upstream changes to a file you no longer
+> need to edit.
+>
+> **2. Four of the repos in this table are no longer in the clone set.** `repos.yml` @ `0c91421` has
+> **four** entries — `app`, `sentinel`, `next-web-app`, `studio-desk`. `d11a403` removed `cms` +
+> `jobsimulation` + `roadrunner`; `838d907` removed `storage` + `messenger`. A `for` loop over the old
+> list silently skips them, which is the *"`[ -d ] || continue`"* failure this milestone exists to fence.
 
 ### Force-reset interaction (the dance)
 

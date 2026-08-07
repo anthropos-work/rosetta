@@ -52,7 +52,7 @@ make pull
 # Update dependencies:
 (cd next-web-app && pnpm install)
 (cd studio-desk && npm install)
-(cd ant-academy/code && npm install)   # internal learning portal, native only
+(cd ant-academy/code && npm install)   # the AI-academy product (public storefront + org tier), native only
 
 # Apply migrations — `app` is the ONLY repo with any (`repos.yml` @ 0c91421 marks exactly one
 # `migrations: true`, schema `public`). The old "4 services: app, cms, jobsimulation, skillpath"

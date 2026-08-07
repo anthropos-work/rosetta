@@ -159,9 +159,11 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
 so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
-own patch-set fingerprint (§5-bis): next-web's over **9** manifests, hiring's over **7** (`up-injected.sh:1071-1075`
-— the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared interview flag-gate pair + the shared
-Back-to-Cockpit item). A test fences the hiring-side chain apply-order and the fingerprint union.
+own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:586-589`), hiring's over
+**7** (`up-injected.sh:1124-1126` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
+interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's over its own **5**
+(`:905`). Line refs at rext `415240f`; the `:1071-1075` this cited until M257x is now studio-desk's
+`--label` line. A test fences the hiring-side chain apply-order and the fingerprint union.
 
 > **⚠️ Corrected at v2.8 M255** (pre-milestone KB-fidelity audit). This paragraph previously said hiring's
 > fingerprint was over a **"4-manifest union"** — a C1 mirrored-count that drifted at **M232** (the interview
@@ -220,7 +222,23 @@ Back-to-Cockpit item). A test fences the hiring-side chain apply-order and the f
 
 ### The `app` patches are never reverted — and that is correct
 
-The `next-web` patches are reverted by a `RETURN` trap (LIFO) so the persistent clone is left git-clean. The `app`
+The `next-web` patches are reverted by a `RETURN` trap so the persistent clone is left git-clean — **but not
+in LIFO order**, and this sentence used to say it was. The next-web trap
+(`demo-stack/up-injected.sh:741` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
+aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
+*studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
+back-to-cockpit* (`:757`, `:762`, `:781`, `:793`, `:805`, `:817`, `:831`, `:842`, `:855`): **only two adjacent
+pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
+reverted in apply order.** That is the same
+finding the §4 correction box above records — see its table for the hiring lane, whose revert
+(`:1202`) is likewise not LIFO. **The one lane that IS strict LIFO is `studio-desk`**: apply *back · logout ·
+logo · shell · nothirdparty* (`:992`, `:997`, `:1017`, `:1032`, `:1035`), revert exactly reversed (`:976`).
+The invariant is *"the chain reverts in the right order"*, not *"the list is LIFO"* — and all three lanes
+satisfy it. `stack-core/union_apply_guard.py` asserts it for the two lanes that share a clone
+(`_FUNCS = {"next-web": …, "hiring": …}`, `union_apply_guard.py:75`); studio-desk builds from its own clone
+and is out of that guard's scope.
+
+The `app`
 patches have **no revert**: the build-scratch clone is **force-checked-out at the newest `v*` tag on every bring-up**,
 which discards the previous run's injections wholesale.
 
@@ -290,17 +308,30 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
 > genuine `apps/hiring` candidate-comparison Results screen instead of a re-skinned workforce fake. **The HIRING
-> image (`build_frontend_hiring`) bakes FOUR patches**, not two: the **2 net-new** `apps/hiring` patches
-> (`next-hiring-role-remap`, `next-hiring-members-pagination`) **plus the 2 chained shared `urls.ts`** patches
-> (`next-web-studio-url` → `next-web-public-website-url`), applied on the hiring build too because the Studio nav
+> image (`build_frontend_hiring`) bakes SEVEN patches today**, not two — and not the four this paragraph
+> claimed until M257x: the **2 net-new** `apps/hiring` patches
+> (`next-hiring-role-remap`, `next-hiring-members-pagination`), the **2 chained shared `urls.ts`** patches
+> (`next-web-studio-url` → `next-web-public-website-url`), the **2 shared `packages/ui` interview flag-gates**
+> (`next-web-interview-flag-container` / `-result`, M232) and the **shared `next-web-back-to-cockpit`** item
+> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1124-1126` @ rext `415240f`,
+> which passes exactly those seven manifests to `next_web_patchset_fp`. The `urls.ts` pair is
+> applied on the hiring build because the Studio nav
 > link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
 > presenter to `studio.anthropos.work` exactly as `apps/web` did. Found + killed at iter-13 (the hiring image's
 > client chunks were `docker exec`-grep-verified to carry **0** `studio.anthropos.work`; the trustworthy render
-> probe of iter-12 had surfaced the eject the earlier broken probe hid). All four ride `build_frontend_hiring`'s
-> transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
-> rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
+> probe of iter-12 had surfaced the eject the earlier broken probe hid). All seven ride `build_frontend_hiring`'s
+> transient apply/revert, fenced by a **7-manifest patch-set fingerprint union** (§5-bis) that forces a
+> rebuild if any of the seven moves. **The revert is not LIFO** — `up-injected.sh:1202` reverts
+> *interview-result · interview-container · pagination · rolemap · pubweb · studio · back-to-cockpit* against
+> an apply order of *studio · pubweb · rolemap · pagination · interview-container · interview-result ·
+> back-to-cockpit*; only the `urls.ts` chain is inverted, which is the only ordering that matters (§4's
+> correction table).
+> **This is the SAME drift §4's M255 box already corrected on its own copy of the number** — it moved
+> `4 → 7` there and left this paragraph on 4, which is precisely the mirrored-count failure the C1 note two
+> boxes up defines. A correction that reaches one cell is not a correction.
+> The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
 > patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
-> hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
+> hiring. *(**The rest of this paragraph is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
 > M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
 > counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
 > directory-fenced total is 23**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";

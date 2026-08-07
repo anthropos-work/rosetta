@@ -343,8 +343,49 @@ Contract:
   (`stack-verify/e2e/**`, the coverage sweep, which uses a *ceiling-bounded* networkidle as one input to a presence
   heuristic **by design**) is now written down rather than implied by which directories the scanner happens to read.
 - **It clears cookies per sample**, so each click is a genuine cold login.
-- **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
-  next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
+- **curl cannot drive this flow** at all. It **must** be a real browser on the real origin — but **not** for the
+  reason this bullet gave until M257x, and the difference is a security one.
+
+  > ### 🔻 RETRACTED — *"the fake-FAPI validates `redirect_url` against the public origin"* (M257x)
+  >
+  > **It does not validate it at all.** The handshake handler takes `redirect_url` straight off the query
+  > string, substitutes `/` only when it is **empty**, appends the freshly-minted `__clerk_handshake` token
+  > and 303s to it **verbatim** — no scheme check, no host check, no allowlist, no comparison against the
+  > demo's own origin. Measured at `rosetta-extensions/clerkenstein/clerk-frontend/server.go:414-423`
+  > @ rext `415240f`:
+  >
+  > ```go
+  > loc := r.URL.Query().Get("redirect_url")   // :414
+  > if loc == "" { loc = "/" }                 // :415-417
+  > …
+  > loc += sep + "__clerk_handshake=" + url.QueryEscape(hsToken)   // :422
+  > http.Redirect(w, r, loc, http.StatusSeeOther)                  // :423
+  > ```
+  >
+  > `grep -n "redirect_url" clerkenstein/clerk-frontend/*.go` returns **one** non-test occurrence — that
+  > `:414` read. There is no origin allowlist anywhere in the file; the only `Origin` handling is
+  > `corsMiddleware`, which **reflects** whatever Origin it is sent (`:214-217`) rather than checking it.
+  >
+  > **Why this correction is load-bearing, not pedantry.** The bullet credited the Clerkenstein mock with a
+  > **security property it has never had**, in the document a reader consults to decide what a demo is safe
+  > to expose. The mock is an **open redirect that hands the caller a session** — `GET
+  > /v1/client/handshake?__clerk_identity=<hero>&redirect_url=<anywhere>` mints an RS256 `__session` +
+  > `__client_uat` + `__clerk_db_jwt` and forwards them to an attacker-chosen destination, with **no
+  > credential presented at any point**. That is not a regression to fix here: it is the *designed* behaviour
+  > of a deliberately disarmed mock, and the control that makes it defensible is the one
+  > [`../safety.md` §3](../safety.md) states — **there is nothing behind the door** (no customer data in a
+  > demo, no write path to prod) plus the VPN/tailnet exposure scope. `safety.md:576` already discloses the
+  > password-free handshake as an exposure; **what was wrong was only this page's claim that a validation
+  > step stands in front of it.** Do not re-add the claim, and do not treat the mock's `redirect_url` as
+  > sanitised anywhere else.
+  >
+  > **What actually makes curl insufficient** is the definition of ACCESS at the top of this page: the
+  > authenticated shell **rendered and interactive with the hero's identity present**. Reaching that requires
+  > `clerk-js` to execute (the bundle the fake FAPI proxies), the client gate to resolve, and the data query
+  > to return — none of which a redirect-following fetch performs. The HTTPS-origin requirement is real but
+  > belongs to `@clerk/clerk-js`/`clerkMiddleware`, which derive the FAPI host from the publishable key and
+  > always prefix it `https://` (see [`recipe-browser-login.md` step 2](recipe-browser-login.md)) — it is a
+  > property of the Clerk SDK, not of a check the mock performs.
 
 ## The studio-desk first-paint budget (v2.7 "july jitter" M253)
 

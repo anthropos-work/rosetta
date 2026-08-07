@@ -221,7 +221,9 @@ ONLY when PostHog is entirely unconfigured (behaviour-identical off-demo):
 - `next-web-interview-flag-result` — the report **RENDER** gate (`AISimulationResult.tsx`).
 
 Both live in the SHARED `packages/ui`, so they bake into BOTH the apps/web and apps/hiring images (wired into
-`up-injected.sh`'s both frontend builds + the patchset fingerprint + the LIFO revert trap;
+`up-injected.sh`'s both frontend builds + the patchset fingerprint + the `RETURN` revert trap (**not LIFO** on
+the two frontend lanes — measured at rext `415240f`, only the `urls.ts` sha-chain and this interview pair
+invert; see [`demopatch-spec.md`](demopatch-spec.md) for the derived order);
 `tests/test_interview_flag_patch_m232.py` fences the manifest shape + wiring + a live-anchor drift pin). **Zero
 platform-repo edits.**
 
