@@ -106,7 +106,26 @@ Invocation: `guard_family.py --repo-root <rosetta> --platform <rosetta>/stack-de
   anchor, and — the sharpest — **the same anchor a second time because the fix named two refs in one
   cell**, which makes every anchor in that block ambiguous to the resolver (M257x run-53).
 
-## 6. Gate
+## 6. Deliverables — the two net-new corpus files, and why they are recorded here
+
+Both landed at `3cd96f2`. **Until run 81 this section did not exist, and the only record that either file
+existed was `state.md`'s `phase:` field** — which is a rotating index that the next close overwrites. A
+deliverable whose sole record is the field designed to be replaced is one close away from being
+unattributable. That is this milestone's own *"a census is not a disclosure"* rule pointed at its own
+plan record.
+
+| file | bytes | what it is |
+|---|---|---|
+| [`corpus/architecture/org-repos.md`](../../../../../corpus/architecture/org-repos.md) | 38,842 | all **93** org repos, each with an **advisory** keep/retire verdict. Advisory is the load-bearing word: **nothing was deleted, and the file does not license a deletion** |
+| [`corpus/ops/observability.md`](../../../../../corpus/ops/observability.md) | 9,034 | the `ant-observability` surface — the census's one correct-and-understated finding (`git grep -i grafana -- corpus/` returned **0 files** before it) |
+
+`org-repos.md` is reachable from `CLAUDE.md` and `corpus/architecture/README.md` plus six sibling
+architecture docs, so it is discoverable to a *reader*; what it lacked was an owner in the *plan*.
+
+**`db-backup` was repaired at 8 sites** in the same commit — Bash not Go, 2 targets not 3, never Azure,
+trigger off since 2025-05-29 at the commit prod pins, and *"every 6 h"* never had a source.
+
+## 7. Gate
 
 **Unchanged at 4 of 5.** No reading was taken; `P` is unmeasured. Clause 5 is met only by a reading that
 returns zero, and repair is not a reading — this iter removes confounds from one, as iter-40 recorded.

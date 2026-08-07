@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative), 123 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative), 127 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x iter loop, **123 iters**. **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. iter-123 = the CORPUS half of the user's instruction (corpus / skills / tooling aligned to the platform as it is + which repos to keep). The 93-repo org set was **re-enumerated independently** and every repo fact **re-measured from a clone at `origin` HEAD (2026-08-07)**, never a stack working tree. **HEADLINE: cloning `infrastructure` — never in any clone set, therefore never read — settled FOUR standing questions with one rule. A service repo's own `service_desired_count` is NOT evidence of production state**; it is an input to a module that must be INSTANTIATED by `terraform/production/services.tf`, which declares exactly TEN. `cms` M810 **RESOLVED** (destroyed; schema drop pending), `roadrunner` has no ECS service, `graphql-wundergraph` was **WRONG in a fenced table** (the other org corpus was right), `jobsimulation`/`storage` survive deliberately as assets-only because `prevent_destroy` is read from CONFIGURATION, not state. **Priority 2 was tested, not assumed: 76 of 89 backlog rows (85.4 %) RESOLVE at a sha the corpus already names**, so the census's dominant class is 85 % its own substrate and the real backlog is ≤ 13; 3 re-pinned, 0 retired. **Five census claims refuted/refined** (AI-Labs + the livekit family ARE documented; `watermill-redisstream` is an INERT mirror; `sim-qa` is neither standing nor unmarked; `analytics-go` was missing from the LIBRARY MODEL, not the corpus). Net-new: `corpus/architecture/org-repos.md` (all 93, **advisory** verdicts, nothing deleted) + `corpus/ops/observability.md`. `db-backup` repaired at 8 sites (**Bash not Go, 2 targets not 3, never Azure, trigger off since 2025-05-29 at the commit prod pins; \"every 6 h\" never had a source**). Guards **22 · 17 GREEN · 0 RED · 1 could-not-check · 4 not-run** (not a whole-family green; the family's own summary line says so). Detail: `iter-123/progress.md`."
+phase: "M257x iter loop, **127 iters** (+ 26 harden passes). **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. **Headline, and it is a REFRAME: the corpus is UNDER-CITED, not unfounded** â iter-124 triaged the sealed consequence class (`|C1|`). **Quote the AUDIT-CORRECTED split with its denominator or quote none**: `cite` ≈ **86.6 %** (printed 96.2 %), `hedge`+`drop` ≈ **12.2 %**, and **`fix` = 4 printed is a FLOOR, ≈ 11 ≈ 3.2 % recall-corrected** — falsity is not syntactic. So *"1,151 uncited assertions"* is ~298 whose evidence sits in a clone nobody linked, ~42 genuinely uncheckable from here, and ~11 that are false: three diseases, three treatments, only the third urgent. Both pre-registered branches were sealed before a single verdict and **neither fired**. Detail: `iter-124/audit.md`; live status: `progress.md`."
 last_updated: "2026-08-07"
 ---
 
@@ -39,11 +39,10 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **123 iters closed** (+ 26 harden passes). Gate **4 of 5**.
+_Counts and the headline are in the frontmatter; this section is the clause-by-clause state only._
 
 - **Clauses 1–2 — CLOSED** at platform `0c91421`, **MET WITH DISCLOSURE that travels with them forever**:
-  a freshly built stack failed the first full run in 2 of 2 attempts, so never a clean pass. Timings, the
-  reflog freeze-proof and the suite verdicts are in the dossier below.
+  a freshly built stack failed the first full run in 2 of 2 attempts, so never a clean pass.
 - **Clauses 3–4 — hold**, asserted by fences that are watched going RED, not by inspection.
 - **Clause 5 — the only open one**, met ONLY by a reading that returns zero. Five graded readings
   (iters 98–119) established that **inflow ≈ outflow** — repair efficacy is confirmed, yet the residual
@@ -55,55 +54,63 @@ by its own pre-registration and `TOK-08` (the USER's re-scope) at iter-119 the s
 rule **bars a successor**, so there is **no `TOK-09`** (chain in `decisions.md`). **iter-122 added an
 INSTRUMENT, not a strategy** — `F4` books any sentence treating the census as clause 5's grader as a defect.
 
-**Chapman is RETIRED**; only floors survive (**≥ 46 at `194361e4`**). Two measurements hold at once and
-must be quoted together: iter-119 put the graded read's test-retest recall at **~35 %** (it could not see
-most of the surface), and iter-122 showed **the error rate those readings published is a hunted-sample
-artifact — 0.70 % over 427 exhaustive adjudications vs ≥ 13.3 % hunted** (`D-M257x-122-3`). **Never quote
-a milestone rate as corpus-wide.** iter-123 checked the record for violations and found none — the corpus
-publishes no error rate at all. Residual: unmeasured above a floor (1,908 tier-1 pairs, 1,164 tier-2).
+**Chapman is RETIRED**; only floors survive (**≥ 46 at `194361e4`**). The residual stays unmeasured above
+a floor — **1,908** tier-1 pairs, **1,160** tier-2 (baseline 1,164; the ratchet holds). The two
+measurements that govern how any of it may be quoted are a standing rule now, below.
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):
 
-- [`m257x…/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — authoritative
-  live status, every iter's findings, the carried items
-- [`m257x…/decisions.md`](releases/02.80-fast-build/m257x-platform-realignment/decisions.md) — `D-N` +
-  the `TOK-01…06` strategy chain, incl. TOK-06 in full
+All paths below are under `releases/02.80-fast-build/m257x-platform-realignment/`.
+
+- [`progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — **authoritative live
+  status**: every iter's findings and the carried items
+- [`decisions.md`](releases/02.80-fast-build/m257x-platform-realignment/decisions.md) — `D-N` + the
+  `TOK-01…08` strategy chain
 - [`gate-clauses-1-2/README.md`](releases/02.80-fast-build/m257x-platform-realignment/gate-clauses-1-2/README.md)
-  — **the owner of every clause 1 & 2 number**: the five cold-cycle timings, the reflog freeze-proof, and
-  the disclosed first-run failure
-- [`iter-123/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-123/progress.md)
-  — **the org-census follow-ups**: the 93-repo re-derivation, the five census corrections, the
-  `infrastructure` read that settled four standing questions, and the 89-row re-pin measurement
+  — **owner of every clause 1 & 2 number**: the five cold-cycle timings, the reflog freeze-proof, the
+  disclosed first-run failure
+- [`iter-124/audit.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-124/audit.md) — **owner
+  of the under-cited reframe and of every corrected figure in `phase:`**: the seeded 30-of-344 hand audit,
+  R3 100 % / R4 66.7 %, both sealed branches checked
+- [`iter-123/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-123/progress.md) —
+  the org census: 93 repos re-derived, five corrections, the `infrastructure` read, the 89-row re-pin
 - [`iter-122/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-122/adjudication.md)
-  — **the CLAIM CENSUS**: the two-tier enumeration, 525/525 adjudicated, two fired falsifications, and the
-  census's own three defects. Sealed design: `iter-122/pre-registration.md`
+  — **the CLAIM CENSUS**: 525/525 adjudicated, two fired falsifications, its own three defects
 - [`iter-119/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-119/adjudication.md)
-  — the last graded reading (`P = 22`), and the test-retest measurement that retired the series
+  — the last graded reading (`P = 22`) + the test–retest that retired the series
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 
-- **Rule 44 — no single search tool is safe.** Gitignored-but-tracked files, NUL-bearing source, and nested
-  untracked repos each blind a *different* instrument. Use the mechanized per-tree path
-  (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where it
-  publishes 22.** Three mechanisms, no single tool.
-- **TWO INSTRUMENTS, and conflating them has cost this milestone repeatedly.** Clause 3's instrument is the
-  **guard family**; clause 5's is the **graded read** (frozen, sha `3858ec53…`, one commit ever). A guard
-  going green says nothing about clause 5, and a reading says nothing about clause 3.
-- **A guard's green is only as strong as its own load-bearing word.** `anchor_construct_guard` reported
-  *"every **resolvable** anchor names a construct"* and was GREEN while ≥7 upheld findings resolved to the
-  wrong construct. When a guard qualifies its own claim, the qualifier is the blind spot — read it first.
-  **iter-121: the guard now PRINTS its own floor** (`KNOWN_WEAKNESS`, on every run + in `--json`) —
-  widening it was measured and declined (`D-M257x-121-4`). **Every count of that class is a floor.**
-- **Read the SUBSTRATE before believing a defect.** A verdict is taken against a checkout, and a checkout
-  behind its own fetched `origin/main` does not merely fail to confirm a claim — **it manufactures
-  evidence against a true one**. iter-122: 6 of 13 clones stale (`storage` by 20 commits), 4 independent
-  adjudicators booked a true claim as contradicted. Full derivation: `D-M257x-122-4`.
-- **Every mutation asserts it APPLIED before its result is interpreted**, and a mutation is only a control
-  for the clause it can **isolate**. Three of harden pass 26's own mutations silently failed to apply and
-  each read as *"the controls survive."* §5 rule 53.
-- **State the invocation AND the expected wall time with every whole-suite count.** A suite that emits
-  nothing is not a suite that is stuck — §5 rule 51.
+Each rule's derivation lives at its owner; these are the headlines a reader must not miss.
+**`§5`** = [`corpus/ops/platform-alignment.md`](../../corpus/ops/platform-alignment.md) § 5, which owns the
+numbered rules in full.
+
+- **§5 rule 44 — no single search tool is safe.** Gitignored-but-tracked files, NUL-bearing source and
+  nested untracked repos each blind a *different* instrument. Use the mechanized per-tree path
+  (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where
+  it publishes 22.**
+- **TWO INSTRUMENTS, and conflating them has cost this milestone repeatedly.** Clause 3's is the **guard
+  family**; clause 5's is the **graded read** (frozen, sha `3858ec53…`, one commit ever). A guard going
+  green says nothing about clause 5, and a reading says nothing about clause 3.
+- **A guard's green is only as strong as its own load-bearing word** — when a guard qualifies its own
+  claim, the qualifier IS the blind spot. `anchor_construct_guard` said *"every **resolvable** anchor"*
+  while ≥7 upheld findings resolved to the wrong construct; it now PRINTS its floor (`KNOWN_WEAKNESS`),
+  widening measured and declined (`D-M257x-121-4`). **Every count of that class is a floor.**
+- **Read the SUBSTRATE before believing a defect** — a checkout behind its own fetched `origin/main` does
+  not merely fail to confirm a claim, **it manufactures evidence against a true one** (6 of 13 clones
+  stale; 4 adjudicators booked a true claim as contradicted). **And the mirror:** reading at HEAD instead
+  of the census ref **inflated** the re-pin backlog 3.1× (iter-126). Derivation: `D-M257x-122-4`.
+- **NEVER quote this milestone's read-derived error rate as corpus-wide**, and quote its two governing
+  measurements together or neither: test–retest recall **~35 %** (iter-119), and the published rate is a
+  **hunted-sample artifact — 0.70 % over 427 exhaustive adjudications vs ≥ 13.3 % hunted**, over-stating
+  the population **~19×** (`D-M257x-122-3`). The corpus publishes no error rate at all; keep it that way.
+- **§5 rule 53 — every mutation asserts it APPLIED** before its result is interpreted, and is a control
+  only for the clause it can **isolate**. Three of harden pass 26's silently failed to apply, each reading
+  as *"the controls survive."*
+- **§5 rule 51 — state the invocation AND the expected wall time with every whole-suite count.**
+- **§5 rule 54 — a correction that reaches ONE cell is not a correction.** It must reach every site
+  publishing the retracted claim: the router (24 sites), `db-backup` (3), `cms`'s *"assert neither"* (5).
 - **RE-SCOPE TRIGGER: occurrence 3, NOT firing.** It fired at iter-53 and the remedy shipped as TOK-04;
   35+ clean iters since, so *"two CONSECUTIVE invalidated attempts"* is false on its own words.
 
@@ -168,4 +175,12 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-08-07 — M257x iter-123 (the org-census follow-ups; `infrastructure` read for the first time). Both trees clean and pushed; `demo-1` up._
+_Last updated 2026-08-07 — M257x iter-128. Both trees clean and pushed; `demo-1` up._
+
+> **Budget status (measured, not asserted).** File **14,612 / 15,360** ✅ · frontmatter **1,667 / 2,600** ✅
+> · all six frontmatter fields within budget ✅ — `phase:` went **1,985 → 861** by moving iter-124's reframe
+> to `iter-124/audit.md` and the standing rules to their `§5` / `D-N` owners. **Body is 12,945 / 12,000 —
+> over by 945, and it is NOT trimmable by the contract's own method.** Three probes (§ Standing backlog's
+> 7 un-mirrored items, the M255 provenance clause, the process flags) each found **`state.md` is their sole
+> owner**, so *"move it to its owner"* has no target. The body budget was set without measuring what the
+> body uniquely owns. Routed as `FIX-M257x-iter128-body-budget-has-no-owner`.
