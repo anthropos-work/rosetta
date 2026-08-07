@@ -104,8 +104,9 @@ clone you run it from (`Makefile:31-45`, `repos.yml` @ platform `0c91421`):
 
 ```
 1. platform       (Docker configs, shared .env — the repo you are standing in)
-2. app            (the monolith: skiller, skillpath, roadrunner, jobsimulation, cms,
-                   storage, messenger and customerio-sync all served in-process)
+2. app            (the monolith: skiller, skillpath, jobsimulation, cms, storage,
+                   messenger and customerio-sync — SEVEN — all served in-process.
+                   roadrunner was listed here until M257x iter-137: DELETED, not merged)
 3. sentinel       (authorization — the one other Go service still deployed)
 4. next-web-app   (frontend)
 5. studio-desk

@@ -4,10 +4,12 @@ This directory contains guides for operating the Anthropos platform locally.
 
 > ## ⚠️ Monolith merge — read before following any stack runbook
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app), `cms`
+> `skiller`, `skillpath`, `jobsimulation` (jobsim-in-app), `cms`
 > (cms-in-app v8.0, app v1.360.0), `storage` + `messenger` (v9.0 support-in-app) and
-> `customerio-sync` are all **folded into `app`** and run in-process as the single `backend`
-> service. What that changes for ops:
+> `customerio-sync` — **seven** — are all **folded into `app`** and run in-process as the single `backend`
+> service. **`roadrunner` was listed here as an eighth until M257x iter-137; it was deleted, not folded**
+> (no `app/internal/roadrunner/` at any ref) — but for ops the consequence is identical: no container.
+> What that changes for ops:
 >
 > * There is **no `cms`, `jobsimulation`, `skiller`, `skillpath`, `roadrunner`, `storage`,
 >   `messenger` or `customerio-sync` container**, profile, port, or subgraph — `838d907`

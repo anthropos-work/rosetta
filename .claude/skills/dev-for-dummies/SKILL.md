@@ -99,7 +99,8 @@ For **each** repo: `git fetch origin`, then check the branch and working tree.
 1. **TARGETs** — if repos were passed as arguments, use them. **If not, ASK the user** which repo(s) they want
    to work on live. There are **exactly five** live targets — offer these and no others:
    `next-web-app` (the main frontend — the usual answer), `app` (the Go backend monolith: API, AI-readiness,
-   skills, **and** the merged cms / jobsimulation / skillpath / roadrunner / storage / messenger domains),
+   skills, **and** the merged cms / jobsimulation / skillpath / storage / messenger domains — `roadrunner`
+   was listed here until M257x iter-137 and was *deleted*, not merged),
    `sentinel` (authorization), `studio-desk`, `ant-academy`. (Frontend/UI targets are the smooth path;
    a backend Go target has an extra wiring caveat — see [`reference.md`](reference.md) § *Backend targets*.)
    **Validate each pick against that five-name list — NOT with `test -d`.** `stack-demo/` still holds stale

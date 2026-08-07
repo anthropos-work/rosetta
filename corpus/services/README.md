@@ -17,12 +17,25 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 > ([`platform-migration-status.md:101`](../architecture/platform-migration-status.md)). The fenced map is
 > authoritative per service; this banner is about the LOCAL stack.
 >
-> **`roadrunner` is the eighth, and it is different: orphaned, not merged-and-undeployed.** Nothing calls it,
-> but `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` — **last changed at `84a4b4f`
-> (2025-12-15), seven months before the fold, and not a decision about it** (`git blame -L 19,19`; M257x
-> iter-115) — so it **does** still deploy,
-> unlike cms (`cms/terraform/main.tf:39` = 0) and jobsimulation, whose ECS service **M810 has already destroyed** (`6092c6d2`; `service_desired_count` no longer appears in `jobsimulation/terraform/main.tf` at all — `:15-22`). It is the one row where prod and the platform's own
-> `repos.yml` contradict each other. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+> **`roadrunner` is the eighth, and it is different: DELETED AND REPLACED, not merged-and-undeployed.**
+> Nothing calls it, and — unlike the seven — **it left no package behind**: `app/internal/roadrunner/`
+> exists at no ref and was never added (`git log --all --diff-filter=A -- internal/roadrunner` → 0 commits
+> ever, full 6,728-ref clone @ `app` `ad9f3c498`). Its job runs inside the **jobsimulation** domain
+> (`app/internal/jobsimwiring/wiring.go:123`, whose comment says it *"replaces the removed roadrunner RPC
+> edge"*).
+>
+> **⚠️ This banner said roadrunner *"does still deploy"* in production until M257x iter-137, on the strength
+> of `roadrunner/terraform/main.tf:19` `service_desired_count = 1`. It does not.** That value is an input to
+> a module **nothing instantiates**: `infrastructure` @ `13c248e6` declares **exactly ten** service modules
+> in `terraform/production/services.tf` and `module "roadrunner"` is not among them — so roadrunner is in
+> **the same orphaned-dead-code class** as cms (`cms/terraform/main.tf:39` = 0, module deleted) and
+> jobsimulation, whose ECS service **M810 has already destroyed** (`6092c6d2`; `service_desired_count` no
+> longer appears in `jobsimulation/terraform/main.tf` at all — `:15-22`). **There is no row where prod and
+> the platform's own `repos.yml` contradict each other; that reading was the misattribution.** The line
+> provenance still holds: `:19` was **last changed at `84a4b4f` (2025-12-15), seven months before the fold,
+> and is not a decision about it** (`git blame -L 19,19`; M257x iter-115).
+> See [`platform-migration-status.md`](../architecture/platform-migration-status.md) and
+> [`org-repos.md` § 3](../architecture/org-repos.md).
 >
 > And **none of them starts a container any more.** cms, jobsimulation and roadrunner did run locally as
 > unfederated husks, but platform **`d11a403`** (2026-08-03) deleted all three from `docker-compose.yml`
@@ -41,7 +54,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`sentinel.md`](sentinel.md) | Sentinel | **Authorization only** (Casbin RBAC/ABAC). Authentication is Clerk + the `authn` middleware, *not* Sentinel |
 | [`jobsimulation.md`](jobsimulation.md) | Jobsimulation — **merged into `app`** | The **runtime/session engine** that *runs* AI simulations (voice, chat, code, documents) and emits completion events. Holds run/session state, never content. Folded in at jobsim-in-app; the prod **ECS service is deleted — M810 landed** (`6092c6d2`), the terraform module surviving only to own the LiveKit/Chime buckets, the SSM parameters and the atlas tracker |
 | [`storage.md`](storage.md) | Storage — **merged into `app`** | Centralized file/blob service — private + public S3-backed managers by namespace + UUID. Stateless, owns no DB. Folded in at v9.0 "support-in-app" (2026-08-04); container and `repos.yml` entry deleted at `838d907`. In prod the ECS service is **deleted**, not scaled to zero — the module survives only to keep the buckets/CDN under `prevent_destroy` |
-| [`roadrunner.md`](roadrunner.md) | Roadrunner — **orphaned** (not "merged and undeployed") | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL` — but prod terraform still reads `= 1` (`roadrunner/terraform/main.tf:19`, unchanged since `84a4b4f` / 2025-12-15 — it predates the fold and nobody has been back), even though `d11a403` removed its local container **and** its `repos.yml` entry |
+| [`roadrunner.md`](roadrunner.md) | Roadrunner — **deleted and replaced** (not "merged and undeployed", and not orphaned in production) | Code-execution proxy to the Judge0 sandbox. Execution moved in-process with the jobsim engine and `backend` calls Judge0 directly via `JUDGE0_BASE_URL`; `d11a403` removed its local container **and** its `repos.yml` entry. **This cell said *"but prod terraform still reads `= 1`"* until M257x iter-137** — `roadrunner/terraform/main.tf:19` is an input to a module `infrastructure` @ `13c248e6` never instantiates, so it declares nothing (it is unchanged since `84a4b4f` / 2025-12-15, predating the fold) |
 | [`gotenberg.md`](gotenberg.md) | Gotenberg | Third-party stateless Office-doc → PDF conversion (LibreOffice headless). One consumer: `app` |
 | [`messenger.md`](messenger.md) | Messenger — **merged into `app`** | Centralized transactional email via Brevo + Liquid templates. Folded in at v9.0 "support-in-app"; container, `repos.yml` entry and `messenger` profile all deleted at `838d907`, and `app` gates the domain behind `MESSENGER_ENABLED` (unset = off on a laptop). Other services never called Brevo directly — they **publish Redis Stream events** the domain consumes (`messenger/internal/flow/flow.go:72-104` @ `fa47850`, `AddSubscriber("backend", …)`, 21 live handlers); `app` took over messenger's own consumer group. It *exposes* a `MessengerService` Connect-RPC surface, but **no service ever constructed a client for it**: `MESSENGER_RPC_ADDR` appears in no repo — every clone at its own named ref, nested repos included — and `git -C stack-demo/platform log -S 'MESSENGER_RPC' --oneline 0c91421d` returns **0** commits that ever set it (positive control at the same repo+ref: `-S 'SKILLER_RPC'` returns **7**) |
 | [`customerio-sync.md`](customerio-sync.md) | CustomerIO Sync — **merged into `app`** | One-directional background pipeline, Postgres `public` → **Brevo** (the Customer.io name is a fossil), for marketing automation. The last Go service folded into `app`; container deleted at `838d907`, gated by `CUSTOMERIO_SYNC_ENABLED`. Its unique "build straight from a GitHub URL" compose pattern died with it |

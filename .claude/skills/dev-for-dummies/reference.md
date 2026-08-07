@@ -167,8 +167,9 @@ Clerk — serve HTTPS with the tailscale cert on the offset port, never `tailsca
 
 ## Run a target live — **backend Go targets** (`app` / `sentinel`) — the caveat
 
-There are exactly **two** Go targets left: `app` (the monolith — it serves the cms, jobsimulation, skiller,
-skillpath, roadrunner, storage, messenger and customerio-sync domains in-process) and `sentinel`. Everything
+There are exactly **two** Go targets left: `app` (the monolith — it serves the **seven** cms, jobsimulation,
+skiller, skillpath, storage, messenger and customerio-sync domains in-process; `roadrunner` was listed here
+as an eighth until M257x iter-137 and was *deleted*, not merged) and `sentinel`. Everything
 else that used to be on this list is a domain inside `app`, not a target.
 
 This is the **harder, more caveated path** — be honest with the user. One real problem:

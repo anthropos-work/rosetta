@@ -2,16 +2,48 @@
 
 ## Role & Responsibility
 
-> **⚠️ MERGED INTO `app` / ORPHANED — nothing calls this service any more (verified v2.5 M231 KB-6; re-verified v2.7 "july jitter"
-> M247 against the CONSOLIDATED platform — the ~386-commit `app` bump).** Code execution moved **in-process into
+> **⚠️ DELETED AND REPLACED — NOT "merged into `app`" (corrected M257x iter-137; this banner said *"MERGED
+> INTO `app` / ORPHANED"*).** Nothing calls this service any more (verified v2.5 M231 KB-6; re-verified v2.7
+> "july jitter" M247 against the CONSOLIDATED platform — the ~386-commit `app` bump). **The distinction is
+> not pedantry — it is what predicts where the code is.** Seven services were folded into `app` and each
+> has a package to show for it (`app/internal/{cms,customeriosync,jobsimulation,messenger,skiller,skillpath,storage}/`).
+> **`app/internal/roadrunner/` exists at no ref and was never added** — `git log --all --diff-filter=A --
+> internal/roadrunner` returns **0 commits, ever**, in a full 6,728-ref clone at `app` `ad9f3c498` (positive
+> control: `jobsimwiring` → 3 paths). Code execution moved **in-process into
 > jobsimulation** (`jobsimulation/internal/runner/runner.go`, an in-process Judge0 client whose own header comment
 > reads *"formerly the standalone 'roadrunner' service"*) — and with the **jobsim-in-app** merge that runner now
-> lives inside **`app`**. `backend` reads `JUDGE0_BASE_URL` and calls Judge0 directly, and **nothing calls the
-> roadrunner service any more.**
+> lives inside **`app`**, still **inside the jobsimulation domain**: `app/internal/jobsimwiring/wiring.go:123`
+> wires `jsrunner.NewRunnerManager(getenv("JUDGE0_API_KEY"), getenv("JUDGE0_BASE_URL"))` against
+> `app/internal/jobsimulation/runner`, and the comment above that line says it *"replaces the removed
+> roadrunner RPC edge"* — the platform's own word for it is **removed**. `backend` reads `JUDGE0_BASE_URL`
+> and calls Judge0 directly, and **nothing calls the roadrunner service any more.**
 >
-> **⚠️ Precision, because the declarations disagree (v2.8 M257x).** *"There is no roadrunner service in
-> production"* overstates it: `roadrunner/terraform/main.tf:19` still reads `service_desired_count = 1` and has
-> has **not been touched since `84a4b4f` (2025-12-15)** — the commit that first added `terraform/main.tf`,
+> **⚠️ SETTLED — there is no roadrunner service in production, and this banner spent four days saying the
+> question was open (corrected M257x iter-137).** It read *"'There is no roadrunner service in production'
+> overstates it"*, on the strength of `roadrunner/terraform/main.tf:19` `service_desired_count = 1`. **That
+> line is an input to a module nothing instantiates.** Measured at `infrastructure` `13c248e6` (re-derived
+> at source by iter-137; first measured iter-123): `terraform/production/services.tf` declares **exactly
+> ten** service modules — `sentinel`, `directus`, `acm_media_certificate`, `storage-service`,
+> `next-webapp`, `backend`, `jobsimulation`, `studio_desk`, `db-backup`, `metabase` — and **`module
+> "roadrunner"` is not among them.** `roadrunner/terraform/main.tf` is 95 lines at `87d8d443` whose `:10-11`
+> is `module "roadrunner" { source = ".../modules/services/base_internal_service" }` fed from **unbound
+> `var.*`** (`var.environment`, `var.platform_cluster_id`, `var.platform_vpc_id`, …) — a module awaiting a
+> caller that does not exist. **This is the same orphaned-dead-code class as `cms`, `messenger` and
+> `graphql-wundergraph`, and `org-repos.md` § 3 was written to close exactly it: a service repo's own
+> `service_desired_count` is not evidence of production state.**
+>
+> **What DOES survive in `infrastructure` is the NAME, in seven places, none of them terraform.** Two CI
+> workflows inject the Judge0 credentials from `production_roadrunner_judge0_*` secrets under a
+> `# Roadrunner` comment (`infrastructure/.github/workflows/wf-terraform-deploy.yml:209-211`,
+> `infrastructure/.github/workflows/wf-terraform-plan-preview.yml:241-243`) into `TF_VAR_judge0_{api_key,base_url}` — and those are consumed
+> by **`module "backend_euwest1"`** (`infrastructure/terraform/production/services.tf:384-385`). **Production wiring Judge0
+> straight into `backend` under roadrunner-named secrets IS the fold, visible at the config layer**; it is
+> better evidence than the count the corpus was reading. The seventh hit is the platform's own words at
+> `infrastructure/knowledge/service-dependencies.md:119`: *"**Judge0** (code execution — called directly
+> now; `roadrunner` is off this path)"*.
+>
+> **On the sha, and it still stands:** `roadrunner/terraform/main.tf:19` has
+> **not been touched since `84a4b4f` (2025-12-15)** — the commit that first added `terraform/main.tf`,
 > seven months before the fold. ⚠️ **This said "`87d8d44` (2026-06-19)" until M257x iter-115, and that is not
 > the line's provenance**: `87d8d44` is the repo's HEAD and touches exactly one file,
 > `.github/workflows/bump-version.yml` (3 insertions) — it never goes near terraform, so *"not touched since
@@ -27,9 +59,13 @@
 > **grade that commit by its diff, not its message.** Its message asserts roadrunner's *"repos.yml clone entry
 > was already gone"*; `git show d11a403 -- repos.yml` shows **that very commit** removing `- name: cms`,
 > `- name: jobsimulation` **and** `- name: roadrunner`. The message is wrong; the diff is the fact. At
-> `0dab54d` there is neither a `repos.yml` entry nor a `roadrunner` compose service to start locally. This is the **one row where prod
-> and the platform's own declaration contradict each other** — recorded, not resolved. Say *orphaned* (nothing
-> calls it), not *absent*. See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
+> `0dab54d` there is neither a `repos.yml` entry nor a `roadrunner` compose service to start locally.
+> **⚠️ This sentence called it *"the one row where prod and the platform's own declaration contradict each
+> other — recorded, not resolved"* until M257x iter-137. There was never a contradiction: both
+> declarations say the service is gone, and only a misread of an uninstantiated module input made them
+> look opposed.** Say *absent from production and deleted locally*; *orphaned* is right only of the
+> **repo**, which is unarchived and still carries dead terraform.
+> See [`platform-migration-status.md`](../architecture/platform-migration-status.md).
 >
 > It is not part of the *logical* platform stack. On current `origin/main` there is **no `ROADRUNNER_RPC_ADDR`
 > / `RoadRunnerService` / `roadrunner:10401` read in any service's Go code** — re-measured M257x iter-98 at
@@ -50,7 +86,10 @@
 > deleted it. **At `0dab54d` `repos.yml` had 6 entries — app, sentinel, storage, messenger, next-web-app,
 > studio-desk — and roadrunner was not among them. It has 4 since `838d907` took `storage` and
 > `messenger` out too: app, sentinel, next-web-app, studio-desk.** What still separates roadrunner from that list is only
-> its **GitHub repo, which is NOT archived**, and prod's `service_desired_count = 1`.
+> its **GitHub repo, which is NOT archived** — and *not* a production deployment. **This clause named
+> *"prod's `service_desired_count = 1`"* as the second separator until M257x iter-137; that value is a
+> module input nobody instantiates, so it separates roadrunner from nothing** (see the SETTLED banner
+> above).
 >
 > **`jobsimulation` was previously listed above as also *removed* from both files; it is not (corrected
 > M257x iter-46, and **superseded by the platform at iter-77**).** Its GitHub repo's archive state is **not visible to this corpus** (this line asserted an archive on 2026-07-31; `origin/main` took four commits on 2026-08-04 — see [`jobsimulation.md`](./jobsimulation.md)), and
@@ -71,7 +110,9 @@
 > compose file and is absent from `.env_example` — measured at platform `0dab54d`. (Both were true as recently as
 > `2adcf71`; the container and its env went together.) There is no roadrunner profile either, and asking for one
 > does not fail — it exits 0 and starts the 3-service floor. **Everything below describes the
-> service as built, not as used.** Treat retirement as pending, not done.
+> service as built, not as used.** **Retirement is DONE, on both sides** — corrected M257x iter-137, where
+> this line read *"Treat retirement as pending, not done"*; it was the conclusion drawn from the
+> misattributed module input above, and it did not survive reading `infrastructure`.
 
 Roadrunner is the **code-execution proxy** for the platform. When a simulation includes a coding task, jobsimulation hands the user's source code to Roadrunner, which forwards it to **Judge0** (a sandboxed code-execution API) and returns the results (stdout, stderr, status, time).
 
@@ -127,7 +168,7 @@ internal/
 
 Every submission enqueues exactly one poll task on the `roadrunner:default` queue (MaxRetry 3) from `runner.CreateSubmission`; the worker (10 concurrent, `internal/worker/worker.go`) runs `HandleSubmissionResultTask`, which polls Judge0 up to 15 times at 1s intervals, then publishes a `RoadrunnerSubmissionCompleted` event. The RPC handlers call the runner directly and never invoke the Asynq client; there are no HTTP handlers.
 
-On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the repo's **Go source** contains exactly one `roadrunner` mention (`internal/runner/runner.go:3`, a comment), with no handler and no event reference — **scope that to Go, not to the repo**: `git -C stack-demo/jobsimulation grep -in roadrunner 462343b0` returns **14 lines across 8 files** (5 exact-case across 3), the rest being CHANGELOG and `knowledge/*.md`; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with the **Upstream consumers** bullet under § *Dependencies* below (*"none (orphaned — see the banner at the top)"*) — **named, not pinned:** this said `:124` **below**, and at M257x iter-120 `:124` was **above** this very line and carried no such text.
+On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carrying the Judge0 token) to Redis Streams (`REDIS_STREAMS_INDEX`) via colony pubsub — **and nothing consumes it.** The jobsimulation consumer was **deleted, not moved**: at `jobsimulation 462343b0` the repo's **Go source** contains exactly one `roadrunner` mention (`internal/runner/runner.go:3`, a comment), with no handler and no event reference — **scope that to Go, not to the repo**: `git -C stack-demo/jobsimulation grep -in roadrunner 462343b0` returns **14 lines across 8 files** (5 exact-case across 3), the rest being CHANGELOG and `knowledge/*.md`; in `app`, `internal/jobsimulation/simulator/stream_handlers.go:30-34` states that the roadrunner-submission pubsub event was removed upstream and the code-submission result now arrives as `HandleCodeSubmissionResultTask` on `CodeRunQueue` — *"NOT stream handlers."* Consistent with the **Upstream consumers** bullet under § *Dependencies* below (*"none (orphaned — see the banner at the top)"*) — **named, not pinned.** ⚠️ **This clause used to carry a bare line pin as its own worked example of a bad one, and the example rotted twice**: it named a line "below" that M257x iter-120 found was *above*, and M257x iter-137's repair then shifted the file until that same pin landed on a blank line and turned two fences RED. **A retraction that quotes the retracted pin re-publishes it** — the anchor guard cannot tell the two apart, and neither can a reader who copies it. The pin is therefore gone entirely; the construct name is the citation.
 
 ## Dependencies
 

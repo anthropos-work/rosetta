@@ -52,7 +52,7 @@ make ps                   # expect 5 — the old "11" is three merge waves stale
 | anthropos-postgresql-1 | 5432 | Health gate for others |
 | anthropos-redis-1 | 6379 | Health gate for others |
 | anthropos-sentinel-1 | 8087 | Always on (no profile) |
-| anthropos-backend-1 | 8081-8083 | **The monolith.** Serves the merged skiller / skillpath / cms / jobsimulation / roadrunner / storage / messenger / customerio-sync domains in-process, **and GraphQL itself at `:8082/graphql/query`** |
+| anthropos-backend-1 | 8081-8083 | **The monolith.** Serves the **seven** merged skiller / skillpath / cms / jobsimulation / storage / messenger / customerio-sync domains in-process, **and GraphQL itself at `:8082/graphql/query`**. (`roadrunner` was listed here as an eighth domain until M257x iter-137 — it was *deleted*, not merged; Judge0 is reached from inside the jobsimulation domain) |
 | anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
 
 > **⚠️ Five containers, and that is the whole list — re-derived from the platform clone at origin

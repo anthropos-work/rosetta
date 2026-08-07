@@ -150,7 +150,7 @@ Anthropos uses a **three-tier microservices architecture**:
 
 | Tier | Services | Technology |
 |------|----------|------------|
-| **Core Backend** | **Backend (`app`) and Sentinel — those two, and no others.** `app` is the monolith: the skills taxonomy (ex-Skiller), the skill-path engine (ex-Skillpath), **and the cms, jobsimulation, roadrunner, storage, messenger and customerio-sync domains**, all folded in. Sentinel is authorization only | Go |
+| **Core Backend** | **Backend (`app`) and Sentinel — those two, and no others.** `app` is the monolith: the skills taxonomy (ex-Skiller), the skill-path engine (ex-Skillpath), **and the cms, jobsimulation, storage, messenger and customerio-sync domains** — **seven** folded in. (**`roadrunner` was listed here as an eighth domain until M257x iter-137; it was deleted, not folded** — no `app/internal/roadrunner/` at any ref.) Sentinel is authorization only | Go |
 | **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline — embedded in the **`app`** image, not in CMS), Ant Academy (the AI-academy product — a **public storefront** with an enterprise/org tier) | TypeScript, Python, Next.js + Expo |
 | **External** | Clerk (auth), Directus (CMS), Gotenberg (Office→PDF, third-party image). ~~GraphQL/Wundergraph (gateway)~~ — **deleted from the platform** at `2adcf71`; `backend` serves GraphQL directly | SaaS / Docker |
 

@@ -4,16 +4,18 @@ This directory contains all Project Rosetta documentation. For the full project 
 
 > ## ⚠️ The backend is a monolith
 >
-> **Eight** services — `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app),
+> **Seven** services — `skiller`, `skillpath`, `jobsimulation` (jobsim-in-app),
 > `cms` (cms-in-app v8.0, app **v1.360.0**) and, since the v9.0 "support-in-app" program,
 > `storage`, `messenger` and `customerio-sync` — are all **folded into `app`** and served
-> in-process by the single `backend` service. Platform `838d907` (merged `0c91421`, 2026-08-05)
+> in-process by the single `backend` service. **`roadrunner` was listed here as an eighth folded service
+> until M257x iter-137. It was DELETED, not folded** — `app/internal/roadrunner/` exists at no ref and was
+> never added, and Judge0 is reached from inside the **jobsimulation** domain. Platform `838d907` (merged `0c91421`, 2026-08-05)
 > deleted the last three compose services, so `docker-compose.yml` declares **5** services and
 > `repos.yml` **4** entries. The GraphQL federation composes **one** subgraph, and every
 > application table lives in the **`public`** Postgres schema.
 >
 > Their service docs are kept for domain knowledge and carry a merge banner. Start from
-> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown is tracked as **M810** and is **uneven**: **landed for jobsimulation** (`6092c6d2` deleted the ECS service and the ECR repository), **not moved for cms** — see the fenced per-service statement in [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md).
+> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown is tracked as **M810** and has **LANDED for both**: for jobsimulation at `6092c6d2` (which deleted the ECS service *and* the ECR repository), **and for cms too** — `infrastructure` @ `13c248e6` declares **no `module "cms"` at all** and `terraform/production/services.tf:64-70` records what the apply destroyed. **⚠️ This line said M810 was *"uneven — not moved for cms"* until M257x iter-137**, four days after iter-123 measured it and two corpus-wide sweeps (iter-127, iter-132) repaired that predicate at 20 sites; the front-door index was the site neither sweep's search reached. `cms/terraform/main.tf:39` `service_desired_count = 0` is **orphaned dead code**, not evidence of production state. What is still pending for cms is the legacy **schema** drop, a separate M810 step. See the fenced per-service statement in [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md).
 > skillpath's teardown is **M507**.
 
 ## Directory Structure

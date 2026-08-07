@@ -85,7 +85,7 @@ This starts the backend tier (default `core` profile — `postgresql`, `redis`, 
 make up
 ```
 
-This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
+This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — **seven**; `roadrunner` was named here as an eighth until M257x iter-137, and it was **deleted, not merged**, though for a bring-up the consequence is the same: nothing starts it — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 

@@ -12,8 +12,10 @@ Run through this guide when:
 - You see dependency errors or schema mismatches
 - Before starting work on a new feature
 
-> **⚠️ The consolidation is COMPLETE — the backend is one monolith.** **Eight** services now run
-> in-process inside `app`: `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app),
+> **⚠️ The consolidation is COMPLETE — the backend is one monolith.** **Seven** services now run
+> in-process inside `app` (**eight**, including `roadrunner`, until M257x iter-137 — roadrunner was
+> **deleted, not folded**; no `app/internal/roadrunner/` at any ref, and Judge0 is reached from inside the
+> jobsimulation domain): `skiller`, `skillpath`, `jobsimulation` (jobsim-in-app),
 > `cms` (cms-in-app v8.0, app v1.360.0), `storage` + `messenger` (v9.0 support-in-app) and
 > `customerio-sync` — the last three losing their containers at `838d907` (merged `0c91421`,
 > 2026-08-05), which also took `storage` and `messenger` out of `repos.yml`. The federation is down to **1 subgraph**

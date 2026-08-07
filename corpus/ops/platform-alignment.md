@@ -1986,6 +1986,45 @@ defect, it was arguing for it.*
     > hedges and the mixed count is published as a thing the guard **cannot** decide — `D-M257x-121-4`'s
     > precedent, applied a second time. **Do not read a marker count as a defect count.**
 
+62. **The search that PLANS a repair and the search that VERIFIES it must not be the same search — and
+    a subject wrong in two OPPOSITE directions has no owner.** *(M257x iter-137. The procedural corollary
+    of rule 57, plus its two-directional case.)*
+
+    Rule 57 says a count is only as wide as its search. iter-137 obeyed it — four independent searches,
+    two per conjunct, before any edit — repaired **26** sites, then re-ran the same searches **with the
+    newly-written wording `grep -v`'d out** and found **three live survivors** no planning search could
+    reach: one inside a paragraph about gRPC hops, one in an index row, and one whose falsity is carried
+    by a **section heading**.
+
+    > **Rule (a) — verify with the corrected vocabulary.** After a sweep, re-run the search **excluding
+    > your own new phrasing**. What survives is exactly what the planning search was blind to. A repair
+    > that verifies itself with its planning query is measuring its own vocabulary.
+    >
+    > **Rule (a′) — then read the HEADINGS.** The third survivor was a bullet under
+    > ***"Domains inside Backend/App, not services"*** — the false predicate asserted **one level up** and
+    > inherited by every bullet beneath it. **Grep, the anchor fences and the claim census all read
+    > LINES**, so this class is invisible to all of them. A heading is exactly where a corpus states its
+    > general claims, which makes it exactly where a general claim goes stale unseen.
+
+    The same iter found the subject wrong **in two directions at once**: `roadrunner` was asserted to be
+    **running in production** (*"prod terraform still reads `service_desired_count = 1`"*) **and** to be
+    **one of eight domains folded into `app`**. Both false; both live; mutually exclusive. A reader could
+    open two files of the same corpus and come away with incompatible pictures, each stated confidently.
+
+    > **Rule (b) — two-directional error means no owner.** When a subject carries contradictory false
+    > claims, neither is a typo. Repairing one conjunct makes the corpus *look* more consistent and no
+    > more true. **Sweep the subject, not the sentence** — and check whether a rule you already wrote was
+    > applied to **every row of the table it was written for**. § 3's *"a service repo's own
+    > `service_desired_count` is not evidence of production state"* reached `cms`, `messenger` and
+    > `graphql-wundergraph` at iter-123 and skipped `roadrunner` — **one row away, in the same table.**
+
+    > **Rule (c) — never quote a retracted line-pin; describe the artifact.** `roadrunner.md` carried a
+    > bare `:NN` pin **as its own worked example of a bad pin**. iter-137's repair shifted the file, the
+    > quoted pin landed on a blank line, and **two fences went RED on a citation whose purpose was warning
+    > against citations like it.** A form-matching fence cannot distinguish *asserting* a pin from
+    > *quoting a retracted* one — the anchor-axis sibling of (b) above and of iter-134's 1-of-4
+    > measurement. **Delete the pin; name the construct.** Re-pinning restarts the clock.
+
 ---
 
 ## 6. Classification — the map

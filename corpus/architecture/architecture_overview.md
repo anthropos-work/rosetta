@@ -19,8 +19,12 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     both files in one commit:
     *   **Jobsimulation**: runs realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; **the repo's archive state is not visible to this corpus** — this line asserted a GitHub archive on 2026-07-31, which `origin/main`'s four **2026-08-04** commits (merged PR #439 among them) contradict, an archived GitHub repo being read-only; report both, assert neither — and **M810 has landed for the production ECS service**: `6092c6d2` deleted the `module "jobsimulation"` block outright, destroying the ECS service, task definition and ECR repository, so `service_desired_count` no longer appears in the file at all (`jobsimulation/terraform/main.tf:15-22`). What survives is the module's *other* ownership — the LiveKit and Chime recording buckets `backend` reads by literal name, the `/production/jobsimulation/*` SSM parameters and the atlas tracker; dropping the legacy `jobsimulation` schema is a separate, still-pending M810 step (`:24-40`).)
     *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
-    *   **Roadrunner**: Judge0 code execution — `backend` reaches Judge0 directly
-        (`app/internal/jobsimwiring/wiring.go:118` @ `app` `b948604`), so there is no hop and nothing left to start
+    *   **Roadrunner — NOT a domain here; it is the one of the three that was DELETED, not folded**
+        (corrected M257x iter-137, which found this bullet under a heading reading *"Domains inside
+        Backend/App"*). `app/internal/roadrunner/` exists at no ref and was never added (0 commits ever
+        @ `app` `ad9f3c498`). Judge0 code execution is reached directly from **inside the jobsimulation
+        domain** (`app/internal/jobsimwiring/wiring.go:123` @ `app` `ad9f3c498`; `:118` @ `b948604`), so
+        there is no hop and nothing left to start
 
     **Also domains inside Backend/App, and no longer even opt-in:** **Storage**, **Messenger** (Brevo
     email) and **CustomerIO Sync**. Platform `838d907` (merged **`0c91421`**, 2026-08-05) **deleted all
@@ -72,8 +76,10 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 **Service Tiers** (local development reality, default `core` profile):
 1. **Core Backend Services**: Backend/App (the monolith) and Sentinel, plus Gotenberg (third-party PDF service). Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them anywhere** — platform `2adcf71` deleted the local service, and the production module was **destroyed** (`infrastructure/terraform/production/services.tf:509-517`; corrected M257x iter-124, where this sentence said *"it survives in production only"*). So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
 
-   **Eight** former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
-   ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"), **cms**
+   **Seven** former microservices now run **inside** Backend/App (this line said **eight** and included
+   **roadrunner** until M257x iter-137 — roadrunner was *deleted*, not folded; there is no
+   `app/internal/roadrunner/` at any ref): **skiller** (July 2026), **skillpath**
+   ("skillpath-in-app", M502→M507), **jobsimulation** ("jobsim-in-app"), **cms**
    ("cms-in-app v8.0", app v1.360.0) and — the v9.0 "support-in-app" trio, whose containers `838d907`
    deleted — **storage**, **messenger** and **customerio-sync**. The federation is down to a **single
    subgraph**. `chronos` and `intelligence` are retired.
@@ -209,8 +215,8 @@ Archived / merged — **and since platform `d11a403` every one of them is out of
 may still exist on disk):
 
 > **⚠️ This table and the *Default local development set* table above used to overlap by design, and that
-> overlap has now closed.** CMS, Jobsimulation and Roadrunner appeared in **both**: merged into `app` (no
-> subgraph) **and**, until platform **`d11a403`** (2026-08-03,
+> overlap has now closed.** CMS, Jobsimulation and Roadrunner appeared in **both**: out of the supergraph
+> (no subgraph) **and**, until platform **`d11a403`** (2026-08-03,
 > *"chore(compose): drop roadrunner, prune dead env, repoint messenger"*), still started by the then-default
 > profile as unfederated husks. `d11a403` deleted all three compose services **and** all three `repos.yml`
 > entries in one commit — so at `0dab54d` none of them starts. (That commit's own message says roadrunner's
@@ -225,7 +231,7 @@ may still exist on disk):
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
 | **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`. **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, so at `0dab54d` there is nothing to start. **Prod teardown — M810 has LANDED for the ECS service**: `6092c6d2` deleted the `module "jobsimulation"` block, so the ECS service, task definition and ECR repository are destroyed (`jobsimulation/terraform/main.tf:15-22`). The module file survives owning only the LiveKit/Chime buckets, the SSM parameters and the atlas tracker; the legacy-schema drop is a separate, still-pending M810 step. **Do not read this row onto CMS** | [→](../services/jobsimulation.md) |
 | **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); the prod ECS service is **DESTROYED** (corrected M257x iter-127 — `infrastructure` @ `13c248e6` declares no `module "cms"`; `infrastructure/terraform/production/services.tf:64-70`). **This cell read *"not a settled rollback path — report both, assert neither"* on the strength of `cms/terraform/main.tf:39` `service_desired_count = 0`, which is orphaned dead code.** Corroborating, and correct all along, `6efa1d5` (merged `f38c0c4`, 2026-08-04) deleted cms's build-production workflow under *"the cms ECR repository is decommissioned (M810)"*, naming M810's deletion of `module.cms_euwest1`. **It HAS been applied — measured at `infrastructure` `13c248e6` (2026-08-07), M257x iter-123**: there is no `module "cms_euwest1"` declaration, and `terraform/production/services.tf:64-70` records the deletion and everything it destroyed. `cms/terraform/main.tf:39` is **orphaned dead code**. (This cell said *"not visible to this corpus — `infrastructure` has never been in any clone set"*; that was a clone-set limit, not a measurement limit, and the fix was to clone the repo.) See [`org-repos.md` § 3](org-repos.md). **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, and re-pointed `messenger`'s `CMS_RPC_ADDR` at `http://backend:8083` — **M809 has landed** (on **two** variables, this one and `JOBSIMULATION_RPC_ADDR`; not on all four — M257x iter-115). `838d907` (merged `0c91421`) then deleted the `messenger` service itself, so **no compose file sets `CMS_RPC_ADDR` at all** any more; prod teardown is **M810** | [→](../services/cms.md) |
-| **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL`. **Gone locally, orphaned in prod:** at platform `0c91421` there is **no `roadrunner` compose service at all** (deleted by `d11a403`; **5** services remain declared, 7 in the effective topology) while prod terraform still reads `= 1` | [→](../services/roadrunner.md) |
+| **Roadrunner** | **DELETED AND REPLACED, not merged** — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` from **inside the jobsimulation domain** (`app/internal/jobsimwiring/wiring.go:123`); **`app/internal/roadrunner/` exists at no ref and was never added** (0 commits ever @ `app` `ad9f3c498`). **Gone locally AND absent from production:** at platform `0c91421` there is **no `roadrunner` compose service at all** (deleted by `d11a403`; **5** services remain declared, 7 in the effective topology), and `infrastructure` @ `13c248e6` declares **ten** service modules in `terraform/production/services.tf` with **no `module "roadrunner"` among them**. **This cell read *"orphaned in prod … while prod terraform still reads `= 1`"* until M257x iter-137 — the half-applied repair the CMS row one line above already carried:** `roadrunner/terraform/main.tf:19` is an input to an **uninstantiated** module, i.e. orphaned dead code, exactly as `cms/terraform/main.tf:39` is. What survives in `infrastructure` is the **name**, in the `production_roadrunner_judge0_*` CI secrets that feed `module "backend_euwest1"` (`infrastructure/terraform/production/services.tf:384-385`) | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 
 #### Shared Libraries (Not Deployed)
@@ -346,13 +352,15 @@ User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)  
 Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
   → Connect-RPC to sentinel   (the only cross-process RPC edge out of backend on a core stack)
   → object storage in-process   (no storage container, no STORAGE_RPC_ADDR)
-  → cms / jobsimulation / roadrunner domains in-process   (no containers, no hops)
-  → Judge0 directly via JUDGE0_BASE_URL
+  → cms / jobsimulation domains in-process   (no containers, no hops)
+  → Judge0 directly via JUDGE0_BASE_URL   (wired INSIDE the jobsimulation domain —
+       there is no roadrunner domain; this line listed one until M257x iter-137)
   → Redis Streams for async events
 ```
 
-> `roadrunner` is **not** a gRPC hop from `backend` in either column — it was folded in with jobsim-in-app and
-> `backend` calls Judge0 directly. **Nor is `storage` one in EITHER column** — the production diagram above no
+> `roadrunner` is **not** a gRPC hop from `backend` in either column — it was **deleted** with jobsim-in-app
+> (*"folded in"* until M257x iter-137; there is no `app/internal/roadrunner/` at any ref) and
+> `backend` calls Judge0 directly from inside the jobsimulation domain. **Nor is `storage` one in EITHER column** — the production diagram above no
 longer lists it, because the edge is dead there too: `storage`'s ECS service block is **gone from terraform
 entirely**, and says so in-comment — at `9f8cb53` `storage/terraform/main.tf` is 18 lines (`:9-11`
 *"The ECS service that used to live here is GONE (v9.0 'support-in-app')"*), the module kept only so the

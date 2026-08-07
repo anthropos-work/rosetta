@@ -65,7 +65,9 @@ topology**, once `include: common.yml` adds the two always-on base services (`po
 (PR #26, 2026-08-05) — all three are now served in-process by `backend`. Corrected M257x
 iter-78 + iter-87, and fenced by `platform_predicate_guard` G10.
 
-> **Eight services were folded into `backend`.** `skiller`, `skillpath`, `roadrunner`,
+> **SEVEN services were folded into `backend`** (this said **eight** and included `roadrunner` until
+> M257x iter-137 — roadrunner was **deleted, not folded**; no `app/internal/roadrunner/` at any ref).
+> `skiller`, `skillpath`,
 > `jobsimulation` (jobsim-in-app), `cms` (cms-in-app v8.0), `storage` + `messenger`
 > (v9.0 support-in-app) and `customerio-sync` all run in-process inside `app`; their
 > compose services and profiles are gone, and the federation composes a single `backend`
