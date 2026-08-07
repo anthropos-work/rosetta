@@ -5,9 +5,7 @@
 > As of **cms-in-app v8.0** (`app` **v1.360.0**, July 2026), the standalone `cms` Go microservice has been
 > **merged into the `app` monolith** (the service the platform calls "backend"). CMS no longer runs as a
 > separate service **in production**. Its subgraph is gone from the supergraph, and its ECS service is
-> **scaled to zero, not deleted** — `cms/terraform/main.tf:39` `service_desired_count = 0` — and this is
-> the one M810 row whose **terraform module block** has not moved: do not read jobsimulation's teardown
-> onto it (`6092c6d2` destroyed that module's service block outright).
+> **DESTROYED — corrected M257x iter-127.** **RESOLVED at M257x iter-123/127 — the cms ECS service is DESTROYED.** `infrastructure` @ `13c248e6` declares **no `module "cms"` at all**, and `infrastructure/terraform/production/services.tf:64-70` records what the apply destroyed (ECS service, task definition, ECR repository, IAM roles, security group, Cloud Map entry, log group, alarms, the ten `/production/cms/*` SSM parameters). **`cms/terraform/main.tf:39` is ORPHANED DEAD CODE** — a `service_desired_count` in a module no root module instantiates describes nothing ([`org-repos.md` § 3](../architecture/org-repos.md)). The legacy **schema** drop is a separate, still-pending M810 step. **This banner read *"scaled to zero, not deleted … the one M810 row whose terraform module block has not moved"* until iter-127**, four days after the measurement that settled it.
 > **⚠️ But cms HAS taken an M810 step since, and the corpus's "it has not moved" was becoming stale:**
 > `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted** `.github/workflows/build-production.yml` under the
 > subject *"the cms ECR repository is decommissioned (M810)"*, its body stating that M810 *"deletes
@@ -77,10 +75,11 @@
 > * **Caching** — the Directus item cache still lives in its own Redis DB, `REDIS_CMS_CACHE_INDEX` (5).
 > * **Studio** — the Python `anthropos-studio-room` project is now pulled into the **`app`** image via the CI
 >   `additional_repo` mechanism (app v1.360.1), the same way `cms` used to do it.
-> * **Infrastructure** — **this repo's own module block has not moved**, and that is all that can be said
->   from here: `cms/terraform/main.tf:39` still reads `service_desired_count = 0` in an otherwise-whole
->   191-line module, so the image and task definition stay declared *in this repo* and a revert of *this
->   file* is a one-line change plus an apply. Jobsimulation's ECS service was destroyed outright at
+> * **Infrastructure** — **the ECS service is DESTROYED (iter-123, propagated iter-127).** This repo's own
+>   `cms/terraform/main.tf:39` still reads `service_desired_count = 0` in an otherwise-whole 191-line
+>   module, **and that describes nothing**: no root module instantiates it. *"That is all that can be said
+>   from here"* was true only while `infrastructure` was in no clone set — a **clone-set limit, not a
+>   measurement limit**, and the fix was to clone the repo. Jobsimulation's ECS service was destroyed outright at
 >   `6092c6d2`, and generalising that to `cms` is exactly the mistake
 >   [`platform-migration-status.md`](../architecture/platform-migration-status.md) fences.
 >   **⚠️ Do NOT extend "the module block has not moved" to "the rollback path is intact".** `6efa1d5`

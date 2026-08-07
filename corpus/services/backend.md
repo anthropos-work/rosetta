@@ -73,9 +73,11 @@
 >   *Redis Streams* under *Interface Discovery* below, and in the skiller fact-sheet's
 >   *No skiller container* bullet.
 >   Merge handlers with `.AddHandler(...)`; a second `AddSubscriber` on one stream overwrites the first.
-> * **The M810 prod teardown is UNEVEN — do not state the two together.** `cms`'s **terraform module block
->   has not moved**: it is still declared and takes no traffic (`cms/terraform/main.tf:39`
->   `service_desired_count = 0`, re-measured at `f38c0c4`). **But `cms` HAS taken an M810 step since, and
+> * **The M810 prod teardown has now LANDED for both — corrected M257x iter-127.** This bullet said the
+>   teardown was *"UNEVEN"* and that `cms`'s **module block has not moved**, on the strength of
+>   `cms/terraform/main.tf:39` `service_desired_count = 0`. **Retracted:** `infrastructure` @ `13c248e6`
+>   declares no `module "cms"`, and `infrastructure/terraform/production/services.tf:64-70` records the
+>   destruction. A service repo's own `service_desired_count` is not evidence of production state. **But `cms` HAS taken an M810 step since, and
 >   it cuts against the older reading:** `6efa1d5` (merged `f38c0c4`, 2026-08-04) **deleted**
 >   `.github/workflows/build-production.yml` with the subject *"the cms ECR repository is decommissioned
 >   (M810)"*, and its body states that M810 *"deletes `module "cms_euwest1"` from the platform's
