@@ -2150,3 +2150,30 @@ defect and would also explain why no amount of accessor work has helped.
   41/41 guard_family · 8/8 collection-fence · guard_family live **14 GREEN / 0 RED**, every count naming
   its invocation. **No reading was taken and no `N`/`P` movement is claimed** (§9's UNMEASURED rule).
   Gate unchanged at **4 of 5** — see iter-117/progress.md + decisions.md
+
+- iter-118 (tik · `iter_shape: census`, **`TOK-08` class 2 — platform-source citation resolution**):
+  **the fence was green over a subject it only two-thirds reached.** `anchor_construct_guard` already
+  reported *"675 resolved / 514 unresolvable"* and already NAMED its unresolvable heads — and nobody had
+  read inside the head. **119 of the 514 are not citations at all**: `http://sentinel:8087` matches the
+  qualified-anchor regex because `sentinel` is a path-ish head and `8087` is a line number (`http:` ×87,
+  `AUTHORIZATION_ADDRESS=http:` ×11, `GOTENBERG_URL=http:` ×11, a tail of `VAR=http:`). The fence was
+  grading its own coverage against a target inflated by things that could never resolve because they were
+  never citations — **iter-114's denominator-provenance rule arriving one layer over, inside the guard
+  that reports reach** — and it survived because the guard **printed no ratio at all**, so there was no
+  number to distrust. Now: **reach 675/1,070 = 63.1 %, denominator `citation-candidates-minus-non-citations`**,
+  with the 119 exclusions **counted and named** (a denominator that shrinks in silence is the same defect
+  facing the other way). **0 findings** — the class was and is clean over everything it resolves. The
+  genuine 395-site residual is now measured rather than hidden: `(bare)` ×276 (ports / continuations —
+  the same undecidable shape class 1 measured), `main.go` ×27 (every Go repo has one), ~92 single-file
+  basenames; the repo-disambiguation rule that would reach most of them is **routed, not attempted**
+  (`FIX-M257x-iter118-bare-basename-needs-repo-disambiguation`). Controls are asymmetric on purpose:
+  when a fix REMOVES from a denominator, **anti-vacuity is the load-bearing half** — six real citation
+  shapes must STAY in, including `app/internal/httpclient/do.go`, a genuine path containing *http*.
+  Side-deliverable: `test_iter45_mechanical_fences::test_21` hard-coded a four-fence baseline set and
+  broke on every fence that joined the ratchet; it now DERIVES the set from disk (iter-44's own lesson
+  applied to the test guarding it) with an anti-vacuity floor. Tests 83/83 · 6/6 · 19/19 · 41/41 · 27/27 ·
+  8/8, guard_family live **14 GREEN / 0 RED**, every count naming its invocation. **The full mechanical
+  sweep `TOK-08` pre-registered is COMPLETE** — class 1 at 100 % reach, class 2 at 63.1 %, both at 0
+  findings, class list fixed in iter-117 and unchanged — **so iter-119 is the grading reading**, branch
+  `P >= 19` refuted / `P <= 18` working against `P = 37` at `f581de09`. **No reading taken this iter and
+  no `N`/`P` movement is claimed.** Gate unchanged at **4 of 5** — see iter-118/progress.md + decisions.md
