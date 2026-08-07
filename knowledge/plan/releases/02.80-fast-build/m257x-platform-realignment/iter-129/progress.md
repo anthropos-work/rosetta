@@ -198,10 +198,33 @@ the re-audit was owed.
 
 ### 3b. The `fix = 0` complement — read for falsity
 
-The 820 were sliced by file into four balanced sets (`comp-slice-1…4.txt`, partition asserted) and read
-against source at refs. **`fix = 0` was 0-because-unread; it is no longer.** The read's own result and its
-denominator are in § 4 below, and its findings join the same routed residual — kept in **the complement's
-own accounting**, never added to clause 5's.
+The 820 were sliced by file into four balanced sets (`comp-slice-1…4.txt`, `sum == 820` asserted) and read
+against source at refs. **`fix = 0` was 0-because-unread. It is no longer zero.**
+
+| | read | **FALSE / materially misleading** | UNCHECKABLE |
+|---|---|---|---|
+| slice 1 (`service_taxonomy`, `ai_architecture`, `shared_libraries`, `dependency_map`, `jobsimulation`, `coursebuilder`, `cms`, `security_compliance`) | 205 | **6** | 18 |
+| slice 2 (`external_services`, `studio-desk`, `architecture_overview`, `org-repos`, `frontend_architecture`, `hiring`, `gotenberg`, `clerk-integration`) | 204 | **8** | 20 |
+| slices 3–4 | 411 | **not in the record — the reads were still running at close** | — |
+| **reported** | **409 of 820 (49.9 %)** | **≥ 14** | 38 |
+
+**Quote it as a floor with its denominator: ≥ 14 false claims over 409 read = ≥ 3.4 % on the read half,
+`fix` over the full 820 still a floor.** Two slices did not return before close and **their absence is
+stated rather than filled** — a 2-of-4 read reported as if it were 4-of-4 is exactly the substitution this
+milestone exists to catch. Routed as `FIX-M257x-iter129-complement-slices-3-4`.
+
+Four of slice 1's six cluster in **one** place — the *Embeddings & RAG* section of `ai_architecture.md`,
+which is that document's own EU-residency argument: the embeddings client is **Azure EU, not OpenAI** (17
+call sites, `skillerai.Openai` returns **0** repo-wide); the folded `ai.AI` interface is **not**
+*"unchanged"* (9 methods → 8, and **Mistral is no longer an implementation** — it moved to
+`internal/cms/studio/mistralocr`); there is **no Anthropic/Bedrock path in the skiller domain** at all
+(`getClient` rejects that vendor); and the match cache is **Postgres, not Redis**. Slice 2's sharpest is a
+**runnable instruction for a component destroyed in both states** (`external_services.md:806`, under a
+heading with no retraction while the same page's banner at `:3` retracts it) and a **Directus webhook setup
+line that produces a webhook rejecting every delivery** — the endpoint is **fail-closed on a shared secret**
+the line never mentions, and the sender is a Directus **Flow**, not the Webhooks module (deleted in
+Directus 11). All findings carry `file:line` on both sides and join the routed residual, **in the
+complement's own accounting, never added to clause 5's**.
 
 ---
 

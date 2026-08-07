@@ -2069,3 +2069,55 @@ already dispatched under the old behaviour are quarantined by name and excluded 
 **per file** so debt cannot be shuffled under a flat total. It is the only mechanism in this milestone
 that acts on tier 2 at all. Regenerating the baseline requires a recorded reason — the file says so in its
 own `_doc`.
+
+---
+
+## `D-M257x-129-1` — `/api/invitations` is **token-authenticated, deliberately pre-login**; no defect filed
+
+iter-128 booked it as *"no authentication at all"*, citing the **mount comment** (`web.go:145-146`,
+*"no auth required"*). Settled at `app` `ad9f3c498` from the `RegisterRoutes` **call site** and the
+manager: `cors` is genuinely the only middleware and Clerk's absence is intentional (next-web renders the
+invite/unsubscribe pages before the caller has an account), **but the path segment is a required
+credential** — `base64url(HMAC-SHA256(email|org_id|invited_at, INVITATION_HMAC_SECRET))`,
+`token.go:29-34` — **checked before any disclosure** (`invite.go:159`, `:194`; a miss is `404 not_found`).
+The mechanism is a **stored bearer capability, not a re-verified signature**: `ValidateToken` (`token.go:38`)
+is called by nothing outside its own test, measured repo-wide. Both handlers bypass Ent privacy on purpose
+and say why: *"token possession is the authorization"* (`:154-155`, `:187-188`).
+
+**Decision: correct the corpus, file nothing.** The design is stated, the credential is required, and what
+it gates is the content of the invitation it was mailed with. **A comment is testimony; the call site is
+evidence** — rule 22's distinction, applied to code comments.
+
+## `D-M257x-129-2` — the out-of-census sweep is booked to the USER'S ASK, **never to clause 5**
+
+Clause 5 names `corpus/services/**` + `corpus/architecture/**`. The 724 unevidenced consequence assertions
+in `CLAUDE.md` + `corpus/ops/**` + `corpus/tools/**` are **outside it and stay outside it**: the clause is
+not re-cut, not widened, and no repair count from this sweep is added to its numbers. What justifies the
+work is the user's standing ask — *the corpus, the skills and rext aligned to the platform* — under which a
+false security sentence in `corpus/ops/**` misleads exactly as much as one inside clause 5's scope.
+**`F4` binds:** the census is an instrument; treating it as clause 5's grader is a defect of the iter that
+does so.
+
+## `D-M257x-129-3` — the `state.md` body budget is raised **once, against a measurement**, with a guard
+
+The old triple was arithmetically incoherent (`12,000 + 2,600 = 14,600 ≠ 15,360` — 760 bytes owned by no
+budget). New: **body ≤ 13,500, frontmatter ≤ 1,860**, summing exactly to the unchanged 15,360 file cap.
+13,500 = the measured floor (13,069 across the 11 sections after both ownership moves) + ~1.7 %.
+
+**Why this is not "raise the budget until it fits":** iter-128 concluded the budget was unmeetable by the
+contract's own method after probing **two** files; re-measured, **four of its seven orphans had owners**
+(`roadmap.md` ×3, `platform-defect-register.md` ×1) and a fifth had a designated home the probe never
+asked about (the milestone's own `progress.md`). **A mirror-search finds only content that is already
+duplicated — exactly the content that does not need moving.** The three genuine orphans and the M255
+provenance were moved before the budget was touched. The **re-raise guard** (written into
+`context.md`): a future breach re-runs the ownership probe against **every** file under `knowledge/plan/`,
+not two of them, and the per-field budgets remain the real control.
+
+## `D-M257x-129-4` — a mirror-write instruction is **retracted, not re-qualified**
+
+Where the ops corpus told a seeder author to co-write a `local_*` MIRROR row, the repair does not soften the
+wording to *"formerly"* — it states that **the table was dropped and there is nothing to write**
+(`app` `20260729133514.sql:62-63`). A re-qualified instruction still reads as an instruction; the
+`content-stories-routes.md` retraction records what the softer form cost — *"six seeders failed on every
+host"*. The **render-gate warning those bullets existed to give is preserved**, because it survives its
+mechanism: the manager scoreboard is still blank if the canonical row is missing.
