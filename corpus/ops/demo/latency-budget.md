@@ -362,8 +362,13 @@ Contract:
   > http.Redirect(w, r, loc, http.StatusSeeOther)                  // :423
   > ```
   >
-  > `grep -n "redirect_url" clerkenstein/clerk-frontend/*.go` returns **one** non-test occurrence — that
-  > `:414` read. There is no origin allowlist anywhere in the file; the only `Origin` handling is
+  > `grep -n "redirect_url" clerkenstein/clerk-frontend/*.go` returns **22 lines across four files**, of
+  > which **three sit outside `_test.go`** — and **exactly one is CODE**: the `:414` read. ⚠️ **This
+  > receipt said *"returns one non-test occurrence"* until M257x iter-140, and run verbatim it does not:**
+  > the other two non-test lines are **comments** in the same file (`:150`, `:155`) describing the very
+  > handshake bounce this paragraph is about. **The conclusion is untouched — there is one code
+  > occurrence — but the number was written from the conclusion rather than from the command's output**,
+  > which is the defect: a reader who runs it sees 22 and stops trusting the paragraph. There is no origin allowlist anywhere in the file; the only `Origin` handling is
   > `corsMiddleware`, which **reflects** whatever Origin it is sent (`:214-217`) rather than checking it.
   >
   > **Why this correction is load-bearing, not pedantry.** The bullet credited the Clerkenstein mock with a
