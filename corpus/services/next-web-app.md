@@ -77,7 +77,7 @@
 
 ## Dependencies
 
-* **Downstream**: the GraphQL endpoint on `backend` (`:8082/graphql/query`; in prod, the router), backend `app` API (`:8082`), Clerk, PostHog (EU), Sentry/Better Stack, Stripe (billing), Bunny CDN (thumbnails + Chime recordings, token-signed), Metabase (embedded analytics), Azure OpenAI/OpenAI (server AI routes).
+* **Downstream**: the GraphQL endpoint on `backend` (`:8082/graphql/query`; **in prod the router is destroyed — iter-124 — and where the deployed frontends now point is Vercel runtime config this corpus cannot read**), backend `app` API (`:8082`), Clerk, PostHog (EU), Sentry/Better Stack, Stripe (billing), Bunny CDN (thumbnails + Chime recordings, token-signed), Metabase (embedded analytics), Azure OpenAI/OpenAI (server AI routes).
 * **Upstream**: end users / browsers; WordPress (embeds `apps/integration`); Vercel (prod hosting); platform compose service `next-web-app` (containerized Workforce variant).
 
 ## Local Development

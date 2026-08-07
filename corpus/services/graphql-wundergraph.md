@@ -23,8 +23,10 @@
 > not 2 → 1. `supergraph-config-prod.yaml` lists `backend` alone and `schemas/` holds
 > `backend.graphqls` alone.
 >
-> Everything below the fold describes the gateway **as it still exists in production and in the archived
-> repo**. Read [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md)
+> Everything below the fold describes the gateway **as it USED to exist** — in the archived repo, and in
+> production until `module.wundergraph_euwest1` was destroyed (`infrastructure/terraform/production/services.tf:509-517`
+> @ `13c248e6`; the fold above carries the derivation). **This sentence said *"as it still exists in
+> production"* until M257x iter-124**, one screen below the corrected cell. Read [`../architecture/platform-migration-status.md`](../architecture/platform-migration-status.md)
 > — the fenced map — before acting on any local-development instruction on this page.
 
 > Service-level / developer map for the federated GraphQL gateway. For the
@@ -53,9 +55,9 @@
   skill-path session, simulation and content types/queries alike.
 * **Key Functions**:
   * Compose `app` (subgraph name `backend`) — the only entry in `supergraph-config-*.yaml`; `subgraphs.conf` carries a single `BACKEND=` pin.
-  * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talks to. **In production
-    only** — since platform `2adcf71` there is no router in compose, and locally the frontends talk to
-    `backend` at `:8082/graphql/query`.
+  * Serve the unified `/graphql` endpoint that every frontend and Studio-Desk talked to. **Past tense in
+    both states (iter-124)** — since platform `2adcf71` there is no router in compose, the frontends talk to
+    `backend` at `:8082/graphql/query`, and the production module is destroyed.
   * ~~Carry the jobsimulation GraphQL **subscriptions** over Server-Sent Events (`sse_post`)~~ —
     **HISTORICAL, and there is nothing to carry today.** The `subscription: protocol: "sse_post"`
     block sat on the `jobsimulation` entry alone and died with that entry at `915da06`; no
@@ -169,8 +171,9 @@ configs still contain these rows and a reader will find them there.
 
 ## Dependencies
 
-* **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile. **In production** they
-  hit the router; **locally they hit `backend` directly** at `:8082/graphql/query`
+* **Upstream consumers**: every GraphQL client — `next-web-app`, `studio-desk`, mobile. **They hit `backend`
+  directly** at `:8082/graphql/query` locally; the production router they used to hit is destroyed (iter-124),
+  and **where the deployed frontends now send GraphQL is Vercel runtime configuration this corpus cannot read**
   (`docker-compose.yml:135` studio-desk's `VITE_GRAPHQL_ENDPOINT`, `:160` next-web-app's
   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — each also baked as a build arg, at `:119` and `:151`), because
   the router service no longer exists in compose. Those line numbers move on every compose

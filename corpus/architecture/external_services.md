@@ -1,6 +1,6 @@
 # External Services & Integrations
 
-> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+> **⚠️ THE ROUTER IS GONE IN BOTH STATES — corrected M257x iter-124 (v2.8).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** **And it is DESTROYED in production too**: `module.wundergraph_euwest1` is deleted from `infrastructure/terraform/production/services.tf` @ `13c248e6`, whose `:509-517` records that the apply destroyed *"its ECS service, task definition, target group, ALB rule (priority 810), Cloud Map entry, log group, ACM cert and the `wundergraph.anthropos.work` alias"* — ECR hand-deleted **2026-08-05**, *"so production-wundergraph is gone and this block is now inert."* **This banner said *"in production the router is still declared"* until iter-124**, citing `graphql-wundergraph/terraform/main.tf:20` `= 1` — **orphaned dead code**: a `service_desired_count` in a repo whose module no root module instantiates describes nothing ([`org-repos.md` § 3](org-repos.md)). The repo is **ARCHIVED on GitHub (2026-07-30)**. The supergraph was **ONE** subgraph — `backend` — since `915da06` (2026-07-29). **Where production's frontends now send GraphQL is NOT something this corpus can see** — that is Vercel runtime configuration, in no clone set. The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
 
 
 This document describes all external services and third-party integrations used by the Anthropos platform. These are services the platform **depends on** but does not directly maintain in the core codebase.
@@ -364,7 +364,7 @@ Directus can trigger webhooks on content changes:
 | **Type** | Configured third-party (Dockerized) |
 | **Technology** | [WunderGraph Cosmo Router](https://cosmo-docs.wundergraph.com/router) (Go binary, image `ghcr.io/wundergraph/cosmo/router:0.275.0`) — Apollo Federation v2 |
 | **Composition tool** | `wgc@0.104.0` (WunderGraph Cosmo CLI) — runs at Docker build time |
-| **Port** | **8080** everywhere the router still runs — container and ECS alike (`terraform/locals.tf:8` `port = 8080`, `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). `5050` was **only** the local compose host mapping (`"5050:8080"`), deleted with the service — **there is no `:5050` on a local stack** |
+| **Port** | **8080** everywhere the router *ran* — container and ECS alike (`terraform/locals.tf:8` `port = 8080`, `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). **Past tense since M257x iter-124: it runs nowhere.** `5050` was **only** the local compose host mapping (`"5050:8080"`), deleted with the service — **there is no `:5050` on a local stack** |
 | **Purpose** | Federated GraphQL API gateway — **over ONE subgraph (`backend`) since `915da06`**, and **prod-only** since platform `2adcf71` deleted it from local dev |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph` |
 
@@ -400,7 +400,7 @@ graph TB
     end
 
     subgraph Gateway
-        WG[GraphQL — backend :8082/graphql/query locally; Cosmo Router :8080 in prod]
+        WG[GraphQL — backend :8082/graphql/query; the Cosmo Router is destroyed in both states, iter-124]
     end
 
     subgraph Subgraphs[1 GraphQL Subgraph]

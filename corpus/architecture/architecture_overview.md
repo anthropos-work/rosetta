@@ -1,6 +1,6 @@
 # Anthropos Architecture Overview
 
-> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+> **⚠️ THE ROUTER IS GONE IN BOTH STATES — corrected M257x iter-124 (v2.8).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** **And it is DESTROYED in production too**: `module.wundergraph_euwest1` is deleted from `infrastructure/terraform/production/services.tf` @ `13c248e6`, whose `:509-517` records that the apply destroyed *"its ECS service, task definition, target group, ALB rule (priority 810), Cloud Map entry, log group, ACM cert and the `wundergraph.anthropos.work` alias"* — ECR hand-deleted **2026-08-05**, *"so production-wundergraph is gone and this block is now inert."* **This banner said *"in production the router is still declared"* until iter-124**, citing `graphql-wundergraph/terraform/main.tf:20` `= 1` — **orphaned dead code**: a `service_desired_count` in a repo whose module no root module instantiates describes nothing ([`org-repos.md` § 3](org-repos.md)). The repo is **ARCHIVED on GitHub (2026-07-30)**. The supergraph was **ONE** subgraph — `backend` — since `915da06` (2026-07-29). **Where production's frontends now send GraphQL is NOT something this corpus can see** — that is Vercel runtime configuration, in no clone set. The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
 
 
 This document provides a high-level overview of the Anthropos platform architecture.
@@ -42,8 +42,9 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
-    *   **GraphQL/Cosmo Router**: API federation gateway **(prod only — deleted from local dev at
-        platform `2adcf71`)**
+    *   ~~**GraphQL/Cosmo Router**~~: the former API federation gateway — **GONE IN BOTH STATES.**
+        Deleted from local dev at platform `2adcf71`; **DESTROYED in production**, `module.wundergraph_euwest1`
+        deleted from `infrastructure/terraform/production/services.tf:509-517` @ `13c248e6` (corrected iter-124)
     *   **AI Providers**: OpenAI, Anthropic, Mistral — EU-resident clients by default, **not** an EU-first
         fallback ladder (see [AI Providers](#external-service-integration) below)
     *   **LiveKit**: Real-time voice engine for simulations
@@ -59,8 +60,9 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ~16.2.12` — a tilde range, not a caret — in the four `apps/*` that declare it: `web`, `hiring`, `integration`, `maintenance`; `apps/mobile` declares no `next`. Lockfile resolves `16.2.12`, at `next-web-app` `8297c684`)
 - **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
-- **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router — **prod only**; local dev talks to
-  `backend` directly), gRPC/Connect-RPC (internal), Protocol Buffers
+- **APIs**: GraphQL served **by `backend` itself** (`:8082/graphql/query`); the WunderGraph Cosmo Router
+  that used to federate it is deleted from local dev **and destroyed in production** (iter-124), and the
+  supergraph had already been **one** subgraph since `915da06`. gRPC/Connect-RPC (internal), Protocol Buffers
 - **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
 - **CMS**: Directus (self-hosted, headless)
 - **Infrastructure**: AWS ECS EC2 (EU-West-1 primary), Terraform IaC, Vercel (frontend)
@@ -68,7 +70,7 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `core` profile):
-1. **Core Backend Services**: Backend/App (the monolith) and Sentinel, plus Gotenberg (third-party PDF service). Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them locally** — platform `2adcf71` deleted the service; it survives in production only. So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
+1. **Core Backend Services**: Backend/App (the monolith) and Sentinel, plus Gotenberg (third-party PDF service). Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them anywhere** — platform `2adcf71` deleted the local service, and the production module was **destroyed** (`infrastructure/terraform/production/services.tf:509-517`; corrected M257x iter-124, where this sentence said *"it survives in production only"*). So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
 
    **Eight** former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app"), **cms**
@@ -76,7 +78,8 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
    deleted — **storage**, **messenger** and **customerio-sync**. The federation is down to a **single
    subgraph**. `chronos` and `intelligence` are retired.
 2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is embedded in the **`app` (backend) image** since cms-in-app — it was in the cms container before the merge.
-3. **External Services**: Clerk, Directus, GraphQL (**prod only**), AI providers, LiveKit, AWS Chime
+3. **External Services**: Clerk, Directus, AI providers, LiveKit, AWS Chime. **The Cosmo Router is no longer
+   one of them in either state** — deleted from local dev at `2adcf71`, destroyed in production (iter-124)
 4. **Shared Libraries**: **four** imported private modules — colony, proto, ai, taxonomy (not deployed; pulled at Docker build). **`authn` is not a fifth**: it ships inside colony as `colony/authn`, and no service's `go.mod` requires the standalone module — 0 hits for `github.com/anthropos-work/authn` across all seven Go clones, against a positive control of `colony` required by all seven
 5. **Production-only / not in local compose**: db-backup, archived Chronos/Intelligence
 
@@ -86,7 +89,7 @@ Services communicate via **Connect-RPC/HTTP** for synchronous operations and **R
 graph TD
     subgraph External["🌐 External Services"]
         Clerk[Clerk Auth]
-        GraphQL["GraphQL / Cosmo Router<br/>PROD ONLY — deleted from local dev<br/>at platform 2adcf71"]
+        GraphQL["GraphQL / Cosmo Router<br/>REMOVED — deleted from local dev at 2adcf71<br/>and DESTROYED in production (iter-124)"]
     end
     
     subgraph Frontend["🖥️ Frontend Applications"]
@@ -117,8 +120,8 @@ graph TD
     %% Frontend connections
     Web --> Clerk
     Hiring --> Clerk
-    Web -.->|prod only| GraphQL
-    Hiring -.->|prod only| GraphQL
+    Web -.->|removed — was prod| GraphQL
+    Hiring -.->|removed — was prod| GraphQL
     Web -->|local: :8082/graphql/query| Gateway
     Hiring -->|local: :8082/graphql/query| Gateway
     
@@ -127,10 +130,12 @@ graph TD
     Desk -->|local: :8082/graphql/query| Gateway
     Gateway -.->|runs studio/gen.py in-process, argv exec — no shell| Room
     
-    %% Router aggregation — PROD ONLY. ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation
-    %% entries in one commit (a 3 → 1 step) — the jobsimulation subgraph outlived jobsim-in-app.
-    %% Locally there is no router at all: the frontends and studio-desk hit Gateway directly (edges above).
-    GraphQL -.->|prod only| Gateway
+    %% Router aggregation — HISTORICAL. The router is gone in BOTH states as of iter-124: deleted from
+    %% local dev at 2adcf71, and module.wundergraph_euwest1 destroyed in infrastructure @ `13c248e6`,
+    %% terraform/production/services.tf:509-517.
+    %% ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation entries in one commit (a 3 → 1 step).
+    %% Everywhere now, the frontends and studio-desk hit Gateway directly (edges above).
+    GraphQL -.->|removed| Gateway
 
     %% Core service dependencies
     Gateway --> Sentinel
@@ -248,7 +253,7 @@ may still exist on disk):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | **prod only** — deleted from compose at platform `2adcf71` | Apollo Federation v2 gateway, **ONE** subgraph (`backend`) since `915da06` | [→](../services/graphql-wundergraph.md) |
+| ~~**GraphQL/Cosmo Router**~~ | **REMOVED IN BOTH STATES** — deleted from compose at platform `2adcf71`; ECS module destroyed in production (`infrastructure` `services.tf:509-517`, corrected iter-124) | *was* an Apollo Federation v2 gateway, **ONE** subgraph (`backend`) since `915da06` | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
@@ -285,7 +290,7 @@ may still exist on disk):
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 
 #### Frontend/Studio → Backend
-*   **Primary**: GraphQL — **`backend` directly on a local stack** (`:8082/graphql/query`), via the Cosmo Router in prod. Apollo Federation v2 with **one** subgraph
+*   **Primary**: GraphQL — **`backend` directly** (`:8082/graphql/query` locally). The Cosmo Router is gone in both states (iter-124), and the supergraph was **one** subgraph (`backend`) before it went
 *   **Direct**: Some services expose REST endpoints for specific use cases
 
 #### External Service Integration
@@ -323,10 +328,13 @@ For detailed integration patterns, see [External Services](./external_services.m
 
 A typical API request follows this path:
 
-**In production** (the router still exists there — `graphql-wundergraph/terraform/main.tf:20` `= 1`):
+**In production, HISTORICALLY** — this is the shape while the router existed. It was **destroyed**
+(`infrastructure/terraform/production/services.tf:509-517` @ `13c248e6`, corrected iter-124), so the
+`Cosmo Router` hop below is no longer taken. **What replaced it in the production request path is NOT
+something this corpus can see**: the frontends' endpoint is Vercel runtime configuration, in no clone set.
 
 ```
-User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)
+User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)   ← DESTROYED, iter-124
   → backend (the sole subgraph)
     → Connect-RPC to internal services (sentinel)
     → Redis Streams for async events
@@ -439,7 +447,13 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 *   **IaC**: Terraform for all infrastructure provisioning
 *   **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private subnet access; Git tags trigger deployments
 *   **Monitoring**: CloudWatch (metrics, dashboards, alarms), Sentry (errors, performance, cron monitoring), PostHog (analytics), Better Stack (incident escalation, uptime)
-*   **Backups**: Full DB backups every 6 hours to S3, Azure, and Hetzner (Germany); RDS point-in-time recovery
+*   **Backups**: **RDS Multi-AZ + an hourly AWS Backup plan with PITR** carries durability. The separate
+    `db-backup` job — **Bash, `pg_dump` → S3 + a Hetzner Storage Box, two destinations, never Azure** — is
+    deployed but **untriggered**: its EventBridge rule has been commented out since `7dd1b80` (2025-05-29)
+    and production pins that commit. **This line read *"every 6 hours to S3, Azure, and Hetzner"* until
+    M257x iter-124** — wrong on the cadence (the disabled value was `rate(12 hours)`; *"6 h" never had a
+    source*), on Azure (which has never existed in that repo) and on the fact that anything fires at all.
+    What is lost is the **offsite, non-AWS leg**, not durability. See [`db-backup.md`](../services/db-backup.md)
 *   **Health**: ECS health checks every 30 seconds with automated rollback on failure
 
 For security, compliance, and data protection details, see [Security & Compliance](./security_compliance.md).

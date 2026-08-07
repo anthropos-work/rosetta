@@ -1,6 +1,6 @@
 # Anthropos Service Taxonomy
 
-> **⚠️ Router status, two states (v2.8 M257x).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** In *production* the router is still declared (`graphql-wundergraph/terraform/main.tf:20` `= 1`), though **the repo is ARCHIVED on GitHub (2026-07-30)**. And the supergraph is **ONE** subgraph — `backend` — since `915da06` (2026-07-29). The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+> **⚠️ THE ROUTER IS GONE IN BOTH STATES — corrected M257x iter-124 (v2.8).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** **And it is DESTROYED in production too**: `module.wundergraph_euwest1` is deleted from `infrastructure/terraform/production/services.tf` @ `13c248e6`, whose `:509-517` records that the apply destroyed *"its ECS service, task definition, target group, ALB rule (priority 810), Cloud Map entry, log group, ACM cert and the `wundergraph.anthropos.work` alias"* — ECR hand-deleted **2026-08-05**, *"so production-wundergraph is gone and this block is now inert."* **This banner said *"in production the router is still declared"* until iter-124**, citing `graphql-wundergraph/terraform/main.tf:20` `= 1` — **orphaned dead code**: a `service_desired_count` in a repo whose module no root module instantiates describes nothing ([`org-repos.md` § 3](org-repos.md)). The repo is **ARCHIVED on GitHub (2026-07-30)**. The supergraph was **ONE** subgraph — `backend` — since `915da06` (2026-07-29). **Where production's frontends now send GraphQL is NOT something this corpus can see** — that is Vercel runtime configuration, in no clone set. The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
 
 
 This document explains the three-tier service architecture of the Anthropos platform, categorizing all services by their deployment model, technology stack, and operational characteristics.
@@ -396,14 +396,14 @@ baked against `backend`.)
 > content-self-contained. It's **demo-default / dev-opt-in (`--local-content`)** and lives entirely in the
 > stack-ops tooling. See [`corpus/ops/directus-local.md`](../ops/directus-local.md).
 
-#### GraphQL/Cosmo Router — **HISTORICAL / PROD-ONLY**
+#### GraphQL/Cosmo Router — **HISTORICAL, IN BOTH STATES**
 
 > **⚠️ Not a local service.** Platform `2adcf71` (2026-07-31) deleted the `graphql` compose service **and** the
 > `graphql-wundergraph` `repos.yml` entry; the GitHub repo was **archived 2026-07-30** (a dated snapshot — see
 > the archive-state note above the *Archived / merged* table — the **⚠️ *"Two different fates shared this
 > table"*** blockquote, **named, not pinned** (this said `:142`, which at M257x iter-120 was a middle line of that blockquote, not its start); the clone is consistent with it, no commit after that date). **There is no `:5050` on
 > a local stack** — the frontends and studio-desk hit `backend` at `:8082/graphql/query`. The table below
-> describes the router as it still exists **in production** (`graphql-wundergraph/terraform/main.tf:20` `= 1`)
+> describes the router as it **used to exist**. **It exists nowhere now — corrected iter-124**: `module.wundergraph_euwest1` was destroyed (`infrastructure/terraform/production/services.tf:509-517` @ `13c248e6`), and the `graphql-wundergraph/terraform/main.tf:20` `= 1` this line used to cite is orphaned dead code
 > and in the archived repo; **do not follow it as a local-development instruction.** Consistent with the
 > *"**There is no `graphql` profile**, and no cms / …"* sentence in the **Tier 1** deep-dive section above —
 > **named, not pinned** (this said `:67-68`, which at M257x iter-120 was the *Communication* + *Database*
@@ -413,7 +413,7 @@ baked against `backend`.)
 | Property | Value |
 |:---------|:------|
 | **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
-| **Port** | **8080** everywhere the router still runs — container and ECS alike (`terraform/locals.tf:8` `port = 8080`; `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). **`5050` was never a production port** — it was only the LOCAL compose host mapping `"5050:8080"`, deleted with the service at `2adcf71` |
+| **Port** | **8080** everywhere the router *ran* — **past tense since iter-124; it runs nowhere** — container and ECS alike (`terraform/locals.tf:8` `port = 8080`; `terraform/main.tf:48-49` maps container 8080 → host 8080; `config.prod.yaml:5` `listen_addr: 0.0.0.0:8080`). **`5050` was never a production port** — it was only the LOCAL compose host mapping `"5050:8080"`, deleted with the service at `2adcf71` |
 | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
 | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
 | **Subgraphs** | **`backend` alone (1)**. The measured ladder in `supergraph-config-prod.yaml`: **5** (backend, skiller, jobsimulation, cms, skillpath) → **4** at `749dc86` (2026-06-24, skiller removed) → **3** at `7c17e63` (2026-07-21, skillpath folded in) → **1** at `915da06` (2026-07-29), which deleted `cms.graphqls` **and** `jobsimulation.graphqls` in a single commit. cms-in-app is therefore the **3 → 1** step, not "2 → 1" — the jobsimulation subgraph outlived jobsim-in-app and was removed here |
@@ -523,4 +523,4 @@ Use `docker compose --profile <name> config --services` to verify the actual mem
 | **Standalone Internal Apps** | Ant Academy | Next.js 16 + Expo (TypeScript / JavaScript) | Standalone, Vercel-deployed; not in docker-compose | GitHub repo `ant-academy` — **not** in `repos.yml`, so **not** cloned by `make init` (demo: explicit `ensure-clones.sh` clone; dev: manual) |
 | **Production-only** | db-backup | **Bash** (Alpine) | an ECS **task definition with no live trigger** — the schedule is commented out (`7dd1b80`, 2025-05-29) | GitHub repo |
 | **Archived / merged** | Chronos, Intelligence, Skiller (merged into app in July 2026), Skillpath (merged into app, M502→M507), **CMS, Jobsimulation and Roadrunner** (merged into app; their compose services and `repos.yml` entries deleted by `d11a403`), **Storage, Messenger and CustomerIO Sync** (merged into app in the v9.0 "support-in-app" program; their compose services deleted by `838d907`, which also took `storage` + `messenger` out of `repos.yml` — `customerio-sync` was never in it) | Go | Removed from local orchestration | GitHub repos still exist |
-| **External** | Clerk, Directus, Cosmo Router (**prod only** — see the banner at the top of this file), AI providers, LiveKit, AWS Chime | Various | SaaS / Docker | Configuration-driven |
+| **External** | Clerk, Directus, AI providers, LiveKit, AWS Chime. **The Cosmo Router is not among them in either state** — deleted from local dev at platform `2adcf71`, and its production module destroyed (`infrastructure/terraform/production/services.tf:509-517` @ `13c248e6`; corrected M257x iter-124, where this cell read *"Cosmo Router (**prod only**)"*) | Various | SaaS / Docker | Configuration-driven |

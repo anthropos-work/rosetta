@@ -10,7 +10,7 @@ Key guarantees:
 - EU data residency (primary)
 - Multi-tenant data isolation at database, authorization, and identity layers
 - 90-day auto-deletion of personal data post-contract
-- Full DB backups every 6 hours to three geographically separate locations
+- Durability is **RDS Multi-AZ + an hourly AWS Backup plan with PITR**. The separate offsite `db-backup` job is **deployed but untriggered** since `7dd1b80` (2025-05-29) — **this line read *"full DB backups every 6 hours to three geographically separate locations"* until M257x iter-124**, and every element of it was wrong: two destinations not three, never Azure, no cadence at all (the disabled value was `rate(12 hours)`; *"6 h"* never had a source), and nothing fires it. See [`db-backup.md`](../services/db-backup.md)
 - No direct SSH to production; all access via Tailscale VPN
 
 ---
@@ -233,8 +233,8 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 
 | Aspect | Detail |
 |:-------|:-------|
-| **Full backups** | Every 6 hours → S3, Azure, Hetzner (Germany) |
-| **Point-in-time recovery** | RDS automated backups |
+| **Full backups** | **Not currently running.** The `db-backup` job (**Bash**, `pg_dump` → **S3 + a Hetzner Storage Box — two destinations, never Azure**) is deployed but its EventBridge trigger has been commented out since `7dd1b80` (2025-05-29), and production pins that commit. **This row read *"Every 6 hours → S3, Azure, Hetzner (Germany)"* until M257x iter-124.** [`db-backup.md`](../services/db-backup.md) |
+| **Point-in-time recovery** | RDS automated backups + an **hourly AWS Backup plan** — this, not the offsite job, is what carries durability today. What the stalled `db-backup` job costs is the **offsite, non-AWS leg**, not recoverability |
 | **Primary region** | EU-West-1 (Ireland) |
 | **DR site** | US AWS region |
 | **Deployment** | Multi-AZ with auto-scaling |

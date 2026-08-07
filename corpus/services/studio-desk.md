@@ -56,7 +56,7 @@ Studio-Desk is a **full-stack TypeScript application** with:
 graph LR
     User[Content Creator] --> Frontend[Vite multi-page frontend :9100]
     Frontend --> Backend[Express Backend :9000]
-    Frontend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is prod-only]
+    Frontend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is destroyed in both states]
     Backend --> DirectusREST[(Directus REST — Bearer DIRECTUS_TOKEN)]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
@@ -143,7 +143,7 @@ A builder for learning skill paths, served at `/builder-skill-path` (`app/builde
 
 #### GraphQL Integration
 
-Studio-Desk connects to the platform's GraphQL endpoint for data operations — **`backend` directly since platform `2adcf71`; the Cosmo Router survives in production only**:
+Studio-Desk connects to the platform's GraphQL endpoint for data operations — **`backend` directly since platform `2adcf71`; the Cosmo Router is destroyed in production too (iter-124)**:
 
 ```typescript
 // Example from app/services/graphql/

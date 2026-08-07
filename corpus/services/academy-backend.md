@@ -12,7 +12,7 @@
 >   and serves them to the frontend through the **`app` GraphQL subgraph**, reached at
 >   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — which on a local stack is **`backend`'s own `:8082/graphql/query`**
 >   since platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from compose. The env-var
->   *name* outlived the router; in production the router is still declared. (Consistent with :85-89 below.)
+>   *name* outlived the router, which is now destroyed in production as well (iter-124). (Consistent with :85-89 below.)
 > - The backend became authoritative in app-side release **"v1.0 ground truth"** (PR #903, `0e37771f`, 2026-06-05):
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —

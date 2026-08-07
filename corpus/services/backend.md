@@ -59,7 +59,7 @@
 >   `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at
 >   `app/internal/converter/gotenberg.go:31`), and Judge0 directly via `JUDGE0_BASE_URL`
 >   (`docker-compose.yml:59`). The correctly-scoped model wording is
->   [`architecture_overview.md:335`](../architecture/architecture_overview.md).
+>   [`architecture_overview.md:343`](../architecture/architecture_overview.md).
 > * **`app` is both producer and consumer of FIVE Redis Streams** — `backend`, `skillpath`,
 >   `jobsimulation`, `cms` and `ai_usage`. **Do not drop `backend` from that set** — this bullet used to,
 >   while also closing the set, which made the omission a false exhaustiveness claim rather than a merely
@@ -321,7 +321,7 @@ internal/
 
 ### Upstream consumers
 
-* Next Web App (GraphQL via **`backend`'s own endpoint, `:8082/graphql/query`** on a local stack since platform `2adcf71` deleted the router — the Cosmo Router is prod-only now — plus direct HTTP for SSE and webhooks)
+* Next Web App (GraphQL via **`backend`'s own endpoint, `:8082/graphql/query`** since platform `2adcf71` deleted the router locally and its production module was destroyed — plus direct HTTP for SSE and webhooks; the router is destroyed in production too — iter-124)
 * Hiring App
 * Mobile App
 * Studio-Desk (for org-level metadata)
