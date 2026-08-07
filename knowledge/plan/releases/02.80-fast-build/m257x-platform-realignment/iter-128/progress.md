@@ -222,3 +222,108 @@ prints `fix = 0` now). **13 is a fresh count over a re-derived population, not 4
 not be added. The agreement is evidence the recall correction was sound; it is not a measurement that
 the class is now empty — **`fix` remains a floor**, and 8 of the 13 were found only because the reading
 went outside the census's own flagged set.
+
+---
+
+## 4. Priority 3 — the suite attestation: counts AVAILABLE, timing UNAVAILABLE
+
+**Invocation** (§5 rule 51 — state the invocation AND the expected wall time with every whole-suite count):
+
+```
+cd .agentspace/rosetta-extensions/stack-core
+/usr/bin/python3 -m pytest tests/ -q --tb=line -p no:cacheprovider --no-header --durations=5
+   ->  1 failed, 1157 passed in 1569.60s (0:26:09)
+```
+
+`/usr/bin/python3` is **3.9.6**, the only interpreter on this host with pytest. Started
+2026-08-07T11:55:12Z at `rext 45d7fe1` / `rosetta debca42`. **Load was checked BEFORE the run and was
+quiet — 1-min 3.27 on 12 cores.** That check is what the directive asked for, and § 4b is why it was not
+enough.
+
+### 4a. The counts — available, and they cross-check against an independent run
+
+| | this run | run 80's amended close | iter-122 |
+|---|---|---|---|
+| passed | **1,157** | 1,156 | 1,146 |
+| failed | **1** | 2 | 1 |
+| **collected** | **1,158** | **1,158** | 1,147 |
+
+**Two independent runs on different `rext` trees collected exactly 1,158**, and the failure count moved
+**2 → 1** because `45d7fe1` fixed the structural defect run 80 found (a 5-test class declared after the
+module's `__main__` guard). **The counts reconcile; that is the attestation.**
+
+The single remaining failure is the **standing, documented RED** —
+`test_claim_twin_guard_iter48_answer_key::test_02` — re-attested by a full run rather than carried.
+**+11 tests against iter-122**, consistent with iter-123's and iter-126's additions.
+
+### 4b. The wall time — NOT reconcilable, and not offered
+
+| | |
+|---|---|
+| this run | **1,569.60 s** |
+| iter-122 baseline | 1,055.54 s → **+48.7 %** |
+| iter-121 baseline | 1,032.57 s → **+52.0 %** |
+| band the rule asks for | **2.2 %** |
+
+**Two contaminants, and the first one is MINE:**
+
+1. **My own six Priority-1 verification agents ran concurrently for roughly the first half of the
+   window**, taking load from ~3 to ~11. **I checked the machine was quiet, then loaded it myself.**
+   That is a methodology error, not an external misfortune, and it is listed first because the
+   temptation is to report only the second.
+2. **The external `hyperspace/anima8` project restarted mid-run.** Measured at 14:19Z: **15 processes,
+   776.3 % aggregate CPU = 7.8 of 12 cores**, while **my own `pytest` sat at 0.0 % CPU**, starved.
+   Captured in `contention-run81.txt` rather than described.
+
+**Verdict: the attestation is AVAILABLE for its counts and UNAVAILABLE for its timing.** Quoting
+1,569.60 s against the 1,055 s baseline would publish an implied ~49 % regression that does not exist.
+Run 80 declined a contended number for exactly this reason and was right to; this run declines the
+*timing half* and keeps the *counts half*, because the two have different sensitivities to load and
+saying so is more useful than discarding both.
+
+**A clean re-run was considered and NOT taken.** The external load was still live at close, so a second
+run would have inherited the same defect and spent ~26 minutes reproducing a number that still could not
+be quoted. **Re-running an instrument under the condition that invalidated it is not a second
+measurement.** Routed as `FIX-M257x-iter128-suite-timing-unattested`.
+
+### 4c. What this adds to §5 rule 51
+
+Rule 51 says *state the invocation and the expected wall time*. It does not say *state the load*, and
+this run needed that clause:
+
+> **A timing claim names the machine's contention at the START and at the END of its window, or it is
+> not a timing claim.** Checking once, before the run, is what I did — and both contaminants arrived
+> *after* the check.
+
+Recorded here rather than promoted into `platform-alignment.md § 5`: it is a real amendment, but it was
+learned from **one** window, and the run that learned it also caused half the problem. **One occurrence
+is a finding, not a rule** — this milestone has booked three separate defects from generalising too
+early, and § 3a is one of them.
+
+## 5. Guards
+
+**22 members · 18 GREEN · 0 RED · 0 could-not-check · 4 not-run** — and *"not a whole-family green"*
+remains the honest phrasing, because the family exits **2**, not 0, on the four that need `--range` /
+`--ledger`. Invocation:
+
+```
+/usr/bin/python3 guard_family.py --repo-root <rosetta> --platform <rosetta>/stack-demo/platform
+```
+
+- `claim_census_guard` **1,160 → 1,150**: the Priority-1 repairs added evidence. Ratchet holds; no file
+  rose.
+- **`repair_postcondition` REJECTED this iter's Priority-1 commit** on its first attempt — the
+  `ant-academy.md` edits moved a line that `clerk-integration.md:108` cites, turning a live citation into
+  a table-header anchor. **Repaired by re-measuring (324 → 334), not by silencing**, and the second
+  attempt passed. This is the fence catching the author, which is the standing question the family
+  exists to answer.
+- `platform_alignment_guard` **GREEN over its declared reach**, still qualifying its own verdict:
+  *"10 citation(s) into 2 repo(s) (db-backup, infrastructure) were NOT checked."* **Independently
+  corroborated by hand this run** — three of the seven `hedge` re-classifications in § 2's audit are the
+  same `chronos`/`db-backup` un-cloned class, found by reading rather than by the guard.
+
+## 6. Gate
+
+**Unchanged at 4 of 5.** **No reading was taken and `P` is unmeasured.** Clause 5 is met only by a
+reading that returns zero; **repair is not a reading**, and a triage is not a grader (`F4`). This iter
+removes confounds from a future reading and repairs 30 sites; it moves no clause.
