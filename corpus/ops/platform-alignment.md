@@ -1887,6 +1887,72 @@ defect, it was arguing for it.*
     > enumeration, not the repair** — and it happened an hour after this rule's own headline was
     > written down.
 
+58. **A conjunction of two whole-document predicates is not an association check.** *(M257x harden pass
+    27–28. Found in TWO different fences, one pass apart, and then swept.)*
+
+    `blocking_state_guard` asked whether a blocking grading was *represented* in a 60 KB audit with
+    `it in body and field in body`. `unreadable_repo_claim_guard` asked whether a paragraph reported a
+    ref-pinned reading with `"infrastructure" in block and _SHA.search(block)`. **Neither conjunct has
+    to refer to the same thing as the other**, so both were satisfiable by coincidence:
+
+    * an audit naming `iter-19` for an unrelated reason, with `re-scope` in a paragraph about
+      `iter-07` — reported `represented: True`;
+    * a paragraph naming `infrastructure` as an **English noun** and carrying the **platform's** sha
+      about a different fact — reported as a measurement of a repo in no clone set.
+
+    > **Rule.** When a check means *"X is documented as Y"*, the predicate must bind X and Y in one
+    > scope — a block, a sentence, a citation shape. Two independent searches over the same document
+    > measure **co-presence**, and co-presence is not association. The larger the document, the more
+    > certainly it passes.
+    >
+    > **Do not reach for a character window.** It is the obvious fix and it is usually *fitted*: here
+    > the false green sat ~70 characters apart and the widest TRUE site at 61, so any constant between
+    > them is tuned to whichever fixture you happened to write. The durable discriminator was that **a
+    > citation names its subject** — as a backticked artifact, or bound to its ref by `@` — and an
+    > English noun does not. Both idioms were *measured off the live corpus*, not invented.
+    >
+    > **A second instance justifies a sweep, not a third fix.** Two occurrences were closed, then every
+    > non-test `.py` in `rosetta-extensions` was grepped for the shape (`X in blob and Y in blob`,
+    > `.search(…) and .search(…)`, `any(…) and any(…)`). There is no third — **and that is on the record
+    > so the next pass does not re-derive it.**
+
+59. **A fence that FALSE-REDs is worse than one that misses, when its only remedy disarms it.** *(M257x
+    harden pass 27. The sibling of rule 8, facing the other way: 8 is a green that checked nothing;
+    59 is a red that found nothing.)*
+
+    `claim_census_guard`'s per-file ratchet carried an entry for **every** in-scope file, zero included,
+    so adding a brand-new corpus file whose every assertion was cited produced
+    `[new-file] x.md: 0 unevidenced assertions` and exit 1. The clause says a count **RISES**; 0 has not
+    risen.
+
+    > **Rule.** Grade a false positive by **what it teaches the operator to do**. Here the only remedy
+    > was `--update-baseline`, which re-seals every *other* file's debt at its current level — so one
+    > spurious red would have erased the ratchet's memory across 41 files. **A guard whose false alarm
+    > is cured by disarming the guard trains the operator to disarm it**, and the second time it fires
+    > nobody reads it.
+    >
+    > **Its siblings are the same shape.** `gen_override` cleared `postgresql`'s volumes because a
+    > predicate meant to catch `$HOME/.aws/credentials` had been widened to *anything under the user's
+    > home directory* — which on a normal dev box is the whole workspace — under a comment asserting
+    > that `postgresql` "never reaches here". **A fence that harms is not a stricter fence; it is a
+    > broken one.**
+
+60. **Nothing runs the whole suite per-iter, so a fence can go RED and stay RED.** *(M257x harden pass
+    29. Both of that pass's defects were invisible to every scoped invocation.)*
+
+    A cross-section emitter fence had been failing since iter-129 — it asserted the DEV emitter still
+    contained the literal iter-129 had just deleted — and `baseline_mirror_fence` had been failing since
+    the same iter, because a provenance block moved away from the heading that named its host and the
+    fence's naming lookback resets at a blank line. **Three iters, nobody told.**
+
+    > **Rule.** A scoped green is evidence about its scope and nothing else. iter-121 built
+    > `tests/progress_beacon.py` so a 20-minute whole-suite run is *watchable* — but **watchable is not
+    > watched**. Either an iter's close runs the whole suite, or the milestone states out loud that it
+    > does not and that standing REDs are therefore possible between harden passes.
+    >
+    > **The corollary for the harden pass itself:** the whole-suite run is not a formality at the end,
+    > it is an *instrument*, and on this milestone it is the only one that finds this class.
+
 ---
 
 ## 6. Classification — the map
