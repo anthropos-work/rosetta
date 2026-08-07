@@ -45,7 +45,7 @@ Anthropos is a B2B SaaS skills intelligence platform that helps companies **map,
     *   **GraphQL/Cosmo Router**: API federation gateway **(prod only — deleted from local dev at
         platform `2adcf71`)**
     *   **AI Providers**: OpenAI, Anthropic, Mistral — EU-resident clients by default, **not** an EU-first
-        fallback ladder (see [AI Providers](#ai-providers) below)
+        fallback ladder (see [AI Providers](#external-service-integration) below)
     *   **LiveKit**: Real-time voice engine for simulations
     *   **AWS Chime**: Video/audio recording
     *   **PostgreSQL & Redis**: Data infrastructure

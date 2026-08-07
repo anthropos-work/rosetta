@@ -52,7 +52,7 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 +----------------------------------------------------------------------------+
 ```
 
-**Hard rule:** every repo on your staging is always on `origin/main` HEAD. No feature branches on staging, ever. If you need to test a feature branch against prod-shape data, do it from an `--unmanaged` agentspace workspace on your laptop, or spin up a separate `wip-<initials>` host. See [`staging-sync.md`](./staging-sync.md#what-if-a-developer-wants-to-test-a-feature-branch-on-staging) for the reasoning.
+**Hard rule:** every repo on your staging is always on `origin/main` HEAD. No feature branches on staging, ever. If you need to test a feature branch against prod-shape data, do it from an `--unmanaged` agentspace workspace on your laptop, or spin up a separate `wip-<initials>` host. See [`staging-sync.md`](./staging-sync.md#what-if-i-want-to-test-a-feature-branch-with-prod-shape-data) for the reasoning.
 
 ---
 

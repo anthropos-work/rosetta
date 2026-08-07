@@ -380,7 +380,7 @@ is discarded the moment a line is parsed. `provision` **moves** secret bytes sou
 job) but the bytes never leave the value-carrying boundary (`provision/io.go`) except into the target `.env`.
 The `secret-dna.json` file stores NAMES only and is **committable** (unlike a `.env`). This mirrors the
 platform's values-blind `Guard.PreflightEnv` discipline — the safety clause is stated authoritatively in
-[`safety.md`](safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m28).
+[`safety.md`](safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m30).
 
 ### The CLI — `stacksecrets`
 

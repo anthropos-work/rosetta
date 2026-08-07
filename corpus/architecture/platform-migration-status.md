@@ -15,7 +15,7 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 > **Re-measured 2026-08-05 against platform origin HEAD [`0c91421`](https://github.com/anthropos-work/platform)**
 > (local clone and origin level; `app` **pinned** at `2035f9a`, post-v1.369.0 — a sha, not a moving label; see the `app` row). The prior readings were 2026-08-04 at
 > `0dab54d`, and 2026-08-03 at `ef32d4c` ("Merge pull request #24 … chore/prune-merged-services"); first
-> measured 2026-08-01 at `2adcf71`. Re-run [§4 of the protocol](../ops/platform-alignment.md#4--detection--six-signals-cheapest-first)
+> measured 2026-08-01 at `2adcf71`. Re-run [§4 of the protocol](../ops/platform-alignment.md#4-detection--six-signals-cheapest-first)
 > before trusting any row older than a release.
 >
 > **`0dab54d → 0c91421` moved three more rows, and the fence named two of them the same day.** `838d907`
@@ -47,9 +47,9 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 | state | means |
 |---|---|
 | `live-standalone` | its own process, still on the traffic path |
-| `merged-into-app` | `app` owns the code and calls it unconditionally, the tables live in `public`, and the standalone is scaled to zero — **all three**, per [§6 of the protocol](../ops/platform-alignment.md#6--classification--the-map) |
+| `merged-into-app` | `app` owns the code and calls it unconditionally, the tables live in `public`, and the standalone is scaled to zero — **all three**, per [§6 of the protocol](../ops/platform-alignment.md#6-classification--the-map) |
 | `running_but_unfederated` | the container still starts, but it owns no schema and is not a subgraph — a **husk**, not a service |
-| `mid-fold` | **a half-landed fold: the config side says removed and the consumer side says live.** Neither `live-standalone` nor `merged-into-app` — and it is recorded on **both** sides, cited, or not at all. Added M257x iter-64; the gap it closes was stated in [§6 of the protocol](../ops/platform-alignment.md#6--classification--the-map) at iter-59. **No row carries it today** (re-checked M257x iter-87 at `0c91421`): its only holder, `storage`, completed its fold four iterations later and had its container deleted the day after that. The token stays in the vocabulary — the fold program is not finished, and a state you can only name *after* you need it is the state you will get wrong |
+| `mid-fold` | **a half-landed fold: the config side says removed and the consumer side says live.** Neither `live-standalone` nor `merged-into-app` — and it is recorded on **both** sides, cited, or not at all. Added M257x iter-64; the gap it closes was stated in [§6 of the protocol](../ops/platform-alignment.md#6-classification--the-map) at iter-59. **No row carries it today** (re-checked M257x iter-87 at `0c91421`): its only holder, `storage`, completed its fold four iterations later and had its container deleted the day after that. The token stays in the vocabulary — the fold program is not finished, and a state you can only name *after* you need it is the state you will get wrong |
 | `decommissioned` | gone from the orchestration; the repo may still exist as a rollback reference |
 | `net-new` | exists in the org, is not in `repos.yml`, and the corpus has never described it |
 | `external` | third-party or separately-deployed; never in the local Go clone set |
@@ -171,7 +171,7 @@ subsystem rather than as the live Go control plane repo it is. That is a fidelit
 ## 4. The fence
 
 `rosetta-extensions/stack-core/platform_alignment_guard.py` — layer 1 of the three in
-[§8 of the protocol](../ops/platform-alignment.md#8--fence--so-it-cannot-silently-recur). It reads this file
+[§8 of the protocol](../ops/platform-alignment.md#8-fence--so-it-cannot-silently-recur). It reads this file
 and the platform's own `repos.yml` and asserts **both directions**:
 
 | # | assertion | the miss it catches |
