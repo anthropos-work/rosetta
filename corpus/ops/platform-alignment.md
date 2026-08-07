@@ -1785,6 +1785,36 @@ defect, it was arguing for it.*
     > **Sibling of rule 54, on the other axis.** 54: a *correction* must reach every site publishing the
     > retracted predicate. 55: a *disclosure* must reach the site where somebody acts on it.
 
+56. **A guard stuck at "cannot check" is not a careful guard — it is a guard that is not looking. When a
+    fence goes could-not-check on a CHANGED SUBJECT, give the new condition its own NAME and its own
+    DISCLOSURE.** *(M257x iter-126.)*
+
+    `platform_alignment_guard` went to exit 2 because the corpus began citing `infrastructure` and
+    `db-backup` — repos no stack clones. The verdict was **correct on a changed subject**, and the
+    subject changed because iter-123 cloned the repo that settled four standing questions. But exit 2 is
+    all-or-nothing: **while the guard reported "cannot check", assertion F never ran to completion, and
+    it was masking a genuinely mis-bound citation in the same table** (a row citing `:622`/`:664` against
+    a 121-line file — the lines belong to a different repo).
+
+    Two conditions had been sharing one bucket:
+
+    | | what it is | whose defect |
+    |---|---|---|
+    | **unresolvable** | a path the fence cannot find *and cannot account for* | **the citation's** |
+    | **unclonable** | a repo the subject document itself names, simply not in the clone set | **the substrate's** |
+
+    > **Rule.** Split them. The substrate-limited class gets its own name, prints on **every** run, rides
+    > in `--json`, and **qualifies the verdict sentence itself** — `guard_family.run_one` reports
+    > `lines[-1]`, so a qualifier printed anywhere else is invisible where it matters.
+    >
+    > **And the excuse is GATED, or it is a silencer wearing a disclosure's clothes.** A head enters the
+    > excused class only if the subject document *documents that repo*; anything else stays a blind spot.
+    > Ship it with a mutant that **withdraws the documentation** and a negative control proving an
+    > unqualified green is still reachable — otherwise the qualifier carries no information.
+    >
+    > **Blindness is not the conservative option.** A fence that refuses to grade anything grades nothing,
+    > and the defects inside its reach go unreported for as long as it stays refusing.
+
 ---
 
 ## 6. Classification — the map
