@@ -205,13 +205,14 @@ against source at refs. **`fix = 0` was 0-because-unread. It is no longer zero.*
 |---|---|---|---|
 | slice 1 (`service_taxonomy`, `ai_architecture`, `shared_libraries`, `dependency_map`, `jobsimulation`, `coursebuilder`, `cms`, `security_compliance`) | 205 | **6** | 18 |
 | slice 2 (`external_services`, `studio-desk`, `architecture_overview`, `org-repos`, `frontend_architecture`, `hiring`, `gotenberg`, `clerk-integration`) | 204 | **8** | 20 |
-| slices 3–4 | 411 | **not in the record — the reads were still running at close** | — |
-| **reported** | **409 of 820 (49.9 %)** | **≥ 14** | 38 |
+| slice 4 (`ai-readiness`, `sentinel`, `studio-room`, `backend`, `askengine`, `storage`, `next-web-app`, `clerkenstein`, `academy-backend`) — **returned AFTER the close commit; folded in rather than dropped** | 206 | **11** | 1 |
+| slice 3 | 205 | **not in the record — still running** | — |
+| **reported** | **615 of 820 (75.0 %)** | **≥ 25** | 39 |
 
-**Quote it as a floor with its denominator: ≥ 14 false claims over 409 read = ≥ 3.4 % on the read half,
-`fix` over the full 820 still a floor.** Two slices did not return before close and **their absence is
-stated rather than filled** — a 2-of-4 read reported as if it were 4-of-4 is exactly the substitution this
-milestone exists to catch. Routed as `FIX-M257x-iter129-complement-slices-3-4`.
+**Quote it as a floor with its denominator: ≥ 25 false claims over 615 read = ≥ 4.1 % on the read portion,
+`fix` over the full 820 still a floor.** Slice 3 did not return and **its absence is stated rather than
+filled** — a 3-of-4 read reported as 4-of-4 is exactly the substitution this milestone exists to catch.
+Routed as `FIX-M257x-iter129-complement-slice-3`.
 
 Four of slice 1's six cluster in **one** place — the *Embeddings & RAG* section of `ai_architecture.md`,
 which is that document's own EU-residency argument: the embeddings client is **Azure EU, not OpenAI** (17
@@ -225,6 +226,17 @@ line that produces a webhook rejecting every delivery** — the endpoint is **fa
 the line never mentions, and the sender is a Directus **Flow**, not the Webhooks module (deleted in
 Directus 11). All findings carry `file:line` on both sides and join the routed residual, **in the
 complement's own accounting, never added to clause 5's**.
+
+**Slice 4 landed one finding that indicts THIS iter's own repair, and it is repaired.** `clerkenstein.md:21`
+carried the **same** rext-section under-count I fixed in `CLAUDE.md` under § 2c(iii) — *six* sections where
+there are **eleven**. **My repair reached one cell.** `§5` rule 54 says a correction that reaches one cell
+is not a correction, and I committed the violation inside the run that was applying the rule — the third
+time this milestone has caught that exact shape (run 81's ant-academy regex, run 81's group count, this).
+Both sites now name all eleven. Two further slice-4 findings repaired in the same pass, both in
+`next-web-app.md`: *"`apps/web` is the only frontend in platform compose"* (**`studio-desk` is a second
+compose frontend**, `docker-compose.yml:112`) and `GRAPHQL_SCHEMA_FOR_GEN` *"used by `graphql-codegen`"*
+(**read by nothing** — 4 hits, all `.env.example`; `codegen.ts:9` hardcodes the endpoint). The remaining
+eight join the routed residual.
 
 ---
 

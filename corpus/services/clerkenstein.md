@@ -18,7 +18,11 @@ roles* below, which this line used to contradict.) · **Measured by:** the
 > **not** duplicate that KB.
 
 > **One monorepo, two clone roles.** `rosetta-extensions` is ONE private monorepo with sections
-> (`clerkenstein`, `demo-stack`, `stack-injection`, `stack-core`, `stack-seeding`, `alignment`). It is
+> — **eleven** of them: `alignment`, `clerkenstein`, `demo-stack`, `dev-stack`, `playthroughs`,
+> `stack-core`, `stack-injection`, `stack-secrets`, `stack-seeding`, `stack-snapshot`, `stack-verify`
+> (⚠️ **this listed six until M257x iter-129**, and `CLAUDE.md` listed nine — the SAME under-count in two
+> places, and the repair that fixed `CLAUDE.md` this iter reached only that one cell until the complement
+> read found this twin. `§5` rule 54, committed by the run that was applying it). It is
 > authored / built / tested / aligned in the **authoring copy** at `.agentspace/rosetta-extensions/`, then
 > **tagged**, and consumed by each stack via that stack's own **pinned-tag** clone
 > (`stack-demo/rosetta-extensions @ <tag>`). So the KB above is **read from the authoring copy**; a running

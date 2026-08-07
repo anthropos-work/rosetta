@@ -118,8 +118,13 @@ make up-frontend                 # builds Dockerfile.dev (web app only), serves 
 
 The repo's own `Dockerfile.dev` (Node 24 alpine — it is the only Dockerfile in the repo)
 builds **only** `@anthropos/web-app`
-(`pnpm turbo build --filter=@anthropos/web-app`), and `apps/web` is the only frontend in
-platform compose. Integration / maintenance / mobile ship via Vercel only. **Hiring is the
+(`pnpm turbo build --filter=@anthropos/web-app`), and `apps/web` is the only **`next-web-app`** app in
+platform compose — ⚠️ **not "the only frontend"**: `studio-desk` is a second compose frontend with its own
+browser UI (`platform` `0c91421df`, `docker-compose.yml:112`, `:135`
+`VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`). Integration ships via Vercel; **mobile builds
+via EAS** (`apps/mobile/package.json:71-72`) and **maintenance is in no deploy pipeline** — the production
+matrix is web / hiring / integration (`.github/workflows/production.yaml` @ `f97ba6599`), which this page's
+own Apps table already marked `❌` for both while this sentence said "Vercel only". **Hiring is the
 exception a demo makes**: `/demo-up` builds `apps/hiring` into a second UI container from
 the same unmodified clone using a Dockerfile that lives in **rext**, not here — see the
 ⚠️ note under *Apps*. `NEXT_PUBLIC_*` are baked
@@ -133,7 +138,7 @@ bundle resolves the right hostname.
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` | — | Clerk auth (client / server) |
 | `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` | `http://localhost:8082/graphql/query` | Runtime GraphQL endpoint (baked at build). **Was `:5050/graphql`** until platform `2adcf71` deleted the router from compose |
 | `NEXT_PUBLIC_BACKEND_API_URL` | `http://localhost:8082` | Backend (`app`) API base URL |
-| `GRAPHQL_SCHEMA_FOR_GEN` | `http://localhost:8082/graphql/query` | Schema endpoint used by `graphql-codegen` (was `:5050/graphql`) |
+| `GRAPHQL_SCHEMA_FOR_GEN` | `http://localhost:8082/graphql/query` | ⚠️ **Read by nothing.** Declared in four `.env.example` files and in **no code** — `packages/graphql/codegen.ts:9` hardcodes the endpoint as a literal (`git grep -in SCHEMA_FOR_GEN f97ba6599` → 4 hits, all `.env.example`). Setting it changes nothing. Said *"used by `graphql-codegen`"* until M257x iter-129 |
 | `NEXT_PUBLIC_HOSTING_URL` / `PUBLIC_HOST` | `http://localhost:3000` / `localhost` | Public hosting URL; `PUBLIC_HOST` parameterizes baked URLs in compose |
 | `NEXT_PUBLIC_POSTHOG_KEY` / `_HOST` · `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_AUTH_TOKEN` | — | Analytics + error tracking (PostHog EU, Sentry/Better Stack) |
 | `STRIPE_*` / `NEXT_PUBLIC_STRIPE_*` | — | Billing/checkout |
