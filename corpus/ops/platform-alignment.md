@@ -2036,19 +2036,27 @@ defect, it was arguing for it.*
     > stands at a **different** line, the pin **rotted** — and the line it now stands at is the repair.
     > No sentence is interpreted. Git answers it alone.
 
-    Measured corpus-wide at iter-138: **588** bare pins → **222 decidable** (unique, non-trivial target
-    text present at HEAD) → **127 ROTTED = 57.2 %**, against a positive control of **95 STABLE**.
-    **Every delta is positive** — lines inserted *above* targets — so no author could have prevented any
-    of them, and *"repair harder"* has no target.
+    ⚠️ **iter-138 measured this corpus-wide and reported 127 rotted of 222 decidable (57.2 %).
+    iter-139 audited that number — a stratified 12-case sample, strata sealed in advance — and found
+    12 FALSE POSITIVES out of 12 (precision 0.0 %, Wilson95 [0.0, 24.3]). The figure is RETRACTED.**
+    In this corpus a bare `` `:NN` `` is **overwhelmingly a cross-file continuation pin**
+    (`` `app/main.go:15`, `:62`, `:63` ``) or a quoted/historical/negated pin — not a same-file
+    self-citation. **Resolving the HEAD is the hard part, and it blocks the rot predicate exactly as it
+    blocks the content predicate**, so the fence's exclusion is better founded than iter-138 credited.
+    `adj-E`'s five genuine same-file rotted anchors were found by a **human reading five sentences**;
+    they are a rare form, and a machine must solve head resolution before it can enumerate them.
 
     > **Rule (a).** When you exclude a class from a fence, **name the predicate you actually tested.**
-    > The next predicate over may be free, and here the largest measured citation defect on the milestone
-    > sat inside a declared blind spot **it did not need to be in**.
+    > The next predicate over *may* be free — **but check whether both predicates are blocked by the same
+    > thing.** Here they were: head resolution. iter-138 assumed rot was free of it and was 0-for-12.
     >
-    > **Rule (b) — publish the undecidable buckets with the number.** 588 is not the denominator; **222**
-    > is. The rest are `out-of-range-then` (241 — largely **cross-file continuation pins**, which a
-    > same-file probe cannot distinguish), `target-too-short-to-be-unique` (109) and `target-text-gone`
-    > (16). A fence sized against 588 is sized against 241 cases it cannot see.
+    > **Rule (b) — a DISCLOSED floor is quarantined only if you show the boundary holds.** iter-138
+    > disclosed `out-of-range-then` (241) and named its cause precisely — *cross-file continuation pins* —
+    > then reported a number over the **222 it had not excluded them from**. A continuation pin only lands
+    > in that bucket when its line number exceeds the **citing** file's length; in a 3,100-line doc almost
+    > none does, so the same failure mode dominated the "decidable" set undisclosed. **Naming a floor is
+    > not bounding it, and the disclosure made the number more persuasive, not less.** Sample the clean
+    > bucket for the disease you just disclosed.
     >
     > **Rule (c) — repair by NAMING the construct, never by re-pinning.** A repair that restores the
     > failing *form* fixes an instance and preserves the class. `graphql-wundergraph.md`'s `5050` pointer

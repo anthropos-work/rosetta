@@ -1,0 +1,154 @@
+### rotted pins per file (desc) ###
+  16  corpus/architecture/org-repos.md
+  14  corpus/services/ai-readiness.md
+  14  corpus/services/ant-academy.md
+  11  corpus/ops/platform-alignment.md
+   9  corpus/services/cms.md
+   9  corpus/services/hiring.md
+   8  corpus/services/jobsimulation.md
+   7  corpus/architecture/service_taxonomy.md
+   6  corpus/architecture/platform-migration-status.md
+   6  corpus/architecture/security_compliance.md
+   4  corpus/services/backend.md
+   3  corpus/architecture/ai_architecture.md
+   3  corpus/architecture/shared_libraries.md
+   3  corpus/services/graphql-wundergraph.md
+   3  corpus/services/messenger.md
+   3  corpus/services/studio-desk.md
+   2  corpus/architecture/architecture_overview.md
+   2  corpus/ops/demo/frontend-tier.md
+   1  corpus/architecture/alignment_testing.md
+   1  corpus/ops/demo/build-budget.md
+   1  corpus/services/next-web-app.md
+   1  corpus/services/skillpath.md
+
+TOTAL 127 across 22 files
+
+### full list ###
+corpus/ops/platform-alignment.md:2595	:788 -> :2345	(+1557)	1. **The claim list is DERIVED, from the audits' own blocker-ledgers** — §5 rule
+corpus/ops/platform-alignment.md:1108	:1305 -> :2125	(+820)	and not in `.env_example` (0 occurrences), the service had moved to `profiles: [
+corpus/ops/demo/build-budget.md:394	:319 -> :614	(+295)	— the instrumented n=1 anatomy + the ranked lever table L1–L10 this release is d
+corpus/architecture/security_compliance.md:386	:129 -> :332	(+203)	| **Primary region** | EU-West-1 (Ireland) |
+corpus/architecture/architecture_overview.md:319	:325 -> :460	(+135)	### Infrastructure & Deployment
+corpus/architecture/security_compliance.md:174	:222 -> :333	(+111)	| **DR site** | US AWS region |
+corpus/ops/platform-alignment.md:51	:106 -> :203	(+97)	| # | signal | how | a change means |
+corpus/ops/platform-alignment.md:54	:108 -> :205	(+97)	| 1 | `repos.yml` repo set | `gh api repos/anthropos-work/platform/contents/repo
+corpus/architecture/ai_architecture.md:325	:75 -> :167	(+92)	#### Vector storage (merged skiller domain)
+corpus/architecture/shared_libraries.md:198	:259 -> :338	(+79)	HASH = first 4 hex of SHA-1 of the sanitized name(+org). Deterministic and
+corpus/services/ai-readiness.md:514	:314 -> :383	(+69)	`stories.seed.yaml` (Dana → `/ai-readiness`; Aria + Ben → `/home`) · the cockpit
+corpus/services/ant-academy.md:395	:327 -> :391	(+64)	>   Maya would be rendered a generic **"E2E Member"**. Fenced by two tests
+corpus/services/backend.md:227	:309 -> :372	(+63)	* **Judge0** — sandboxed code execution, called directly (`JUDGE0_BASE_URL`) sin
+corpus/services/backend.md:380	:180 -> :242	(+62)	`mostPopularSkills`, `jobRoleCount`, …) **and** the skill-path session types/que
+corpus/services/backend.md:380	:185 -> :247	(+62)	`skiller` Redis stream — but only as a **consumer**: nothing in `app` publishes 
+corpus/services/cms.md:143	:169 -> :227	(+58)	* **Federation**: **there is none left to speak of.** The cms subgraph was folde
+corpus/services/cms.md:143	:173 -> :231	(+58)	* Studio-Desk (GraphQL for studio entities)
+corpus/services/cms.md:143	:78 -> :136	(+58)	> **Demo/dev set-dressing (v1.2 → v1.5 "prop room"):** the **public** content te
+corpus/services/ai-readiness.md:355	:569 -> :620	(+51)	> "a larger configured set makes a full score harder to reach" (the platform's o
+corpus/services/ai-readiness.md:49	:458 -> :505	(+47)	per-object-RPC class). ⚠️ **That premise was refuted at M219: the recompute take
+corpus/services/ai-readiness.md:50	:459 -> :506	(+47)	shipped is unchanged; the reason given for it is not. Retracted here and at
+corpus/services/ai-readiness.md:476	:655 -> :702	(+47)	The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-compl
+corpus/services/hiring.md:281	:128 -> :173	(+45)	product uses, tagged as a hiring assessment. The captured public snapshot carrie
+corpus/architecture/shared_libraries.md:202	:166 -> :210	(+44)	401/403/404 or context cancellation. A separate, non-`ai`-library Bedrock path e
+corpus/architecture/shared_libraries.md:203	:176 -> :220	(+44)	| **Live form** | `github.com/anthropos-work/colony/authn` (absorbed into colony
+corpus/services/ai-readiness.md:474	:390 -> :433	(+43)	falsified — **M219 measured the live recompute at 2.09 s and refuted that.**
+corpus/services/ai-readiness.md:661	:274 -> :315	(+41)	ThemesShift); both cycles must be `closed`. (The FE Compare tab is still hard-ga
+corpus/services/ai-readiness.md:661	:326 -> :367	(+41)	- The `(new)` in the legacy path is a Next.js **route group** for the workforce 
+corpus/services/ai-readiness.md:662	:274 -> :315	(+41)	ThemesShift); both cycles must be `closed`. (The FE Compare tab is still hard-ga
+corpus/services/ai-readiness.md:662	:326 -> :367	(+41)	- The `(new)` in the legacy path is a Next.js **route group** for the workforce 
+corpus/services/jobsimulation.md:43	:79 -> :119	(+40)	simulator/            Core simulation runtime
+corpus/architecture/service_taxonomy.md:210	:141 -> :180	(+39)	| **colony** | Platform framework: logging, DB/Redis, GraphQL/RPC servers, middl
+corpus/ops/platform-alignment.md:2126	:524 -> :562	(+38)	the eight**. The next pass found two consequences: a `:5050` port claim still li
+corpus/ops/platform-alignment.md:2595	:447 -> :483	(+36)	counting ledger rows** — and where the two disagree, the ledger is the thing tha
+corpus/services/ai-readiness.md:251	:149 -> :185	(+36)	high 71-100 — the ≥75 Champion requirement deflated the Champion population mate
+corpus/services/next-web-app.md:115	:110 -> :146	(+36)	| `EXPO_PUBLIC_*` | — | Mobile (Expo) variants of the public vars |
+corpus/architecture/platform-migration-status.md:102	:286 -> :319	(+33)	as the rollback path — the map's only pointer at the thing that could settle it.
+corpus/ops/demo/frontend-tier.md:492	:84 -> :115	(+31)	> **The `e2e_persona` bypass (`BENCHMARK_VISUAL_BYPASS` + `NEXT_PUBLIC_E2E_AUTH`
+corpus/services/ant-academy.md:243	:66 -> :96	(+30)	`academy_chapter_progresses` rows**. Seeding them on a demo changes no pixel. **
+corpus/services/ant-academy.md:243	:75 -> :105	(+30)	progress/result surface. See [`../ops/demo/content-stories-routes.md`](../ops/de
+corpus/services/ant-academy.md:243	:90 -> :120	(+30)	subgraph Core["Core Backend (Tier 1, Docker)"]
+corpus/services/jobsimulation.md:242	:90 -> :118	(+28)	rpcsrv/               Connect-RPC server
+corpus/architecture/security_compliance.md:391	:100 -> :127	(+27)	> guarantee. M257x iter-33 over-swung to "the non-mixin schemas never mention or
+corpus/ops/platform-alignment.md:2315	:321 -> :348	(+27)	keep the loopback bind and change the literal to `localhost`, the only loopback 
+corpus/services/cms.md:125	:127 -> :152	(+25)	schemas/*.graphqls     API contract — simulation.graphqls, skills.graphqls, stud
+corpus/services/cms.md:327	:119 -> :144	(+25)	* **Docker image**: Two-stage build — Go binary built in `golang:1.26-bookworm` 
+corpus/services/cms.md:332	:129 -> :154	(+25)	model/models_gen.go    Auto-generated (DO NOT EDIT)
+corpus/services/cms.md:332	:126 -> :151	(+25)	graph/                   GraphQL layer (gqlgen)
+corpus/ops/platform-alignment.md:911	:235 -> :254	(+19)	never the whole change. When signal 2 or 3 moves, immediately check `app`, `grap
+corpus/ops/platform-alignment.md:1456	:258 -> :277	(+19)	stderr is swallowed. This is the most common failure by far.
+corpus/ops/platform-alignment.md:2596	:110 -> :129	(+19)	| exactly one *other* schema holds them all | **remap**, announced loudly |
+corpus/architecture/ai_architecture.md:69	:102 -> :120	(+18)	| Service | AI Use Case |
+corpus/architecture/service_taxonomy.md:368	:53 -> :69	(+16)	- **Source**: Private GitHub repositories
+corpus/services/ant-academy.md:82	:162 -> :178	(+16)	> from the (empty) `chapters` — `AcademyClient.jsx:1363-1365` drops every path w
+corpus/services/ant-academy.md:82	:150 -> :166	(+16)	`getServerCatalogView()` is literally `const view = (await getBackendCatalogView
+corpus/services/ant-academy.md:83	:210 -> :226	(+16)	**The fix (M238) is the BODY half of the same FS-as-published behavior:** the
+corpus/services/ant-academy.md:83	:202 -> :218	(+16)	the catalog. `src/lib/serverChapterBody.js::resolveServerChapterBody(slug, local
+corpus/services/ant-academy.md:86	:215 -> :231	(+16)	(`draft:false`) — production-faithful, mirroring the dev-only draft path but wit
+corpus/services/ant-academy.md:87	:259 -> :275	(+16)	EN↔IT toggle `<Link>` that sets `?lang=it` on the current path — and it is mount
+corpus/services/cms.md:125	:96 -> :112	(+16)	The CMS service is the **content layer of the platform** — it owns the authored,
+corpus/services/jobsimulation.md:108	:113 -> :128	(+15)	* **Chronos removed**: session timeouts no longer scheduled via the chronos serv
+corpus/services/jobsimulation.md:108	:78 -> :93	(+15)	> **This service holds NO simulation content.** "Jobsimulation" the *service* ≠ 
+corpus/services/jobsimulation.md:108	:119 -> :134	(+15)	* **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.grap
+corpus/services/jobsimulation.md:216	:229 -> :244	(+15)	Measured at platform `0dab54d`. **When the host path does not exist, Docker auto
+corpus/services/ant-academy.md:243	:56 -> :70	(+14)	└── CLAUDE.md              # In-repo agent guide
+corpus/services/ant-academy.md:285	:97 -> :111	(+14)	OpenAI[OpenAI / Anthropic APIs]
+corpus/services/ant-academy.md:315	:51 -> :65	(+14)	├── mobile/                # Expo / React Native app (iOS + Android)
+corpus/services/backend.md:116	:80 -> :94	(+14)	>   ([`platform-migration-status.md`](../architecture/platform-migration-status.
+corpus/services/studio-desk.md:21	:226 -> :240	(+14)	- Backend API: `http://localhost:9000` (API server with `/api` routes)
+corpus/services/studio-desk.md:154	:204 -> :218	(+14)	1. **Install dependencies**:
+corpus/services/studio-desk.md:154	:135 -> :149	(+14)	// Example from app/services/graphql/
+corpus/architecture/security_compliance.md:90	:96 -> :108	(+12)	> `job_role_skill_suggestion_cache.go`, `org_membership_invitation.go`, `org_sim
+corpus/architecture/architecture_overview.md:283	:183 -> :194	(+11)	Available but off by default (opt-in via Docker profile): the two containerized 
+corpus/services/hiring.md:266	:29 -> :40	(+11)	>    is gone." `20260722104506.sql:79` is `DROP TABLE "sessions"` executed under
+corpus/architecture/service_taxonomy.md:129	:168 -> :178	(+10)	| Library | Purpose | Repository |
+corpus/architecture/service_taxonomy.md:129	:183 -> :193	(+10)	make dev S=backend       # Stop Docker container, develop natively
+corpus/ops/platform-alignment.md:1581	:227 -> :237	(+10)	### Trap B — the declared topology and the actual topology can disagree by desig
+corpus/architecture/platform-migration-status.md:106	:183 -> :192	(+9)	| E | no §3 census row is in `repos.yml` | the census silently overlaps the clon
+corpus/services/messenger.md:53	:29 -> :38	(+9)	> **Compose set those four on the `messenger` service block and nowhere else**, 
+corpus/services/messenger.md:60	:63 -> :72	(+9)	> on this anchor** (M257x iter-102): `env_guards.go` **did not exist** at the de
+corpus/services/messenger.md:60	:62 -> :71	(+9)	> identical at `2035f9a4`), which defaults to **off** on a developer machine. **
+corpus/architecture/ai_architecture.md:149	:40 -> :48	(+8)	to direct OpenAI **without** trying another EU provider first).
+corpus/services/jobsimulation.md:175	:142 -> :150	(+8)	> [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.m
+corpus/services/jobsimulation.md:175	:143 -> :151	(+8)	> [`../ops/demo/session-clone-spec.md`](../ops/demo/session-clone-spec.md).
+corpus/services/ai-readiness.md:104	:601 -> :608	(+7)	The M219 bar was *"every element and sub-section filled with spot data"*. Raisin
+corpus/services/ai-readiness.md:376	:601 -> :608	(+7)	The M219 bar was *"every element and sub-section filled with spot data"*. Raisin
+corpus/services/ai-readiness.md:377	:599 -> :606	(+7)	### The FILLED-ness contract — three ways a readiness seed reads as real but is 
+corpus/services/hiring.md:136	:460 -> :467	(+7)	description was wrong). It still mounts as a detectable `.ant-drawer` — firing i
+corpus/services/hiring.md:332	:460 -> :467	(+7)	description was wrong). It still mounts as a detectable `.ant-drawer` — firing i
+corpus/architecture/service_taxonomy.md:111	:56 -> :62	(+6)	### Tier 1: Core Backend Services (Dockerized Go Microservices)
+corpus/architecture/service_taxonomy.md:128	:110 -> :116	(+6)	> os.Getenv("BREVO_KEY") != ""`. True at **every** ref between the fold (2026-08
+corpus/architecture/alignment_testing.md:200	:61 -> :66	(+5)	There are therefore **two surfaces that compute the same score** over the same c
+corpus/services/graphql-wundergraph.md:179	:160 -> :165	(+5)	> `skiller` (July 2026), `skillpath` ("skillpath-in-app", M502→M507), and then `
+corpus/services/graphql-wundergraph.md:180	:151 -> :156	(+5)	configs still contain these rows and a reader will find them there.
+corpus/services/hiring.md:24	:453 -> :458	(+5)	population session (now skipped for the hiring org) → the FK VIOLATED and the wh
+corpus/services/ant-academy.md:456	:53 -> :57	(+4)	├── code/                  # Next.js 16 web app (this is where 99% of work happe
+corpus/services/hiring.md:57	:62 -> :66	(+4)	**org-type** that re-skins the **Workforce** app (`apps/web`) for a recruiting b
+corpus/services/hiring.md:150	:62 -> :66	(+4)	**org-type** that re-skins the **Workforce** app (`apps/web`) for a recruiting b
+corpus/services/hiring.md:350	:61 -> :65	(+4)	**Hiring** is a **sold product** (`hiring.anthropos.work`, the `@anthropos/hirin
+corpus/services/hiring.md:354	:248 -> :252	(+4)	alone — the write-set used to be a PAIR and is now one row, since the mirrors we
+corpus/services/skillpath.md:87	:62 -> :66	(+4)	`*_at` timestamps (shared via `SkillPathMixin`). The player skill-path page read
+corpus/architecture/security_compliance.md:239	:190 -> :192	(+2)	'AuthzMiddleware|EchoAuthzMiddleware' -- '*.go'` over `app` @ `ad9f3c49` returns
+corpus/architecture/security_compliance.md:247	:218 -> :220	(+2)	> `ad9f3c498` by reading the `RegisterRoutes` call site and the manager, not the
+corpus/services/cms.md:249	:11 -> :9	(-2)	> **⚠️ But cms HAS taken an M810 step since, and the corpus's "it has not moved"
+corpus/services/graphql-wundergraph.md:184	:184 -> :186	(+2)	* **CI/prod**: GitHub Releases on **`anthropos-work/app` only** (schema artifact
+corpus/architecture/org-repos.md:39	:245 -> :246	(+1)	`services.tf:603`). App DB URI in an SSM SecureString (`main.tf:73-75`). Throttl
+corpus/architecture/org-repos.md:93	:24 -> :25	(+1)	fetched `origin/main`, and **a stale substrate manufactures evidence against a t
+corpus/architecture/org-repos.md:93	:131 -> :132	(+1)	> the repos this corpus reads declare a count that instantiates nothing.**
+corpus/architecture/org-repos.md:93	:197 -> :198	(+1)	**This is an authoring-time gap, not a rendering gap** — which is exactly why it
+corpus/architecture/org-repos.md:135	:23 -> :24	(+1)	load-bearing: the M257x claim census read clone *working trees*, 6 of 13 of whic
+corpus/architecture/org-repos.md:136	:96 -> :97	(+1)	(`next-web-app` is Vercel; `db-backup` composes no module). Nine of those 11 hap
+corpus/architecture/org-repos.md:136	:130 -> :131	(+1)	> module in `infrastructure/terraform/production/services.tf` instantiates that 
+corpus/architecture/org-repos.md:137	:252 -> :253	(+1)	[`security_compliance.md`](security_compliance.md), which describe a read surfac
+corpus/architecture/org-repos.md:154	:130 -> :131	(+1)	> module in `infrastructure/terraform/production/services.tf` instantiates that 
+corpus/architecture/org-repos.md:293	:111 -> :112	(+1)	> > *"M810: cms was removed (module block deleted here). cms is folded into the 
+corpus/architecture/org-repos.md:294	:143 -> :144	(+1)	> | `graphql-wundergraph/terraform/main.tf:20` `= 1` | *"the router — **still de
+corpus/architecture/org-repos.md:294	:127 -> :128	(+1)	> ### 🔑 The rule the whole exercise was worth: **a service repo's `service_desir
+corpus/architecture/org-repos.md:295	:337 -> :338	(+1)	their session. **No direct DB access** — every write goes through the applicatio
+corpus/architecture/org-repos.md:295	:301 -> :302	(+1)	**both** `agentName="anthropos-agent-us"` **and** `metadata["endpoint"]="azure-u
+corpus/architecture/org-repos.md:295	:319 -> :320	(+1)	> the production default. `livekit-agent-chain`'s README is still the **unmodifi
+corpus/architecture/org-repos.md:417	:151 -> :152	(+1)	> ### And the two that legitimately survive, for the same stated reason
+corpus/architecture/platform-migration-status.md:93	:83 -> :84	(+1)	<!-- fence:services:begin -->
+corpus/architecture/platform-migration-status.md:94	:63 -> :64	(+1)	- **Absent from `repos.yml` no longer means "never was a service".** Until `d11a
+corpus/architecture/platform-migration-status.md:94	:62 -> :63	(+1)	`fresh local stack` columns, never the flag alone. Live at `0c91421` (`repos.yml
+corpus/architecture/platform-migration-status.md:96	:135 -> :136	(+1)	<!-- fence:census:begin -->
+corpus/architecture/service_taxonomy.md:409	:142 -> :143	(+1)	> so a bare `make up` started all three as unfederated husks — the `running_but_
+corpus/ops/demo/frontend-tier.md:491	:48 -> :49	(+1)	| **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **30

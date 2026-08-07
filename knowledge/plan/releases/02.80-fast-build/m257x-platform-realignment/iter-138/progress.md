@@ -39,7 +39,22 @@ say what the sentence says?) and **false of rot**, which git answers alone — `
 **Branch pre-registered in `overview.md` before the probe ran:** ≥ 5 rotted → the class is real, route
 the fence; ≤ 4 → refute it and do not build for a population of five.
 
-### Measured (`rot-probe.py`, in this iter dir)
+### ⚠️ RETRACTED AT ITER-139 — the numbers below are WRONG. Read this first.
+
+**A stratified 12-case audit at iter-139 classified 12 of 12 as FALSE POSITIVES — precision 0.0 %,
+Wilson95 [0.0, 24.3].** The figure *"127 rotted / 57.2 % of 222 decidable"* is **withdrawn**, not
+re-qualified. Cause: in this corpus a bare `` `:NN` `` is **overwhelmingly a cross-file continuation pin**
+(`` `app/main.go:15`, `:62`, `:63` ``) or a **quoted/historical/negated** pin, not a same-file
+self-citation. This iter *disclosed* that failure mode as the cause of its 241-case `out-of-range-then`
+bucket — and then reported a number over the 222 it had **not** excluded it from. **Naming a floor is not
+bounding it** (`D-M257x-139-2`).
+
+**What stands:** all 9 citation repairs (each re-derived by opening it, none from the probe),
+`D-M257x-138-3`, `D-M257x-138-5`. **`FIX-M257x-iter138-anchor-rot-fence` is re-specified** — head
+resolution first, no baseline until then. **`FIX-M257x-iter138-127-rotted-pins` is withdrawn.**
+Full record: `iter-139/decisions.md`.
+
+### Measured (`rot-probe.py`, in this iter dir) — RETRACTED, retained for the record
 
 | bucket | n |
 |---|---|
@@ -90,8 +105,9 @@ control built for precisely this, and cost one line.
 ## Close — 2026-08-08
 
 **Outcome:** the adjudicated citation set repaired at **9 sites in 6 files**, every one naming a construct
-instead of a fresh line number — and the class then **measured rather than assumed**: **127 of 222
-decidable bare-`:NN` pins (57.2 %) point at content that has moved**, every delta positive. The fence
+instead of a fresh line number — and an attempt to census the class that **iter-139 audited and
+retracted** (*"127 of 222 (57.2 %)"* was **0-for-12 on audit**; see the banner above and
+`iter-139/decisions.md`). The repairs stand; the number does not. The fence
 `corpus_citation_guard.py` excluded this class *"as not mechanically decidable"*; that is true of the
 claim and **false of rot**, so the milestone's largest measured citation defect sat in a declared blind
 spot it did not need to be in.
