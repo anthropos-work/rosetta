@@ -548,3 +548,136 @@ Nothing in this file was executed. These are handoffs, each with its owner.
 _Pre-staged 2026-08-06 by Lane D, in parallel with the M257x iter loop. Derived at rosetta branch
 `m257x/platform-realignment`, rext `4cb920a`, platform `0c91421d`, app `ad9f3c49`. Zero platform-repo
 edits; zero writes outside this file._
+
+---
+
+## §11 — RE-DERIVATION AT iter-120 (harden pass 26). What changed since this audit was written.
+
+**This audit is staler than its own header implies.** `iters_at_audit: 101`, and it was last touched at
+`cd16967` (iter-102). The milestone is now at **iter-119 + harden pass 26**. It is **17–18 iters stale**,
+and it predates harden passes 23, 24 and 25 entirely. Every "cannot know about" below is wider than a
+9-iter gap would suggest.
+
+**Instruments (three, per §5 rule 44), each stated with its count.** Re-derived at corpus `f723101`:
+
+```
+I1  /usr/bin/grep -rnoE '(FIX|CHECK|DEF|RF|INVESTIGATE|MEASURE|DECIDE|DOC|REPOINT|FENCE|HOST|DROP|WAIVE)-[A-Za-z0-9._-]+' knowledge/plan/
+      -> 4109 raw occurrences · 525 distinct (trailing `._-` normalised) · M257x tree: 290 distinct
+I2  python3 os.walk over knowledge/plan/**/*.md, BACKTICKS STRIPPED per line before matching
+      -> 2150 files · 240693 lines · 3839 occurrences · 522 distinct · M257x tree: 290 distinct
+I3  git grep -ohE '<same>' HEAD -- 'knowledge/plan/*'          -> 525 distinct · M257x tree: 290
+    git -C .agentspace/rosetta-extensions grep … @ 4304930     -> 36 distinct M257x tokens
+```
+
+**All three agree: 290 distinct tokens in the M257x tree** (FIX 105 · CHECK 84 · DOC 30 · FENCE 23 ·
+RF 16 · DEF 12 · MEASURE 12 · HOST 3 · REPOINT 2 · DECIDE 1 · INVESTIGATE 1 · DROP 1).
+
+**The audit's own Summary claims 255; re-derived at its own commit it is 259–260.** The gap is §6 rounding
+plus **6 pseudo-ids the audit coined that were never booked anywhere** (`MEASURE-M257x`, `FENCE-M257x`,
+`DOC-M257x-iterNN`, `FIX-M257x-iterNN-blocker-set` — glob placeholders; `DROP-AS-SUBSUMED`; and
+`INVESTIGATE-M257-load1-48`, real but banked only in `state.md`).
+
+### What the marker counts do and do not say
+
+`STRICKEN 8 · OPEN 119 · CLOSED 29 · UNMARKED 134`. **UNMARKED is 46 %, and the tree is append-only** —
+`git ls-tree` set-diff between the audit commit and HEAD returns **0 removed tokens**. Closure is recorded
+in prose beside a token, never by deletion, so **absence proves nothing and this split is a MARKER count,
+not a STATE count.** Exactly the limit §6 declared; restated because it is easy to read as a state count.
+
+### Instrument blind spots, measured rather than assumed
+
+| instrument | blind spot | measured |
+|---|---|---|
+| I1 | tracked-but-gitignored | **none exist** in this tree (0 lines from `git check-ignore` over `git ls-files`) |
+| I1 | NUL-bearing files | **none.** 8 `.md` files read as binary; all 8 are **0-byte empty** |
+| I2 | backtick-stripping **manufactures** tokens | **1 false positive** — `` `DEF-M239-01`-sibling `` welds into `DEF-M239-01-sibling`. The strikethrough fix has its own defect |
+| I2 | trailing sentence punctuation | **114 phantom tokens** (636 → 522). `.` is inside the class, so `` `TOKEN`. `` yields `TOKEN.` — any un-normalised count is inflated ~22 % |
+| I1+I2 | rext-resident tokens | **9 tokens exist ONLY in rext code** and are invisible to any `knowledge/plan` sweep (`FENCE-M257x-iter44/-iter77/-iter86/-iter93/-iter105/-iter106/-iter107/-iter117/-iter118`) |
+
+### NEW since the audit — 30 tokens, 0 removed
+
+Two are structural rather than routine:
+
+- **`DEF-1`…`DEF-4` are a NEW, COLLIDING numbering scheme** — real defect ids in `gate-clauses-1-2/README.md`
+  (Lane B, opened `ae192dd`), unqualified integers in the same namespace as `RF-1`…`RF-14`. Any future
+  audit grepping `DEF-` gets four unscoped hits it cannot attribute to a milestone.
+- **`FIX-M257x-harden23-json-polluted-by-provenance-stamp`** — routed, not fixed, at pass 25: 12 guards'
+  `--json` is unparseable because `stamp()` writes to stdout, and *the suite does not see it because the
+  suite works around it* (`FENCE_PROVENANCE_STAMPED=1`).
+
+### Audit items that CLOSED
+
+`DEF-M257x-iter80-storage-prod-bucket` **FILED** (`D-M257x-102-1`; now in `platform-defect-register.md`) ·
+`FIX-M257x-iter53-union-set` **DROPPED as subsumed** (`D-M257x-102-2`) ·
+`CHECK-M257x-iter38-ai-act-classification` **DROPPED** (`D-M257x-102-4`) ·
+`GATE-REGRADE-D-M257x-101-4` ratified then **SUPERSEDED** — the gate is **4 of 5**, not 2 of 5, so §1, §5 #6
+and the whole of §9 rest on a grade that no longer holds · `FIX-M257x-iter56-assignment-flake` hold retired,
+repair routed · `FIX-M257x-iter100-suite-stall` **superseded by recurrence** as
+`FIX-M257x-iter108-stackcore-suite-hangs`, still open.
+
+### Audit items STILL OPEN — exactly one, and it is the strongest signal here
+
+```
+DEF-M257x-iter101-briefing-rext-tree  ->  restated in ALL TEN of iters 110-119
+```
+
+**The audit priced it at "~30 min"** as the cheap half of F14. Seventeen iters later it is still
+*"open, delivered-unfixed"*. A 30-minute item that has outlived the audit that priced it is a pattern
+signal in its own right.
+
+### CHRONIC #1 went SILENT, which is not the same as closed
+
+`RF-2` appears in **37** iter dirs, last at iter-107, and **not once in 110–119**. `RF-3` last iter-104;
+`RF-7`/`RF-12` last iter-42; `RF-13` last iter-54; `RF-6/8/9/10/11/14` **never appear in any iter dir**
+(ledger-only). The hardening ledger's last explicit restatement of the RF queue is **Pass 19**; passes
+20–25 do not restate it at all. **F2–F6 (RF-9/10/11/8/7) have no evidence of landing and no evidence of
+being carried.** Six further tokens at **18–24 restatements each** appear nowhere in this audit and went
+quiet around iter-75/76 with no recorded fate — under the three-fate rule those are **unfated drops**.
+
+### A SECOND chronic block, built entirely after this audit
+
+| token | iter dirs | in 110–119 |
+|---|---|---|
+| `DEF-M257x-iter101-briefing-rext-tree` | 17 | **10/10** |
+| `FIX-M257x-iter107-drift-fence-satisfiable-by-prose` | 13 | **10/10** — **explicitly *de-ranked* at iter-110, then re-deferred nine more times** |
+| `FIX-M257x-iter111-staged-battery-dependency-is-underived` | 9 | 9/10 |
+| `FIX-M257x-iter111-buildbench-parse-json-is-a-noop-flag` | 8 | 8/10 |
+| `FIX-M257x-iter113-adjudication-is-judgement` | 7 | 7/10 |
+| `FIX-M257x-iter108-stackcore-suite-hangs` | 7 | 5/10 |
+| `FIX-M257x-iter115-anchor-guard-resolves-fixture-paths-live` | 5 | 5/10 |
+
+**De-ranked rather than fated, then carried in every subsequent iter, is the shape the three-fate rule
+exists to prevent.**
+
+### §8 — CONFIRMED narrowly, REFUTED as a statement about the milestone
+
+**Q1–Q4 have NOT reopened.** All ten of iters 110–119 grade `user-blocker: n`, and `D-M257x-102-5`'s
+no-escalation rule is being honoured. **So §8's own four questions remain at zero.**
+
+**But §8 is no longer a true statement about what the user must decide.** A larger question opened at
+iter-119 and §8 has no row for it: `TOK-08` OUTCOME routes the milestone to **a user scope decision**, and
+`state.md` reads **AWAITING USER SCOPE DECISION**. Note it is graded **`re-scope: y`**, not `user-blocker`
+— **a sweep keyed on the `user-blocker` field alone reports zero and is wrong.** §9 row 1 (*"User answers
+Q1–Q4 — start now"*) is likewise superseded.
+
+### Stale-again inside the audit itself
+
+- **§5 #8** — the standing `test_claim_twin_guard_iter48_answer_key` red: pass 25 states it was **not
+  re-attested**. The audit's *"RE-DERIVED: still RED at `4cb920a`"* is 17 iters old.
+- **F17 RE-ROTTED.** Landed at iter-102, marked DONE in §10. `roadmap.md:664-667` today still reads
+  *"102 iters + 22 harden passes"* and *"Gate 2 of 5 PROVEN"*; truth is **119 iters + 26 harden passes,
+  gate 4 of 5**. A Fate-1 item that was landed once and has already decayed again.
+
+### What iter-120 adds that no ledger sweep could find
+
+Three defects closed this pass were **booked and carried**, and two were **never booked at all**:
+
+- carried: `FIX-M257x-iter119-clerk-signin-token-claim-understates-surface` (closed — **and the
+  enumeration found 5 sites where both readings booked 3**), `FIX-M257x-iter116-intra-corpus-miscitation`
+  (construct half closed, all 8 + a 9th), `FIX-M257x-iter116-predicate-guard-takes-first-pin-in-block`
+  (G10 half closed; the general half stays open).
+- **never booked:** the *"Sentinel validates **every** API request"* understatement at 4 sites, and
+  FENCE-M257x-iter117's **uncollectable** test module. Neither was a deferral, so **no deferral audit
+  could ever have surfaced them.** That is the boundary of what this instrument measures.
+
+**New token booked here:** `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong`.

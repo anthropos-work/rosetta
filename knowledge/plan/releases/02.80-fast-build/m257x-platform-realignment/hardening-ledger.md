@@ -2094,3 +2094,122 @@ and two pinning tests, and one corrected in place**. What is left standing is th
 plus pass 22's still-open queue (waiver staleness, the crash-rendered-as-RED class — to which
 `clone_drift_guard` is now a **new member**, sharing the uncaught-`read_text()` shape, and
 `demo_knob_guard`'s absent vacuity control).
+
+## Pass 26 — 2026-08-07 — incremental
+
+**Iters hardened this pass:** iter-111 … iter-119 (pass 25 terminated at `fab0e13`)
+**Tiks covered since prior pass:** 9
+**Mode note:** the invocation named `--final`. **This pass is recorded as INCREMENTAL, deliberately.**
+The gate has NOT fired — clause 5 is open and the milestone is awaiting a user scope decision — and a
+final-mode entry is exactly what `close-milestone` greps for to unblock a merge. Writing one here would
+have made a pending scope decision look like a cleared gate. The trigger that was actually stated (9 tiks
+since pass 25) and the cap that was actually referenced (3 passes) are both the incremental ones.
+
+### The dimension scan, and what it found
+
+Three passes, each attacking a young instrument rather than running it. **Four live defects**, two of
+them in fences the milestone was relying on.
+
+**Pass 1 — FENCE-M257x-iter117's controls could not be COLLECTED, and took the suite with them.**
+`tests/test_corpus_citation_guard.py` annotates `-> Path | None` at module level with no
+`from __future__ import annotations`. PEP 604 needs 3.10; the **only** interpreter on this host with
+pytest is `/usr/bin/python3` == **3.9.6** (`python3` on this shell is homebrew 3.14 and has no pytest —
+which is why every count in this entry names its interpreter).
+
+```
+BEFORE  /usr/bin/python3 -m pytest <every rext test_*.py>
+        -> 2837 tests collected, 1 error ... Interrupted: 1 error during collection
+AFTER   -> 2876 tests collected in 0.73s
+```
+
+Two harms, the second larger: the census fence's mutation **and** anti-vacuity controls had **never
+executed** (the file landed at iter-117, after pass 25), and a collection error **aborts the run**, so one
+module suppressed 2,836 other tests. `tests/test_test_collection_fence.py` was GREEN throughout — it
+fences statement ORDER, which cannot see a module that never imports. It now carries an **importability**
+arm (6 RED-proofs, mutation-verified). Once collectable, iter-117's own controls were **proven to fire**:
+`return [], census` → 6 RED; `docs = []` → 9 RED including the anti-vacuity arm. **So iter-117 is
+UNREACHABLE, not vacuous** — a distinction the eighth-vacuous-fence tally should not swallow.
+
+**Pass 1 — G10 was a FALSE RED on a CORRECT corpus.**
+`FIX-M257x-iter116-predicate-guard-takes-first-pin-in-block`, booked iter-116, carried through iter-119.
+`sentinel.md:5` names `d11a403` in one clause and `0c91421d` in the next; G10 took the FIRST pin and
+graded the second clause's count at the first clause's ref. **The RED appeared the moment iter-115's
+repair added the second, MORE PRECISE ref** — the fence penalised the precision this milestone spent the
+release adding. `_governing_pin` now takes the nearest pin at or before the claim. Reach moved the right
+way: **3 → 0** claims graded at a weaker historical ref, i.e. all 6 real claims now checked at the live
+checkout. Family **15 GREEN/1 RED → 16 GREEN/0 RED**. Only G10 is re-pointed; the token stays **OPEN**
+for the other arms.
+
+**Pass 2 — `fence_provenance` was blind to its own subject.** `sha = None` in `fence_tree()` → every
+family verdict reads *"provenance unknown"* → **34 passed**. Its `TestAntiVacuity` is a good control
+aimed at the wrong noun: it asserts *which modules exist*, when the subject is *the provenance value*.
+**A fence can hold a correct anti-vacuity control and still be vacuous about its actual claim.** Closed
+with 4 tests, both halves (real sha on a real tree; UNKNOWN still works on a non-git dir).
+MUT `sha=None` → 3 RED · MUT `sha="0"*40` → 1 RED.
+
+**Pass 3 — FENCE-M257x-iter118's mutation control could not isolate its own mechanism.**
+`_NOT_A_CITATION` replaced with a never-matching pattern — the exact pre-iter118 behaviour — → **6
+passed**. `is_not_a_citation` ORs three clauses and every URL the controls tested contains `//`, so the
+broad clause satisfied every assertion alone. **A mutation control is only a control for the clause it can
+ISOLATE.** Closed with clause-isolating cases (`redis:6379`, `grpc:9000` — regex-only;
+`//cdn.example.com/x.js` — `//`-only), each asserted to be isolated so fixture drift cannot un-isolate it.
+MUT-B → 2 RED (was 0) · MUT-C → 1 RED.
+
+**Held under the same attack:** `clone_drift_guard` (D1 blinded → 6 RED; D1+D2 → 7 RED; its anti-vacuity
+control correctly stays GREEN under blinding because it measures REACH, not findings — noted so a future
+pass does not "fix" it) and `anchor_offset_guard` (2 sites blinded → 8 RED).
+
+**Method defect found in my own instrument, and it is the reason three findings above are trustworthy:**
+**three mutation attempts silently failed to apply** — a `.append` regex that missed multi-line calls, a
+name set omitting `drifted`, and a single-quoted pattern against a double-quoted file — and each read as
+*"the controls survive."* **A mutant that did not apply and a mutant that survived are indistinguishable
+in the output, and only one of them is a finding.** Every mutation in this pass now carries
+`assert count == 1, "MUTATION DID NOT APPLY"` before it runs.
+
+### Coverage delta on touched files
+
+| module | before | after |
+|---|---|---|
+| `tests/test_platform_predicate_guard.py` | 167 | **179** (0 skipped; the first anti-vacuity arm SKIPPED on a wrong attribute and was made fail-closed) |
+| `tests/test_fence_provenance.py` | 34 | **38** |
+| `tests/test_test_collection_fence.py` | 10 | **16** |
+| `tests/test_anchor_construct_denominator.py` | 6 | **9** |
+| `tests/test_corpus_citation_guard.py` | **0 collectable** | **19** |
+| whole-tree collection | 2837 + 1 error (**run aborted**) | **2876, 0 errors** |
+
+**Tests added:** +44 across 5 modules (12 · 4 · 6 · 3 + 19 recovered).
+**Bugs surfaced + fixed inline:** 4 (`cbb60de`, `4bbe73e`, `b9bb2b6`; the corpus-side repairs `7f19846`,
+`a5f0d81`, `f723101`).
+**Flakes stabilized:** none found. Flake gate: 3 consecutive runs of the pass-26 tests → **35 passed** at
+3.35 / 3.36 / 3.37 s.
+
+**Knowledge backfill:** `corpus/ops/platform-alignment.md` — `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong`
+(`anchor_construct_guard` detects *"resolves to blank"*, not *"resolves to the right construct"*, so
+iter-119's 8-item wrong-construct class is itself a floor). `deferrals-audit.md` §11 — the re-derived
+inventory. `progress.md` — the clause-5 measurement section.
+
+**Suite-completion gap, restated so it cannot read as a pass:** `stack-core`'s full `pytest tests/` still
+does not complete on this host (`FIX-M257x-iter108-stackcore-suite-hangs`, **open**). **No whole-suite
+total is quoted anywhere in this entry** — every count names its invocation. The pre-existing
+`test_claim_twin_guard_iter48_answer_key::test_02` red was not run by any scoped invocation here and is
+**not re-attested** — unchanged, not re-verified.
+
+**Stop condition: cap reached without stabilization** — the 3-pass incremental cap fired and pass 3 still
+surfaced a live defect, so the dimension scan did not come up empty.
+
+### The cap has now fired without stabilizing THREE consecutive times (22, 25, 26), and that is the finding
+
+Recorded plainly rather than papered over, because the pattern says something the individual passes do not.
+
+**It is not that the passes are failing.** Each of the three found real, live defects and closed them.
+**It is that the supply has not thinned.** Three passes at the cap, three different young fences, and the
+defect class is the same every time: *a fence that reports GREEN over something it never actually checked*
+— unreachable controls (iter-117), the wrong noun (`fence_provenance`), the wrong clause (iter-118), the
+wrong pin (G10). That is now **twelve** instruments in this milestone found green-over-nothing, and the
+last four were found by **attacking** fences that had passed every prior harden pass.
+
+**The honest reading: harden passes on this family are still finding first-order defects, so no pass has
+yet measured a coverage plateau.** A fourth pass is not requested — the remedy is not more passes of the
+same kind. What each of the four defects has in common is that the fence's control was aimed at something
+adjacent to its claim, and no amount of running the suite surfaces that; only mutating the named mechanism
+does. **That is an input to the scope decision the milestone is holding, not a request to continue.**

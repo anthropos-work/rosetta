@@ -661,10 +661,16 @@ mutation classification, the batch-gate rule) **+ `corpus/services/clerkenstein.
 re-scoped)
 
 ### M257x: Platform re-alignment
-**Status:** `in-progress` — **102 iters + 22 harden passes closed** (branch `m257x/platform-realignment`).
-Gate **2 of 5 PROVEN** (`D-M257x-101-4` withdrew the long-booked *"4 of 5"*): clauses 3–4 hold at `0c91421`;
-clauses 1–2 are **UNPROVEN at origin HEAD**, not refuted, and re-proving them is a **close blocker**
-(`D-M257x-102-3`); clause 5 open. *Was `planned` at 101 iters — corrected at iter-102 (deferral-audit F17).*
+**Status:** `in-progress` — **AWAITING A USER SCOPE DECISION**, **119 iters + 26 harden passes closed**
+(branch `m257x/platform-realignment`).
+Gate **4 of 5**: clauses **1–2 PROVEN** at platform `0c91421` (clause 2 **MET WITH DISCLOSURE** — Lane B's
+`gate-clauses-1-2/` dossier), clauses **3–4 hold**, **clause 5 open** (`P = 22 / N = 28`, floor **≥ 46**).
+Both strategies refuted by their own pre-registered arithmetic — `TOK-07` at iter-116, `TOK-08` at
+iter-119 — and per `TOK-08`'s sealed rule **no `TOK-09` is authored**.
+*Was `planned` at 101 iters — corrected at iter-102 (deferral-audit F17). **F17 RE-ROTTED and is corrected
+again at iter-120**: this block still read "102 iters + 22 harden passes / Gate 2 of 5" seventeen iters
+later. A Fate-1 item that decays twice is a standing-maintenance item, not a one-time fix — see
+`deferrals-audit.md` §11.*
 **Shape:** `iterative`
 **Dir:** [`releases/02.80-fast-build/m257x-platform-realignment/`](releases/02.80-fast-build/m257x-platform-realignment/overview.md)
 **Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it

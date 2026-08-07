@@ -2216,3 +2216,70 @@ defect and would also explain why no amount of accessor work has helped.
   and #8 (the latter narrowly, boundary disclosed). All 14 clones **identical at close and open**, fetch
   times unchanged, **zero corpus edits inside the measuring pass**. Gate **4 of 5**; clause 5 **NOT met**
   — see iter-119/progress.md + adjudication.md + decisions.md
+
+- harden pass 26 + iter-120 repairs (**no reading taken; `P` is UNMEASURED, not unmoved**): the
+  consequence-graded defects closed, the 8 wrong-construct citations closed, and **two live fence defects
+  found by attacking the young instruments rather than running them.** `clerk-integration.md:40`'s *"only"*
+  is repaired **by enumeration** — three instruments over the whole clone set return **five** sign-in-token
+  minting sites, and **two of the five appear in NO prior reading** (iter-116 and iter-119 both named
+  three). A **second** security-surface understatement was found and repaired at **four** sites:
+  *"Sentinel validates **every** API request"* — the platform's own source comment calls that blanket gate
+  **FAILS OPEN** and six paths reach the resolver before the single Sentinel call. Fence side:
+  FENCE-M257x-iter117's mutation AND anti-vacuity controls **could not be COLLECTED** on this host (PEP 604
+  under a 3.9 pytest) and their collection error **aborted all 2,837 tests**; G10 was a **false RED on a
+  correct corpus**, firing because iter-115's repair added a *more precise* ref. Both fixed, both
+  mutation-proven. Gate **4 of 5**; clause 5 **NOT met** — see the hardening ledger, pass 26.
+
+## Clause 5 — what the milestone measured about its own instrument
+
+**Stated as measurement. This section makes no recommendation and argues for no change to the clause.**
+Clause 5 stands exactly as written, as ruled four times: *KB-fidelity audit GREEN, or YELLOW with 0
+blockers, over `corpus/services/**` + `corpus/architecture/**`.* Nothing below re-cuts, reinterprets or
+narrows it.
+
+### 1. `P` fell 37 → 22, and the fall is SAMPLING, not drainage
+
+Between iter-116 and iter-119 the corpus moved **5 in-place lines, net zero**, and **none of iter-116's 37
+predicates was repaired**. The headline `P` fell 37 → 22 while the **measured floor ROSE 37 → ≥ 46**. A
+number that falls while its own lower bound rises is not measuring the quantity its name implies.
+
+### 2. Every `P` this milestone published samples roughly a third of a standing pool
+
+The series is **22, 22, 24, 37, 22**. iter-119 was the first true seat-level replicate — partition
+bit-identical to iter-116's — and re-found **13 of iter-116's 37 (35.1 %)**. Within iter-119 the two
+passes recalled **63.6 % and 77.3 %** against their own union, and **~35 %** against the floor.
+
+**A third, independent measurement of the same thing, obtained this pass by ENUMERATION rather than by
+replicate reading:** on the single predicate *"where are Clerk sign-in tokens minted"*, the true answer is
+**five** sites. iter-116 booked three. iter-119 booked the same three. **Two readings, run three iters
+apart, independently missed the same two sites** — a per-predicate recall of **3/5** with the misses
+*correlated*, not random. Correlated misses are the case where more passes do not converge.
+
+### 3. Therefore a gate phrased as *"a reading that returns zero"* cannot be REACHED by this instrument
+
+Not *"is not yet met"* — **cannot be reached**, because the instrument cannot see most of what it must
+return zero on. Two passes at ~35 % recall against a floor cannot demonstrate the absence of what neither
+saw. **This is a statement about the instrument, not an argument about the clause.**
+
+A fourth bound arrived this pass, from the fence side, and it bounds the *classes* too:
+`anchor_construct_guard` detects **"resolves to blank"**, not **"resolves to the right construct"**. A
+ninth wrong-construct citation sat in `platform-alignment.md` GREEN for the whole milestone and became
+visible only when an unrelated edit shifted its target onto a blank line. So iter-119's *"8 of 22
+wrong-construct"* is itself a **floor**, measured by an instrument with a known and now-quantified blind
+side — `FIX-M257x-iter120-anchor-guard-detects-blank-not-wrong`.
+
+### 4. 0 of 16 small-class verdicts were promoted from JUDGED to PROVEN
+
+**A census measures citations; a small-class verdict claims a ceiling; neither census measures a ceiling.**
+The two censuses (iter-117: 1,520 intra-corpus citations; iter-118: 1,070 class-2 candidates) closed the
+**resolution** half of intra-corpus citation at 100 % reach — and the **construct** half, which no machine
+in this family reads, GREW as a share of the pool, **27 % → 36 %**. Measured error rate on the judged set
+is **≥ 13.3 %**.
+
+### 5. What is NOT claimed here
+
+- **No point estimate of the pool.** Chapman is retired; floors only (**≥ 46 at `194361e4`**).
+- **No claim that the corpus got worse.** iter-120's repairs are real repairs against source.
+- **No claim that the remaining pool is small, or large.** It is unmeasured above the floor.
+- **No successor strategy.** `TOK-07` and `TOK-08` were each refuted by their own pre-registered
+  arithmetic; per `TOK-08`'s sealed rule there is **no `TOK-09`**, and none is authored here.
