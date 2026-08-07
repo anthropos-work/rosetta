@@ -83,7 +83,13 @@ the **corpus publishes no error rate at all** — `git grep -E '[0-9]+% of (the 
 
 ## 5. Guards
 
-**22 members · 20 GREEN · 0 RED · 1 could-not-check · 4 not-run** after repair (from 15 GREEN · 2 RED).
+**22 members · 17 GREEN · 0 RED · 1 could-not-check · 4 not-run** after repair (from **15 GREEN · 2 RED**).
+**Not a whole-family green, and the runner's own summary says so** — the family exits **2**, not 0.
+
+> **This line said "20 GREEN" until the closing re-run.** I wrote the total from arithmetic on the
+> before-state instead of reading the after-run's own summary — the exact substitution of inference for
+> measurement this milestone exists to catch, committed in the paragraph reporting the guards. Corrected
+> against `guard-family: 17 GREEN · 0 RED · 1 could-not-check · 4 not-run`.
 Invocation: `guard_family.py --repo-root <rosetta> --platform <rosetta>/stack-demo/platform`.
 
 - `platform_alignment_guard` is the **could-not-check**: 5 citations to `infrastructure` / `db-backup`
