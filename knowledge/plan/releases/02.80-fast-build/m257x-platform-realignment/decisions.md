@@ -2018,3 +2018,54 @@ invocation and not the expected duration, the 632 s would have been banked as th
 **Not claimed:** that the whole-suite total is green. It is **1 failed / 1125 passed**, the 1 being the
 standing documented `test_claim_twin_guard_iter48_answer_key::test_02` — which this run **re-attests** for
 the first time since iter-111 rather than carrying it as *"unchanged, not re-verified."*
+
+## iter-122 — six decisions. The census is an instrument, not a strategy.
+
+**Framing that binds all six:** the user ruled to fund a materially different instrument rather than close
+at 4 of 5. **Clause 5 is not re-cut, reinterpreted, narrowed or argued by any decision below**, and none
+of them is a successor strategy — `TOK-08`'s sealed rule still bars one, and there is no `TOK-09`.
+
+### `D-M257x-122-1` — the instrument is PRE-REGISTERED before it is built, and it can fail
+
+Design + six falsifications sealed at `1262ca7` ahead of any code, with the `F1` audit sample **drawn and
+committed in the same commit**. Two fired and are reported as headlines rather than footnotes: **`F5`
+band 1 FAILED low** (0.70 % vs a sealed ≥ 4 %) and **`F2` FIRES** for tier 1 as a whole (525 of 2,603,
+extrapolating to ~60 adjudicator runs). `F1`, `F3`, `F4`, `F6` did not fire and each was checked.
+
+### `D-M257x-122-2` — the census MAY NOT become the grader, and that is enforceable, not promised
+
+`F4` has two halves. The **structural** half is a control: `SCOPE` is asserted equal to the clause-5
+surface, so the instrument cannot widen or narrow what it measures. The **rhetorical** half is a standing
+obligation: any sentence in this milestone's deliverables asserting clause 5 is met without a graded read
+that returned zero **is a defect of iter-122**. The gate is **4 of 5** and no number the census prints is
+`P` or `N`.
+
+### `D-M257x-122-3` — a hunted sample's error rate is not a population rate, and the milestone's own numbers were the former
+
+Measured, not argued: iter-119's **≥ 13.3 %** on its judged set vs **0.70 %** over 427 exhaustively
+adjudicated members of the same class — **~19×**. This retires nothing and retracts nothing about the
+individual defects those readings found, which were real and were repaired. **What it retires is the use
+of any read-derived rate as a statement about the corpus.** Rates from a reading describe the reading.
+
+### `D-M257x-122-4` — the substrate is part of the measurement, and a stale one FABRICATES defects
+
+The census read clone working trees; 6 of 13 are behind their own fetched `origin/main`. Four independent
+adjudicators then booked a **true** corpus claim as contradicted. Because the clone set belongs to a live
+demo stack this milestone may not touch, the resolution is **disclosure, not correction**: substrate rides
+with every materialization, the staleness table prints on every run, and `KNOWN_WEAKNESS` clause (5) names
+the failure mode. **Standing rule: before believing a defect, read the substrate line.**
+
+### `D-M257x-122-5` — a bare basename is REFUSED, never resolved by proximity
+
+Guessing between two files that equally satisfy a citation is the wrong-construct error the census exists
+to find. 205 of 695 line-pinned citations are bare basenames, so this is the common case: unique → resolve,
+ambiguous → `unresolved-ambiguous` with the candidates **named** and the body **empty**. The 41 pairs
+already dispatched under the old behaviour are quarantined by name and excluded from every rate.
+
+### `D-M257x-122-6` — the tier-2 fence is a RATCHET, and deliberately not a zero-tolerance gate
+
+1,151 unevidenced assertions cannot be repaired in one iter, and a fence demanding zero would be a
+**standing red**, which `D-v28-3` makes an invariant violation. So the fence asserts the **direction**,
+**per file** so debt cannot be shuffled under a flat total. It is the only mechanism in this milestone
+that acts on tier 2 at all. Regenerating the baseline requires a recorded reason — the file says so in its
+own `_doc`.

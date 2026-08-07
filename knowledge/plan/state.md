@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative) — **AWAITING USER SCOPE DECISION**, 121 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. `TOK-08` REFUTED at iter-119. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative), 122 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x AWAITING A **USER SCOPE DECISION**. **Gate 4 of 5**; clause 5 open and met ONLY by a reading that returns zero — four user rulings, never re-cut. **TWO strategies have now been refuted by their own pre-registered arithmetic**: `TOK-07` (repair-and-read) at iter-116 (`P = 37` vs `P >= 15`) and `TOK-08` (the USER's enumerate-then-read re-scope) at iter-119 (`P = 22` vs `P >= 19`). Per `TOK-08`'s own sealed rule **NO successor strategy is authored — there is no TOK-09.** iter-119 also took the milestone's FIRST test-retest reading: it re-found only **13 of iter-116's 37 (35.1 %)** over a corpus 5 in-place lines away, so **`P` fell while the floor ROSE**. Chapman retired — floors only (**>= 46 at `194361e4`**). **Pass 26 (2026-08-07) closed both consequence-graded security defects + all 8 wrong-construct citations + 4 live fence defects; the 3-pass cap fired without stabilizing a THIRD time (22/25/26) — recorded as a finding (§5 rule 53), no 4th pass requested.** **iter-121 (2026-08-07) did the work that is needed under EITHER scope outcome and took NO reading:** 2 platform findings FILED (register 5 → 7 entries), the suite-hang token CLOSED on the ambiguity (`progress_beacon.py`; §5 rule 51), the anchor-guard widening DECLINED with a measurement + the floor disclosed in the instrument, and the close gate's one-field sweep MECHANIZED (`blocking_state_guard.py`; §5 rule 52) — which found 8 blocking gradings where the audit named 3. **The first whole-suite total this milestone can quote: 1 failed / 1125 passed / 1032.57 s** — the 1 is the standing documented RED, now re-attested; and the first run found a battery RED that had been live and invisible since iter-117. Guard family **21 members · 17 GREEN · 0 RED · 4 not-run** (still not a whole-family green). **A TENTH quantifier defect was found IN iter-120's own repair** and fixed at 3 sites. Detail: milestone `progress.md` § iter-121 + § *Clause 5 — what the milestone measured about its own instrument*, `decisions.md` `D-M257x-121-1..5`, `deferrals-audit.md` §12. POINTER field per `context.md` § state.md contract; do not grow it back."
+phase: "M257x iter loop. **Gate 4 of 5**; clause 5 open and met ONLY by a reading that returns zero — four user rulings, never re-cut. **The user RULED (2026-08-07) to fund a materially different instrument rather than close at 4 of 5**, and iter-122 built it: the **CLAIM CENSUS** (`claim_census_guard`, FENCE-M257x-iter122), design + 6 falsifications sealed at `1262ca7` before a line existed. **Two falsifications FIRED and are the headlines**: `F5` band 1 FAILED LOW — the tier-1 wrong-construct rate is **3 / 427 = 0.70 %** against a sealed `>= 4 %`, i.e. **a hunted sample over-states the population rate ~19x, and every error rate this milestone published from a graded read is a rate over a hunted sample** (`D-M257x-122-3`); and `F2` FIRES — exhaustive tier-1 adjudication was NOT achievable in run 78 (**525 of 2,603 pairs**, extrapolating ~60 adjudicator runs), so **no corpus-correctness percentage is published**. What WAS exhaustive: **525 of 525** materializable line-pinned citations, 12 blind adjudicators, 0 seats lost. **TIER 2 is net-new ground no fence in this family had reached: 1,175 factual assertions carry no citation and 1,151 (98.0 %) carry no hedge either** — enumerated line by line, fenced by a per-file ratchet. The census's own THREE defects are recorded first (2 caught by its controls, 1 by the adjudicators — **a stale substrate MANUFACTURES evidence against a true claim**, `D-M257x-122-4`). `F1` blind recall **34/36 = 94.4 %** vs a `>= 90 %` floor. **The gate did NOT move; no reading was taken; `P` is UNMEASURED.** Chapman retired — floors only. Successor strategies remain FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMENT, not a strategy. Detail: milestone `progress.md` § iter-122 + `iter-122/adjudication.md` + `decisions.md` `D-M257x-122-1..6`. POINTER field per `context.md` § state.md contract; do not grow it back."
 last_updated: "2026-08-07"
 ---
 
@@ -39,33 +39,31 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **121 iters closed** (+ 26 harden passes). Gate **4 of 5**.
+M257x iter loop, **122 iters closed** (+ 26 harden passes). Gate **4 of 5**.
 
 - **Clauses 1–2 — CLOSED** by the concurrent lane at platform `0c91421`. **Clause 2 is MET WITH DISCLOSURE
   and the disclosure travels with it forever: a freshly built stack failed the first full run in 2 of 2
   attempts, so it is never recorded as a clean pass.** Every cycle timing, the reflog freeze-proof and the
   suite verdicts live in the dossier — see the pointer list below.
 - **Clauses 3–4 — hold**, asserted by fences that are watched going RED, not by inspection.
-- **Clause 5 — the only open one**, met ONLY by a reading that returns zero. iter-103's 14-seat double
-  reading over the repaired tree returned **`N = 33`** against a **pre-registered, pre-sealed** rule →
-  **the burn-down leg does not reach the residual.** By **predicate** the pool did not move — **22 then,
-  22 now**; by anchor 24 → 33. Repair efficacy is nonetheless **confirmed** (21 of 22 predicates closed).
-  `N` stayed up because two inflows feed the residual that repair does not touch: **clone advance** (61 %)
-  and **the repair's own induction** (21 %). **Inflow ≈ outflow; running the loop faster does not close it.**
+- **Clause 5 — the only open one**, met ONLY by a reading that returns zero. Five graded readings
+  (iters 98–119) established that **inflow ≈ outflow** — repair efficacy is confirmed, yet the residual
+  does not fall, because clone advance and the repair's own induction feed it. Each reading's arithmetic
+  is owned by its own `iter-NN/adjudication.md`; none is current.
 
-**There is NO active strategy, and that is the state — not an omission.** `TOK-06` (fence the inflows,
-iter-104) delivered its steps 0–3 and was superseded by `TOK-07`; **`TOK-07` (repair-and-read) was refuted
-at iter-116** by its own pre-registration (`P = 37` vs `P ≥ 15`), and **`TOK-08` — the USER's
-enumerate-then-read re-scope — was refuted at iter-119** the same way (`P = 22` vs `P ≥ 19`). `TOK-08`'s
-sealed rule **bars a successor**, so there is **no `TOK-09`** and none will be authored. The chain in full
-is in `decisions.md`.
+**There is NO active strategy, and that is the state — not an omission.** `TOK-07` (repair-and-read) was
+refuted at iter-116 by its own pre-registration, and `TOK-08` (the USER's enumerate-then-read re-scope) at
+iter-119 the same way. `TOK-08`'s sealed rule **bars a successor**, so there is **no `TOK-09`**. The chain
+in full is in `decisions.md`. **What iter-122 added is an INSTRUMENT, not a strategy** — the claim census
+— and `F4` books any sentence treating it as clause 5's grader as a defect of that iter.
 
-**Chapman is RETIRED for this milestone.** Its independence assumption measured **17 %** then **61 %** on
-one byte-identical instrument, so every point estimate derived from it is unusable. **Only the floor
-survives: ≥ 24 at `8f04d3a`, ≥ 33 at `e6aed2e`, ≥ 46 at `194361e4`.** **A zero reading is not near** —
-and iter-119 measured the instrument's own test-retest recall at **~35 %**, so the milestone's own
-position is that clause 5 as phrased cannot be *reached* by it. **That measurement is the input to the
-scope decision; the decision is the user's and is not pre-empted here.**
+**Chapman is RETIRED for this milestone**; only floors survive (**≥ 46 at `194361e4`**). iter-119 measured
+the graded read's own test-retest recall at **~35 %**. **iter-122 measured the complementary fact and it
+cuts the other way: the error RATE those readings published is a sample artifact — 0.70 % over 427
+exhaustive adjudications against ≥ 13.3 % over a hunted sample (`D-M257x-122-3`).** Both statements hold
+at once: the readings could not see most of the surface, *and* they over-stated the defect density of what
+they did see. The residual pool is therefore **unmeasured above a floor that is now larger and better
+named** — 1,908 tier-1 pairs unadjudicated, 1,151 tier-2 assertions unverified.
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):
@@ -77,10 +75,12 @@ scope decision; the decision is the user's and is not pre-empted here.**
 - [`gate-clauses-1-2/README.md`](releases/02.80-fast-build/m257x-platform-realignment/gate-clauses-1-2/README.md)
   — **the owner of every clause 1 & 2 number**: the five cold-cycle timings, the reflog freeze-proof, and
   the disclosed first-run failure
-- [`iter-103/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-103/adjudication.md) — **the current reading** (`N = 33`; the burn-down verdict, the composition finding, the Chapman retirement)
-- [`iter-101/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-101/adjudication.md) — the replicate, whose 24 iter-103 measures overlap against
-- [`iter-99/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-99/adjudication.md) — the reading before that
-- [`iter-98/discovery-pool.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-98/discovery-pool.md) — the pool measurement
+- [`iter-122/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-122/adjudication.md)
+  — **the CLAIM CENSUS**: the two-tier enumeration, the 525/525 exhaustive adjudication, the two fired
+  falsifications, and the census's own three defects. Its sealed design is `iter-122/pre-registration.md`
+- [`iter-119/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-119/adjudication.md)
+  — the last graded reading (`P = 22`), and the test-retest measurement that retired the series
+- the earlier readings (iters 98–116) live in their own iter dirs; none is current
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 
@@ -96,6 +96,10 @@ scope decision; the decision is the user's and is not pre-empted here.**
   wrong construct. When a guard qualifies its own claim, the qualifier is the blind spot — read it first.
   **iter-121: the guard now PRINTS its own floor** (`KNOWN_WEAKNESS`, on every run + in `--json`) —
   widening it was measured and declined (`D-M257x-121-4`). **Every count of that class is a floor.**
+- **Read the SUBSTRATE before believing a defect.** A verdict is taken against a checkout, and a checkout
+  behind its own fetched `origin/main` does not merely fail to confirm a claim — **it manufactures
+  evidence against a true one**. iter-122: 6 of 13 clones stale (`storage` by 20 commits), 4 independent
+  adjudicators booked a true claim as contradicted. Full derivation: `D-M257x-122-4`.
 - **Every mutation asserts it APPLIED before its result is interpreted**, and a mutation is only a control
   for the clause it can **isolate**. Three of harden pass 26's own mutations silently failed to apply and
   each read as *"the controls survive."* §5 rule 53.
@@ -120,12 +124,11 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 `HARDEN-CAP-ACCEPTED-D105` is in [`m256…/decisions.md`](releases/02.80-fast-build/m256-playthrough-sharpening/decisions.md).
 
 ## Recently closed milestones (max 5)
-- **M256 — 2026-07-30** · playthrough sharpening (iterative) · **`closed-on-gate`**, 32 iters / 3 harden passes
-  · 18 → **30 live Playthroughs**, mutating 1 → 12, controls 0 → 28/30 · **all three gate clauses proved
-  unmeetable as first authored** · ~43 checks that reported success without checking · 4 Fate-1, 10 Fate-3
-  (6 → M258, 2 → M257), 1 drop, **3 awaiting the user's signature**, 0 escape-hatch · 0 platform edits.
+- **M256 — 2026-07-30** · playthrough sharpening (iterative) · **`closed-on-gate`**, 32 iters / 3 harden
+  passes · 18 → **30 live Playthroughs** · **all three gate clauses proved unmeetable as first authored**
+  · full narrative: `roadmap.md` § M256.
 - **M255 — 2026-07-28** · build-bench & host-headroom (section, HARD barrier) · **VERDICT GO** · baseline
-  n=3 p50 666.29 s on `billion` · 3 Fate-1, 4 Fate-3 → M257, 0 escape-hatch · 0 platform edits.
+  n=3 p50 666.29 s on `billion` · full narrative: `roadmap.md` § M255.
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;
@@ -166,5 +169,4 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-07-30 — M256 closed-on-gate and merged. Stable resting point: both trees clean, rext tagged
-on origin, suites green, demo-2 up with its drifted cockpit fixture restored (sha 99e2f315)._
+_Last updated 2026-08-07 — M257x iter-122 (the claim census). Both trees clean and pushed; `demo-1` up._

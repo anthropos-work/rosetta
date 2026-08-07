@@ -2420,3 +2420,136 @@ is still holding on the iter-119 scope decision. This iter neither advances nor 
 (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome:
 **exit-3**
 **Decisions:** `D-M257x-121-1` … `D-M257x-121-6` (see [`decisions.md`](decisions.md))
+
+---
+
+## iter-122 — the CLAIM CENSUS: the instrument the user funded (2026-08-07)
+
+**Type:** tik · `iter_shape: instrument + census + adjudication` · **No reading was taken and none is
+implied. `P` is UNMEASURED.** Clause 5 is not re-cut, reinterpreted, narrowed or argued, and **the gate
+did not move — it stands at 4 of 5.**
+
+**The user ruled.** Given the honest choice — close at 4 of 5 with clause 5 documented as
+measured-and-unmet, or fund a materially different instrument — they chose the instrument. iter-122
+built it, and **sealed its design and its six falsifications before a line of it existed**
+(`1262ca7`), exactly as `TOK-07` and `TOK-08` were sealed. The full result is
+[`iter-122/adjudication.md`](iter-122/adjudication.md); the sealed design is
+[`iter-122/pre-registration.md`](iter-122/pre-registration.md).
+
+### 1. The headline is a FAILED BAND, and it failed on the low side
+
+`F5` sealed the tier-1 `DOES-NOT-SUPPORT` rate at **≥ 4 % and ≤ 25 %**, built from iter-119's
+*"measured error rate on the judged set is ≥ 13.3 %"*. Measured over **427 decidable** adjudications:
+**3 = 0.70 %**, and **1 = 0.23 %** once two verdicts are traced to the census's own stale substrate (§4).
+
+**A hunted sample over-states the population rate by roughly nineteen-fold.** A reading stops on the
+sentences that look wrong, so the rate among sentences a hunter stopped on was never the rate in the
+population. **Every error rate this milestone published from a graded read is a rate over a hunted
+sample** — that is a fact about the milestone's own prior measurements, and it was obtainable only by
+censusing what a reading sampled.
+
+The other two bands held: tier-2 count **1,151** (band 200–2,500); tier-1 pairs **2,603** (band
+900–3,000).
+
+### 2. TIER 1 — 525 of 525 adjudicated, exhaustive over the class it names
+
+**2,603** (claiming unit × citation) pairs over the 40 files, across **932 of 2,485** claiming units.
+**695** carry a line pin; **525** materialized; **all 525 were adjudicated** by 12 blind adjudicators,
+**525 rows for 525 items, 0 seats lost**, verdicts committed verbatim before aggregation.
+
+Clean tally (41 quarantined, §4): **`SUPPORTS` 407 · `PARTIAL` 17 · `DOES-NOT-SUPPORT` 3 ·
+`UNRESOLVABLE` 57.**
+
+**The dominant non-`SUPPORTS` class is not error — it is UNCHECKABILITY.** 57 of 484 (11.8 %) are pinned
+to commits this tree is not at, with the construct alive at a different line (`app/main.go`'s handler
+registrations pinned `@ b948604f` are ~110 lines adrift at `ad9f3c49`). **A re-pin backlog, not a
+retraction backlog — and nineteen times the larger finding.**
+
+**One genuine wrong-construct citation, found and repaired:** `academy-backend.md:62` cited
+`app/main.go:471-472` for a construction at `:524-525` — **53 lines short of its own subject**, on a
+clone level with `origin/main`, so no substrate excuse. `app`'s own `CLAUDE.md` names `:524`/`:525`.
+
+**`F2` FIRES for tier 1 as a whole and is reported with arithmetic rather than a flattering number:**
+525 of 2,603 = **20.2 %**; extrapolating ≈ **60 adjudicator runs / ~10.4 M subagent tokens**, and the
+1,908 unadjudicated pairs are *harder* (826 bare shas, 525 unpinned files, 507 doc-links). **The honest
+form is "100 % of a named 525-pair class", never "20 % of the corpus checked."**
+
+### 3. TIER 2 — the half no fence in this family had ever looked at
+
+Denominator named per `F6`: **3,292 assertion candidates** in the 40 files.
+
+| | count | share |
+|---|---|---|
+| CITED (a citation in its block) | 2,117 | 64.3 % |
+| UNCITED but **HEDGED** | **24** | **0.7 %** |
+| UNCITED and **UNHEDGED** → the defect | **1,151** | **35.0 %** |
+
+**1,175 factual assertions carry no citation; 1,151 of them — 98.0 % — carry no hedge either.** The
+iter-093 principle is honoured in **24 places out of 1,175 opportunities**. They live in **975 blocks
+across 39 of the 40 files**, enumerated line by line in
+[`iter-122/raw/tier2-unevidenced-assertions.tsv`](iter-122/raw/tier2-unevidenced-assertions.tsv).
+
+**UNEVIDENCED, never FALSE**, and **a FLOOR** — block scope exonerates a whole paragraph on one citation.
+Both disclosures print in the guard's own output.
+
+### 4. The census's THREE OWN defects, recorded first
+
+| # | defect | caught by | consequence |
+|---|---|---|---|
+| 1 | the declared archived/external/rext artifact names were never unioned into the derived set — `redis`, `clerk`, `directus`, `skiller` invisible to the proxy | **mutation control 11**, pre-publication | tier 2 undercounted by **229** (922 → 1,151) |
+| 2 | a **bare basename** resolved by probing clone dirs alphabetically — a silent guess | **control `test_22b`**, post-dispatch | **41 of 525** quarantined; independently flagged by **6 of 12** adjudicators |
+| 3 | materialization read the clones' **WORKING TREES**; 6 of 13 are behind their own fetched `origin/main` | **the adjudicators**, not a control | **2 false `DOES-NOT-SUPPORT`** verdicts |
+
+Defect 3 is the sharpest thing this iter learned. `storage` is **20** commits behind, `messenger` 7,
+`jobsimulation` 4, `next-web-app` 4, `cms` 2, rext 1. Four independent adjudicators booked the corpus's
+M810 claim as contradicted — and **the corpus is right**: `6092c6d2` **is an ancestor of `origin/main`
+`82cb66ec` in the very clone the census read from**.
+
+> **A stale substrate does not merely fail to confirm a claim — it manufactures evidence AGAINST a true
+> one.** The guard cannot fix the checkout (the clone set belongs to a live demo stack this milestone may
+> not touch), so it discloses: substrate on every materialization, a staleness table on every run, and
+> `KNOWN_WEAKNESS` clause (5) naming the failure mode in the guard's own output.
+
+### 5. `F1` — the blind recall audit does not fire
+
+60 prose lines drawn with **seed 122 and sealed in the pre-registration commit, before the enumerator
+existed**, adjudicated blind. Auditor booked **36 ASSERTION**; the census placed 24 in tier 1, 10 in
+tier 2, and **2 in neither** → **enumeration recall 34/36 = 94.4 %** against a **≥ 90 %** floor; miss
+rate 5.6 % against a **> 10 %** firing threshold.
+
+Both misses are `UNCITED PLAIN`, which **sharpens** the FLOOR disclosure: **tier-2 recall against the
+auditor's own uncited class is 10/13 = 76.9 %.** Precision (measured, not pre-registered): 1 of 24
+NOT-ASSERTION rows booked = 4.2 %.
+
+### 6. The whole-suite run found two more provenance defects — in the fence this very iter shipped
+
+Third occurrence of one class, and this time inside the iter that argues for whole-suite runs:
+`claim_census_guard` **stamped no tree at all** on direct execution, and its `--json` printed a bare
+document followed by the text summary on the same stream — **unparseable stdout**, the exact regression
+`fence_provenance` exists to fence. Green under every scoped run this iter took. Fixed on both halves;
+the ratchet verdict now rides *inside* the document. A disclosure regression was caught while fixing it:
+`KNOWN_WEAKNESS` was gated on `--census`, which is **not the verb `guard_family` uses** — a guard whose
+qualifier is invisible in the family run is a guard whose green over-claims.
+
+### 7. What the census establishes that a reading cannot
+
+1. **A denominator** — 2,603 cited claims / 2,485 claiming units / 3,292 assertion candidates. Every `P`
+   this milestone published was a numerator with nothing behind it.
+2. **That the milestone's own published error rates were sample artifacts**, by about nineteen-fold.
+3. **Exhaustive coverage of a named class** — 525 of 525, with the 41 it could not resolve **named**
+   rather than guessed.
+4. **A defect class no fence could see** — 1,151 unevidenced assertions, hedge discipline at 24/1,175.
+5. **A ratchet** — the per-file count cannot rise without a guard going RED. The only mechanism in this
+   milestone that acts on tier 2 at all.
+
+**What it does NOT establish:** that the corpus is correct (a `SUPPORTS` verdict is about the citation,
+not the world); that the residual pool is small (**1,908** tier-1 pairs unadjudicated, **1,151** tier-2
+assertions unverified — the floor is now *larger* and *better named*); and **nothing whatever about
+clause 5**.
+
+**Phase 5 grading:** (1) gate-met: **n — 4 of 5, unchanged** — (2) triggered-tok: n (**a successor
+strategy remains FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMENT, not a strategy, and
+`F4` books any sentence treating it as the grader as a defect of this iter**) — (3) re-scope: n —
+(4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome:
+**exit-3**
+**Decisions:** `D-M257x-122-1` … `D-M257x-122-6` (see [`decisions.md`](decisions.md))
