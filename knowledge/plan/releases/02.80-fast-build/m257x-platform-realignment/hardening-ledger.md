@@ -2444,3 +2444,120 @@ does not re-derive it.
 **Stop condition: continue-to-next-pass** — the dimension scan still produced a first-order defect, so
 no plateau has been measured. `guard_family` and `anchor_construct_guard` remain un-attacked, and no
 whole-suite total has been taken since the fixes landed.
+
+---
+
+## Pass 29 — 2026-08-07 — incremental
+
+**Iters hardened this pass:** iter-121 … iter-131 (same scope, third and final pass of this invocation).
+**Scope this pass:** `guard_family`, `anchor_construct_guard`, the cross-section emitter fence in
+`stack-injection`, the Go `isolation` package, and — the pass's main instrument — **a whole-suite run**,
+which is the only thing that could have found either of this pass's two defects.
+
+### Two more live defects, and BOTH were standing REDs nobody was told about
+
+**4. `stack-injection` — a cross-section fence RED for three iters, asserting the literal iter-129 deleted.**
+`TestDevEmitter::test_dev_emitter_resets_jobsimulation_volumes` asserted the DEV emitter's source still
+contained `if name == "jobsimulation":`. iter-129 removed that literal — correctly — and did not update
+the test. **Proven pre-existing at `f2ea567` in a detached worktree** (since removed), so it is
+iter-129's, not this session's.
+
+What makes it worth more than a line: **the demo twin's sibling test, three functions above in the same
+file, was converted at iter-88 with the reason spelled out** — *"a test pinned to the implementation's
+service LITERAL is a second copy of the thing that went stale … it would have kept the dead literal in
+place by failing if anyone removed it."* This one was left behind, and then did **exactly that**. The
+warning was already on the page; only one of the two twins acted on it. Now the same shape as its twin,
+plus a net-new arm for pass 27's `elif` finding — which belongs here as well as in stack-core, because
+this module is the fence whose job is keeping the two emitters in step. (`6ad8866`)
+
+**5. `baseline_mirror_fence` — RED since iter-129, and it is the *provenance* rule that broke.**
+iter-129 moved M255's provenance block out of `state.md` — correctly; *a measurement whose provenance
+lives in an index that gets rewritten is one close away from being un-reproducible* — and in the move
+left `666.29 s` and `658 / 666 / 672 s` in a bullet saying only *"the host"*. The section **heading**
+names `billion`; the fence's naming lookback **resets at a blank line**, so the heading does not reach
+the bullet. `bbdbd61` had already done this exact repair release-wide under the title *"name the host on
+every baseline number"* — **the rule was in place, and a well-intentioned move re-opened it.**
+(`b911b77`)
+
+### THE MEASUREMENT — the whole-suite total, with its invocation (§5 rule 51(b))
+
+```
+cd .agentspace/rosetta-extensions/stack-core
+STACKCORE_PROGRESS_LOG=/tmp/m257x-beacon-p29.log \
+  /usr/bin/python3 -m pytest tests/ -q --tb=line -p no:cacheprovider --no-header --durations=5
+```
+
+```
+2 failed · 1202 passed  in  1243.66 s (0:20:43)     rext be5b21f · 131+ beacon lines
+```
+
+**The wall time is 1243.66 s against an expected ~1030 s, and rule 51(b) says that is an unexplained
+measurement until it is explained.** Two accountable causes, both real: (a) the suite **grew** — 1204
+collected against iter-121's 1126, +78, of which 28 are this session's; (b) the run was **not alone on
+the host** — `dev-stack` (100.5 s), `stack-injection` twice, `guard_family` and four scoped batteries ran
+concurrently with it. The signature is in the durations: the mechanical-fences battery took **524.13 s
+here against 405.69 s at iter-121**, +118 s on identical work. So: contention plus growth, not a
+regression — but it is stated rather than waved past, and **the next whole-suite claim should be taken
+on an otherwise-idle host** if the number is to be compared to iter-121's.
+
+**The two failures were BOTH triaged, and neither is a mystery:** one is the standing, documented
+`test_claim_twin_guard_iter48_answer_key::test_02`; the other is defect 5 above, **closed in this pass**.
+`test_baseline_mirror_fence` re-run scoped after the fix: **28 passed**. **No post-fix whole-suite total
+is quoted, because none was taken** — the scoped re-run is what this entry claims and all it claims.
+
+### The remaining in-scope surfaces were attacked and HELD
+
+* **`guard_family`** — the registry is DERIVED (`guard_dir.glob("*_guard.py")`) and `reconcile()` checks
+  it in **both** directions, with `EXIT 2` teeth: a guard on disk with no invocation, or an invocation
+  with no guard, stops the family. 22 members, all placed. A guard cannot land unregistered and be
+  silently un-run.
+* **`anchor_construct_guard`** — iter-121's `KNOWN_WEAKNESS` disclosure is genuinely **wired into
+  `--json`**, verified by parsing the document rather than by reading the source.
+* **`isolation.go`** (iter-130, comment-only) — `go vet` clean, `go test ./isolation/...` ok.
+* **Guard family, whole-family run:** 22 members · **18 GREEN · 0 RED** · 4 not-run (the
+  commit-/input-scoped members needing `--range`/`--ledger`). Still **not a whole-family green**, and the
+  runner's own summary says so.
+
+### Session totals (passes 27–29)
+
+**Tests added:** **+29** — `test_gen_override_home_binds` 5 → 16, `test_blocking_state_guard` 10 → 17,
+`test_unreadable_repo_claim_guard` 18 → 25, `test_claim_census_guard` 21 → 24, plus the
+`stack-injection` cross-section arms.
+**Bugs surfaced + fixed inline: 6** — `4ca7670`, `c8ec339`, `9ab7590`, `be5b21f`, `6ad8866`, `b911b77`.
+**Flakes stabilized:** none found; flake gate 3/3 clean at 104 passed.
+**Every behavioural fix carries a mutation control that ISOLATES it**, each verified by running the
+mutant and confirming it kills that arm **and no other**.
+
+**Stop condition: cap reached without stabilization** — the 3-pass incremental cap fired and pass 3 still
+produced two first-order defects, so the dimension scan never came up empty.
+
+### The cap has now fired without stabilizing FOUR consecutive times (22, 25, 26, 29) — and the supply CHANGED
+
+Pass 26 recorded three consecutive caps and named the remedy: *"not more passes of the same kind."*
+That was acted on — this session attacked mechanisms rather than re-running suites — and it worked, but
+**what it found is not what the previous three found, and that difference is the finding.**
+
+Passes 22/25/26 found **one** class: a fence green over something it never checked. This session found
+that class **twice more** (defects 1 and 4 by shape — `blocking_state_guard` and
+`unreadable_repo_claim_guard` carried the *identical* two-independent-whole-block-searches conjunction,
+in different fences, found one pass apart). **That pattern was then SWEPT tree-wide rather than assumed
+closed** — a grep for co-presence conjunctions across every non-test `.py` in `rosetta-extensions`
+returns only the two docstrings describing the fixes. Two instances, both closed, no third.
+
+But **three of the six defects are a different class entirely, and it is the more expensive one:**
+
+  * `claim_census_guard` — a **false RED** whose only remedy disarms the guard;
+  * `gen_override` — a comment asserting a guard the code did not have, costing the dev **database its
+    data mount**;
+  * `baseline_mirror_fence` + the `stack-injection` twin — **standing REDs that ran for three iters with
+    nobody told.**
+
+The first two are *fences that harm*, not fences that miss. The last two share a single root: **nothing
+runs the whole suite per-iter**, so a fence can go RED and stay RED across iters while every scoped run
+an iter takes is green. iter-121 built the beacon precisely so a whole-suite run is *watchable*; what
+this pass shows is that being watchable is not the same as being **watched**. Both of pass 29's defects
+were invisible to every scoped invocation and fell out of the first whole-suite run in eight iters.
+
+**That is an input to the scope decision the milestone is holding, not a request for a fourth pass.**
+The cheapest change is not another harden pass: it is that **an iter's close should run the whole suite,
+or the milestone should say out loud that it does not.**
