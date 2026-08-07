@@ -4,8 +4,9 @@
 organisation — **93 of them**, measured 2026-08-07 — with a *home* for each: a corpus doc, a row in
 [`platform-migration-status.md`](platform-migration-status.md), or an explicit **"known, not
 documented"** line. It exists because the corpus had no denominator for the org: it documented the
-~13 repos a stack clones and had never enumerated the rest, so a repo could be live, load-bearing and
-invisible at the same time — and several were.
+handful a stack has on disk — `repos.yml` lists **four** (`app`, `next-web-app`, `sentinel`,
+`studio-desk`), with the frozen merged services sitting beside them — and had never enumerated the
+rest, so a repo could be live, load-bearing and invisible at the same time. Several were.
 
 **What this document is NOT.** It is **not a deletion plan.** Every `verdict` below is **advisory**,
 and nothing here has been acted on: **no repo was archived, deprecated, or deleted.** Several verdicts

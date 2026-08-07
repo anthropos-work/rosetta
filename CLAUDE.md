@@ -215,7 +215,11 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
 > in-app by `MESSENGER_ENABLED` / `CUSTOMERIO_SYNC_ENABLED`, **unset = OFF on a developer machine**
 > (`app/main.go:285`, `:286`; compose states the rationale where the variables would have gone,
 > `docker-compose.yml:84-92`). In production, messenger's ECS service is scaled to zero as the
-> rollback path (`messenger/terraform/main.tf:29`, `service_desired_count = 0`), while **storage's ECS
+> rollback path (`messenger/terraform/main.tf:29`, `service_desired_count = 0`) — **but that line
+> instantiates nothing: `module.messenger_euwest1` is DELETED from `infrastructure` @ `13c248e6`
+> (`services.tf:622`), so it is orphaned dead code and the "rollback path" comment is an intent
+> production no longer holds (M257x iter-123; the rule and its three siblings are in
+> `corpus/architecture/org-repos.md` § 3) — while **storage's ECS
 > service block is DELETED, not scaled** — its module survives only to keep the buckets, the
 > CloudFront distribution and their `prevent_destroy` guards in configuration
 > (`storage/terraform/main.tf`, 18 lines). `app` serves object storage in-process
