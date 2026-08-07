@@ -2547,6 +2547,32 @@ not the world); that the residual pool is small (**1,908** tier-1 pairs unadjudi
 assertions unverified — the floor is now *larger* and *better named*); and **nothing whatever about
 clause 5**.
 
+### 8. The whole-suite claim, with the invocation and the expected wall time (§5 rule 51)
+
+```
+cd .agentspace/rosetta-extensions/stack-core
+STACKCORE_PROGRESS_LOG=/tmp/m257x-iter122-beacon2.log \
+  /usr/bin/python3 -m pytest tests/ -q --tb=line -p no:cacheprovider --no-header --durations=5
+      ->  1 failed · 1146 passed  in  1055.54 s (17:35)   [rext 15b9454, corpus at iter-122]
+```
+
+`/usr/bin/python3` is **3.9.6**, the only interpreter on this host with pytest. The single failure is
+`test_claim_twin_guard_iter48_answer_key::test_02` — **the standing, documented RED**, re-attested by a
+full run rather than carried. **1,146 passed vs iter-121's 1,125 = +21**, which is exactly this iter's
+control count, and **1055.54 s reconciles with iter-121's 1032.57 s to within 2.2 %** — the check rule 51
+asks for.
+
+**An EARLIER run of this suite is disclosed as CONFOUNDED and is not quoted as a result:** 3 failed /
+1143 passed / 1128.21 s, taken while the tree was edited mid-run, exactly as iter-111 and iter-121
+disclosed theirs. **It nonetheless did its job** — its two non-standing failures are §6's provenance
+defects, and the run above is the clean one taken after they were fixed.
+
+**Guard family: 22 members · 18 GREEN · 0 RED · 4 not-run** (`anchor_offset_guard`, `repair_leak_guard`,
+`repair_reach_guard`, `value_change_guard` — commit- and input-scoped, no `--range`/`--ledger` supplied).
+**Not a whole-family green, and the runner's own summary line says so.** The family grew 21 → 22 with
+`claim_census_guard`, GREEN on its ratchet. Invocation: `guard_family.py --repo-root <rosetta> --platform
+<rosetta>/stack-demo/platform`.
+
 **Phase 5 grading:** (1) gate-met: **n — 4 of 5, unchanged** — (2) triggered-tok: n (**a successor
 strategy remains FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMENT, not a strategy, and
 `F4` books any sentence treating it as the grader as a defect of this iter**) — (3) re-scope: n —
