@@ -2,11 +2,11 @@
 
 ---
 
-# `P = 30` · `N = 47` — `P` ROSE against a corpus that absorbed real repair
+# `P = 29` · `N = 47` — `P` ROSE against a corpus that absorbed real repair
 
-> **iter-119: `P = 22` / `N = 28`.  iter-131: `P = 30` / `N = 47`.**
+> **iter-119: `P = 22` / `N = 28`.  iter-131: `P = 29` / `N = 47`.**
 
-**`P` rose 22 → 30 (+36 %) and `N` rose 28 → 47 (+68 %)**, over a subject that grew **9.7 %** and
+**`P` rose 22 → 29 (+32 %) and `N` rose 28 → 47 (+68 %)**, over a subject that grew **9.7 %** and
 absorbed 30 consequence-class repairs, 13 C1 claims, 46 complement fixes, the `ai` row, the tier-1
 re-pins, and this run's own ~24 routed findings plus 10 predicate sites.
 
@@ -16,7 +16,7 @@ reading of a rise.** What this reading can and cannot establish, stated in the o
 - **`P` is a FLOOR over a suspicion-selected sample, not a corpus error rate.** No percentage is computed
   from it. A hunted sample over-states the population rate ~19× (census 0.70 %, 0.23 % substrate-corrected).
 - **It does NOT establish that repair made the corpus worse.** iter-119 proved a single reading recovers
-  roughly a third of a standing pool whose union floor was already **≥ 46**. A rise from 22 to 30 is
+  roughly a third of a standing pool whose union floor was already **≥ 46**. A rise from 22 to 29 is
   entirely consistent with *the same pool, sampled differently*, and this reading cannot separate that
   from *new defects*.
 - **What it DOES establish, and this is the result:** the standing pool is **larger than any single `P`
@@ -28,7 +28,7 @@ reading of a rise.** What this reading can and cannot establish, stated in the o
 **Band #3 asked how many of iter-119's 22 predicates this reading re-books. The answer is ZERO
 identifiable matches.**
 
-None of iter-119's eight enumerated intra-corpus-citation predicates appears in this reading's 30. Its one
+None of iter-119's eight enumerated intra-corpus-citation predicates appears in this reading's 29. Its one
 individually-named platform-facing predicate (`clerk-integration.md:40`, the sign-in-token
 understatement) **was repaired** in the interval and is correctly absent.
 
@@ -45,15 +45,15 @@ list or the band is uncomputable.
 
 ## The largest cluster — 19 of 80 blockers, six seats, one root cause
 
-The corpus says `infrastructure` **"has never been in any clone set"** and that `cms`'s production state
-is **"NOT MEASURABLE — do not assert either way."** Measured directly:
+Six passages say `cms`'s production state is **"NOT MEASURABLE — do not assert either way"**, **inferring
+it from the true premise that `infrastructure` is in no clone set.** Measured directly:
 
 | | |
 |---|---|
 | sites citing a READ of `infrastructure` @ `13c248e6` | **28** |
-| sites still publishing the never-cloned / unmeasurable hedge | **11** |
+| sites still drawing UNMEASURABLE from that premise | **11** |
 
-iter-123 cloned it and read it. `org-repos.md:102` says so in a heading:
+**Both conjuncts are true; the INFERENCE fails.** iter-123 read it transiently. `org-repos.md:102` says so in a heading:
 **"🔓 `cms` M810: SETTLED — the ECS service is DESTROYED. It has now been read."** That one read settled
 **four** standing questions — the production service set is exactly ten modules, and `cms`,
 `roadrunner`, `graphql-wundergraph` and `messenger` are all **orphaned**, their service-repo terraform
@@ -65,7 +65,7 @@ every agent that loads this repository starts from the retracted claim. **This i
 repair available to the next iter**, and it is routed, not taken, because condition 3 bars repair inside a
 measuring pass.
 
-## Three of the 30 are defects in prose I wrote — two of them THIS RUN
+## Three of the 29 are defects in prose I wrote — two of them THIS RUN
 
 | | |
 |---|---|
@@ -87,7 +87,7 @@ corpus returned more than predicted on almost every axis.
 |---|---|---|---|---|
 | 1 | per-reading in-scope upheld blockers | [6, 30] | **~31 · ~37** | ❌ high |
 | 2 | union `N` | [14, 40] | **47** | ❌ high |
-| **2p** | **union `P`** — primary | [12, 34] | **30** | ✅ |
+| **2p** | **union `P`** — primary | [12, 34] | **29** | ✅ |
 | **3** | overlap with iter-119's 22 | [3, 12] | **~0** (of the 9 comparable) | ❌ low |
 | 3b | within-reading `m` as share of union | [10 %, 55 %] | **~60 %** | ❌ high |
 | 4 | adjudicator upheld rate (raw) | [72 %, 94 %] | **89.5 %** | ✅ |
@@ -97,7 +97,7 @@ corpus returned more than predicted on almost every axis.
 | 8 | platform-drift share | [20 %, 60 %] | **26.7 %** | ✅ |
 | 9 | per-seat booked spread | ≤ 8 | **10** | ❌ |
 | **10** | repair-induced | [1, 8] | **3** | ✅ |
-| 11 | anchors per predicate | [1.00, 1.45] | **1.57** | ❌ high |
+| 11 | anchors per predicate | [1.00, 1.45] | **1.62** | ❌ high |
 | 12 | anchors in a multi-pin block | [2, 12] | **~9** | ✅ |
 | **13** | upheld blockers in `org-repos.md` | [0, 4] | **3** | ✅ |
 
@@ -156,16 +156,16 @@ measuring pass**, including the three defects of my own that the reading found.
 
 ## Close — 2026-08-07
 
-**Outcome:** **`P = 30` / `N = 47`.** `P` ROSE 22 → 30 and `N` rose 28 → 47 over a corpus that absorbed
+**Outcome:** **`P = 29` / `N = 47`.** `P` ROSE 22 → 29 and `N` rose 28 → 47 over a corpus that absorbed
 eleven iters of repair. **The test-retest overlap with iter-119 is ~0**, so two consecutive readings
 produced almost disjoint predicate sets — the pool is larger than any single `P` has shown, and the
 milestone has been reporting a test-retest metric its own prior sheets cannot support. 7 of 15 bands held.
 **Clause 5 is NOT met** and is not re-cut.
 **Type:** tik
 **Status:** closed-fixed (the planned deliverable was a graded reading; it landed with full discipline)
-**Gate:** NOT MET — **4 of 5**, unchanged. Clause 5 is met only by a reading returning zero; this returned 30.
+**Gate:** NOT MET — **4 of 5**, unchanged. Clause 5 is met only by a reading returning zero; this returned 29.
 **Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n (**no successor strategy is authorable — `TOK-08`'s refutation branch bars one, and run 83 proceeds under the user's direct brief**) — (3) re-scope: n (the milestone is already at the user for scope; this reading is the evidence they asked for, not a new trigger) — (4) user-blocker: n — (5) cap-reached: n (2 tiks) — (6) protocol-stop: n — (7) budget-exhausted: **y** — Outcome: **exit-7**
-**Decisions:** adjudication done largely by the coordinator (cap-forced, disclosed); band #5 retired after
+**Decisions:** `P` was corrected **30 → 29** after `adj-1` — the ONE independent adjudicator — refuted the coordinator's framing of the largest cluster within an hour of landing (*"in no clone set"* is TRUE; the defect is the INFERENCE to UNMEASURABLE), merging two predicates into one. **That is the method deviation costing something measurable, in the direction predicted, and twelve seats did not get that scrutiny**; adjudication done largely by the coordinator (cap-forced, disclosed); band #5 retired after
 four consecutive failures; the root-mount count left CANNOT-SETTLE rather than guessed.
 **Side-deliverables:** none — a measuring pass takes no repair.
 **Routes carried forward:**
@@ -176,7 +176,7 @@ four consecutive failures; the root-mount count left CANNOT-SETTLE rather than g
 - `FIX-M257x-iter131-predicate-sets-not-enumerated` → every reading must publish its full predicate list.
 - `FIX-M257x-iter131-root-mount-count-underived` → disputed in three consecutive readings.
 - `FIX-M257x-iter131-adjudication-independence` → re-adjudicate this seat set with independent agents.
-- the other 25 upheld predicates, each with anchors, in `adjudication.md`.
+- the other 24 upheld predicates, each with anchors, in `adjudication.md`.
 **Lessons:**
 1. **A fence that prints the right answer does not correct the prose beside it.** Assertion G emits the
    true module set on every run while two corpus sentences contradict it. Fencing a value and repairing
