@@ -61,8 +61,14 @@ Building the new `phase:` through `.encode().decode('unicode_escape')` mangled a
 `â\x80\x94`. Repaired — and repaired as a **repo-wide sweep** over all tracked files for nine
 latin-1-round-trip damage sequences (0 other files affected) rather than as a one-character patch.
 
-**No guard in this family checks encoding integrity.** It was caught by the previous run reading my
-output. Filed as what it is: a gap in the fence family, found by a human-shaped read.
+**No guard in this family checks encoding integrity, and no guard of the existing shape could.** The two
+files that mention encoding at all (`corpus_index_guard.py:84`, `story_org_count_guard.py:220`) carry an
+`except UnicodeDecodeError` — an *unreadable-file* handler. **Mojibake is VALID UTF-8**: `â\x80\x94`
+decodes without error, it is simply the wrong three characters. A decode-error handler cannot see it by
+construction.
+
+It was caught by the previous run reading my output. Filed as what it is: a defect class with **no fence
+and no possible fence of the current shape**, found by a human-shaped read.
 
 ---
 
