@@ -3,7 +3,7 @@ active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fa
 active_branch: "release/02.80-fast-build"
 active_milestone: "M257x — platform re-alignment (iterative), 127 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x iter loop, **127 iters** (+ 26 harden passes). **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. **Headline, and it is a REFRAME: the corpus is UNDER-CITED, not unfounded** â iter-124 triaged the sealed consequence class (`|C1|`). **Quote the AUDIT-CORRECTED split with its denominator or quote none**: `cite` ≈ **86.6 %** (printed 96.2 %), `hedge`+`drop` ≈ **12.2 %**, and **`fix` = 4 printed is a FLOOR, ≈ 11 ≈ 3.2 % recall-corrected** — falsity is not syntactic. So *"1,151 uncited assertions"* is ~298 whose evidence sits in a clone nobody linked, ~42 genuinely uncheckable from here, and ~11 that are false: three diseases, three treatments, only the third urgent. Both pre-registered branches were sealed before a single verdict and **neither fired**. Detail: `iter-124/audit.md`; live status: `progress.md`."
+phase: "M257x iter loop, **127 iters** (+ 26 harden passes). **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. **Headline, and it is a REFRAME: the corpus is UNDER-CITED, not unfounded** — iter-124 triaged the sealed consequence class (`|C1|`). **Quote the AUDIT-CORRECTED split with its denominator or quote none**: `cite` ≈ **86.6 %** (printed 96.2 %), `hedge`+`drop` ≈ **12.2 %**, and **`fix` = 4 printed is a FLOOR, ≈ 11 ≈ 3.2 % recall-corrected** — falsity is not syntactic. So *"1,151 uncited assertions"* is ~298 whose evidence sits in a clone nobody linked, ~42 genuinely uncheckable from here, and ~11 that are false: three diseases, three treatments, only the third urgent. Both pre-registered branches were sealed before a single verdict and **neither fired**. Detail: `iter-124/audit.md`; live status: `progress.md`."
 last_updated: "2026-08-07"
 ---
 
@@ -59,9 +59,8 @@ a floor — **1,908** tier-1 pairs, **1,160** tier-2 (baseline 1,164; the ratche
 measurements that govern how any of it may be quoted are a standing rule now, below.
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
-(`context.md` § state.md contract):
-
-All paths below are under `releases/02.80-fast-build/m257x-platform-realignment/`.
+(`context.md` § state.md contract). All paths below are under
+`releases/02.80-fast-build/m257x-platform-realignment/`:
 
 - [`progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — **authoritative live
   status**: every iter's findings and the carried items
@@ -177,10 +176,6 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 
 _Last updated 2026-08-07 — M257x iter-128. Both trees clean and pushed; `demo-1` up._
 
-> **Budget status (measured, not asserted).** File **14,612 / 15,360** ✅ · frontmatter **1,667 / 2,600** ✅
-> · all six frontmatter fields within budget ✅ — `phase:` went **1,985 → 861** by moving iter-124's reframe
-> to `iter-124/audit.md` and the standing rules to their `§5` / `D-N` owners. **Body is 12,945 / 12,000 —
-> over by 945, and it is NOT trimmable by the contract's own method.** Three probes (§ Standing backlog's
-> 7 un-mirrored items, the M255 provenance clause, the process flags) each found **`state.md` is their sole
-> owner**, so *"move it to its owner"* has no target. The body budget was set without measuring what the
-> body uniquely owns. Routed as `FIX-M257x-iter128-body-budget-has-no-owner`.
+> **Budgets:** file + frontmatter + all six fields **within budget**; the **body is over and is not
+> trimmable by the contract's own method** — measured, derived and routed in
+> [`iter-128/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md) § 1.
