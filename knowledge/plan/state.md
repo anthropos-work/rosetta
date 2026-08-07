@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative), 122 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative), 123 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x iter loop. **Gate 4 of 5**; clause 5 open and met ONLY by a reading that returns zero — four user rulings, never re-cut. **The user RULED (2026-08-07) to fund a materially different instrument rather than close at 4 of 5**, and iter-122 built it: the **CLAIM CENSUS** (`claim_census_guard`, FENCE-M257x-iter122), design + 6 falsifications sealed at `1262ca7` before a line existed. **Two falsifications FIRED and are the headlines**: `F5` band 1 FAILED LOW — the tier-1 wrong-construct rate is **3 / 427 = 0.70 %** against a sealed `>= 4 %`, i.e. **a hunted sample over-states the population rate ~19x, and every error rate this milestone published from a graded read is a rate over a hunted sample** (`D-M257x-122-3`); and `F2` FIRES — exhaustive tier-1 adjudication was NOT achievable in run 78 (**525 of 2,603 pairs**, extrapolating ~60 adjudicator runs), so **no corpus-correctness percentage is published**. What WAS exhaustive: **525 of 525** materializable line-pinned citations, 12 blind adjudicators, 0 seats lost. **TIER 2 is net-new ground no fence in this family had reached: 1,175 factual assertions carry no citation and 1,151 (98.0 %) carry no hedge either** — enumerated line by line, fenced by a per-file ratchet. The census's own THREE defects are recorded first (2 caught by its controls, 1 by the adjudicators — **a stale substrate MANUFACTURES evidence against a true claim**, `D-M257x-122-4`). `F1` blind recall **34/36 = 94.4 %** vs a `>= 90 %` floor. **The gate did NOT move; no reading was taken; `P` is UNMEASURED.** Chapman retired — floors only. Successor strategies remain FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMENT, not a strategy. Detail: milestone `progress.md` § iter-122 + `iter-122/adjudication.md` + `decisions.md` `D-M257x-122-1..6`. POINTER field per `context.md` § state.md contract; do not grow it back."
+phase: "M257x iter loop, **123 iters**. **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. iter-123 = the CORPUS half of the user's instruction (corpus / skills / tooling aligned to the platform as it is + which repos to keep). The 93-repo org set was **re-enumerated independently** and every repo fact **re-measured from a clone at `origin` HEAD (2026-08-07)**, never a stack working tree. **HEADLINE: cloning `infrastructure` — never in any clone set, therefore never read — settled FOUR standing questions with one rule. A service repo's own `service_desired_count` is NOT evidence of production state**; it is an input to a module that must be INSTANTIATED by `terraform/production/services.tf`, which declares exactly TEN. `cms` M810 **RESOLVED** (destroyed; schema drop pending), `roadrunner` has no ECS service, `graphql-wundergraph` was **WRONG in a fenced table** (the other org corpus was right), `jobsimulation`/`storage` survive deliberately as assets-only because `prevent_destroy` is read from CONFIGURATION, not state. **Priority 2 was tested, not assumed: 76 of 89 backlog rows (85.4 %) RESOLVE at a sha the corpus already names**, so the census's dominant class is 85 % its own substrate and the real backlog is ≤ 13; 3 re-pinned, 0 retired. **Five census claims refuted/refined** (AI-Labs + the livekit family ARE documented; `watermill-redisstream` is an INERT mirror; `sim-qa` is neither standing nor unmarked; `analytics-go` was missing from the LIBRARY MODEL, not the corpus). Net-new: `corpus/architecture/org-repos.md` (all 93, **advisory** verdicts, nothing deleted) + `corpus/ops/observability.md`. `db-backup` repaired at 8 sites (**Bash not Go, 2 targets not 3, never Azure, trigger off since 2025-05-29 at the commit prod pins; \"every 6 h\" never had a source**). Guards **22 · 20 GREEN · 0 RED · 1 could-not-check · 4 not-run**. Detail: `iter-123/progress.md`."
 last_updated: "2026-08-07"
 ---
 
@@ -39,31 +39,28 @@ clause 1's limit of **6**.
 
 ## Phase
 
-M257x iter loop, **122 iters closed** (+ 26 harden passes). Gate **4 of 5**.
+M257x iter loop, **123 iters closed** (+ 26 harden passes). Gate **4 of 5**.
 
-- **Clauses 1–2 — CLOSED** by the concurrent lane at platform `0c91421`. **Clause 2 is MET WITH DISCLOSURE
-  and the disclosure travels with it forever: a freshly built stack failed the first full run in 2 of 2
-  attempts, so it is never recorded as a clean pass.** Every cycle timing, the reflog freeze-proof and the
-  suite verdicts live in the dossier — see the pointer list below.
+- **Clauses 1–2 — CLOSED** at platform `0c91421`, **MET WITH DISCLOSURE that travels with them forever**:
+  a freshly built stack failed the first full run in 2 of 2 attempts, so never a clean pass. Timings, the
+  reflog freeze-proof and the suite verdicts are in the dossier below.
 - **Clauses 3–4 — hold**, asserted by fences that are watched going RED, not by inspection.
 - **Clause 5 — the only open one**, met ONLY by a reading that returns zero. Five graded readings
   (iters 98–119) established that **inflow ≈ outflow** — repair efficacy is confirmed, yet the residual
   does not fall, because clone advance and the repair's own induction feed it. Each reading's arithmetic
   is owned by its own `iter-NN/adjudication.md`; none is current.
 
-**There is NO active strategy, and that is the state — not an omission.** `TOK-07` (repair-and-read) was
-refuted at iter-116 by its own pre-registration, and `TOK-08` (the USER's enumerate-then-read re-scope) at
-iter-119 the same way. `TOK-08`'s sealed rule **bars a successor**, so there is **no `TOK-09`**. The chain
-in full is in `decisions.md`. **What iter-122 added is an INSTRUMENT, not a strategy** — the claim census
-— and `F4` books any sentence treating it as clause 5's grader as a defect of that iter.
+**There is NO active strategy, and that is the state — not an omission.** `TOK-07` was refuted at iter-116
+by its own pre-registration and `TOK-08` (the USER's re-scope) at iter-119 the same way; `TOK-08`'s sealed
+rule **bars a successor**, so there is **no `TOK-09`** (chain in `decisions.md`). **iter-122 added an
+INSTRUMENT, not a strategy** — `F4` books any sentence treating the census as clause 5's grader as a defect.
 
-**Chapman is RETIRED for this milestone**; only floors survive (**≥ 46 at `194361e4`**). iter-119 measured
-the graded read's own test-retest recall at **~35 %**. **iter-122 measured the complementary fact and it
-cuts the other way: the error RATE those readings published is a sample artifact — 0.70 % over 427
-exhaustive adjudications against ≥ 13.3 % over a hunted sample (`D-M257x-122-3`).** Both statements hold
-at once: the readings could not see most of the surface, *and* they over-stated the defect density of what
-they did see. The residual pool is therefore **unmeasured above a floor that is now larger and better
-named** — 1,908 tier-1 pairs unadjudicated, 1,151 tier-2 assertions unverified.
+**Chapman is RETIRED**; only floors survive (**≥ 46 at `194361e4`**). Two measurements hold at once and
+must be quoted together: iter-119 put the graded read's test-retest recall at **~35 %** (it could not see
+most of the surface), and iter-122 showed **the error rate those readings published is a hunted-sample
+artifact — 0.70 % over 427 exhaustive adjudications vs ≥ 13.3 % hunted** (`D-M257x-122-3`). **Never quote
+a milestone rate as corpus-wide.** iter-123 checked the record for violations and found none — the corpus
+publishes no error rate at all. Residual: unmeasured above a floor (1,908 tier-1 pairs, 1,164 tier-2).
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
 (`context.md` § state.md contract):
@@ -75,12 +72,14 @@ named** — 1,908 tier-1 pairs unadjudicated, 1,151 tier-2 assertions unverified
 - [`gate-clauses-1-2/README.md`](releases/02.80-fast-build/m257x-platform-realignment/gate-clauses-1-2/README.md)
   — **the owner of every clause 1 & 2 number**: the five cold-cycle timings, the reflog freeze-proof, and
   the disclosed first-run failure
+- [`iter-123/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-123/progress.md)
+  — **the org-census follow-ups**: the 93-repo re-derivation, the five census corrections, the
+  `infrastructure` read that settled four standing questions, and the 89-row re-pin measurement
 - [`iter-122/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-122/adjudication.md)
-  — **the CLAIM CENSUS**: the two-tier enumeration, the 525/525 exhaustive adjudication, the two fired
-  falsifications, and the census's own three defects. Its sealed design is `iter-122/pre-registration.md`
+  — **the CLAIM CENSUS**: the two-tier enumeration, 525/525 adjudicated, two fired falsifications, and the
+  census's own three defects. Sealed design: `iter-122/pre-registration.md`
 - [`iter-119/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-119/adjudication.md)
   — the last graded reading (`P = 22`), and the test-retest measurement that retired the series
-- the earlier readings (iters 98–116) live in their own iter dirs; none is current
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 
@@ -169,4 +168,4 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-08-07 — M257x iter-122 (the claim census). Both trees clean and pushed; `demo-1` up._
+_Last updated 2026-08-07 — M257x iter-123 (the org-census follow-ups; `infrastructure` read for the first time). Both trees clean and pushed; `demo-1` up._
