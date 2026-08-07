@@ -2025,6 +2025,43 @@ defect, it was arguing for it.*
     > *quoting a retracted* one — the anchor-axis sibling of (b) above and of iter-134's 1-of-4
     > measurement. **Delete the pin; name the construct.** Re-pinning restarts the clock.
 
+63. **An exclusion is only as narrow as the predicate that justified it — and ANCHOR ROT is mechanically
+    decidable even where the anchor's CLAIM is not.** *(M257x iter-138.)*
+
+    `corpus_citation_guard.py` excludes **bare `:NN` pins** *"outright"* as *"not mechanically
+    decidable."* That is **true of the claim** — *does this line say what the sentence says it says?*
+    requires reading the sentence. **It is false of rot:**
+
+    > If the citing line was authored at commit `C`, and the text that stood at the cited line at `C` now
+    > stands at a **different** line, the pin **rotted** — and the line it now stands at is the repair.
+    > No sentence is interpreted. Git answers it alone.
+
+    Measured corpus-wide at iter-138: **588** bare pins → **222 decidable** (unique, non-trivial target
+    text present at HEAD) → **127 ROTTED = 57.2 %**, against a positive control of **95 STABLE**.
+    **Every delta is positive** — lines inserted *above* targets — so no author could have prevented any
+    of them, and *"repair harder"* has no target.
+
+    > **Rule (a).** When you exclude a class from a fence, **name the predicate you actually tested.**
+    > The next predicate over may be free, and here the largest measured citation defect on the milestone
+    > sat inside a declared blind spot **it did not need to be in**.
+    >
+    > **Rule (b) — publish the undecidable buckets with the number.** 588 is not the denominator; **222**
+    > is. The rest are `out-of-range-then` (241 — largely **cross-file continuation pins**, which a
+    > same-file probe cannot distinguish), `target-too-short-to-be-unique` (109) and `target-text-gone`
+    > (16). A fence sized against 588 is sized against 241 cases it cannot see.
+    >
+    > **Rule (c) — repair by NAMING the construct, never by re-pinning.** A repair that restores the
+    > failing *form* fixes an instance and preserves the class. `graphql-wundergraph.md`'s `5050` pointer
+    > rotted **twice** (`:174-176` → iter-98 → `:193` → iter-138) and one of its paragraphs held **three**
+    > rotted pins. The durable citation is the construct name plus a substring `grep` returns uniquely.
+    >
+    > **Rule (d) — choose the test suites by what you CHANGED, not by what you were writing ABOUT.**
+    > iter-137 rewrote **29 anchors** and picked its scoped suites by topic (`platform_alignment`,
+    > `claim_twin`, …). `anchor_offset_guard` was **NOT-RUN** in the family (commit-scoped, no `--range`)
+    > **and** absent from the scoped set — two mechanisms blind in the same direction on the same commit,
+    > and an ambiguous `README.md` head shipped (six files share that basename). Caught one iter later by
+    > the anti-vacuity control built for it. **A disclosed not-run bucket is not coverage.**
+
 ---
 
 ## 6. Classification — the map

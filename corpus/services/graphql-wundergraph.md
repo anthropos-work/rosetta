@@ -85,9 +85,11 @@
 * **Database**: none — stateless gateway (no DB, no Redis)
 * **Ports**: **8080 → 8080** (router `listen_addr 0.0.0.0:8080`, `graphql_path /graphql`). **There is no
   `5050` at platform HEAD** — `grep -c 5050 docker-compose.yml` returns 0. The host-`5050` mapping was
-  published here in the present tense while **`:193`** of this same doc already said `localhost:5050`
-  refuses the connection (this cited `:174-176` until M257x iter-98 — that is the compose line-number
-  caveat, a different construct); corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
+  published here in the present tense while this same doc's **profiles-token warning** already said
+  `http://localhost:5050` refuses the connection. ⚠️ **That pointer has now rotted TWICE** — it cited
+  `:174-176` until M257x iter-98 and `:193` until M257x iter-138 (`:193` is now the warning's opening
+  line, not the sentence). **`grep -n "refuses the connection"` returns the citing line and the target,
+  and nothing else** — that substring is the durable citation; the line number is not; corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
 
 > **There is no application source here.** `package.json` is a stub
 > (`{"name":"graphql-wundegraph"}` — note the misspelling, carried in the repo).
@@ -133,7 +135,7 @@ The two Dockerfiles source schemas differently:
 > `dockerfile: Dockerfile.dev`, `67ba772` moved the context to `..` (path becoming
 > `graphql-wundergraph/Dockerfile.dev`), and it stayed `Dockerfile.dev` until the service block was
 > deleted at `360efd4` (merged as `2adcf71`). So for its **final five months** compose built
-> `Dockerfile.dev` — which is why a subgraph SDL change rebuilt the router, as the *Build-time, static composition* bullets at `:114-117` of this doc describe (specifically `:116-117`, the struck-through *"`make up` rebuilds `graphql`"* bullet: *"It **used to** rebuild whenever any subgraph schema changed, because the build context is the parent dir (`..`) holding all sibling repos"*). **Not `:84`**, which is the *Ports* bullet and is about `8080`/`5050` — corrected M257x iter-102.
+> `Dockerfile.dev` — which is why a subgraph SDL change rebuilt the router, as the *Build-time, static composition* bullets of this doc describe (specifically the struck-through *"`make up` rebuilds `graphql`"* bullet — ⚠️ **cited as `:114-117` / `:116-117` until M257x iter-138, which is now the *no-hot-reload* bullet**; correct at `cd16967` (iter-102), rotted **+2**, so the bullet is named rather than re-pinned: *"It **used to** rebuild whenever any subgraph schema changed, because the build context is the parent dir (`..`) holding all sibling repos"*). **Not the *Ports* bullet**, which is about `8080`/`5050` — corrected M257x iter-102. ⚠️ **That disclaimer pinned the Ports bullet at `:84` until M257x iter-138, and `:84` is now the *Federation* bullet** (`federation_version: =2.3.2`); the Ports bullet moved to `:86-90`. **Correct at `cd16967`, rotted +2 — the third pin in this one paragraph to do so, which is why all of them are now named rather than numbered.**
 
 ## Interface Discovery
 

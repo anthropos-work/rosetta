@@ -12,7 +12,7 @@
 >   and serves them to the frontend through the **`app` GraphQL subgraph**, reached at
 >   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — which on a local stack is **`backend`'s own `:8082/graphql/query`**
 >   since platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from compose. The env-var
->   *name* outlived the router, which is now destroyed in production as well (iter-124). (Consistent with :85-89 below.)
+>   *name* outlived the router, which is now destroyed in production as well (iter-124). (Consistent with the **Primary — GraphQL, on the `app` (backend) subgraph** bullet under § *Interface Discovery* below — *"there is no separate 'academy subgraph'"*. ⚠️ **This cited `:85-89` until M257x iter-138; that is now the Certificate-minting bullet.** The pin was correct when written at `cd16967` (iter-102) and rotted **+8** from unrelated insertions above it, so it is replaced by the construct name rather than re-pinned.)
 > - The backend became authoritative in app-side release **"v1.0 ground truth"** (PR #903, `0e37771f`, 2026-06-05):
 >   the net-new server-owned academy domain replaced the legacy `internal/aiacademy` sync + `aiacademy_courses`
 >   read-model. (The corpus's "since v0.5 M2 backend-authoritative" refers to the **frontend's** own version line —
@@ -133,7 +133,7 @@
         `academy-seed` writes have **no reader** — i.e. `academy-seed` is **moot on a demo**. **It does NOT
         "serve its committed FS catalog": there is no FS-as-published fallback in the app** — this passage
         said there was until M257x iter-108, contradicting
-        [`ant-academy.md`](./ant-academy.md)`:82-88`, which states the opposite in bold.
+        [`ant-academy.md`](./ant-academy.md)'s **“no FS-as-published fallback”** paragraph — *"`getServerCatalogView()` resolves a null backend result to the **empty view**"* — which states the opposite in bold. ⚠️ **This cited `:82-88` until M257x iter-138; that is the `store.js`/beacon write-path blockquote.** Correct when written at `f8be5a1` (iter-108), rotted **+14** across files; named, not re-pinned.
         `getServerCatalogView()` resolves a null backend result to the **empty view**
         (`serverTenant.js:115-145` — *"the cutover is intentional, not reversible-on-error"*). A demo grid
         renders cards **only** because the rext demo-patch `demo-stack/patches/academy-fs-published-fallback`

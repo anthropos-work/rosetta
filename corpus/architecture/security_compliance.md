@@ -153,7 +153,9 @@ Three layers of isolation ensure tenant data cannot leak:
 > ⚠️ **CORRECTED M257x iter-120 — this layer said Sentinel *"validates **every** API request"* and that
 > *"authorization checks happen before **any** data access."* Both are false, and they are false in the
 > direction that makes the platform sound MORE protected than it is.** The same class as the
-> `clerk-integration.md:40` *"only"* and the `cms.md` `bash -c` inversion: an absolute quantifier over a
+> [`clerk-integration.md`](../services/clerk-integration.md)'s **Sign-in tokens** bullet — the one whose
+> own text now reads *"this bullet used to say **"only"**, and it was false"* — and the `cms.md` `bash -c`
+> inversion: an absolute quantifier over a
 > security surface, published unhedged. Layer 1 directly above has been re-measured four times down to
 > an exact schema count and carries its caveat; **Layer 2 sat underneath it, unhedged and unfenced,
 > asserting a blanket that does not exist.**
