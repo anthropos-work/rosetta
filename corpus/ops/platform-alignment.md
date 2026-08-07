@@ -1815,6 +1815,37 @@ defect, it was arguing for it.*
     > **Blindness is not the conservative option.** A fence that refuses to grade anything grades nothing,
     > and the defects inside its reach go unreported for as long as it stays refusing.
 
+57. **A count is only as wide as the SEARCH that produced it — and a repair that inherits its
+    predecessor's search inherits its blind spot.** *(M257x iter-128. The sibling of rule 54, on the
+    quantifier axis: 54 is about a correction reaching every SITE; 57 is about a correction re-deriving
+    from a wide enough SOURCE.)*
+
+    `security_compliance.md` said the REST surface has **"six"** Echo groups, two of which opt into
+    `cbGate`. `app` mounts **eleven** non-test groups on the one Echo instance
+    (`internal/web/web.go:124-163` @ `ad9f3c498`). Three of the five missing never touch the Clerk
+    `authn` middleware, and **`/api/invitations` has no authentication at all** — `web.go:145-146` says
+    so in as many words.
+
+    **The paragraph had already been corrected TWICE.** iter-120 over-stated it (*"every Echo group …
+    and nothing else"*); iter-121 corrected the quantifier and cited the exact lines. **Both re-derived
+    from `backend.go`** — because that is where the sentence they were repairing pointed. The
+    *denominator* was never re-measured, so two careful repairs left a five-group under-count of an
+    authentication surface standing.
+
+    > **Rule.** When you repair a count, **re-derive the population from the widest instrument that can
+    > see it**, not from the file the wrong sentence names. State the search with the number
+    > (`e.Group(` across the whole service, not the one file that happened to declare six of them).
+    >
+    > **The tell is a repair that only ever quotes the source its predecessor quoted.** If two
+    > consecutive corrections cite the same file, the third defect is probably outside that file.
+    >
+    > **This is not hypothetical humility — it recurred inside the run that wrote it.** The same iter
+    > swept the *"Ant Academy is an internal `@anthropos.work`-only portal"* predicate with a regex
+    > tuned to the phrasing of the four sites it already knew about; it found **4**. Widening the
+    > pattern found **14**, across nine files including `CLAUDE.md`. **The near-miss was the
+    > enumeration, not the repair** — and it happened an hour after this rule's own headline was
+    > written down.
+
 ---
 
 ## 6. Classification — the map

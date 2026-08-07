@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative), 127 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
+active_milestone: "M257x — platform re-alignment (iterative), 128 iters + 26 harden passes closed (branch m257x/platform-realignment). Re-align BOTH rosetta (corpus) and rosetta-extensions (tooling) to platform @ origin HEAD. Gate 4 of 5; clause 5 the only one open. M257 PAUSED behind it after 3 iters."
 last_closed: "M256 — 2026-07-30"
-phase: "M257x iter loop, **127 iters** (+ 26 harden passes). **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. **Headline, and it is a REFRAME: the corpus is UNDER-CITED, not unfounded** — iter-124 triaged the sealed consequence class (`|C1|`). **Quote the AUDIT-CORRECTED split with its denominator or quote none**: `cite` ≈ **86.6 %** (printed 96.2 %), `hedge`+`drop` ≈ **12.2 %**, and **`fix` = 4 printed is a FLOOR, ≈ 11 ≈ 3.2 % recall-corrected** — falsity is not syntactic. So *"1,151 uncited assertions"* is ~298 whose evidence sits in a clone nobody linked, ~42 genuinely uncheckable from here, and ~11 that are false: three diseases, three treatments, only the third urgent. Both pre-registered branches were sealed before a single verdict and **neither fired**. Detail: `iter-124/audit.md`; live status: `progress.md`."
+phase: "M257x iter loop, **128 iters** (+ 26 harden passes). **Gate 4 of 5**; clause 5 open, `P` UNMEASURED, no reading taken. **Headline, and it is a REFRAME: the corpus is UNDER-CITED, not unfounded** — quote the AUDIT-CORRECTED split with its denominator or none (`cite` ≈ 86.6 %, `hedge`+`drop` ≈ 12.2 %, **`fix` a FLOOR**); owner `iter-124/audit.md`. iter-128 read that consequence class **exhaustively — 340/340** and found **13 false claims → 30 repaired sites**, 4 of them PREDICATES needing a corpus-wide sweep. **Third security-surface UNDERSTATEMENT of the milestone: the REST surface has ELEVEN Echo groups, not the six the table listed, and one has NO authentication at all.** The 820 complement is triaged too (`cite` ≈ 90 %) — but its `fix` is **0-because-unread, not 0-because-clean**. Detail: `iter-128/progress.md`."
 last_updated: "2026-08-07"
 ---
 
@@ -55,7 +55,8 @@ rule **bars a successor**, so there is **no `TOK-09`** (chain in `decisions.md`)
 INSTRUMENT, not a strategy** — `F4` books any sentence treating the census as clause 5's grader as a defect.
 
 **Chapman is RETIRED**; only floors survive (**≥ 46 at `194361e4`**). The residual stays unmeasured above
-a floor — **1,908** tier-1 pairs, **1,160** tier-2 (baseline 1,164; the ratchet holds). The two
+a floor — **1,908** tier-1 pairs, **1,150** tier-2 (baseline 1,164; the ratchet holds — iter-128's
+repairs took it 1,160 → 1,150 by adding evidence). The two
 measurements that govern how any of it may be quoted are a standing rule now, below.
 
 **The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
