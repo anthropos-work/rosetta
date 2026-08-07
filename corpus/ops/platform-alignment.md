@@ -2063,6 +2063,23 @@ defect, it was arguing for it.*
     > rotted **twice** (`:174-176` → iter-98 → `:193` → iter-138) and one of its paragraphs held **three**
     > rotted pins. The durable citation is the construct name plus a substring `grep` returns uniquely.
     >
+    > **Rule (c′) — the corpus's own RETRACTION IDIOM is a rot generator, measured.** The house style
+    > *"it was `:274` at `<sha>`"* / *"this cited `:116-117` until iter-NN"* keeps the retracted number
+    > **live in the text**, where the next insertion above it moves its target. **In one session (M257x
+    > iters 137–141) this turned fences RED three times, in three different files, always on a pin whose
+    > own sentence existed to retract it** — `roadrunner.md`'s async-tasks paragraph,
+    > `graphql-wundergraph.md`'s `5050` pointer (rotted **twice** on its own), and
+    > `ai-readiness.md`'s `:326`/`:274` note. **Retract by describing the artifact, not by reproducing
+    > it**: *"this doc carried two different line numbers for it in successive iters"* says everything the
+    > quoted number said and cannot rot. A fence matching on **form** cannot tell the quotation from the
+    > assertion, and it is right not to.
+    >
+    > **Rule (c″) — a cross-reference that names its target by a RETRACTED TITLE is invisible to every
+    > anchor fence**, because the pointer still resolves. `backend.md:13` sent readers to *"the **M810
+    > prod teardown is UNEVEN** bullet below"* — a bullet retitled *"…has now LANDED for both"* at
+    > iter-127, whose body retracts *"UNEVEN"* explicitly. The reader arrives at a paragraph that opens by
+    > contradicting the sentence that sent them. **Name your target by what it says now.**
+    >
     > **Rule (d) — choose the test suites by what you CHANGED, not by what you were writing ABOUT.**
     > iter-137 rewrote **29 anchors** and picked its scoped suites by topic (`platform_alignment`,
     > `claim_twin`, …). `anchor_offset_guard` was **NOT-RUN** in the family (commit-scoped, no `--range`)

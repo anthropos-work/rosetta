@@ -123,7 +123,7 @@ stable). It mints against whichever instance the operator's key points at.
 the source's own words (*"Actor Tokens would require Enterprise"*) @ `app` `ad9f3c49`.
 
 **Corpus cross-references for the harness half** (this page previously mentioned it nowhere):
-[`ant-academy.md:334`](./ant-academy.md) (the `DEV_LOGIN_ENABLED` public-route pair),
+[`ant-academy.md`](./ant-academy.md)'s **`DEV_LOGIN_ENABLED` dev-only route row** (`/api/dev/login-as`, `/dev/accept`) — ⚠️ **pinned at `:334` until M257x iter-141, which is the AI-proxy row; the target had moved +4 to `:338`, so the row is named rather than re-pinned** (`§5` rule 63(c)),
 [`studio-desk.md:90`](./studio-desk.md) (*"Dev-only acceptance harness"*), and — added at **iter-121**, the
 **pair-half iter-120 left open** — [`next-web-app.md` § the two minting sites in this repo](./next-web-app.md#the-two-clerk-sign-in-token-minting-sites-in-this-repo-added-m257x-iter-121). That page held **2 of the 5 sites, including the
 only ungated one**, and said nothing about either; a repaired enumeration whose per-repo pages stay silent

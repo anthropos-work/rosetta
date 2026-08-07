@@ -15,9 +15,20 @@
 > The whole AI-Readiness domain moved out of `app/internal/workforce/` into a **new package
 > `app/internal/aireadiness/`** (package name `aireadiness`) — commit `4c28365f` ("Refactor AI Readiness domain:
 > migrate workforce dependencies to aireadiness package", 2026-07-22). `workforce` keeps the org-analytics KPIs;
-> `aireadiness` owns everything readiness-scoped. **The only remaining dependency on `workforce` is the member
-> directory** (the `WorkforceDirectory` interface — `LoadMembers`/`LoadMembersByUserIDs`, whose implementations
-> **stayed** in `app/internal/workforce/members.go`).
+> `aireadiness` owns everything readiness-scoped. **The remaining dependency on `workforce` is the member
+> directory PLUS the org's skill-scale setting** — the `WorkforceDirectory` interface, which declares
+> **FOUR** methods at `app/internal/aireadiness/manager.go:40-51` @ `app` `ad9f3c498`:
+> `LoadMembers` (`:43`), `LoadMembersByUserIDs` (`:45`), `BaseMembers` (`:48`) and **`LevelsCount`**
+> (`:50`). ⚠️ **Corrected M257x iter-141 — this said *"the ONLY remaining dependency … is the member
+> directory"* and named two methods.** The source's own type doc says otherwise in as many words
+> (`manager.go:36-39`): *"the slice of the workforce manager this domain needs: the active-member
+> directory … **and the org's skill-scale setting**."* `LevelsCount` is an **org setting**, not a member
+> call — `readiness.go:770` reads `maxLevel := int(m.workforce.LevelsCount(ctx, orgID))`.
+> **And *"whose implementations stayed in `members.go`"* is wrong for the fourth**: `LoadMembers` /
+> `LoadMembersByUserIDs` / `BaseMembers` are at `app/internal/workforce/members.go:349`/`:353`/`:357`,
+> but **`LevelsCount` is at `app/internal/workforce/manager.go:90`** (`git grep "func .*LevelsCount"`
+> returns three sites tree-wide: the unexported `getLevelsCount` at `manager.go:61`, the exported one at
+> `:90`, and a test fake). Independently re-derived at source, iter-141.
 >
 > **File renames** (older `app/internal/workforce/…` anchors elsewhere in this doc refer to the pre-refactor
 > location — resolve them under `internal/aireadiness/`):
@@ -658,9 +669,11 @@ interaction, so the field was a hard **0**. The funnel now writes each stage-3 i
 > `skillsMapped` `:1915`, `handsOnMinutes` `:1921`, `interviewMinutes` `:1927`; `grep -c interviewQuestions`
 > over that 1,989-line file returns **0**. The field exists in the API and in the FE's TypeScript type,
 > `apps/web/src/hooks/useAIReadiness.ts:326` — inside `export interface AIReadinessCycleTotals` (`:323-330`)
-> — and is drawn by nothing. ⚠️ **Read that `:326` as a pin, not a standing line**: it was `:274` at
-> `bb3313bc`, this doc carried `:274` and `:326` in successive iters, and at each ref the *other* number named
-> an unrelated construct. The interface name is the contract; the line number is the convenience). So its zero was a
+> — and is drawn by nothing. ⚠️ **Read that `:326` as a pin, not a standing line**: this doc carried two
+> different line numbers for it in successive iters, and at each ref the *other* number named an unrelated
+> construct. **The interface name is the contract; the line number is the convenience** — and the earlier
+> number is deliberately no longer reproduced here (M257x iter-141): quoting it kept it live enough to rot,
+> and it rotted onto a blank line, turning two fences RED. `§5` rule 63(c)). So its zero was a
 > **payload** zero, not a visible empty cell. Filled regardless — an interview with no questions is not real
 > data — but the honest claim is that this tile's *visible* zero-risk lives in the three cells that do render,
 > which the coverage sweep now fences with a **non-zero-value** assert rather than a label assert (a section
