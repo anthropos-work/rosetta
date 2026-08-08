@@ -3110,3 +3110,118 @@ the completeness fence *for*. r70/71 again, in the newest registry.
 
 **Stop condition:** continue-to-next-pass — the derivation registry is RED at HEAD and its
 executable-here filter is pinned to a spelling; both land in pass 2.
+
+## Pass 37 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-153 … iter-165 (target: iter-162's derivation registry)
+
+**Finding — two fences went RED exactly as designed, and three iters shipped over them.**
+
+`stack-core` was carrying **two RED fences at HEAD**, both authored by the iters this pass hardens:
+
+1. `derivation_registry.unclassified()` — built at iter-162 so *"the registry can no longer silently fall
+   behind the tree"* — went RED at **iter-163**, the very next iter, which added
+   `anchor_subject_census.py::Census.unexempt` and classified it nowhere.
+2. `test_test_collection_fence` (the M256 fence for classes defined below `if __name__ == "__main__"`)
+   named `test_frozen_expectation_census_m257x.py:229` (iter-162) and
+   `test_anchor_construct_denominator.py:340` (iter-164).
+
+**They are the same event seen twice.** The 12 tests direct execution could not see in the frozen-
+expectation module **include the registry-completeness fence itself** — `python3 <that file>` collected
+20 and printed OK. Iters 163/164/165 each ran a change-derived scoped suite that did not include the
+module grading them: `FIX-M257x-iter142-whole-suite-owed`, observed firing. `§5` r60/66 operationally —
+**a scoped green is evidence about its scope, and the thing outside the scope was already RED.**
+
+**Second finding — the registry's executable-here filter was pinned to argument SPELLINGS.**
+`PATHLIKE_ARGS` is a set of parameter *names* answering a question about parameter *types*. Measured:
+**13 required arguments across 9 functions are annotated `Path` / `Path | None` / `list[Path]` /
+`Path | str` and named none of them**, so **8 sites** sat outside the sub-population the completeness
+fence exists *for* — a derivation could be added, be perfectly path-satisfiable, and never need a
+decision, because its author wrote `target` instead of `path`. `§5` r70/71, in the registry built to end
+that class. Third: the population glob was `*/*.py`, section roots only — widened; **measured, no verdict
+moves today** (3 deeper modules, 2 derivations, neither executable-here), and fixed anyway, because *the
+fence happens to be right* is not the property being claimed.
+
+**Coverage delta:** `test_frozen_expectation_census_m257x.py` 26 → 32; direct-execution collection
+20 → 32 and 26 → 30 in the two guard-misplaced files. Population 131 → 133, executable-here 60 → 68,
+unclassified 1 → 0.
+**Tests added:** 6 — the type-side admission proven in BOTH directions (without the negative arm the
+widening could be `return True`), an anti-vacuity control that ≥ 8 live sites are admitted by TYPE ALONE
+**and every one of them is graded** (RED against the pre-fix filter, verified by mutation), the sub-root
+reach, and that the widened glob still excludes `tests/` at depth.
+**Bugs surfaced + fixed inline:** 3 (`2e2b135`). All nine newly-visible sites adjudicated at source.
+**Stop condition:** continue-to-next-pass — the shipping probe-scope path has the same unread-subject
+shape and is measured but not yet repaired.
+
+## Pass 38 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-153 … iter-165 (target: iter-153/154's probe-scope helper)
+
+**Finding — "I could not look" and "there is nothing to see" were the same bytes.**
+
+`scope-union.sh` opens by explaining that its line 3 exists so *"the override adds nothing probeable"*
+and *"there is no override"* cannot collapse — *"the exact shape harden pass 35 booked as a defect one
+level up (a mechanism reporting a confident verdict about a subject it never read)"*. Four lines below
+that paragraph: `. "$HERE/services.sh" … || { echo; echo; echo; exit 0; }`.
+
+Measured: a missing `services.sh` and a project with no stack dir produce **byte-identical** output, and
+`generate.sh` renders both as *"no generated override found … this is the PLATFORM's service set alone"*.
+An operator reading `/test-platform` is told a fact the tooling never established. The sibling test class
+is literally named `TestNoOverrideIsDistinguishableFromAnEmptyOne`, and its three covered cases do not
+include *the instrument could not run*.
+
+Line 4 is now a STATUS (`ok` / `unreadable:services-lib` / `unreadable:override-file`); it still exits 0
+and never aborts (`D-M257x-148-1`). **All three consumers read it and all three fail CLOSED** — an EMPTY
+line 4, which is what a missing or older `scope-union.sh` yields, counts as unreadable, not as `ok`.
+`dev-stack` and `up-injected.sh` read only lines 1-2, so the contract change is safe for them, and both
+carried the same blind spot; both now disclose it.
+
+**Coverage delta:** `test_scope_union_m257x.py` 16 → 21 (+1 existing test updated to the four-line
+contract). **Tests added:** 5, including **the measurement asserted directly** — the two outputs must no
+longer be equal — and `generate.sh`'s real block executed against a chmod-000 override.
+**Bugs surfaced + fixed inline:** 1 (`757730b`).
+
+**Routed forward — `FIX-M257x-h36-labeled-prover-denominator` (Fate 3).** `labeled_spelling_pins.py`
+**contradicts itself inside one report**: `BLIND SPOT 1 instance(s) confirmed structurally invisible`
+three lines above `3 of 7 instances` for the same property. `expect_blind` is set on **1 of the 3**
+instances its own taxonomy calls structurally invisible (*"No haystack clause can see these — nothing
+reads a source file"*), so the published `RECALL 4/6 = 67%` is an artifact of applying the module's own
+exclusion rule to one third of the sites that qualify for it; applied consistently it is 4/4, applied to
+none, 4/7. The pre-registered 50 % refutation floor is computed over that denominator. Routed rather than
+fixed inline because **choosing between the two consistent readings changes a figure the milestone
+quotes** — a design decision, not a corollary of a test. Two adjacent latent defects to fold in: a stale
+`expect_blind` declaration prints `⚠ … the declaration is stale` and still **exits 0**, and an instance
+whose commit is unreadable is `NOT COUNTED`, **silently shrinking the recall denominator**.
+
+### Suite results (counts, never wall-time — `§5` rule 51's timing leg fails on this host)
+
+| suite | result | baseline |
+|---|---|---|
+| `stack-core` | **1 failed · 1478 passed** | pass 35: 2 failed · 1338 passed |
+| `stack-verify` | **0 failed · 275 passed** | pass 35: 252 passed |
+| `dev-stack` | **0 failed · 151 passed** | — |
+| `demo-stack` | **9 failed · 1055 passed · 2 skipped** | — |
+
+`stack-core`'s single failure is the standing `test_claim_twin_guard_iter48_answer_key::test_02`,
+unchanged; pass 35's second failure was its own defect and is gone. **The 9 `demo-stack` failures are
+graded individually, never as a set** (pass 32 characterised 21 failures and iter-145 proved 57 % of that
+characterisation false): 3 `test_migrate_race_live` reproduce at the pre-harden commit `5385390` in a
+fresh clone with no live container; the other 6 each assert a **sha256 of a file in a live clone on this
+box** — `ant-academy/code/next.config.js`, next-web's `urls.ts` — and **neither those files nor the
+manifests they are compared against appear in this pass's 10-file diff**, so both operands of every one
+of those six comparisons are byte-unchanged by this pass and the verdict is identical at both commits.
+That is a per-test proof, not a property asserted over a group.
+
+**Flake gate:** 3 consecutive clean runs of all five touched test files — 126 passed ×3.
+**Invocation-parity check** (the pass-33/35 self-inflicted class): all four changed test files collect
+identically under pytest and by direct execution — 27, 32, 30, 21 — from `stack-core`, from
+`stack-verify`, and from the rext root.
+
+**Knowledge backfill:** none needed — every finding this session is a defect in an instrument, and each
+instrument's own docstring now carries its retraction and the measurement behind it.
+
+**Stop condition:** cap reached without stabilization — three passes, five defects fixed inline, one
+routed. Each pass found a real defect in the previous iters' newest instruments, so coverage has not
+stabilized; the residual is the routed `FIX-M257x-h36-labeled-prover-denominator` plus the standing
+process gap the two RED fences exposed (a change-derived scoped suite cannot see the fence that grades
+it). Per the user's standing ruling, this is routed and NOT met with new machinery.
