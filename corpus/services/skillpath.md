@@ -35,7 +35,7 @@
 >   `app/knowledge/architecture.md:28` still list the service — **re-derived at `app` `ad9f3c49`**, which is
 >   both `origin/main` and the demo's build pin on 2026-08-06; both anchors also hold at `2035f9a`, the ref
 >   this sentence used to name as `origin/main` before that label expired (M257x iter-102 — *a pin is a pin,
->   a branch name is not*). That CLAUDE.md anchor stood at a different line when first measured, so re-find the
+>   a branch name is not*). The CLAUDE.md anchor stood at a different line when first measured, so re-find the
 >   sentence rather than trusting the offset. Trap C, *the platform's planning docs lag its own code*.
 >   Grade against `main.go`: `SkillPathSessionService` has **0** occurrences in Go source at `ad9f3c49`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is

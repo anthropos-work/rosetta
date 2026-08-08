@@ -391,7 +391,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
   with `ModelBackendName()` (`:100`) returning `"anthropic-api"` to say so. That is a **US-terminating**
   path outside the Bedrock EU region, selected by an env var rather than a flag — so it is not covered by
   the `flag_use_azure_us` caveat below. [`external_services.md:567`](./external_services.md) carries the
-  provider row and `coursebuilder.md:48` calls it *"the shipped path"*; this section said the opposite.
+  provider row and [`coursebuilder.md`](../services/coursebuilder.md)'s **LLM usage — the backend is SELECTED AT START-UP** bullet calls it *"the shipped path"*; this section said the opposite.
   Corrected M257x iter-46 — *the anchor said `:489`, which is a TypeScript codegen comment, because it was
   transcribed from a blocker ledger instead of re-derived; corrected iter-48*
 - No customer data stored in US **by default** — but the residency guarantee is contingent on

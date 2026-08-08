@@ -2092,7 +2092,7 @@ defect, it was arguing for it.*
     > **The path-qualified half was found by the GUARD FAMILY, not by this fence, and that is the most
     > useful thing the iter produced.** The first draft matched only the bare form, reported the class
     > clean, and `repair_leak_guard` went RED **on the commit that repaired it** —
-    > `shared_libraries.md:77` still published a twin of a `CLAUDE.md` site the fence *had* flagged,
+    > `shared_libraries.md`'s **analytics-go** row still published a twin of a `CLAUDE.md` site the fence *had* flagged,
     > missed for one reason only: its pin carried a path. **A fence whose regex defines its own
     > denominator will report a clean census over the population it happens to match.** The
     > commit-scoped guards are the only thing standing between that and a published "0".
