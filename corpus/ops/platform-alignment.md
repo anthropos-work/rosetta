@@ -2330,7 +2330,23 @@ defect, it was arguing for it.*
     **attribution**.
 
     **The measurement.** M257x ran a "whole suite" at every iter close and 32 harden passes. *"The
-    whole suite"* meant one of five `rosetta-extensions` sections — **1,280 of ~3,040 tests, 42 %**.
+    whole suite"* meant one of five `rosetta-extensions` sections — **1,281 of 3,062 tests, 42 %**,
+    where *tests* means **executed = passed + failed + skipped**.
+
+    > ⚠️ **This figure read `1,280 of ~3,040` until M257x iter-173, and the way it was wrong is the
+    > rule it is evidence for.** The denominator was assembled as `2,978 passed + 11 skipped = 2,989`
+    > from the harden ledger's own five-section table — **dropping that table's 22 failures** — and the
+    > next entry carried the hole forward as `2,989 + 51 = 3,040`. So the rule that *"the whole suite"
+    > must name its denominator* was published with a denominator that had silently changed its unit
+    > from *executed* to *passed-and-skipped*: iter-172's *name the unit* defect, one level up, inside
+    > the rule about denominators. Re-derived: `2,978 + 22 + 11 = 3,011` executed at that table, of
+    > which `stack-core` was `1,229 + 1 = 1,230`; after the `+51` the section is **1,281** and the
+    > suite **3,062**. The four other sections come to **1,781** in the ledger's table *and*
+    > independently in iter-145's own re-run of them — two runs, same executed total. **The 42 % holds
+    > either way**, which is exactly why nobody looked: a percentage can survive an error its operands
+    > do not. Fenced going forward by `stack-core/derived_count_guard.py`, which proves the table this
+    > figure is derived from — it cannot reach the `N of M` prose shape itself, and says so.
+
     Run once in full, the four never-run sections held **21 failures**, and they had been routed
     forward three times with one characterisation: *"provably not ours … pre-existing,
     environment-coupled"*, evidenced by `git diff --name-only <5-iters-ago>..HEAD` returning only
@@ -3865,6 +3881,55 @@ Three things fell out of doing it, and each is the general lesson:
   derived sets before and after, per rule 73's widen-only-when-the-verdict-is-unchanged corollary. And what
   a derivation must **refuse**: a repo file that would shadow a stdlib module inside the staged tree is an
   error, never a copy — that is a staged-only divergence, the exact class the helper exists to end.
+
+### A DERIVED number is censusable; an OBSERVED one is not — split the class before you scope the fence (M257x iter-173)
+
+**The distinction is the whole finding, and it is what made the census cost seconds rather than the
+50 minutes iter-172's two-runner sweep cost.** A published count is one of two things, and only one of
+them is reachable:
+
+| | can it be re-checked? | how |
+|---|---|---|
+| **observed** — read off a runner (`1 failed · 1229 passed`) | **no**, not without re-running at a ref that may no longer exist | re-run: expensive, and `§5` rule 51's timing leg is unusable on this host |
+| **derived** — a function of other published numbers on the same page (a table total, a delta, a percentage) | **yes**, with no runner, no host and no clone | arithmetic, on the page itself |
+
+iter-172 routed *"every pytest count published before this iter is a `passed` count, therefore an
+undercount"* — a class spanning both halves. Taken whole it is unaffordable. **Split it, and the derived
+half is a census that runs in under a second**; the observed half stays routed, and the iter says so
+rather than implying the green covered it (`§5` rule 60).
+
+**What the census found, and it is the rule about denominators failing its own rule.** The harden ledger
+summarised its own five-section table as *"one section of five, **1,230 of 2,989** tests"*. The table
+says `2,978 passed · 22 failed · 11 skipped`. **`2,989 = 2,978 + 11`** — the **22 failures were dropped**,
+so the denominator had silently changed unit from *executed* to *passed-and-skipped*, and the executed
+population is **3,011**. The next entry carried the hole forward as `2,989 + 51 = 3,040`, and from there
+it reached this document as the **evidence for `§5` rule 68 — the rule that "the whole suite" must name
+its denominator.** Corrected to **1,281 of 3,062**.
+
+Three sub-rules, each earned:
+
+1. **A percentage can survive an error its operands do not — so never audit the ratio in place of the
+   operands.** `1,280/3,040` and `1,281/3,062` are both **42 %**. The figure was published, quoted and
+   re-quoted across 28 iters with its headline conclusion intact and its arithmetic false. A ratio that
+   still looks right is the most durable place for a wrong count to live.
+2. **A fence that cannot reach the claim can still be worth building, if it proves the claim's OPERANDS.**
+   `N of M` prose is not machine-derivable — `M` names no source, and attributing it to a nearby table is
+   the inference this milestone has nine iters of evidence against. So `stack-core/derived_count_guard.py`
+   fences the *table totals, deltas and percent-triples* instead: the repair is still done by hand, but it
+   now rests on a fenced ground truth rather than on a second reading. **State that reach with its
+   denominator, and state what it does not reach, inside the tool's own report** — this one prints its
+   NOT-REACHED line on every run, green included.
+3. **Two independent runs agreeing on a total is stronger evidence than either run.** The four
+   never-run sections come to **1,781 executed** in the ledger's table (`1,749 passed + 21 failed +
+   11 skipped`) *and* in iter-145's separate re-run of them (`1,758 + 21 + 2`) — different pass/skip
+   splits, identical executed total. That agreement is what let the corrected denominator be published as
+   a number rather than an estimate.
+
+**And the ownership note, because it shaped the repair:** `hardening-ledger.md` is owned by
+`/developer-kit:harden-mstone-iters`, so a tik must **route** a correction into it rather than write it.
+Two of the five sites were routed with the derivation pre-computed; three were repaired in place.
+A correction that respects file ownership arrives later and intact; one that does not arrives as a
+merge conflict.
 
 ---
 

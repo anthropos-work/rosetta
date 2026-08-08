@@ -49,8 +49,12 @@ says what moved.
 The user has **not** ruled on widening it, and this decision does not pre-empt the ruling — it records
 what one widened run measured, so the ruling has evidence rather than a routed count:
 
-- The narrow definition covered **1,280 of ~3,040** tests. Every "whole suite" claim in 144 iters and
-  32 harden passes was made over ~42 % of the suite.
+- The narrow definition covered **1,281 of 3,062** tests executed. Every "whole suite" claim in 144 iters
+  and 32 harden passes was made over ~42 % of the suite.
+  <br>⚠️ **These operands read `1,280 of ~3,040` until M257x iter-173**: the denominator was
+  `2,978 passed + 11 skipped`, dropping the same table's **22 failures** — a unit switched from *executed*
+  to *passed-and-skipped*. The **~42 % is unchanged**, which is precisely why it went unnoticed for 28
+  iters. Now fenced at the operand level by `stack-core/derived_count_guard.py`.
 - Widening it **once** surfaced a live defect of the milestone's own making, RED for 132 iters.
 - The cost is ~11½ minutes of wall clock for the four extra sections — **less than half** what
   `stack-core` alone costs (20–35 min).

@@ -20,6 +20,13 @@ graded at all**, sitting in this milestone's own tooling:
 > one section of five, 1,280 of 3,040 tests. 21 failures sit in sections no harden pass or iter close
 > has ever executed, and they were invisible for the whole milestone."*
 
+⚠️ **The quotation is accurate; the claim inside it is not** (M257x iter-173). The quote is left verbatim
+because altering a block-quote to fix its source is how a record stops being a record. **`1,280 of 3,040`
+is `1,281 of 3,062`** — the ledger's denominator was `2,978 passed + 11 skipped`, dropping that same
+table's **22 failures**, so it had switched unit from *executed* to *passed-and-skipped*. The correction
+is made at the claim's own sites (`corpus/ops/platform-alignment.md`, the milestone `progress.md`), and
+the two `hardening-ledger.md` sites are routed to the next harden pass, which owns that file.
+
 That count has been **routed three times** (passes 30, 31, 32) with a one-line characterisation —
 *"provably not ours … live-clone / live-container assertions … pre-existing, environment-coupled"* —
 that was derived from `git diff --name-only` **scope**, never from reading a single failure. It is
