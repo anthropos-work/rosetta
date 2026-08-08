@@ -2434,6 +2434,37 @@ defect, it was arguing for it.*
     releases inside the one document written to prevent exactly that. **An omitted default is a
     claim, not a gap.**
 
+70. **Derive from the artifact that DECIDES the fact, not from one that merely constrains it — and
+    remember that an over-broad scope is loud while an under-broad one is silent.** iter-148 fixed
+    `/test-platform`'s probe scope by deriving it from `$STACK_ROOT/platform/docker-compose.yml`. That
+    is the right *shape* (derive, never hand-write) against the wrong *artifact*: the platform's
+    unmodified compose constrains what a stack **can** run; the stack's own **generated override** is
+    what decides what it **does** run. Measured at platform `0c91421` — platform set **5**, the stack's
+    own override **11**, so `/test-platform` probed five of eleven and printed `✓ pass`.
+
+    **The asymmetry is the lesson.** iter-148's over-broad scope printed four false `down`s and was
+    repaired inside one iter, because a false failure is *loud*. The under-broad half sat behind the
+    same repair for five iters and would have read as a clean bill of health indefinitely, because an
+    unprobed service produces **no line at all**. When grading a scope, ask both questions — *what does
+    it probe that it should not*, and *what runs that it never looks at* — and expect only the first to
+    announce itself.
+
+    **Corollary — an intersection must NAME what it drops.** Unioning the override in is not enough: a
+    service the stack runs for which the probe registry has no row (measured: `hiring-app`, and
+    Clerkenstein's `fake-fapi` / `fake-bapi`, whose death makes every login on the stack fail) cannot be
+    graded. Dropping it silently converts *"running and ungraded"* into *"absent"*. Print it, and
+    **declare it on both sides** so an arrival or a stale declaration goes RED — the same
+    declared-not-inferred move as `SERVICES_NOT_IN_PLATFORM_COMPOSE` (`§5` rule 69's fence discipline;
+    `D-M257x-151-1`: a fence whose absent arm reads a comment cannot fire).
+
+    **Corollary — retiring a gap-disclosure fence.** When a repair closes the gap, the fence that pinned
+    the *disclosure* of that gap will fail, and deleting it is the wrong move: it retires a real
+    property along with an obsolete spelling of it. Re-point it at the property one level up. Here the
+    old test asserted `generate.sh`'s **source** contained three service-name literals; the repair
+    deliberately removed them (a hand-written exclusion list is the defect class). The re-pointed test
+    asserts the stronger pair — the disclosure block carries **no** service-name literal, **and** the
+    real script, when RUN, still names what it left out.
+
 ---
 
 ## 6. Classification — the map

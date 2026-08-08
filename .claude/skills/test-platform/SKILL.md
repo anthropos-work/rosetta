@@ -97,6 +97,19 @@ REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
 > — derived, caller-supplied, and underivable. The caller-supplied one was the gap: it is the branch
 > this note recommends, it is the branch where the scope is arbitrary, and it used to print nothing, so
 > `✓ pass` off a hand-narrowed one-probe run read the same as a full sweep.
+>
+> **The derived scope now UNIONS the stack's own generated override (M257x iter-153).** The platform's
+> unmodified compose is not the artifact that decides what a stack runs. Measured at platform `0c91421`:
+> `platform_topology.py services` returns **five** services, while a default demo's own generated
+> override declares **eleven** — the extra six being `directus`, `next-web-app`, `studio-desk`,
+> `hiring-app` and Clerkenstein's `fake-fapi` / `fake-bapi`. So the derivation covered five of eleven and
+> the report read `✓ pass`. **`STACK_PROJECT` is what makes the union possible** — it is how the stack's
+> override is located (`demo-N` → `<rext>/demo-stack/stacks/demo-N/docker-compose.injected.yml`), so
+> passing it is no longer only about aiming the probes correctly. Three of the eleven have **no row in
+> the probe registry** and therefore cannot be graded at all; the scope line **names them** rather than
+> dropping them silently, and `stack-verify/lib/services.sh` declares them in
+> `STACK_INJECTED_SERVICES_NOT_PROBED` so an arrival or a stale declaration turns a fence RED. If no
+> override is found the scope line **says it found none** — silence would read as a complete scope.
 
 The script:
 - Runs the underlying probes in order
