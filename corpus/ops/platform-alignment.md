@@ -2375,6 +2375,33 @@ defect, it was arguing for it.*
     sections cost ~11½ min together, **less than half** what the one included section costs. The
     excluded 58 % was the cheap half.
 
+    * **(d) A repair's completeness is a function of what gets EXERCISED, not of the author's care —
+      so census the un-exercised paths FIRST.** *(M257x iter-146)* iter-145 established that iter-13's
+      re-point had a hole; iter-146 censused the rest of it. Over the tooling repo: **84 references to
+      the deleted router's port across 31 files**, and after classification —
+
+      | class | n |
+      |---|---|
+      | correct re-point · fence asserting its absence · guard prose · test fixture | **82** |
+      | **latent** — a build-arg DEFAULT baking a dead endpoint, never reached because the caller always passes `--build-arg` | 1 |
+      | **LIVE** — an operator-facing URL for a port with no listener | 1 |
+
+      **97.6 % complete, and the misses were not random.** Both landed where nothing executes: a
+      never-run test section (iter-145) and a `--public-host` branch that needs tailscale plus a
+      public host to reach. Everywhere the code actually runs, iter-13's re-point held.
+
+      The live one is the sharpest thing in the census. `gen_tailscale_serve.py` deleted the router's
+      `tailscale serve` row and explains why in its own words — *"fronting a port with no listener
+      produced a trusted-cert HTTPS endpoint that always refused, **which is worse than no entry at
+      all (it looks configured)**"* — and one file over, `dev-stack` still **printed that URL to the
+      operator** as the first line after a successful bring-up. **The repair removed the mechanism and
+      left the announcement.** Grep for the *emitters* of a retired fact, not only its consumers.
+
+      And the fence over this class has to carve out **comments**, for rule 67's reason: the four
+      files that document the deletion best are the four that name the dead port most. A predicate
+      matching the bare token would go RED on exactly the right code. *Executable content only — a
+      comment may name a dead endpoint; a command may not.*
+
 ---
 
 ## 6. Classification — the map
