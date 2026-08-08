@@ -51,7 +51,7 @@
 >    migrations"*, the `cms` / `jobsimulation` / `skillpath` schemas *"legacy husks"*) and
 >    [`dependency_map.md:78`](../architecture/dependency_map.md) (§ *2. Job Simulation* — session state goes
 >    *"directly to the **`public`** schema (the legacy `jobsimulation` schema is non-authoritative)"*)
->    already said. (This cited `service_taxonomy.md:52` until M257x iter-102 — that is the closing line of
+>    already said. (This carried a line pin into that doc until M257x iter-102 — by then the closing line of
 >    the `:44-52` blockquote correcting the Studio-Desk → Backend → Studio-Room **generation edge**, which
 >    says nothing about schemas, `jobsimulation`, or migrations. The bullet is named as well as numbered
 >    because `service_taxonomy.md` is edited concurrently and `:62` can move.) `app/atlas.hcl:8` pins

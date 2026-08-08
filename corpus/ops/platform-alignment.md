@@ -2082,13 +2082,22 @@ defect, it was arguing for it.*
     >
     > **Rule (c‴) — the class was CENSUSED, and the census is now a fence.** *(M257x iter-142.)*
     > `TOK-08` says a reading SAMPLES and a fence CENSUSES; (c′) named the class from three incidents,
-    > and iter-142 enumerated it. `retracted_pin_guard.py` scans the published corpus for a **bare
-    > backticked line pin inside a retraction clause** — a clause carrying both a reporting verb
-    > (`was` / `were` / `cited` / `said` / `read` / `pinned` / `carried` / `listed`) and a supersession
-    > marker. Over **922 bare line pins in 94 documents** it found **44 live instances across 17
-    > files**, every one hand-read before a line of prose was repaired: **44 of 44 true positives.**
-    > All 44 are now descriptions; the class stands at **0** and the fence holds it there. Three things
-    > the census established that the rule as written did not:
+    > and iter-142 enumerated it. `retracted_pin_guard.py` scans the published corpus for a **backticked
+    > line pin inside a retraction clause** — a clause carrying both a reporting verb (`was` / `were` /
+    > `cited` / `said` / `read` / `pinned` / `carried` / `listed`) and a supersession marker. Over
+    > **2,185 line pins in 94 documents** it found **50 live instances across 20 files** — 44 bare,
+    > 6 path-qualified — every one hand-read before a line of prose was repaired. All 50 are now
+    > descriptions; the class stands at **0** and the fence holds it there.
+    >
+    > **The path-qualified half was found by the GUARD FAMILY, not by this fence, and that is the most
+    > useful thing the iter produced.** The first draft matched only the bare form, reported the class
+    > clean, and `repair_leak_guard` went RED **on the commit that repaired it** —
+    > `shared_libraries.md:77` still published a twin of a `CLAUDE.md` site the fence *had* flagged,
+    > missed for one reason only: its pin carried a path. **A fence whose regex defines its own
+    > denominator will report a clean census over the population it happens to match.** The
+    > commit-scoped guards are the only thing standing between that and a published "0".
+    >
+    > Four things the census established that the rule as written did not:
     >
     > 1. **Precision lives in the SECOND half of the predicate, not the first.** `was` / `read` /
     >    `said` alone match ordinary description — *"the score column, read at `:1820`"* is a live pin,
@@ -2106,9 +2115,20 @@ defect, it was arguing for it.*
     >    the quotation from the assertion"* stated from the other side.
     > 3. **Fence the TOKEN, not the digit — so the repair never has to destroy evidence.** *"rotted
     >    +8"*, *"iter-102 added +23 and +16 instead of re-measuring"*, *"it stood ten lines earlier"*
-    >    keep everything the pin said and are invisible to every resolver. All 17 repaired files came
-    >    out **line-count FLAT** (36 lines rewritten in place, 0 net shift), so the sweep that removes
-    >    anchor rot could not itself induce any — the failure mode iter-141 caused with its own repair.
+    >    keep everything the pin said and are invisible to every resolver. All 20 repaired files came
+    >    out **line-count FLAT** (rewritten in place, 0 net shift per file, `git diff --numstat`), so
+    >    the sweep that removes anchor rot could not itself induce any — the failure mode iter-141
+    >    caused with its own repair.
+    > 4. **The two arms need DIFFERENT windows, and the asymmetry is measured, not designed.** Requiring
+    >    the supersession marker anywhere in the clause scores **44 / 44** on bare pins and **1 of 5** on
+    >    path-qualified ones, because a path pin lives in long evidentiary sentences where `until` is
+    >    doing other work — *"declared in prod **until** it was destroyed, `services.tf:509-517`"* is a
+    >    **live** citation, and *"said `= 1` **until** iter-137 — `main.tf:19` is an input to a module
+    >    never instantiated"* retracts a CLAIM while its pin is the evidence refuting it. **Retracting a
+    >    claim does not retract its evidence.** Requiring the marker *after* the pin separates that
+    >    population — 6 of 6 true, 4 of 4 false dropped. ⚠️ **That window is a TUNED CONSTANT on a
+    >    five-site denominator, and saying so is the only thing that makes it honest**;
+    >    `FIX-M257x-iter142-path-arm-window` carries the derivation forward.
     >
     > **Rule (d) — choose the test suites by what you CHANGED, not by what you were writing ABOUT.**
     > iter-137 rewrote **29 anchors** and picked its scoped suites by topic (`platform_alignment`,

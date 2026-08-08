@@ -2,7 +2,7 @@
 `FIX-M257x-iter141-retraction-idiom-sweep`, the route iter-141 opened one iter earlier and the newest on
 the queue. Three planned lines (census → repair → fence), declared in this iter's `overview.md`.
 
-# iter-142 — the retraction idiom, censused: 44 of 44, and now fenced
+# iter-142 — the retraction idiom, censused — and the census's own blind spot, found by the fence family
 
 ## The class, and why it is censusable
 
@@ -16,22 +16,40 @@ It is censusable under `D-M257x-140-2` — *a class is censusable iff its subjec
 because **the subject is the citing sentence itself**, not a resolved target. That is precisely what
 iter-138's retracted census lacked, and it is why this one could be run to completion.
 
+## ⚠️ Read this first: the census was WRONG before it was right, and a fence found it
+
+The first pass of this iter matched only **bare** pins (`` `:274` ``), enumerated 922 of them, repaired
+44, and reported the class **clean at 0**. Then the iter's own commit was put through the commit-scoped
+guards, and **`repair_leak_guard` went RED on it**: `shared_libraries.md:77` still published *"This
+cited `main.go:507-508` until M257x iter-138"* — a **twin of a `CLAUDE.md` site this fence had just
+flagged and repaired**, missed for one reason only, that its pin carried a path.
+
+**A fence whose regex defines its own denominator will report a clean census over the population it
+happens to match**, and it will sound exactly like a complete one. Nothing inside the fence could have
+caught this. What caught it was a *different* guard, on a *different* axis, run over the commit.
+
+Five more path-qualified sites were behind it. The numbers below are the corrected, two-arm census.
+
 ## The census — stated with its denominator (iter-114's rule)
 
 | quantity | value |
 |---|---|
 | source documents scanned (`corpus/**` + `README.md` + `CLAUDE.md`) | **94** |
-| **bare backticked line pins enumerated — the denominator** | **922** |
-| excluded as ports (`>= 10000`, e.g. `:13077`) | 23 |
-| excluded inside fenced blocks (transcripts, not prose) | 1 |
-| **in a retraction clause — the class** | **46** |
-| of those, inside the teaching-exempt protocol doc | 2 |
-| **live findings** | **44, across 17 files** |
-| **hand-audited precision, over the WHOLE population (not a sample)** | **44 / 44 = 100 %** |
+| **backticked line pins enumerated — the denominator** | **2,185** |
+| of those, path-qualified (`` `main.go:507-508` ``) | 1,311 |
+| of those, bare (`` `:274` ``) | 874 |
+| excluded as ports (`>= 10000`, bare form only) | 23 |
+| excluded inside fenced blocks (transcripts, not prose) | 3 |
+| **live findings — the class** | **50, across 20 files** (44 bare + 6 path-qualified) |
+| still in a retraction clause after the sweep | **2, both in the teaching-exempt protocol doc** |
+| **hand-audited precision, BARE arm, over its whole population** | **44 / 44 = 100 %** |
+| **hand-audited precision, PATH arm, over its whole population** | **6 / 6 = 100 %** after the window fix; **1 / 5** before it |
 
 **Every finding was read in context before a single line was repaired.** iter-138 published a
 mechanical number and iter-139 audited it to **0-for-12**; this iter inverted the order, and that
-inversion is the transferable part.
+inversion is the transferable part — **but the inversion protects PRECISION and does nothing for
+RECALL**, which is precisely what the path-qualified miss demonstrates. Auditing every finding tells you
+nothing about the findings the predicate never produced.
 
 ## What the audit changed — the two false REDs that shaped the predicate
 
@@ -57,14 +75,19 @@ sharpens it to **fence the TOKEN, not the digit**, which is what makes the repai
 *"rotted +8"*, *"iter-102 added +23 and +16 to the old numbers instead of re-measuring"*, *"it stood ten
 lines earlier in the file"* say everything the pin said and are invisible to every resolver.
 
-**All 17 files came out line-count FLAT — 36 lines rewritten in place, 0 net shift, verified with
-`git diff --numstat`.** That is not decoration: iter-141's own repair of this class turned a fence RED
+**All 20 repaired files came out line-count FLAT — rewritten in place, added minus removed = 0 for
+every file, verified with `git diff --numstat`.** (The one file with a net delta is
+`platform-alignment.md`, which GAINED rule 63(c‴) — an addition, not a repair.) That is not decoration: iter-141's own repair of this class turned a fence RED
 by inserting above a pin. A sweep that removes anchor rot must not induce any, and this one provably
 did not.
 
-Repaired: `CLAUDE.md` · `architecture/{ai_architecture, dependency_map, external_services,
-service_taxonomy}.md` · `services/{academy-backend, ai-readiness, backend, clerk-integration, cms,
-gotenberg, graphql-wundergraph, hiring, jobsimulation, next-web-app, skillpath, studio-desk}.md`.
+Repaired, bare arm (17 files): `CLAUDE.md` · `architecture/{ai_architecture, dependency_map,
+external_services, service_taxonomy}.md` · `services/{academy-backend, ai-readiness, backend,
+clerk-integration, cms, gotenberg, graphql-wundergraph, hiring, jobsimulation, next-web-app, skillpath,
+studio-desk}.md`. Path arm (6 sites): `architecture/{shared_libraries, dependency_map,
+platform-migration-status}.md` · `services/{hiring, storage, coursebuilder}.md`. Plus
+`service_taxonomy.md:213`'s cross-doc pin into `studio-desk.md`, which **`anchor_offset_guard` flagged
+as rotted by this very commit** and which is now named by construct.
 
 Two sites are worth naming because they are the class arguing with itself:
 
@@ -83,6 +106,10 @@ tree). **The guard family grows 22 → 23.**
 * **Mutation control that fires** — three mutations (the `until` form, the `at <sha>` form, the
   *"named, not pinned"* form) each proven to turn it RED, **with the unmutated control proven GREEN in
   the same class**, so a RED is attributable.
+* **A path-qualified arm with its own narrower window**, and the asymmetry is **measured, not
+  designed**: Tier-A-anywhere scores 44/44 on bare pins and **1 of 5** on path pins. Requiring the
+  marker *after* the pin gives 6/6 true and drops 4/4 false. ⚠️ **That window is a tuned constant on a
+  five-site denominator** — stated here rather than buried, and routed forward.
 * **Anti-vacuity control written against the guard's SUBJECT** (§8, iter-94), and it has an unusually
   sharp arm: **`census.clauses` over the real corpus can never legitimately reach 0**, because
   `platform-alignment.md` rule 63(c′) has to spell the idiom in order to teach it. If the matcher ever
@@ -94,9 +121,10 @@ tree). **The guard family grows 22 → 23.**
 
 | gate | result |
 |---|---|
-| **New fence's own module** (mutation + anti-vacuity + 2 false-RED regressions) | **15 passed / 0 failed** |
+| **New fence's own module** (3 mutations + 2 anti-vacuity arms + **6** false-positive regressions across both arms) | **21 passed / 0 failed** |
 | **Scoped rext suites** — chosen by what this iter CHANGED, per rule 63(d): `guard_family`, `corpus_citation_guard`, `retracted_pin_guard`, `anchor_construct_denominator`, `anchor_offset_guard`, both mechanical-fence mutation batteries, `repair_postcondition` battery | **209 passed / 0 failed** (699.66 s) |
 | **Guard family**, `--repo-root` + `--platform stack-demo/platform @ 0c91421` | **19 GREEN · 0 RED · 4 not-run** — up from 18 GREEN pre-iter, the +1 being this iter's own guard. Not a whole-family green; the runner's own summary says so |
+| **The three COMMIT-scoped guards** (`anchor_offset`, `repair_leak`, `value_change`) over the iter's own range — the four the family reports as not-run | **3 RED on the first commit, every one a real miss**: a rotted cross-doc pin, the path-qualified twin, and a value-change twin. All three repaired; re-run green. **This is the gate that found what the tree-state fence could not** |
 | **Pre-iter baseline**, same invocation | **18 GREEN · 0 RED · 4 not-run** — identical to iter-141's close, so the delta is attributable |
 | **Whole suite** | **NOT re-run — `§5` rule 60 requires saying so.** Stated as a gap, not characterised as covered. The 8 scoped modules are the change-derived set, and this is the **first** iter since 132 to touch `rosetta-extensions` at all, so iter-132's clean whole-suite run **no longer stands** on this rext tree |
 | **Suite wall-time** | not quoted as a measurement — `FIX-M257x-iter132-suite-walltime-is-not-a-measurement` stands. The 699.66 s above is a duration, not a benchmark |
@@ -108,24 +136,32 @@ each other's temp state. **The 209/0 above is the file-based run, taken alone.**
 
 ## Close — 2026-08-08
 
-**Outcome:** the retraction-idiom class is **censused, repaired to zero, and fenced**. 922 bare line
-pins enumerated over 94 documents; **44 live instances in 17 files, 44 of 44 true positives on a
-whole-population hand audit**, all converted from reproduction to description with **zero net line
-movement**. The fence ships with a firing mutation control and an anti-vacuity arm that cannot pass
-vacuously. Guard family **22 → 23 members, 19 GREEN · 0 RED**.
+**Outcome:** the retraction-idiom class is **censused, repaired to zero, and fenced** — and the census's
+own blind spot was found and closed inside the iter. **2,185 line pins enumerated over 94 documents; 50
+live instances across 20 files (44 bare + 6 path-qualified)**, all hand-read before repair, all converted
+from reproduction to description with **zero net line movement per file**. The headline finding is not
+the sweep: **the first pass matched only bare pins and reported the class clean at 0, and
+`repair_leak_guard` went RED on the commit that repaired it.** A fence whose regex defines its own
+denominator reports a complete-sounding census over whatever it happens to match; auditing every finding
+protects precision and says nothing about recall. Guard family **22 → 23 members, 19 GREEN · 0 RED**.
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET — **4 of 5**, unchanged. **No `N` reading was taken, so no `N` movement is claimed**
 (`§9`'s guard-rail 1, in its required words); `TOK-08` sequences the read after the mechanical sweep and
 this is one class of that sweep, not its completion.
 **Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n (**iters 135–142 took no reading, so the metric is UNMEASURED not unmoved — `§9`'s iter-type refinement; and `TOK-08`'s sealed refutation branch bars an agent-authored successor in any case**) — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n (**1 tik this session**) — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: **continue**
-**Decisions:** `D-M257x-142-1` (audit the predicate BEFORE the repair, not after the publication —
-44/44 vs iter-138's 0/12) · `D-M257x-142-2` (a ref-qualified historical pin is in the class, because the
+**Decisions:** `D-M257x-142-6` (**the headline** — a fence's regex is its denominator, and only a guard
+on a different axis can see the omission) · `D-M257x-142-1` (audit the predicate BEFORE the repair, not
+after the publication — 44/44 vs iter-138's 0/12; it buys precision, not recall) · `D-M257x-142-2` (a ref-qualified historical pin is in the class, because the
 fence does not read the qualification) · `D-M257x-142-3` (fence the TOKEN, not the digit — the repair
 keeps the evidence) · `D-M257x-142-4` (a sweep against anchor rot must be line-count flat, and this one
 was measured to be).
 **Side-deliverables:** none.
 **Routes carried forward:**
+- **`FIX-M257x-iter142-path-arm-window` (NEW)** — the path arm's *"marker must be within 40 characters
+  after the pin"* is a **tuned constant on a five-site denominator**. It scores 6/6 there and the
+  alternative scored 1/5, but that is a fit, not a derivation. Derive it or publish it as a disclosed
+  floor.
 - **`FIX-M257x-iter142-tier-b-underflag` (NEW)** — Tier B's 30-character reach **under-flags a chained
   pin**: on `external_services.md:209`, `` `:84` `` fired and its sibling `` `:669-670` `` did not,
   because the sha sits ~35 characters past the first pin. Under-flagging is the correct direction for a
@@ -142,6 +178,13 @@ was measured to be).
   `FIX-M257x-iter133-two-fives-need-a-fence` · `FIX-M257x-iter132-suite-walltime-is-not-a-measurement` ·
   `FIX-M257x-iter131-predicate-sets-not-enumerated`.
 **Lessons:**
+0. **A fence's regex IS its denominator.** The census said 922 pins and 0 residual; both were true of
+   the population the regex matched and neither was true of the class. **No control inside the fence
+   could have caught it** — not the mutation control, not the anti-vacuity arm, both of which passed.
+   What caught it was `repair_leak_guard`, a *different* guard on a *different* axis, run over the
+   commit. Two consequences worth carrying: **(a)** a census's reach claim must name the FORMS it
+   matches, not just the count it returns; **(b)** the commit-scoped guards are not a formality after a
+   sweep — on this iter they were the only thing between a real miss and a published "0".
 1. **Audit the predicate before the repair, not after the publication.** Same milestone, same month:
    iter-138 published first and was audited to 0-for-12; iter-142 audited first and repaired 44 of 44.
    The predicates were comparably mechanical. **The ordering was the whole difference.**

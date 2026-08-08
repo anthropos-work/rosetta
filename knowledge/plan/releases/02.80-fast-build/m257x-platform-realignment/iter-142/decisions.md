@@ -61,3 +61,33 @@ their confounded runs, applied preventively instead of retrospectively.
 
 **The reported 209 passed / 0 failed is the file-based run taken alone.** Recorded because this milestone
 does not let an unreported process share a measurement window.
+
+## `D-M257x-142-6` — a fence's regex IS its denominator, and only another axis can see the omission
+
+The first pass of this iter matched **bare** pins only, enumerated **922**, repaired 44, and reported the
+class **clean at 0**. Every number was true of the population the regex matched. **None of them was true
+of the class**, which also contains path-qualified pins (`` `main.go:507-508` ``) that rot identically.
+
+**Nothing inside the fence could have caught this.** Its mutation control fired correctly (on bare
+pins). Its anti-vacuity arm passed correctly (the enumeration was large and non-empty). Both controls
+answer *"is this guard working?"* and the guard **was** working — on the wrong denominator. A census's
+controls validate its mechanism; they cannot validate its scope.
+
+What caught it: **`repair_leak_guard`, run over this iter's own commit**, went RED on
+`shared_libraries.md:77` — the twin of a `CLAUDE.md` site the new fence had just flagged and repaired,
+differing only in that its pin carried a path. A guard on a **different axis** (does this commit leave a
+twin of what it just rewrote?) saw what a guard on the same axis structurally could not.
+
+Two rules follow, and they are cheap:
+
+1. **A reach claim must name the FORMS the predicate matches, not just the count it returns.** *"922
+   pins, 0 residual"* is not falsifiable by a reader; *"922 pins **of the form** `` `:NN` ``"* is — and
+   invites exactly the question that found this.
+2. **Run the commit-scoped guards over a sweep's own commit, always.** They are reported `not-run` by
+   the family (`anchor_offset`, `repair_leak`, `value_change`, `repair_reach`) and it is tempting to
+   leave them there. On this iter they returned **3 RED, all real**: a rotted cross-doc pin, the
+   path-qualified twin, and a value-change twin. They were the gate.
+
+This is the same shape as `D-M257x-140-2` (*a class is censusable iff its subject carries its own head*)
+one level up: **a class is censused iff the predicate's population and the class's population are the
+same set — and that equality is an assumption until something outside the predicate tests it.**

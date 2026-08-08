@@ -210,7 +210,7 @@ make dev S=backend       # Stop Docker container, develop natively
   `docker-compose.yml:112` behind `profiles: [studio-desk, all]` (`:141`), so it starts when that profile
   is selected — stacked on `core`, since `studio-desk` **alone** exits 1 (see *Profiles* below) — and not on
   a bare `make up`. The unqualified *"not in main docker-compose"* contradicted the Studio-Desk row above,
-  `frontend_architecture.md:11` and `studio-desk.md:21`; corrected M257x iter-46
+  `frontend_architecture.md:11` and [`studio-desk.md`](../services/studio-desk.md)'s **Deployment** fact-table row; corrected M257x iter-46
 - **Purpose**: Content creation, AI-powered generation, and AI-engineering learning
 - **Users**: Internal content creators and designers (Studio-Desk / Studio-Room) — **plus, for Ant
   Academy, the general public**: it is a public storefront with an enterprise/org tier, and its access
