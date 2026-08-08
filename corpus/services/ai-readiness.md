@@ -25,7 +25,7 @@
 > directory … **and the org's skill-scale setting**."* `LevelsCount` is an **org setting**, not a member
 > call — `readiness.go:770` reads `maxLevel := int(m.workforce.LevelsCount(ctx, orgID))`.
 > **And *"whose implementations stayed in `members.go`"* is wrong for the fourth**: `LoadMembers` /
-> `LoadMembersByUserIDs` / `BaseMembers` are at `app/internal/workforce/members.go:349`/`:353`/`:357`,
+> `LoadMembers` / `LoadMembersByUserIDs` / `BaseMembers` are at `app/internal/workforce/members.go:349`/`:353`/`:357`,
 > but **`LevelsCount` is at `app/internal/workforce/manager.go:90`** (`git grep "func .*LevelsCount"`
 > returns three sites tree-wide: the unexported `getLevelsCount` at `manager.go:61`, the exported one at
 > `:90`, and a test fake). Independently re-derived at source, iter-141.

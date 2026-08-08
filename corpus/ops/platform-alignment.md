@@ -226,7 +226,7 @@ in the default profile · **93** org repos.
 ### Trap A — `migrations: false` entails nothing on its own
 
 `sentinel` is `migrations: false` **and** alive **with its own `sentinel` schema**
-(`docker-compose.yml:43`, `search_path=sentinel`). So a check shaped *"`migrations: false` ⇒ that schema must
+(`docker-compose.yml:18`, `search_path=sentinel`). So a check shaped *"`migrations: false` ⇒ that schema must
 not be written"* is **wrong**, and the natural fix — allow-listing sentinel — tunes it until it also stops
 catching jobsimulation.
 
@@ -1051,7 +1051,7 @@ Rules, in order of how often they actually catch something:
     left `repos.yml`, and every corpus claim naming it became unreadable **at exactly the moment it
     became false** — the worst possible instant for an instrument to stop looking.
 
-    Live, not theoretical: `setup_guide.md:486` enumerated the `migrations: true` repos as
+    Live, not theoretical: `setup_guide.md:504` enumerated the `migrations: true` repos as
     *"(currently: app, cms, jobsimulation …)"*; the name-resolver dropped `cms` and `jobsimulation`
     as unknown tokens, compared `{'app'} == {'app'}` and **passed a false claim.** The one migration
     claim of 24 the fence could reach was the one it read wrong: *effective reach 0, reported as 1.*
@@ -3589,6 +3589,41 @@ looks for.
 its instrument* — this is the reach half of that obligation, and it is the half a mutation control
 does not cover: a mutation control proves the instrument fires on what it looks at, never that it
 looks at everything it claims to).
+
+### When a class is "too semantic to fence", fence the slice that carries its own evidence (M257x iter-163)
+
+`anchor_construct_guard` closed a question in its own docstring for eighteen iters: catching an
+anchor that lands on the *wrong ordinary code* "requires deciding what a sentence claims, which is
+the line this whole fence family does not cross." True — and it stopped the class dead, while
+`corpus/services/backend.md` carried a citation **5 lines off its subject** and stayed **green**,
+because the line it landed on happened to be ordinary code.
+
+**The move is not to cross the line. It is to find the sub-population where the corpus already
+supplied the evidence.** Documentation usually *quotes* the thing it is describing, and when a
+backticked literal sits beside a citation the question stops being *what does this sentence claim*
+and becomes *is this string at that line* — a lookup, with a proposed repair attached (the line the
+literal is actually on).
+
+Three rules travel with this shape:
+
+1. **State the reach as a fraction of the resolved population, every run.** iter-163's slice is
+   **137 adjudicable pairs of 442 resolved single-citation lines**; the other 249 carry no quoted
+   literal and are out of reach *by construction*. A partial fence that does not publish its
+   denominator will be read as a complete one — `§5`'s standing rule about scoped reds and scoped
+   greens.
+2. **The PAIRING is the instrument.** iter-163 went **346 → 24 → 16 → 0** without ever changing
+   *what* is compared; every step changed *which two things get compared* (one citation per line ·
+   the enclosing block, not a ±window · the corpus's own `` `:97` ``/`` `:78-82` `` attribution · no
+   pairing across a full stop). A first draft that pairs every literal with every citation reports a
+   cross-product and reads exactly like a finding count.
+3. **Never tune a clause until a known instance fires** (Trap A). Where a helper genuinely
+   under-reaches, take the **declared exemption naming the helper's defect** and route the fix. Two
+   of iter-163's nine exemptions exist for exactly that reason and say so at the site.
+
+**And grade every survivor at source.** iter-163's fourth repair was not an anchor defect at all: the
+prose named *two* constructs and cited *three* lines, so the missing name — not the anchor — was
+wrong. A mechanical "bump the offset" repair would have looked correct, destroyed a true anchor, and
+left the real defect in place.
 
 ---
 
