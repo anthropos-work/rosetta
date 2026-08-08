@@ -3632,6 +3632,39 @@ imported from copies whose layout differs), the repair is **not** to make it der
 list, say in the comment that it is declared **and why**, and move the derivation into a test that
 compares the two in both directions — **fence the property the comment asserted.**
 
+### And grade the instrument at the GRAIN OF ITS CLAIM (M257x iter-159)
+
+The companion failure to the one above, and it points the other way: iter-149's rule stops you
+publishing a zero from an instrument that cannot fire. This one stops you **discarding an instrument
+that works, because the test of it was too blunt to see it succeed.**
+
+iter-159 built a predicate for the spelling-pin class (`§5` rules 70/71) and proved it against a
+**labeled set** — the seven confirmed instances of the class, each with the commit that repaired it,
+ground truth this milestone had produced as a by-product and never used. Graded at **file** level —
+*did the file's candidate count fall at the repair commit?* — it scored **1 of 4** and printed
+*"measures the file, not the pin."* That is a refutation, and it was **false**: the repairs each removed
+**one** pinned assertion from files carrying 9, 51 and 56 legitimate assertions of the same shape, so
+the count physically cannot move. Re-graded at the grain the claim is about — ***was the assertion the
+repair DELETED among the lines the predicate flagged?*** — the same predicate on the same data scored
+**4 of 4**.
+
+**The rule:** a claim of the form *"this instrument finds X"* must be tested by asking whether it found
+**X**, not whether some aggregate that contains X moved. Aggregates are where a true positive goes to
+hide — one correct hit inside 56 is invisible to a count and unmistakable to an intersection.
+
+**Two corollaries worth the same weight:**
+
+- **A labeled set is worth building before the instrument.** Any milestone that has repaired instances
+  of a class already owns one — the repairs are the labels. It converts *"is this predicate sharp?"*
+  from an argument into two numbers (**recall**: did it fire on the pre-repair form; **discrimination**:
+  did it name the repaired line), and the second is the one that earns the instrument its keep.
+- **When the labeled set says the predicate MISSES, check whether the misses are the same class before
+  improving the predicate.** Here they were not: two of the seven pinned a hand-written **value** rather
+  than searching a **haystack**, so no haystack clause could ever reach them. "Improve recall" would have
+  been effort against a target that does not exist — the real finding was that **the class is two
+  classes**. Report the recall on the pre-registered denominator and let the taxonomy be the deliverable;
+  re-labelling the misses "blind" after seeing them lifts the number to 4/4 and deletes the finding.
+
 ### Iter-type refinement — the 3-no-prog tok-trigger reads UNMEASURED as UNMEASURED (M257x iter-108)
 
 **This protocol's primary metric (`N`, the graded read) is expensive and is deliberately not measured every
