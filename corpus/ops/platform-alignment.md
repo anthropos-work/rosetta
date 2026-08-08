@@ -3678,6 +3678,37 @@ The corollary is the cheerful one: the **derivation-registry completeness fence 
 module before any new test ran**, which is what an enumerated registry is for. When a change turns
 three fences red, grade each one — *working as designed* and *defect* look identical in a summary line.
 
+### A frozen fixture and a live derivation are two clocks (M257x iter-167)
+
+`claim_twin_guard` re-derives its claim ledger from the milestone's blocker-ledgers **on every run**.
+The iter-48 answer-key fixture is **pinned** at rosetta `cabc3b1`. Its green-twin assertion read *"no
+refuted claim fires here"* — but the capture could only ever support *"no refuted claim **known at
+capture** fires here"*. iter-49 re-adjudicated the same corpus region on a **different** form, the two
+propositions came apart, and the test was RED at HEAD while three iters shipped over it.
+
+**When a fence and a fixture disagree there are THREE subjects, not two:** the fence, the corpus, and
+**the assertion joining them**. The reflex is to suspect the first two. Here the fence fired on a
+sentence that genuinely is a refuted claim, the live corpus was clean, and the *assertion* had changed
+meaning because one of its inputs kept moving. Name all three before repairing — the one-minute repair
+(edit the fixture until it is quiet) would have spent a perishable answer key that cannot be re-taken.
+
+> **An assertion joining a frozen artifact to a live derivation must be scoped to the frozen
+> artifact's own denominator, and must say so at the site.**
+
+Two clauses make that scoping honest rather than a silencer:
+
+1. **Assert the residual.** Every hit the scope EXCLUDES must be shown to come from outside the
+   capture (here: from a later iter). Without it the scope silently absorbs a real in-capture miss
+   that arrives by a different path.
+2. **Prove the narrowed predicate still fires** — a permanent control applying the *same scoped
+   predicate* to the RED fixture, plus a mutation run at authoring time. A narrowing that has not been
+   shown to still fire is not a repair. This is iter-158's rule (a proposed narrowing would have graded
+   14 of 14 broken checks green) promoted to a standing requirement on any scope change to a fence.
+
+**And close such a class by RUNNING the family, never by counting repairs.** Two fixes plus an
+argument is not the same object as `guard_family.py` at HEAD reporting `17 GREEN · 0 RED · 0
+could-not-check · 7 not-run` with every not-run named.
+
 ---
 
 ## 9. Cadence
