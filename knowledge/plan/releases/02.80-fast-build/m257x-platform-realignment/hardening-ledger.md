@@ -3060,3 +3060,53 @@ harden pass is supposed to find it.
 ⚠️ **Pass 32's retrospective was shown wrong by iter-145** for characterising a set of failures instead of
 grading them individually. This entry grades each of the three findings separately above and states the
 shared shape only as an observation drawn from three graded cases, not as a property asserted over a set.
+
+## Pass 36 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-153 … iter-165 (target: the census family iters 159–165 built)
+
+**Finding — the census said PAIR in every claim it makes and graded one literal per LINE.**
+
+`anchor_subject_census` (iter-163) opens *"A `(citation, literal)` pair is adjudicated iff…"*, counts
+`adjudicable pairs`, and waives per pair. `run()` took `min(cands)` — the literal nearest the citation —
+and dropped every other literal beside it. The unit it graded was the **line**, and that narrowing is
+declared nowhere in a file that declares three other blindnesses in advance.
+
+Measured on the live corpus: **226 candidate pairs over 193 lines**. Of the 33 discarded, **20 were
+adjudicable** and **one was a real unexempted finding** — `demo-up-defaults.md:77` quoting
+`` `@clerk/backend` `` against `up-injected.sh:43`, where the dotless-host refusal that clause describes
+lives at `:181`. The census printed `0 unexempted finding(s)` and exited 0.
+
+The coupled half is in the **waiver layer**, and it is `§5` r70/71 one storey up from the code that rule
+usually describes: `EXEMPT` was keyed `doc:line`, so the second pair at `:77` would have been absorbed by
+an exemption adjudicated for `assertValidPublishableKey` — a different claim, read on a different day.
+**A waiver pinned to a POSITION is not pinned to the subject somebody read.** Keys are now
+`doc:line:literal`, sourced from a single `Finding.key`.
+
+**Coverage delta:** `test_anchor_subject_census_m257x.py` 21 → 27; adjudicable population 137 → 157.
+**Tests added:** 6 — the regression fixture puts a CORRECT literal beside the citation and a WRONG one
+further along the same line (under `min()` the correct one wins and the wrong one is never looked at),
+**verified RED against the pre-fix code by mutation**, not by argument; plus an anti-vacuity control that
+`pairs > paired` on the live tree, a key-form conformance check between `EXEMPT` and `Finding.key`, the
+two-independently-graded-pairs proof at `:77`, and the property that exempting one literal leaves its
+siblings RED.
+**Bugs surfaced + fixed inline:** 1 (`d4f208a`).
+
+### Carried into pass 2 — a fence that went RED and was shipped over three times
+
+`derivation_registry.unclassified()` (iter-162, *"the registry can no longer silently fall behind the
+tree"*) is **RED at HEAD** and has been since **iter-163**, the very next iter, which added
+`anchor_subject_census.py::Census.unexempt` and classified it nowhere.
+`test_frozen_expectation_census_m257x.py::test_every_executable_derivation_is_classified` fails on this
+tree. The fence did its job; iters 163/164/165 each ran a change-derived scoped suite and none of them
+included the module that grades them — the standing `FIX-M257x-iter142-whole-suite-owed` gap, observed
+firing. `§5` r60/66 in its operational form: **a scoped green is evidence about its scope, and the thing
+outside the scope was already RED.**
+
+Also measured, for pass 2: `PATHLIKE_ARGS` is a set of argument **names**. **13 required arguments across
+9 functions are annotated `Path` / `Path | None` / `list[Path]` / `Path | str` and fall outside it**, so
+**8 sites** are filtered out of the executable-here sub-population — the population `unclassified()` is
+the completeness fence *for*. r70/71 again, in the newest registry.
+
+**Stop condition:** continue-to-next-pass — the derivation registry is RED at HEAD and its
+executable-here filter is pinned to a spelling; both land in pass 2.
