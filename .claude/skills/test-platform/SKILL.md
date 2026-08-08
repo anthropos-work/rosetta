@@ -78,6 +78,17 @@ REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
   bash "$VERIFY/reports/generate.sh" <scope>
 ```
 
+> **Probe scope (M257x iter-148).** `generate.sh` now **derives** the live-probe scope from
+> `$STACK_ROOT/platform/docker-compose.yml` when `STACK_SERVICES` is unset, and **prints the scope into
+> the report**. Before that it ran unscoped, and the probe table is *historical*: it still lists `cms`,
+> `jobsimulation`, `storage` and `roadrunner`, which the platform merged into `app`. Measured against one
+> healthy live demo, unscoped verify reported **6 of 20 probes failed** where the same stack scoped
+> reports **1 of 14** — so the report said four deleted services were DOWN and the run exited 1.
+> **For a demo or a `dev-N` stack, also pass `STACK_PROJECT` / `STACK_OFFSET`** (e.g.
+> `STACK_PROJECT=demo-1 STACK_OFFSET=10000`) — without them the probes go to project `anthropos` on base
+> ports, which is the main dev stack, not the one you meant. An explicit `STACK_SERVICES` always wins
+> over the derivation.
+
 The script:
 - Runs the underlying probes in order
 - Writes `$REPORT_DIR/op_YYYYMMDD_HHMMSS_<scope>.md` (the human report)
