@@ -110,7 +110,7 @@ surface**, and assuming they do sends you hunting for a PostHog problem the mana
 > reference at all** — measured: 0 occurrences of `posthog` and 0 of `flag_ai_readiness`. It gates on
 > `orgEnabled` alone — `const { orgEnabled } = useAiReadinessEnabled(true);` at **`:135`**, **@ `next-web-app`
 > `8297c684`** (byte-identical at `origin/main` `f97ba659`, so no ref resolves it away). ⚠️ **This cited
-> `:133-134` until M257x iter-115**, which is the tail of the `// Feature gate:` comment, not the construct.
+> the two lines above it until M257x iter-115** — the tail of the `// Feature gate:` comment, not the construct.
 > **All four of this document's `AIReadinessClient.tsx` anchors were off by the same one-construct drift**
 > and are corrected together (`:135` · `:155-156` · `:171` · `:601`); the one anchor *above* the drift point,
 > `:78` `const SHOW_SECONDARY_TABS: boolean = false;`, is exact — which is what let the block read as
@@ -484,7 +484,7 @@ decision):**
   the cycle window** (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers`
   is the **other** branch — the lifetime filter used when there is **no** active cycle (call site `:390`;
   **`func` at `:730`**). This passage named the wrong one of the two until M257x iter-52, and carried the
-  wrong `func` anchors until iter-108: `:662-664` is the body of `audienceScope` (`:655`) and `:684` is
+  wrong `func` anchors until iter-108 — they landed in the body of `audienceScope` (`:655`) and on
   `queryInCycleStep1Completers`, the very function the sentence contrasts this branch against.
 
   ⚠️ The no-active-cycle filter `keepStartedMembers` **excludes members with no PROGRESS ROW** from the

@@ -35,7 +35,7 @@
 > (`app/internal/ai/module_import_guard_test.go:15-17`; `app/CLAUDE.md:289-294`).
 >
 > **The block is actively shrinking**, so date every reading of it: at `b948604f` it was **seven**
-> modules — `ai` at `:14` and `messenger` at `:17` — and at `ad9f3c49` and `3eaadae6` it is the five above.
+> modules — `ai` and `messenger` were still direct requires — and at `ad9f3c49`/`3eaadae6` it is five.
 
 This document covers **five** internal library repos. **The Go services do not share five**
 (corrected M257x iter-102; this line previously said *"The Anthropos Go services share five

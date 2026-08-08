@@ -2290,6 +2290,39 @@ defect, it was arguing for it.*
     green. **The check that catches you is never the one you designed while making the change** — which
     is the standing argument for rule 60's whole-suite debt being a debt, and not a formality.
 
+67. **A retraction clause contains the CORRECTED pin as often as the retracted one — and a fence
+    matching the clause cannot tell which it is holding.** *(M257x iter-144)* Rule 63(c′) says the
+    corpus's correction idiom keeps a retracted number live in the text. True, and incomplete: a
+    correction has **two** halves, and the second half is a **live** pin that the corpus is right to
+    publish.
+
+    Measured on `retracted_pin_guard`'s wrapped arm, over its whole population of 10: **7 true, 3
+    false — 70 % precision.** All three falses are one shape, and it is the shape of a *correction*
+    rather than a *retraction*:
+
+      * `ai_architecture.md:303` — *"Both anchors named the file nowhere in this bullet until iter-115
+        — they read as bare `:98-99` / `:110-111`"*. The clause retracts the **absence of a filename**,
+        not the numbers. Resolved at `app` `ad9f3c49`, `:98-99` **is**
+        `default: aiModel = anthropic.Anthropic37SonnetAWS20250219` — the pins are live and right.
+      * `hiring.md:304` — *"It cited an earlier range — the `job_position` bullet, now `:176-187`"*.
+        The retracted value is *"an earlier range"* and is **not named**; `:176-187` is the
+        **correction**. Read at HEAD, that range **is** the `job_position` bullet.
+
+    > **The token a retraction must not reproduce is the OLD value. The token a correction must
+    > publish is the NEW one.** They are the same shape, in the same sentence, inside the same
+    > markers — so a form-matching fence sees one class where there are two.
+
+    Consequences, and the first is the one that generalises past this fence:
+
+      * **Grade a survey arm's findings before treating its count as a backlog.** Harden pass 30
+        routed *"the 8 true sites across 6 files"* forward without grading them; measured, the arm
+        held **10 findings, 7 of them true**. A routed count is an *estimate of work*, and quoting it
+        as a *measurement of defects* is how a survey number becomes a fact.
+      * **A survey arm is the right home for a 70 %-precision predicate**, and pass 30 was right to
+        keep it non-gating. The lesson is not to tighten it — a fence cannot read which half of a
+        correction it is looking at — but to **grade before repairing**, every time.
+      * The three survivors stay, and the guard reporting them is **correct behaviour, not debt**.
+
 ---
 
 ## 6. Classification — the map

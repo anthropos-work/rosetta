@@ -86,9 +86,9 @@
 * **Ports**: **8080 → 8080** (router `listen_addr 0.0.0.0:8080`, `graphql_path /graphql`). **There is no
   `5050` at platform HEAD** — `grep -c 5050 docker-compose.yml` returns 0. The host-`5050` mapping was
   published here in the present tense while this same doc's **profiles-token warning** already said
-  `http://localhost:5050` refuses the connection. ⚠️ **That pointer has now rotted TWICE** — it cited
-  `:174-176` until M257x iter-98 and `:193` until M257x iter-138 (`:193` is now the warning's opening
-  line, not the sentence). **`grep -n "refuses the connection"` returns the citing line and the target,
+  `http://localhost:5050` refuses the connection. ⚠️ **That pointer has now rotted TWICE** — once before
+  M257x iter-98 and again before iter-138, the second landing on the warning's opening
+  line rather than the sentence. **`grep -n "refuses the connection"` returns the citing line and the target,
   and nothing else** — that substring is the durable citation; the line number is not; corrected M257x iter-46 (the same claim iter-40 swept at 8 sites elsewhere)
 
 > **There is no application source here.** `package.json` is a stub

@@ -81,8 +81,8 @@
 > That line said roadrunner was *"still in `repos.yml` (1 of the 9 repos)"* — a claim about `2adcf71`, and
 > **false at `0dab54d`** — unlike intelligence / skiller /
 > skillpath, which were *removed* from `repos.yml` + `docker-compose.yml` **and whose GitHub repos really are
-> archived** (skiller 2026-07-01, skillpath 2026-07-31). It was true when written — the entry sat at
-> `repos.yml:29-31` **at `2adcf71`**, one of **9** entries at that ref. Platform `d11a403` (2026-08-03) then
+> archived** (skiller 2026-07-01, skillpath 2026-07-31). It was true when written — `repos.yml` still
+> carried a roadrunner entry **at `2adcf71`**, one of **9** there. Platform `d11a403` (2026-08-03) then
 > deleted it. **At `0dab54d` `repos.yml` had 6 entries — app, sentinel, storage, messenger, next-web-app,
 > studio-desk — and roadrunner was not among them. It has 4 since `838d907` took `storage` and
 > `messenger` out too: app, sentinel, next-web-app, studio-desk.** What still separates roadrunner from that list is only
@@ -224,8 +224,8 @@ buf curl http://localhost:8081/roadrunner.v1.RoadRunnerService/SubmissionResult 
 
 > **Two different columns used to be conflated here.** Only `PORT` and `RPC_PORT` have a **built-in** default
 > (`cmp.Or` in `cmd/root.go`); every other row is a bare `os.Getenv` with **no fallback at all**. The values
-> once printed as their "defaults" were **supplied by the compose service**, from
-> `docker-compose.yml:296-302` **at `2adcf71`** — and that service was deleted at `d11a403`, so **nothing
+> once printed as their "defaults" were **supplied by the compose service**, from its
+> `environment:` block **at `2adcf71`** — and that service was deleted at `d11a403`, so **nothing
 > supplies them now.** Export them yourself or the binary starts degraded (or, for `REDIS_WORKER_INDEX`, not
 > at all).
 
