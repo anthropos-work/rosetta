@@ -3709,6 +3709,52 @@ Two clauses make that scoping honest rather than a silencer:
 argument is not the same object as `guard_family.py` at HEAD reporting `17 GREEN · 0 RED · 0
 could-not-check · 7 not-run` with every not-run named.
 
+### The stage list of a mutation battery is a REGISTRY (M257x iter-168)
+
+A mutation battery copies a guard and its suite into a scratch tree, mutates one line, and grades the
+verdict. **The copy list is a registry**, and iter-162's rule holds for it: *fence its completeness,
+never its contents.* Six batteries in this suite hand-listed it, and their own comments record five
+occurrences of one class:
+
+| when | dependency added | what the battery reported |
+|---|---|---|
+| harden pass 1 | `platform_topology.py` | baseline RED, **no attributable test** |
+| iter-111 | `fence_provenance.py` | **RED BASELINE** |
+| iter-121 | `corpus_citation_guard.py` | **RED BASELINE**, unseen for four iters |
+| iter-166 | `waiver_ledger.py` | **RED BASELINE**, 5 mutant verdicts uninterpretable |
+| iter-168 | `tests/frozen_capture.py` | **RED BASELINE** |
+
+**The failure mode is what makes it expensive.** A staged tree missing a dependency dies on
+`ModuleNotFoundError`, so the battery reports its BASELINE RED and every mutant verdict beside it is
+uninterpretable *while still reading as a set of real kills*. It does not look like *"you forgot a
+file"*; it looks like the fence is broken — so it is triaged as a fence defect, and twice on this
+record it sat unnoticed for four iters.
+
+**iter-111 routed it and wrote the fix down verbatim** — *"a battery that stages a SUBSET carries a
+dependency contract, and nothing derives it"* — and the route stayed open while the next three
+occurrences were each closed by appending one filename. That is this document's founding sentence
+turned on itself: *a recurring class with no written procedure is a class that will recur.* Deriving
+the set from the seeds' own imports is the procedure. **Disclose the residual at the same time:** an
+import-following derivation cannot see a DATA dependency (a waiver JSON, a checked-in baseline), so
+those stay named explicitly and the limit is written where the next reader meets it.
+
+### Measure a hazard's size, or "the same problem exists elsewhere" is only a mood (M257x iter-168)
+
+iter-167 repaired one frozen-fixture/live-derivation collision and argued its two siblings had the
+same coupling. The argument was right and it was not yet a finding. Measured against the live ledger's
+264 derived claims, the share adjudicated AFTER each capture is **86.4 % / 81.8 % / 75.0 %** — and
+**the capture that actually collided had the SMALLEST post-capture surface.** That inverts the
+intuition a triage would run on ("the one that broke is the worst one") and it converts *green by
+luck* from a worry into a number. `§9`'s denominator rule is usually applied to findings; it applies
+to hazards the same way.
+
+**And when a census member is structurally identical but semantically different, do not apply the
+pattern to it.** `repair_postcondition`'s green-twin assertion has the same shape, but its site set
+feeds a RATCHET — filtering post-capture sites out of a ratchet's input changes what the ratchet
+counts and could mask a real induced regression, the one thing it exists to catch. Measure it,
+disclose the exposure, route it. iter-158's rule turned on your own repair: **a pattern that fits
+three members is a hypothesis about the fourth, not a plan for it.**
+
 ---
 
 ## 9. Cadence
