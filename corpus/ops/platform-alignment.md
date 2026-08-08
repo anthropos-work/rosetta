@@ -3450,6 +3450,18 @@ map reaches the fence with nobody re-typing anything. A hand-maintained thirteen
 defect wearing a different hat, and this milestone has now found it in a bring-up script (iter-01), a
 probe registry (iter-148), a skills enumeration (iter-129) and a guard's own data (iter-149).
 
+**And when a value genuinely cannot be derived, its COMPLETENESS usually still can** (M257x iter-150).
+`blocking_state_guard` partitions the iteration protocol's exit enum into blocking and non-blocking
+tuples, under a comment claiming the split was *"derived from the iteration protocol's own Phase-5
+grading"*. Nothing derived it — and the obvious repair is wrong, because which side a condition falls on
+is a **judgement** about what it means, which no parse can make. What is decidable is the field
+*universe*: the gradings are the one place the enum is written out field by field, and the guard already
+parsed them. Subtracting both tuples from the fields actually graded now reports anything neither
+classifies. **Split a claim into its decidable and undecidable halves** — usually cheaper than either
+deriving everything or fencing nothing. The stake is not theoretical: `budget-exhausted` entered that
+enum on 2026-08-06 and was hand-added to the tuple; had it not been, a whole exit class would have read
+as non-blocking **by omission**, which in the output is indistinguishable from safe.
+
 **Corollary, from that last one: a list whose comment claims it is DERIVED, and which is not, will drift.**
 `claim_census_guard.REXT_SECTION_NAMES` said *"derived from the monorepo's own layout"* and was missing
 `stack-secrets` — 10 declared against 11 on disk, so every claim naming that section resolved to no known
