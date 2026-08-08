@@ -155,8 +155,13 @@ iter's own lesson landed where it cannot rot (the protocol-evolution rule), not 
 - `SURVEY-M257x-iter170-cockpit-runner-dependence` — **CLOSED by root cause.** Not a harness assumption; a
   blocking resolver call in shipped code. Every disagreement iter-170 found is now attributed.
 - `SURVEY-M257x-iter171-runner-test-count-gap` — **NEW.** The same 35 modules yield **1073** tests under
-  unittest and **1062** under pytest. Pre-existing, unexplained, and by rule 75's own logic an unstated
-  scope: 11 tests execute under one runner and not the other, and nobody has named which.
+  unittest and **1062** under pytest. Pre-existing and unexplained here.
+  > **✅ CORRECTED — iter-172.** This route's own reading, *"11 tests execute under one runner and not the
+  > other,"* is **REFUTED**. Not one test does. The census's `tests` column carried **two units** — `Ran N`
+  > (executed) under unittest, `N passed` under pytest — so it under-reported pytest by every failure and
+  > every skip. All 11 decompose with zero residue: **9 ENV-GATED failures + 2 skips**. Repaired and fenced
+  > at `D-M257x-172-1`/`-2`; demo-stack now reads **1073 = 1073**. The number in this route was right; the
+  > sentence after it was a population claim made before the difference was decomposed.
 - `SURVEY-M257x-iter171-anchor-guard-detects-structure-not-staleness` — **NEW, and measured on live
   examples.** The 43-line insert moved 6 corpus pins into `cockpit.py`; the pre-commit anchor guard caught
   2. But **2 of the 6 were already wrong before this iter** (`latency-budget.md:44`'s `:1214` / `:882`, off
