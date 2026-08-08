@@ -2465,6 +2465,37 @@ defect, it was arguing for it.*
     asserts the stronger pair — the disclosure block carries **no** service-name literal, **and** the
     real script, when RUN, still names what it left out.
 
+71. **A fence that QUOTES the line it guards fails identically on improvement and on breakage — write it
+    against behaviour.** Found twice in two consecutive iters, and neither time by review; both times by
+    improving the code the fence guarded.
+
+    - iter-153: harden pass 35's fence asserted `generate.sh`'s **source** contained the literals
+      `next-web-app` / `studio-desk` / `directus`. The repair removed them **deliberately** — a
+      hand-written list of what a mechanism excludes is the defect class (rule 70).
+    - iter-154: `dev-stack`'s own contract test asserted the literal source line
+      `[ "$local_content" = 1 ] && verify_svcs="$verify_svcs directus"`. The repair replaced that
+      decision with a read of the artifact that already made it.
+
+    Both fences protected a **real** property. Both encoded it as the **current spelling** of the code
+    that happened to implement it, so a correct rewrite of the subject produced a RED that reads exactly
+    like a regression. The remedy in both cases was the same and it is not deletion: **re-point to the
+    property.** Where a body-text contract test genuinely cannot execute its subject, keep only the
+    structural half it can honestly assert (*this script calls X*; *no line here names a service*) and
+    move the behavioural half to a fence that **extracts and runs** the block — `§5` rule 19's technique,
+    which iter-147 established and iters 153–154 both used.
+
+    **The test to apply when writing one:** *would this assertion survive a CORRECT rewrite of its
+    subject?* If not, it is pinned to a spelling. Note this is not the same question as *"is the marker
+    anchored"* — anchoring is a mechanism, the property is what survives, and the two come apart
+    (`SURVEY-M257x-iter152-other-guards-may-read-prose-as-data`).
+
+    **Corollary — a site that LOOKS derived can carry a hand-written half.** Both bring-up verify tails
+    opened with a correct `platform_topology.py` derivation and then hand-appended a conditional tuple.
+    That opening is why neither was censused: the *base* set was repaired twice (iter-55, harden pass 3)
+    and the *conditional* set was never derived at all. **Grade the whole expression, not the first
+    assignment** — and when a repair's own comment names its twin, the fence over the pair is due **in
+    that commit**, not at the next breakage (rule 69).
+
 ---
 
 ## 6. Classification — the map
