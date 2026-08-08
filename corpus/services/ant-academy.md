@@ -391,8 +391,8 @@ git clone git@github.com:anthropos-work/ant-academy.git
 >   Maya would be rendered a generic **"E2E Member"**. Fenced by two tests
 >   (`test_the_e2e_persona_bypass_is_gone_from_the_launch_env`, `test_e2e_persona_bypass_is_not_in_the_launch_env`).
 > * **The cockpit DOES still set the cookie — at two live paths**, contrary to the retracted sentence:
->   client-side on click (`demo-stack/cockpit.py:812`, `_ACADEMY_JS`) and as a `Set-Cookie` on the `/go` 302
->   (`:1496`); `:327` names both. It is the content-stories academy deep-link that uses them. With the launch-env
+>   client-side on click (`demo-stack/cockpit.py:855`, `_ACADEMY_JS`) and as a `Set-Cookie` on the `/go` 302
+>   (`:1539`); `:370` names both. It is the content-stories academy deep-link that uses them. With the launch-env
 >   bypass gone the cookie is **inert** on a stock demo — set, and not honoured.
 >
 > The historical keyless model (server RSC `anonymous=false` + a synthetic **`E2E Member`**, no real Clerk keys)

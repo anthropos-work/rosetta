@@ -496,7 +496,7 @@ fall back if fiddly" — the academy is Vercel-native, not cleanly dockerizable 
 > whole point of the change: `proxy.js` short-circuits on the persona cookie *before* resolving the real
 > session, so keeping the bypass alongside real keys would render "E2E Member" over a presenter logged in as
 > Maya.
-> > **The cockpit still SETS the cookie, at two paths** (`demo-stack/cockpit.py:812` client-side and `:1496`
+> > **The cockpit still SETS the cookie, at two paths** (`demo-stack/cockpit.py:855` client-side and `:1539`
 > > as a `Set-Cookie` on the `/go` 302) for the content-stories academy deep-link — but with the launch-env
 > > bypass gone it is **inert** on a stock demo. The retracted claim that the cockpit "no longer sets" it was
 > > false in both directions: the cookie is set, and it is not honoured. (The academy grid rendering **empty**

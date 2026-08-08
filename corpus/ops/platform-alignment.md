@@ -2637,6 +2637,45 @@ defect, it was arguing for it.*
     the nine are `FIX-M257x-iter145-sha-baseline-drift`, which is a **freshness signal and must not be
     re-pinned away**.
 
+76. **AN UNEXPLAINED RUNNER DISAGREEMENT IS A SHIPPED DEFECT UNTIL SOMEONE PROVES IT IS AN ARTIFACT —
+    "harness assumption" is a hypothesis, not a disposition.** M257x iter-171, closing the ONE
+    disagreement rule 75 could not attribute to imports. Two `test_cockpit` tests bound a server, waited
+    2 s, and failed under 3.14 while passing under 3.9.6. The plausible reading was a tight harness
+    window. **The actual cause was in shipped code, on the platform's own critical path:** CPython's
+    `http.server.HTTPServer.server_bind` sets `server_name = socket.getfqdn(host)` — a synchronous
+    **reverse-DNS query** that must answer before `serve_forever` is reached. Same Mac, same address,
+    same instant:
+
+    | interpreter | `socket.getfqdn("127.0.0.1")` | cold | warm |
+    |---|---|---|---|
+    | `/usr/bin/python3` 3.9.6 (Apple system) | `'1.0.0.127.in-addr.arpa'` | **0.005 s** | 0.001 s |
+    | `python3` 3.14.6 (homebrew) | `'localhost'` | **35.005 s** | 0.000 s |
+
+    **Four orders of magnitude, from a call nothing reads.** `server_name` exists to fill the CGI
+    `SERVER_NAME`; the cockpit builds no CGI environment. And the runtime consequence is not slowness:
+    `up-injected.sh` polls the cockpit's `/healthz` **25 × 0.2 s ≈ 5 s**, so a 35 s bind presents as
+    *"presenter cockpit FAILED to come up … there is NO working cockpit"*, **skips fronting it with
+    `tailscale serve`**, and the cockpit then serves fine — unfronted — half a minute later. **A false
+    negative, not a delay**, on the demo's single entry point.
+
+    **The general shape, and it is `§8`'s twin.** `§8` says *state the environment with every number*
+    because the same code costs 4.84 GB on one host and 2.88 GB on another. Rule 75 extended that to
+    pass/fail. This rule closes the loop: when two environments disagree, **the disagreement is
+    evidence about the CODE**, and the cheap dismissal ("that runner is weird") is the one reading that
+    guarantees nothing gets learned. Dump the blocked thread's stack — `sys._current_frames()` — before
+    theorising; it took one call here and named the frame outright.
+
+    **Warm caches hide it, which is why the fence poisons the resolver rather than timing the bind.**
+    The second call is free on both interpreters, so any measurement taken after a warm-up shows
+    nothing. `demo-stack/tests/test_bind_no_reverse_dns.py` makes `socket.getfqdn` **raise**, so the
+    predicate is *"was the resolver consulted?"* — cost-free, cache-independent, and with CPython's own
+    class as the mutation control that must still raise. Censused by **property**
+    (`cls.server_bind is not HTTPServer.server_bind`), never by spelling: at iter-171 exactly **4** `.py`
+    files in all of `rosetta-extensions` mention `HTTPServer`, carrying **3** reachable server classes
+    and **13** construction sites — all routed through the one fixed class. `socketserver.TCPServer`
+    sites are out of the population **by property** (its `server_bind` calls `getsockname()` and stops),
+    not by exemption.
+
 ---
 
 ## 6. Classification — the map

@@ -41,7 +41,7 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 `measureLogin` begins by reading the cockpit's real CTA, and the ACCESS predicate's second half ("the user menu
 shows the hero") is resolved from the CTA's **`data-login-as`** attribute. The cockpit emits that attribute on
-**hero cards only** (`cockpit.py:1214`); the Content-stories tab's seat CTAs (`:882`) carry a bare `href`. So
+**hero cards only** (`cockpit.py:1374`); the Content-stories tab's seat CTAs (`:1036`) carry a bare `href`. So
 `readCockpitCta` (`e2e/lib/latency.ts:115-127`) **throws before t0** for a content seat — there is no clock to
 start. `run-latency.sh:53-59` independently hard-rejects any vantage outside `employee|manager|recruiter`
 (`exit 2`). **A content-seat number cannot be produced by this harness at all**, so its absence is a property
@@ -137,8 +137,29 @@ hypotheses an operator reaches for first.
 | a **constant** ~37.5 s / ~6.1 s regardless of page content | a **retry ladder** — blackholing vs fast-failing (above) |
 | **scales with the item count** on the page; a light sibling passes | a **per-item fan-out** — a query inside a loop |
 | **large and cold, small and warm**, same page | a **warm-up transient** — see R4 below, not a gate violation |
+| **one process pays it, every later call is ~0**, and it lands **before** the surface exists | a **name-service lookup on a bind/connect path** — see below |
 
-**The order matters: name the arithmetic signature *before* reading code.** All three are distinguishable from
+**The fourth signature is the one no page instrumentation can see, because it happens before there is a page.**
+A process pays a large, fixed cost **exactly once**, and every subsequent call in that process — and in the
+next process on the same box — is free. That is not a warm-up transient (which is per-surface and recurs on
+each cold stack); it is a **name-service lookup the OS resolver then caches**, and it sits on a *bind* or
+*connect*, upstream of every timer a browser or a probe could start.
+
+M257x iter-171 measured one, on the demo's own entry point: CPython's `http.server.HTTPServer.server_bind`
+sets `server_name = socket.getfqdn(host)` — a synchronous reverse-DNS query — and on the dev Mac's homebrew
+Python **3.14.6** the first `socket.getfqdn("127.0.0.1")` took **35.005 s**, against **0.005 s** on the Apple
+system **3.9.6**, warm calls ~0 s on both. Nothing reads `server_name`. The damage was not the delay:
+`up-injected.sh` polls the presenter cockpit's `/healthz` **25 × 0.2 s ≈ 5 s**, so the bring-up declared the
+cockpit **dead**, skipped fronting it with `tailscale serve`, and the cockpit came up fine — unfronted — half
+a minute later. **Read a health-gate false negative as a latency signature**, not as a crash.
+
+> **Diagnostic, and it is one call:** dump the blocked thread's stack — `sys._current_frames()` in Python,
+> the equivalent elsewhere — *before* theorising about the harness. It named the frame outright here, where
+> two plausible wrong answers ("the test window is too tight", "3.14 is flaky") were already on the table.
+> And **never re-measure without clearing or defeating the cache**: the second reading is free, so a warm
+> measurement reports the bug as absent. The fence for this class poisons the resolver instead of timing it.
+
+**The order matters: name the arithmetic signature *before* reading code.** All four are distinguishable from
 the number and one contrast, and each sends you to a different file.
 
 > ⚠️ **But first, disbelieve the clock.** A per-item fan-out and a **mis-instrumented wait** produce the same
