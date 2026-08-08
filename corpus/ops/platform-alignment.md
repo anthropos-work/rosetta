@@ -2323,6 +2323,58 @@ defect, it was arguing for it.*
         correction it is looking at — but to **grade before repairing**, every time.
       * The three survivors stay, and the guard reporting them is **correct behaviour, not debt**.
 
+68. **A suite you never run is not GREEN, it is UNMEASURED — and "not ours" derived from a diff SCOPE
+    is a statement about the window, not about the code.** *(M257x iter-145)* The same
+    UNMEASURED-is-not-UNMOVED discipline `§9` guard-rail 1 enforces on the primary metric, applied to
+    two places it had never been applied: the test suite's **denominator**, and a failure's
+    **attribution**.
+
+    **The measurement.** M257x ran a "whole suite" at every iter close and 32 harden passes. *"The
+    whole suite"* meant one of five `rosetta-extensions` sections — **1,280 of ~3,040 tests, 42 %**.
+    Run once in full, the four never-run sections held **21 failures**, and they had been routed
+    forward three times with one characterisation: *"provably not ours … pre-existing,
+    environment-coupled"*, evidenced by `git diff --name-only <5-iters-ago>..HEAD` returning only
+    files in the section that was being run.
+
+    Graded individually, the 21 is **three populations**:
+
+    | cause | n | decided by |
+    |---|---|---|
+    | a **real defect, and the milestone's own** | **12** | one root cause, bisected to a named commit |
+    | whole-file **sha baseline drift** vs an advanced but **clean** clone | 6 | `git status` empty + the sibling **anchor** assertions GREEN |
+    | **host environment** (no live postgres socket) | 3 | `pg_isready … no response` |
+
+    So the routed characterisation was **false for 57 % of the population it described**, and six of
+    the twelve are pure table arithmetic touching no clone and no container.
+
+    **The defect is this document's own thesis, reproduced by the iter written to end it.** Platform
+    `2adcf71` deleted the GraphQL router; **iter-13** dropped its row from the tooling's service table
+    and left the *test side's* copy — a registry map plus **six independent count literals**. Twelve
+    tests went RED that day and stayed RED for **132 iters**. iter-13's own commit message reads
+    *"six copies of a platform fact is the hand-maintained-tuple defect M257x exists to end"* — and it
+    left a seventh copy, in the one place nothing watched.
+
+    Three sub-rules, each of which had to be true for it to survive four months:
+
+    * **(a) A window that opens after the breaking change can never see it.** `git diff A..HEAD` asks
+      *"did these iters touch it?"*, not *"who broke it?"*. The answer `no` is correct and says
+      nothing about authorship. **Bisect the failure, or write "not attributable within this window"**
+      — which is a claim about the measurement, and honest.
+    * **(b) Keep the MEMBERSHIP literal, derive the COUNT, and fence the two against each other.** A
+      hand-written set is often the *anti-vacuity control* (`§8`) and must stay independent of the
+      subject; a **count** is never a control, only a restatement, and restatements rot. Six literals
+      restating one table's size are six things to forget. One literal set + derived counts + a
+      membership fence is one thing to update and one assertion that says so.
+    * **(c) A failure message that names nothing gets ignored, and being ignored is how it survives.**
+      `12 != 13`, `9 != 10`, `'all 14 …' not found in '… all 13 …'` were on every run for four months
+      and named neither the row, the file, nor the service. The fence that replaced them fails once,
+      naming the drifted rows in both directions — **both detect the drift; only one says what
+      drifted**, and that difference is the whole value.
+
+    **The cost argument for the narrow scope does not survive measurement:** the four excluded
+    sections cost ~11½ min together, **less than half** what the one included section costs. The
+    excluded 58 % was the cheap half.
+
 ---
 
 ## 6. Classification — the map
@@ -3287,6 +3339,25 @@ What followed was worse than the failure, and is the part to internalise:
 ---
 
 ## 9. Cadence
+
+### Measurement preconditions — the host facts an iter must not rediscover (M257x iter-145)
+
+Two of these have now each cost an iter real time, and both were already written down **in the harden
+ledger**, which is not a document the iter loop reads. A precondition recorded only where the next reader
+will not look is a precondition that gets rediscovered.
+
+* **The suite's interpreter is `/usr/bin/python3` — 3.9.6, and it is the only one on this host with
+  pytest.** `python3` on this shell is homebrew 3.14 and has none; `pip3.12`/`pip3.14` do not have it
+  either, and there is no venv, no `uv`, no `pyenv`. Invoking the suite as `python3 -m pytest` fails with
+  `No module named pytest`, which reads as a broken environment rather than a wrong interpreter. iter-145
+  lost two full runs to it.
+* **`timeout(1)` does not exist on macOS.** A run wrapped in it dies with `command not found` per section
+  and produces an empty log that looks like a suite that collected nothing.
+* **Suite WALL-TIME is not a usable measurement on this host** (rule 51's timing leg) — the box shows CPU
+  contention from unrelated processes. **Counts are.** And do not edit the tree while a suite runs: three
+  runs have been discarded as confounded for exactly that.
+* **"The whole suite" must name its denominator** — see `§5` rule 68. There are five
+  `rosetta-extensions` sections; running one of them is a measurement of one of them.
 
 ### Iter-type refinement — the 3-no-prog tok-trigger reads UNMEASURED as UNMEASURED (M257x iter-108)
 
