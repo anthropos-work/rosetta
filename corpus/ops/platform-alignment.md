@@ -2087,7 +2087,24 @@ defect, it was arguing for it.*
     > `cited` / `said` / `read` / `pinned` / `carried` / `listed`) and a supersession marker. Over
     > **2,185 line pins in 94 documents** it found **50 live instances across 20 files** — 44 bare,
     > 6 path-qualified — every one hand-read before a line of prose was repaired. All 50 are now
-    > descriptions; the class stands at **0** and the fence holds it there.
+    > descriptions.
+    >
+    > ⚠️ **This said *"the class stands at 0 and the fence holds it there"*, and that 0 was over a
+    > population that excluded a large share of the class.** *(Corrected at M257x harden pass 30.)*
+    > The census was **LINE-scoped** — every clause window lived inside one line — and this corpus
+    > **hard-wraps at ~100 columns**, so a retraction routinely straddles a soft break: the reporting
+    > verb ends one line and the pin opens the next. Joining each line to the one above surfaces **10
+    > more**, hand-read **8 true / 2 false**, all of them still live *after* the repair that reported
+    > zero. The gating arm genuinely is at 0; **the fence now says which population that 0 is over**,
+    > and carries the wrapped arm as a disclosed non-gating SURVEY (80 % precision reports, it does
+    > not gate). The eight are routed as `FIX-M257x-h30-crossline-repair`.
+    >
+    > **The sharp part is that the family already knew.** `platform_predicate_guard`'s `_pin_window`
+    > has joined `line[i-1] + line[i]` since **iter-63**, `_NEGATED` needed the same widening at
+    > **iter-68**, and a third site records *"line-scoped it reached only 2 of the 4 — two of the live
+    > sites wrap."* Three prior encounters, and the newest fence in the family still shipped
+    > line-scoped — because the remedy lived in one guard's source comments and nowhere a new fence's
+    > author would read. That is what rule 64 below is for.
     >
     > **The path-qualified half was found by the GUARD FAMILY, not by this fence, and that is the most
     > useful thing the iter produced.** The first draft matched only the bare form, reported the class
@@ -2136,6 +2153,33 @@ defect, it was arguing for it.*
     > **and** absent from the scoped set — two mechanisms blind in the same direction on the same commit,
     > and an ambiguous `README.md` head shipped (six files share that basename). Caught one iter later by
     > the anti-vacuity control built for it. **A disclosed not-run bucket is not coverage.**
+
+64. **A fence over WRAPPED PROSE must state its line reach, because "one line" is not a unit of meaning
+    here — and this corpus has now learned it FOUR times.** *(M257x harden pass 30.)* Every guard in
+    this family scans `splitlines()` and matches a window around a hit. That window silently defines
+    the denominator, and corpus prose hard-wraps at ~100–110 columns, so an association whose two
+    halves land either side of a soft break is **not merely missed — it is never enumerated**, and the
+    guard reports a confident zero over the population it happened to see. The prior three:
+    `_pin_window` joined `line[i-1] + line[i]` at **iter-63**; `_NEGATED` needed the same widening at
+    **iter-68**; a third `platform_predicate_guard` predicate records *"line-scoped it reached only 2
+    of the 4 — two of the live sites wrap."* **And §7 rule 4 of this very document already says it in
+    the general form — *"the paragraph is the unit of publication"*.** `retracted_pin_guard` was
+    written after all four and shipped line-scoped anyway, hiding 10 live members of the class it was
+    built to census.
+
+    The lesson is **not** "always join lines" — joining has its own hazards, and the same iter-63 note
+    is where the exclusions come from: a blank line, a heading, a fence delimiter and a **table row**
+    each end a paragraph, and adjacent `|`-rows are separate records that merely sit next to each
+    other. The lesson is that **the reach is a design parameter that must be chosen and STATED**,
+    exactly like `AssertPublicOnly`'s scope or a green's reach under rule 46. A fence that does not
+    say whether its unit is the line, the paragraph or the document has not said what its number
+    counts.
+
+    **Why it kept recurring is the transferable part: the remedy existed only as source comments
+    inside one guard.** Nothing a new fence's author reads — not §5, not the fence template, not a
+    test — carried it, so each encounter paid full price and left the fix where the next author would
+    not look. **A defect class that has been solved in code but not in the rulebook is unsolved.**
+    When a fix generalises past the file it lands in, promoting it here is part of shipping it.
 
 ---
 
