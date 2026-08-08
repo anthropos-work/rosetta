@@ -2218,6 +2218,78 @@ defect, it was arguing for it.*
     **prospectively** by a synthetic test — and it is labelled as such, rather than as something that
     was measured.
 
+65. **An AUDIT is a predicate too, and it needs a control that is not another reading.** *(M257x
+    iter-143)* Rule 63 and `D-M257x-142-1` say *audit the predicate before the repair, not after the
+    publication* — iter-138 published a mechanical number and was audited to 0-for-12; iter-142
+    audited first and repaired 44 of 44. iter-143 followed that instruction exactly, and **the audit
+    was still wrong.**
+
+    It hand-read **all 92** anchors a candidate head-inference admits, graded each against its full
+    line context, and published nothing. The reader's verdict: **62 true / 30 false**, and the best
+    structural predicate scored **90.2 %**. Then the 62 "true" sites were pushed through the guard's
+    own `classify()` — and **nine came back `anchor-out-of-range` against files whose line count made
+    the citation impossible.** All nine were one mechanism the reader had no way to see: a bare file
+    **mention** sitting nearer to the anchor than the **qualified citation** actually governing it
+    (*"`studio/gen.py` at `studioManager.go:119` and `studio/postgen.py` at `:1045`"* — `:1045` is a
+    `studioManager.go` line). Corrected, the population is **53 true / 39 false** and the same
+    predicate scores **74.5 %**. The audit had inflated it by **15.7 points**.
+
+    > **A reading is evidence about a corpus. It is not evidence about itself.** When the deliverable
+    > is a predicate's precision, the audit that establishes it needs an independent check — and the
+    > cheapest one is usually already in the tree: run the audit's own TRUE set through the machine
+    > and see whether the machine agrees. It costs one script and it caught nine.
+
+    Two corollaries, both measured here:
+
+      * **State the reader's error rate alongside the predicate's.** *"Hand-read, 92 of 92"* sounds
+        like ground truth and was 90 % accurate. A precision figure resting on an unaudited audit
+        inherits its error silently, and in the same direction every time — **towards shipping**,
+        because the sites a reader mis-grades are the ones that look right.
+      * **The two failure modes are not equally visible, so count them separately.** Of the 39 false
+        admits: **21 ports** (loud — they resolve out-of-range and show up as a RED) and **16
+        WRONG-HEAD** (silent — a real line anchor booked against a file the sentence never named,
+        which can land on a real construct and PASS). A guard's own source comment had named only the
+        loud half for five iters. **When you decline a widening, decline it for the hazard that
+        cannot be seen when it is wrong.**
+
+    The iter shipped the census and the two no-inference reach gains, and **did not ship the
+    inference** — 77.3 % precision at 32.1 % recall is not fence quality, and this milestone has
+    already retracted one mechanical publication over this exact population.
+
+66. **A change-derived test scope is only as good as its DERIVATION — and "what imports this" is not
+    the derivation, "what call sites does this break" is.** *(M257x iter-143)* Rule 63(d) says pick
+    the suites by what the iter CHANGED. iter-143 did, and named three modules on the reasoning
+    *"these consume the changed return value."* They passed, **106 of 106** — green, real, and
+    irrelevant. The whole suite then returned **31 failed**, thirty of them the same iter's own
+    change: a census had been added as an **eighth member of a function's return tuple**, and one
+    module unpacks that tuple **positionally at six call sites**.
+
+    The scope was chosen from a recollection of imports. The breaking consumption pattern —
+    *positional unpacking* — is not visible in an import list and would have taken one `grep` for the
+    call sites to find.
+
+    > **Arity is a published interface.** Adding a member to a returned tuple is a **breaking change**
+    > wearing the costume of an addition. So is renaming a dict key, reordering positional args, or
+    > widening a return type a caller pattern-matches on. None of them look like removals, and all of
+    > them are.
+
+    Two rules fall out, and both are cheap:
+
+      * **Derive the scope by searching for CALL SITES of the thing you changed**, not by listing the
+        modules that import it. A `grep` for the symbol is the derivation; memory is not.
+      * **When an idiom for this already exists in the file you are editing, use it.** The census
+        belonged on a module-level accumulator cleared at entry — and *two* such accumulators sat ten
+        lines above the edit, doing exactly that job. The tuple was the lazier reach past a pattern
+        the module had already established, and it is the only reason there was a breaking change to
+        make at all.
+
+    **And the third instance of one pattern, which is why this sits next to rule 65.** iter-142's real
+    miss was caught by a guard on a **different axis** run over the commit; iter-143's audit error was
+    caught by **`classify()`**, not by a second reading; iter-143's arity break was caught by the
+    **whole suite**, not by the scoped set. In all three, everything *inside* the thing being built was
+    green. **The check that catches you is never the one you designed while making the change** — which
+    is the standing argument for rule 60's whole-suite debt being a debt, and not a formality.
+
 ---
 
 ## 6. Classification — the map
