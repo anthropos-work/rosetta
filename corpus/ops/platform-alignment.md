@@ -3625,6 +3625,59 @@ prose named *two* constructs and cited *three* lines, so the missing name — no
 wrong. A mechanical "bump the offset" repair would have looked correct, destroyed a true anchor, and
 left the real defect in place.
 
+### A fence publishes its FIRE side and hides its ACCEPT side (M257x iter-166)
+
+Every reach number this family prints answers *what did the guard catch*. **Nothing answered the
+other half — what did it agree to IGNORE, and does that agreement still apply?** Four guards carried
+waiver files; three never named a honoured waiver anywhere, and the fourth printed a **count**
+(`22 acknowledged site(s) skipped`), which cannot distinguish a waiver that fires every run from one
+dead for months. One waiver file's own README had promised *"every one is reported on each run"* for
+as long as it existed, and nothing implemented it.
+
+**The accept side is as mechanical as the fire side — but only the guard may measure it.** iter-165
+proved the negative first: re-implementing each guard's matching from outside produced 11 confident
+findings and all 11 were the auditor's own normalisation bug. So the rule is not "audit the waivers",
+it is:
+
+> **Report the accept side from the guard's OWN matcher.** Have the suppression predicate return the
+> KEY it matched on, and feed the report from that return value. The suppression decision and the
+> report are then the same decision read twice, and cannot drift.
+
+**And dormancy has three preconditions, not one.** A dormant waiver is evidence it may be dead only
+when (a) the guard ran, (b) it graded ≥ 1 candidate, and — the one that is easy to miss —
+(c) **the run's subject is the population the waiver was written against.**
+
+(b) is the familiar `§9` zero-census rule: a diff-scoped guard outside a repair grades nothing, so its
+waivers are dormant for a reason that has nothing to do with the waivers. **(c) is the trap, because
+it survives a large, healthy-looking denominator.** iter-166 measured the same six `repair_reach`
+waivers at **0 of 6 honoured over 152 candidates graded** against one ledger and **6 of 6** against
+another. Nothing about the waivers changed: their keys are `path:line` coordinates into ONE named
+ledger's anchors, while the other three files key on `path` + a quoted form and are subject-
+independent. A report that printed the first number bare would have bought six confident deletions.
+
+So a coordinate-keyed waiver set must **name its subject in the report and may never print bare
+dormancy**, and any published dormancy figure must state the subject it was taken against — the
+`§9` denominator rule, applied to the accept side.
+
+### A test DOUBLE and a test STAGER are both registries, and both rot the same way (M257x iter-166)
+
+Widening one guard function by one optional parameter turned two harnesses red, in the two directions
+that matter:
+
+* **A pass-through mutant re-declares its subject's signature.** `test_value_change_guard`'s
+  no-suppression double wraps `find_survivors`; the new parameter made it raise `TypeError`, and the
+  battery then reported **ERROR instead of a mutant verdict** — it had stopped measuring the guard
+  rather than measuring it wrongly, which is harder to notice.
+* **A mutation battery that stages its dependencies from a HAND-LIST is iter-162's rule one layer
+  down.** The list named four files; the guard grew a fifth; the staged suite died on ImportError and
+  the battery reported its **baseline RED**, making all five mutant verdicts uninterpretable *while
+  still looking like real kills*. Derive the stage set from the guard's and suite's own imports —
+  a stager that can silently omit a dependency is a battery that has stopped measuring anything.
+
+The corollary is the cheerful one: the **derivation-registry completeness fence caught the net-new
+module before any new test ran**, which is what an enumerated registry is for. When a change turns
+three fences red, grade each one — *working as designed* and *defect* look identical in a summary line.
+
 ---
 
 ## 9. Cadence
