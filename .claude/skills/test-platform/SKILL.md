@@ -88,6 +88,15 @@ REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
 > `STACK_PROJECT=demo-1 STACK_OFFSET=10000`) — without them the probes go to project `anthropos` on base
 > ports, which is the main dev stack, not the one you meant. An explicit `STACK_SERVICES` always wins
 > over the derivation.
+>
+> **The report states its own target and scope (M257x harden pass 33).** The header carries a
+> `**Target**:` line naming the project + offset the probes went to, and says `DEFAULTED` out loud when
+> neither variable was set — because until that line existed, a report on `demo-1` and a report on the
+> main dev stack were **byte-identical apart from the timestamp**, and a forgotten `STACK_PROJECT` was
+> unrecoverable from the artifact. The live section then carries a scope line on **all three** branches
+> — derived, caller-supplied, and underivable. The caller-supplied one was the gap: it is the branch
+> this note recommends, it is the branch where the scope is arbitrary, and it used to print nothing, so
+> `✓ pass` off a hand-narrowed one-probe run read the same as a full sweep.
 
 The script:
 - Runs the underlying probes in order
