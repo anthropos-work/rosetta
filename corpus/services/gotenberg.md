@@ -11,7 +11,7 @@ In the Anthropos platform it exists for one consumer — but **not to produce a 
 * **Image**: `gotenberg/gotenberg:8` (pinned major version 8)
 * **Source**: Upstream project — [gotenberg/gotenberg](https://github.com/gotenberg/gotenberg)
 * **Local port**: `3200`
-* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:183`, re-derived at platform `0c91421`). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68, re-anchored iter-87 (the anchor was `:268` at `0dab54d`; `838d907` deleted three service blocks above it and the file is now 186 lines)
+* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:183`, re-derived at platform `0c91421`). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68, re-anchored iter-87 (the anchor stood some eighty lines further down at `0dab54d`; `838d907` deleted three service blocks above it and the file is now 186 lines)
 * **Statelessness**: No database, no Redis, no persistence. Spin up / tear down freely.
 
 ### Compose command

@@ -33,7 +33,7 @@ What is actually implemented, in `app/internal/jobsimulation/ai/ai.go` (and mirr
 5. **Mistral is nowhere in this path.** *Every* use of it in `app` is **OCR**, never generation: Go-side
    in the cms domain (`internal/cms/studio/markdownManager.go:30` — the constructor body
    `return &MarkdownManager{ocr: mistralocr.New(aiKey)}, nil` inside `func NewMarkdownManager` at `:29`,
-   **@ `app` `ad9f3c49`**; this row cited **`:19`** until M257x iter-115, and `:19` is a **doc-comment**
+   **@ `app` `ad9f3c49`**; this row cited an earlier line in that file until M257x iter-115 — a **doc-comment**
    line — *"It used to take aiKey and then IGNORE it"* — not code, exactly as
    the *AI Providers* section of [`external_services.md`](external_services.md) already said while this line went on asserting it —
    and `studioManager.go:583`), and Python-side

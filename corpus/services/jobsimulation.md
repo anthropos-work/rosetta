@@ -219,7 +219,7 @@ needs a subcommand" for an entire release cycle, and the proposed fix would have
 > `backend` is a single stdlib `log.Fatalf` line — timestamped, no `Error:` prefix, no help — and the container
 > exits 1. The jobsim wiring is fatal by design — `jobsimwiring.Wire` at **`app/main.go:721`**, its
 > `log.Fatalf("jobsim-in-app: engine wiring failed …")` at **`:723`**, measured @ `app` **`ad9f3c49`**
-> (`:614` @ `b948604`). **This line cited an unpinned `:670` until M257x iter-108**; at `ad9f3c49` that
+> (`:614` @ `b948604`). **This line carried an unpinned bare line number until M257x iter-108**; at `ad9f3c49` that
 > line is `skillerAzureEndpointEu = &v`, an unrelated Azure-endpoint assignment.
 
 So on the container that actually runs the engine since the fold — `backend`; there is no `…-jobsimulation-1`

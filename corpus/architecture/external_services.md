@@ -206,7 +206,7 @@ graph TB
 > **The `--local-content` re-point targets BOTH `cms` and `backend`.** With the v1.5 "prop room" **local
 > tooling** (`--local-content` / demo-default) a per-stack `directus` container is added to the stack's
 > compose on an offset port, and `rosetta-extensions/stack-injection/gen_injected_override.py:698-699`
-> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:86`) — both @ the demo's **pinned** rext `09d06070`; the same constructs were `:669-670` / `:84` at the prior pin `ab81527a`, which is why an unpinned anchor here rots on every re-pin. `backend`
+> re-points every service in `DIRECTUS_DATA_CONSUMERS`, which is **`("cms", "backend")`** (`:86`) — both @ the demo's **pinned** rext `09d06070`; the same two constructs sat at entirely different lines at the prior pin `ab81527a`, which is why an unpinned anchor here rots on every re-pin. `backend`
 > is in that tuple because — per the `cms_reader_switch` above — **`backend` is the service that actually
 > reads Directus**; re-pointing only `cms` would leave the real reader aimed at production content.
 >

@@ -113,7 +113,7 @@
 
   **There is no `SkillPathSessionService`** — measured: **0** occurrences in Go source, and no `skillpath…v1connect` package is imported. Skill-path session state lives in `public.skill_path_sessions` and is reached through the GraphQL subgraph and in-process calls, not over RPC.
 
-  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:109`, `app/knowledge/architecture.md:28` — re-derived at `app` **`ad9f3c49`**, which was `origin/main` on 2026-08-06; both anchors are unchanged from `2035f9a4`, the ref this corpus used to call "origin/main" and which is now 5 commits behind. The CLAUDE.md line was `:80` when this was first measured, so re-find the sentence rather than trusting the offset), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
+  > **⚠️ `app`'s OWN docs still list it** (`app/CLAUDE.md:109`, `app/knowledge/architecture.md:28` — re-derived at `app` **`ad9f3c49`**, which was `origin/main` on 2026-08-06; both anchors are unchanged from `2035f9a4`, the ref this corpus used to call "origin/main" and which is now 5 commits behind. That CLAUDE.md anchor stood at a different line when this was first measured, so re-find the sentence rather than trusting the offset), which is where this corpus previously got the claim. That is Trap C in [`../ops/platform-alignment.md`](../ops/platform-alignment.md) — *the platform's planning docs lag its own code*. **Grade against `main.go`, not against `app/CLAUDE.md`.**
 * **HTTP** endpoints on port 8082 (local; 8080 in production) for webhooks and miscellaneous integrations — including `POST /api/webhook/directus`, which **fails closed** without `DIRECTUS_WEBHOOK_SECRET`
 
 It also hosts a growing number of cross-cutting features that don't fit neatly into any other service:
@@ -275,7 +275,7 @@ was bootstrapped (see prerequisite above).
 * **Language**: Go 1.26
 * **Database**: PostgreSQL `public` schema (Ent ORM + Atlas migrations)
 * **Ports**: 8082 (HTTP/GraphQL — `PORT`), 8083 (Connect-RPC — `RPC_PORT`), 8084 (meta/health — `META_PORT`). Container publishes 8081/8082/8083; 8081 is reserved/unused.
-* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:110`, derived from `docker-compose.yml` @ platform `0c91421`; it was `:100` at `0dab54d`, and compose clean-ups move it). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
+* **Profile**: `core` (the default), `backend`, `all` — `profiles: [core, backend, all]` (`docker-compose.yml:110`, derived from `docker-compose.yml` @ platform `0c91421`; it stood ten lines earlier in the file at `0dab54d`, and compose clean-ups move it). The default profile is `core`, not `graphql`: `0dab54d` renamed it. Corrected M257x iter-68
 * **Versioning**: Semantic; CHANGELOG.md is generated from conventional commits. Tags trigger production deploys.
 
 ### Key directories

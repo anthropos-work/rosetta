@@ -45,8 +45,8 @@
 >    deleted it; `app` (`repos.yml:14-17`) is the only `migrations: true` entry. Qualified M257x iter-52,
 >    re-anchored in the M257x sweep)
 >    — as the twins [`service_taxonomy.md`](../architecture/service_taxonomy.md)'s Tier-1 **Database**
->    characteristic bullet (**named, not pinned** — this said `:62`, which when re-derived at M257x iter-120
->    was that file's *Tier 1: Core Backend Services* **heading**, not the bullet; find it by its own words,
+>    characteristic bullet (**named, not pinned** — it carried a line number until M257x iter-120, by then
+>    that file's *Tier 1: Core Backend Services* **heading**, not the bullet; find it by its own words,
 >    *"one schema, `public`, owned by `app`, which is the only repo with
 >    migrations"*, the `cms` / `jobsimulation` / `skillpath` schemas *"legacy husks"*) and
 >    [`dependency_map.md:78`](../architecture/dependency_map.md) (§ *2. Job Simulation* — session state goes
@@ -133,7 +133,7 @@ and an `apps/web` surface gated client-side on a Clerk org flag.
 >
 > - **DB-only** (column `true`, Clerk metadata absent) → **the client half is dead.** `isHiringOrg` is `false`,
 >   so the nav keeps the "Activity dashboard" label (`useNavbarSections.tsx:476` @ `next-web-app` `8297c684`;
->   it was `:460` at `bb3313bc`) and the org is *not* filtered
+>   it stood sixteen lines earlier at `bb3313bc`) and the org is *not* filtered
 >   out of the workforce list (`useGetClerkOrganization.tsx:16-18`). And the product-boundary hand-off — which
 >   reads Clerk and **only** Clerk (`apps/web/src/context/UserStatusContext.tsx:144-149` computes
 >   `userHasAllHiringOrgs` from `publicMetadata.isHiring`, then `:168-172` fires
@@ -216,7 +216,7 @@ schema, read directly by the resolver.
 | 2 | `packages/graphql/src/query/insights.ts:31-82` | query `insightsJobSimulationByMemberships` |
 | 3 | `app/.../resolver_queries.go:1034,1080` | resolver `InsightsJobSimulationByMemberships` (decl `:1034`) → `IntelligenceManager.InsightsJobSimulationByMemberships` (`:1080`) |
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
-| 5 | `intelligence.go:1733` → `:2158-2160` | best-attempt: the call site (`:1733`) invokes `usersBestOrFirstJobSimulationSession` (declared `:2124`), whose window is `ROW_NUMBER() OVER (PARTITION BY sim_id, owner_id ORDER BY score DESC …)` at `:2158-2160`; the `RowNumber == 1` reduction back in the caller is `:1739-1744`. (Read `:1728-1735` until M257x iter-102 — that range holds the `onlyAssignments` branch and the call, not the `row_number()`.) |
+| 5 | `intelligence.go:1733` → `:2158-2160` | best-attempt: the call site (`:1733`) invokes `usersBestOrFirstJobSimulationSession` (declared `:2124`), whose window is `ROW_NUMBER() OVER (PARTITION BY sim_id, owner_id ORDER BY score DESC …)` at `:2158-2160`; the `RowNumber == 1` reduction back in the caller is `:1739-1744`. (This cited the caller's own lines until M257x iter-102 — that range holds the `onlyAssignments` branch and the call, not the `row_number()`.) |
 | 6 | `intelligence.go:1820` | `Score` ← the session's own `score` column — **not a mirror's** (see row 7) |
 | 7 | `app/internal/data/ent/schema/job_simulation_session.go:45` | Ent table `public.job_simulation_sessions`, `field.Float32("score").Default(0).Min(0).Max(100)` — **the score column, read at `intelligence.go:1820` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer exists** |
 
@@ -300,10 +300,10 @@ alone — the write-set used to be a PAIR and is now one row, since the mirrors 
 > dropped and there is no second subgraph, so **both halves collapsed into `public.job_simulation_sessions`.**
 > (This said *"neither table exists"* until M257x iter-52 — a flat contradiction of the **History** blockquote
 > (**`:196-209`**) above, which is the adjudicated form: the mirror was dropped, `jobsimulation.sessions` was
-> not, and no local stack creates that schema either way. It cited the then-`:157-159` — the `job_position`
+> not, and no local stack creates that schema either way. It cited an earlier range — the `job_position`
 > bullet, now **`:176-187`**, a different construct entirely — until M257x iter-98. **Both pins in this
-> sentence were themselves wrong until run 81** (`:193-198` landed on the score sentence + a blank line;
-> `:173-175` on the tail of the *preceding* bullet), because iter-102 re-derived them by **adding +23 and
+> sentence were themselves wrong until run 81** (one landed on the score sentence + a blank line; the other
+> on the tail of the *preceding* bullet), because iter-102 re-derived them by **adding +23 and
 > +16 to the old numbers instead of re-measuring** — arithmetic on a citation is not a citation. Both in-file line numbers were
 > re-derived at M257x iter-102, when the repairs above shifted them by +23 and +16.) The old
 > "393/393 rows on `billion` carry a matching pair" empiric described the pre-drop shape.
@@ -329,7 +329,7 @@ through the real resolvers, closure green, never fabricated), **not** a flat sco
 - **The comparison surface SURVIVES** — it is only **RELABELED "Results"** (vs "Activity dashboard"):
   `packages/ui/src/NavBar/useNavbarSections.tsx:476`, inside `enterpriseInsightsMenuItem` (`:475-482`)
   (`label: isHiringOrg ? tNavbar('results') : tNavbar('activityDashboard')`) — measured at `next-web-app`
-  `8297c684`; both anchors read `:460` / `:459-466` until M257x iter-102, exact at the earlier `bb3313bc`.
+  `8297c684`; both anchors carried the earlier ref's line numbers until M257x iter-102, exact at that earlier `bb3313bc`.
   It stays in `enterpriseAdminNavbarMenuItems`; the route `/enterprise/activity-dashboard` has **no `is_hiring`
   guard**.
 - **Two `isEnterprise` definitions DIVERGE — and that is not a bug:**

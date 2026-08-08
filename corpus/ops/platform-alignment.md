@@ -2080,6 +2080,36 @@ defect, it was arguing for it.*
     > iter-127, whose body retracts *"UNEVEN"* explicitly. The reader arrives at a paragraph that opens by
     > contradicting the sentence that sent them. **Name your target by what it says now.**
     >
+    > **Rule (c‴) — the class was CENSUSED, and the census is now a fence.** *(M257x iter-142.)*
+    > `TOK-08` says a reading SAMPLES and a fence CENSUSES; (c′) named the class from three incidents,
+    > and iter-142 enumerated it. `retracted_pin_guard.py` scans the published corpus for a **bare
+    > backticked line pin inside a retraction clause** — a clause carrying both a reporting verb
+    > (`was` / `were` / `cited` / `said` / `read` / `pinned` / `carried` / `listed`) and a supersession
+    > marker. Over **922 bare line pins in 94 documents** it found **44 live instances across 17
+    > files**, every one hand-read before a line of prose was repaired: **44 of 44 true positives.**
+    > All 44 are now descriptions; the class stands at **0** and the fence holds it there. Three things
+    > the census established that the rule as written did not:
+    >
+    > 1. **Precision lives in the SECOND half of the predicate, not the first.** `was` / `read` /
+    >    `said` alone match ordinary description — *"the score column, read at `:1820`"* is a live pin,
+    >    not a retraction. The first draft put every supersession marker in one anywhere-in-the-clause
+    >    set and produced **2 false REDs of 46** on its first run, both from markers that attach to
+    >    something OTHER than the pin: a sha anchoring a *deletion*, and a *"no longer"* about a
+    >    deleted FILE. Demoting those two to a tier that must sit **within 30 characters after the
+    >    pin** — exactly where the genuine idiom puts them — took it to 44 of 44. Where iter-138 was
+    >    0-for-12, this is 44-for-44, and **the difference is that the audit happened before the
+    >    repair, not after the publication.**
+    > 2. **A ref-qualified historical pin is IN the class, and that is not a technicality.** *"it was
+    >    `:100` at `0dab54d`"* is a TRUE statement about an immutable ref — and it still turns a fence
+    >    RED, **because the fence does not read the qualification.** The hazard is the token, not the
+    >    truth of the claim wrapped around it. That is (c′)'s *"a fence matching on form cannot tell
+    >    the quotation from the assertion"* stated from the other side.
+    > 3. **Fence the TOKEN, not the digit — so the repair never has to destroy evidence.** *"rotted
+    >    +8"*, *"iter-102 added +23 and +16 instead of re-measuring"*, *"it stood ten lines earlier"*
+    >    keep everything the pin said and are invisible to every resolver. All 17 repaired files came
+    >    out **line-count FLAT** (36 lines rewritten in place, 0 net shift), so the sweep that removes
+    >    anchor rot could not itself induce any — the failure mode iter-141 caused with its own repair.
+    >
     > **Rule (d) — choose the test suites by what you CHANGED, not by what you were writing ABOUT.**
     > iter-137 rewrote **29 anchors** and picked its scoped suites by topic (`platform_alignment`,
     > `claim_twin`, …). `anchor_offset_guard` was **NOT-RUN** in the family (commit-scoped, no `--range`)

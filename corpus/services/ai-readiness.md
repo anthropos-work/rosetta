@@ -57,8 +57,8 @@
 > fencing it. This paragraph stated completed work as outstanding while the **⚠⚠ M51 iter-08/09** block below
 > already described the same call site in its post-refactor location — *"(now `aireadiness/readiness.go`,
 > formerly `workforce/ai_readiness.go:512`)"* — i.e. the doc contradicted itself; corrected M257x iter-46.
-> ⚠️ **The bare line number was itself the defect.** That cross-reference read `:458` when iter-46 wrote it and
-> `:459` after iter-100 mechanically re-pointed it, and **neither line has ever carried the statement** — `:459`
+> ⚠️ **The bare line number was itself the defect.** That cross-reference carried one line number when iter-46 wrote it and
+> the next one down after iter-100 mechanically re-pointed it, and **neither line has ever carried the statement** — the later of the two
 > merely opens the `> **✅ CORRECTED M219 …**` blockquote, which is about an unrelated claim. The target is
 > therefore named by construct above — the **`⚠⚠ M51 iter-08/09`** block, identified by the quoted
 > parenthetical *"(now `aireadiness/readiness.go`, formerly `workforce/ai_readiness.go:512`)"*.
@@ -385,7 +385,7 @@ dashboard gates purely on the GraphQL `aiReadinessEnabled` boolean plus `isEnter
 **Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
 **hard-gated off** — `AIReadinessClient.tsx:78` `const SHOW_SECONDARY_TABS: boolean = false;` (exact), read by
 the tab filter at **`:601`** — `(SHOW_SECONDARY_TABS && tab.key === 'compare')` — which strips it from the tab
-list. **@ `next-web-app` `8297c684`.** (This cited `:599` until M257x iter-115; `:599` is `tab.key === 'how' ||`,
+list. **@ `next-web-app` `8297c684`.** (This carried a line pin until M257x iter-115; that line is `tab.key === 'how' ||`,
 two lines above the read.)
 `/ai-readiness?tab=compare` renders no panel. It is neither current nor legacy: complete-but-disabled.
 
@@ -495,8 +495,8 @@ decision):**
   directions: a member with step-1 evidence but no progress row is **dropped**, and one with an
   `in_progress` row and zero evidences is **kept**. (This paragraph **previously said** the active-cycle
   path used this filter; that attribution is **refuted** — see the `keepInCycleStep1` correction above.) The platform states this itself at `steps.go:962`
-  (*"This DB signal is the only real 'has started' check"*) — this doc cited `:907-914` until M257x
-  iter-108, which is the doc comment of `queryReadinessSimCompleters` (`:922`), a
+  (*"This DB signal is the only real 'has started' check"*) — this doc cited a different function's doc comment until M257x
+  iter-108 — that of `queryReadinessSimCompleters` (`:922`), a
   `job_simulation_sessions` query about a different proposition. So an **active**-cycle dashboard requires the
   **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
   counted, not the evidences. **Both branches read that one table, at different strictness**, and the
@@ -537,8 +537,8 @@ decision):**
   > `8297c684`**) computes
   > `effectiveCycleId = selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id` and gates the data GET on
   > `enabled: featureOn && cyclesQ.isFetched` at **`:171`** — i.e. it **waits for `/cycles`, then passes
-  > `?cycle=`**. (These read `:153-154` and `:166-170` until M257x iter-115: the first is the comment above
-  > the const, and the second is a range that stops **one line short** of the gate it is offered as evidence
+  > `?cycle=`**. (These carried two line ranges until M257x iter-115: the first was the comment above
+  > the const, and the second a range that stopped **one line short** of the gate it is offered as evidence
   > for — `:168-170` is the `useAIReadiness({` call and its first two options.) Verified live
   > against a running demo (authenticated as the manager hero): `/cycles` returns the seeded cycle, and the
   > frozen read answers **HTTP 200 in 24 ms**.
