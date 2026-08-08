@@ -2556,6 +2556,46 @@ defect, it was arguing for it.*
     iter-138's withdrawn 127 and iter-150's 30-to-1 are the same lesson: **hand-grade before you publish,
     and report the raw signal as raw signal.**
 
+73. **A GLOB IS NOT A DERIVATION — and a partition with no third bucket reports its gap as a pass.**
+    M257x iter-157. `repair_postcondition` selected its fence registry with `glob("*_guard.py")` while
+    **both** claims about that selection were written in terms of the DECLARATION: its own docstring
+    (*"a fence added tomorrow enrols itself or makes this fail loudly naming its own filename"*) and
+    `guard_family.py:67` (*"`FENCE_KIND` — read STATICALLY by `repair_postcondition.py`"*). Measured:
+    **25 modules declared a `FENCE_KIND` and 23 were enumerated.** The two that were not
+    (`guard_family`, `predicate_enumerator`) neither enrolled nor failed — their filenames did not end in
+    `_guard`, so they fell through a partition with **no third bucket** and were, in the function's own
+    output, **indistinguishable from a module that is not a fence at all**. The family's report carried
+    the arithmetic in plain sight — `5 participating … 18 standalone` against 25 declarations — and
+    nothing subtracted.
+
+    **A glob is a hand-written predicate with a wildcard in it.** It fails the way a hand-written list
+    fails, and unlike a list it *looks* derived — rule 71's looks-derived corollary at a different
+    construct. When a mechanism's prose says *declaration*, the code must select on the **declaration**.
+
+    **The repair is iter-150's split, and it generalises: keep the partition DECLARED, derive its
+    COMPLETENESS.** Which bucket a thing belongs in is a judgement no parse can make; whether every
+    member of the domain reached a bucket is arithmetic. Report the residue as a finding that names it —
+    never as a silent skip, and never as a `could-not-run` that would suppress the verdicts the
+    mechanism exists to produce.
+
+    **Corollary — widen a registry only when the consumer's verdict is demonstrated unchanged.** Both
+    newly-enrolled modules declare `standalone`, so neither is asked for sites and the ratchet reads
+    identically. Had either declared `postcondition`, the widening would have moved a published baseline
+    and belonged in its own iter.
+
+    **Corollary — the naming REQUIREMENT must survive the widening, and the widening creates a new
+    refusal.** Enrolling by declaration could silently replace *"a `*_guard.py` must declare a kind"*.
+    It must not; and it adds an edge that did not exist before — a **non**-guard-named module declaring
+    an *illegal* kind, which the new skip branch would otherwise swallow. Fence the branch that may pass
+    in silence, so widening it later is a deliberate act rather than a drift.
+
+    **Corollary — anchors are load-bearing in BOTH directions, and the API decides which.** This iter's
+    own fence asserted `assertRegex(src, r"^FENCE_KIND\s*=")` — `assertRegex` applies `re.search`
+    **without** `re.M`, so `^` meant *start of file* and the arm reported a false NEGATIVE: *"guard_family
+    declares nothing"*. iter-152's unanchored-`search()` defect in mirror image, inside the fence written
+    for this class. Compile the pattern once with the flags it needs and reuse it; care is not the
+    defence, a shared compiled constant is.
+
 ---
 
 ## 6. Classification — the map
