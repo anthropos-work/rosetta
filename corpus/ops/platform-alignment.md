@@ -2513,6 +2513,49 @@ defect, it was arguing for it.*
     assignment** — and when a repair's own comment names its twin, the fence over the pair is due **in
     that commit**, not at the next breakage (rule 69).
 
+72. **A reporting layer must tell its subject's own voice from everything else on the wire — and
+    "everything else" includes the interpreter.** M257x iter-156. `guard_family` merged each member's
+    stdout and stderr and reported the **last line of the merged stream** as a GREEN member's verdict.
+    `claim_census_guard` emitted a `DeprecationWarning` (positional `maxsplit`, py3.13+), CPython echoed
+    the offending **source line** to stderr after the guard had finished speaking, and the family printed
+    that line of Python as the guard's verdict — while `claim-census: OK — ratchet holds over 41 files`
+    was invisible in the one view that claims to summarise the family. Nothing the guard wrote was wrong.
+    **The runner read text the guard did not author as the guard's datum** — iter-152's prose-as-data
+    class, one layer up from the corpus, and the census that found it was pointed at the corpus first and
+    came back clean. **Look at the layer that REPORTS, not only the layer that reads.**
+
+    The repair is a *derived speaker test*, never a heuristic: guards already print their summary
+    flush-left prefixed with their own name, a convention asserted in a docstring since iter-87 and
+    checked by nothing. A "does it look like a summary" test would re-create the defect one remove up —
+    a warning's echo looks like whatever the source line looks like. **And the rung must be returned**:
+    without it, *"the guard summarised itself"* and *"no summary was found, so here is the last thing on
+    the wire"* print identically (rule 70's line-3 lesson).
+
+    **Corollary — the RED path is where this bites hardest.** A warning echo is *indented*, which is
+    exactly the shape a findings-headline selects on. The same defect that mislabels a GREEN verdict will
+    report **a line of Python as a guard's first finding** — re-entering through a door the headline's
+    own author could not see.
+
+    **Corollary — declare the noise; do not drop it, and do not grade it.** Discarding non-subject output
+    is the same swallow in the other direction, and is how this warning survived four releases *while
+    being printed as a verdict*. But a warning is not a finding: turning it RED would be the runner
+    inventing a verdict. **The run discloses, the fence gates** — `D-M255-1`'s two-contract precedent.
+
+    **Corollary — a fence whose verdict depends on the interpreter must say which one it measured.**
+    This defect exists on py3.13+ and not on py3.9, and the only interpreter on the host carrying pytest
+    was 3.9: **the fence's first full run was 18/18 green while the defect was live.** State the
+    environment (rule 51's discipline), and prove the mechanism *interpreter-independently* — here by
+    driving the runner against a synthetic member that writes to stderr on purpose — so the live census
+    is the scoped evidence it is and not a claim about all interpreters.
+
+    **Corollary — the instrument is a claim too, and a census's raw signal is not its finding.** This
+    iter's own enumerator first reported **13 of 32 guard modules as `IMPORT-FAIL`**; the cause was the
+    loader (a `@dataclass` resolves its module through `sys.modules`, which `module_from_spec` does not
+    populate), not any guard. And the structural-position sweep flagged **105 of 171 patterns**, almost
+    all of it helpers applied to already-segmented text. Neither number was published as a defect count.
+    iter-138's withdrawn 127 and iter-150's 30-to-1 are the same lesson: **hand-grade before you publish,
+    and report the raw signal as raw signal.**
+
 ---
 
 ## 6. Classification — the map
