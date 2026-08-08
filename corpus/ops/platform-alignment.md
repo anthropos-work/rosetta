@@ -2489,6 +2489,23 @@ defect, it was arguing for it.*
     anchored"* — anchoring is a mechanism, the property is what survives, and the two come apart
     (`SURVEY-M257x-iter152-other-guards-may-read-prose-as-data`).
 
+    **The prescribed repair is STRUCTURAL, not vigilance — added at iter-155, because this rule caught
+    its own author one iter after he wrote it.** iter-154 shipped a fence alongside rule 71 that asserted,
+    as literals, the current state of the world; iter-155's *correct* change made those literals false and
+    the fence went RED indistinguishably from a regression. **Writing the rule did not prevent the
+    mistake.** So the instruction is not "be careful": **derive the expectation from the same source the
+    code derives from**, at test time. A fence whose expected value comes out of the same generator, the
+    same registry or the same compose file its subject reads is correct on both sides of any correct
+    change to that subject — and it is still RED for a wrong one, which is the whole point. **Four
+    confirmed instances in three iters** (harden pass 35's disclosure fence; `dev-stack`'s contract test;
+    the iter-154 fence; `test_verify.py`'s frontend-scope fence), none found by review, all four found by
+    improving the code they guarded.
+
+    **Corollary — an omission from a "not re-run" list reads as coverage.** Rule 60 requires a scoped run
+    to name what it did NOT cover. iter-154 named two sections as not-re-run and silently omitted a third,
+    where a stale fence was already RED; it surfaced an iter later looking like a new regression. **Name
+    every section you did not run, not only the ones you thought about.**
+
     **Corollary — a site that LOOKS derived can carry a hand-written half.** Both bring-up verify tails
     opened with a correct `platform_topology.py` derivation and then hand-appended a conditional tuple.
     That opening is why neither was censused: the *base* set was repaired twice (iter-55, harden pass 3)
