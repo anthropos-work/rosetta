@@ -3931,6 +3931,70 @@ Two of the five sites were routed with the derivation pre-computed; three were r
 A correction that respects file ownership arrives later and intact; one that does not arrives as a
 merge conflict.
 
+### A capability probe that fails OPEN disarms the check it guards (M257x iter-174)
+
+```python
+stdlib = getattr(sys, "stdlib_module_names", frozenset())   # ← shipped for six iters
+```
+
+`sys.stdlib_module_names` landed in **Python 3.10**. The dev box has two interpreters, and
+`/usr/bin/python3` **3.9.6** — *the only one with pytest, i.e. the one that runs everything* — is not one
+of them. So that expression was an **empty set**, the membership test under it was never true, and the
+refusal it gated **could not fire at any input**. The check was not weak; it was **off**.
+
+**The shape, and it generalises past Python:** `getattr(x, "capability", <empty default>)` silently
+converts *"this environment cannot tell me"* into *"the answer is nothing."* The two directions are not
+symmetric:
+
+| default | when the probe fails | consequence |
+|---|---|---|
+| empty / permissive | the check passes everything | **silent** — nothing to notice, forever |
+| broad / restrictive | the check refuses something legitimate | **loud** — someone fixes it that afternoon |
+
+**So: derive it, or refuse. Never default to empty.** Where the capability is absent, compute the answer
+another way (here: `sys.builtin_module_names` plus the `sysconfig` stdlib directory — 232 names on 3.9.6,
+297 on 3.14.6). Where it cannot be computed at all, **raise**. *A check that cannot check must not report
+OK* — the same direction as `§9` iter-149 (a census returning zero must prove its instrument) and M236's
+green-gate, which parsed a UTC timestamp as local time and therefore **aged a stale verdict as fresh
+everywhere west of UTC**: failing open, silently, for half the world.
+
+**Two corollaries, both earned here:**
+
+1. **Assert the CAPABILITY, not only the behaviour.** The only witness was the guard's own behavioural
+   test, and its message — `RuntimeError not raised` — named *the refusal*, when the defect was *the set
+   the refusal consults*, one function away. A whole iter characterised it as "fails on the old runner"
+   and stopped there, because nothing asserted the set. The repair's controls now assert the set directly
+   (non-empty · contains what the check must catch · contains nothing it must not · equals the native
+   value where one exists), and restoring the shipped form kills **eight** of them instead of one.
+2. **Measure the hazard's population before calling it a class** (`§8`, iter-168). All 13
+   `getattr(x, "attr", <empty>)` sites in the tooling were classified: **1** is a capability probe
+   deciding a verdict; **12** are attribute lookups where the default means *"not set"*, which is the
+   true answer. Not systemic — and saying so with the denominator is the difference between a measurement
+   and a mood.
+
+### A pre-registered escalation names a SYMPTOM; it cannot name a cause (M257x iter-174)
+
+The iter pre-registered: *"if arming the refusal turns other batteries RED, that is a finding to route,
+not to suppress by weakening the derivation."* The whole-suite run then returned **4 failed** in a
+mutation battery — the exact shape the clause describes.
+
+**None of the four had anything to do with the change.** All were one cause: a fence the *previous* iter
+had registered in the postcondition baseline was missing from that battery's fence-seed list. Applied on
+its face, the clause would have had the iter weaken a correct derivation to silence an unrelated
+regression.
+
+Pre-registration is worth keeping — it is what stops an inconvenient result being re-interpreted after the
+fact. But it binds the **response to a diagnosis**, never the diagnosis itself. **Read the failure before
+applying the rule you wrote for it.** iter-169 earned *a route predicts a cause; it does not certify one*;
+this is the same rule applied to one's own pre-registration, which is the harder case because the author
+trusts it more.
+
+**And the registry count is now five.** iter-173 enumerated four registries a new fence must join and
+found the fourth only by running the whole suite; this iter found the fifth the same way, one iter later,
+on iter-173's own commit — while iter-173's post-fix **scoped** re-run was green and structurally could
+not see it. `repair_postcondition --accept` writes one of the five. **Nothing enumerates them**
+(`FIX-M257x-iter174-accept-registers-one-registry-of-two`).
+
 ---
 
 ## 9. Cadence
