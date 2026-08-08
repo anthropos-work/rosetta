@@ -2827,3 +2827,236 @@ not. This session adds the sharper half: **"the whole suite" in this ledger has 
 `stack-core` alone — one section of five, 1,280 of 3,040 tests.** 21 failures sit in sections no
 harden pass or iter close has ever executed, and they were invisible for the whole milestone. Deciding
 what "the suite" means is a scope call for the milestone, not something a fourth harden pass can fix.
+
+---
+
+## Pass 33 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-143 … iter-152 (scope shared across passes 33–35)
+**Tiks covered since prior pass:** 10
+
+**Scope manifest.** 23 files across five rext sections, plus 7 corpus/skill files in `rosetta`. The
+production surface is small and new: one net-new 354-line fence (`stack-core/service_registry_guard.py`,
+iter-152), two amended guards, two shell entry points (`demo-stack/rosetta-demo`, `dev-stack/dev-stack`,
+iter-147), and `stack-verify`'s report driver (iter-148). Six net-new test files. Everything else is
+milestone bookkeeping.
+
+**Target: iter-152's `service_registry_guard.py`** — the newest fence, and the one with the largest
+untested surface. It grades `stack-verify/lib/services.sh` (the table that decides what every stack is
+probed on) against the platform's own compose, in four arms and both directions.
+
+**Finding — the fence blamed the registry for its OWN parse failure.**
+
+It reaches `postgresql` and `redis` only by following compose's `include:` one level into `common.yml`.
+The include parser understood exactly one shape, scanned from line 0, and `break`ed on the first
+non-indented line. Measured against the real platform compose at `0c91421`, **four realistic file shapes
+made it resolve zero includes**:
+
+| shape | pre-fix | post-fix |
+|---|---|---|
+| a comment line above `include:` | exit 1, 2 × A/DEPARTURE | exit 0, aligned |
+| the flow list `include: [common.yml]` | exit 1, 2 × A/DEPARTURE | exit 0, aligned |
+| the long form `- path: common.yml` | exit 1, 2 × A/DEPARTURE | exit 0, aligned |
+| an included file not on disk | exit 1, 2 × A/DEPARTURE | **exit 2, cannot-measure** |
+| `include:` with no entries | exit 1, 2 × A/DEPARTURE | **exit 2, cannot-measure** |
+| no `include:` at all | exit 1 (honest) | exit 1 (unchanged) |
+
+In none of the four did it go quiet. It printed, with full confidence, *"A/DEPARTURE: registry row
+'postgresql' is not a service in the platform compose"* — and its remedy, *"add it to
+`SERVICES_NOT_IN_PLATFORM_COMPOSE`"*. **Following that remedy would permanently stop grading two rows
+that were never wrong, in response to a bug in the guard.** This milestone's founding class run
+backwards: an INSTRUMENT failure presented as a SUBJECT finding, carrying an instruction to disarm the
+subject.
+
+**Three false claims removed, all about this same leg.** The module docstring said a failed include
+"would silently miss both and its arm-**B** denominator would be wrong by two" — the miss is loud and it
+lands on arm **A**. `TestIncludeIsFollowed`'s docstring said the same miss would "still report ALIGNED",
+refuted from birth by the test directly beneath it asserting `rc == 1`. And `parse_compose`'s closing
+comment described a "drop anything with no ports AND no build/image" filter that **was never written**,
+solving a problem that **does not exist** — the top-level reset already keeps `networks:`'s children out.
+The real mechanism is now pinned by a test so it cannot be deleted on the strength of a comment that
+never matched it.
+
+**Coverage delta:** `test_service_registry_guard.py` 18 → 28 tests; the include leg 2 → 9.
+**Tests added:** iter-152 → `stack-core/tests/test_service_registry_guard.py`: 10 (7 edge-case, 3
+error-path).
+**Bugs surfaced + fixed inline:** 1 behavioural + 3 documentation (`e5c0dda`).
+**Controls:** the 10 net-new tests were run against the PRE-FIX guard — **8 of 8 executed cases fail**
+(7 failures + 1 error). `§5` rule 64's second sub-rule satisfied: the instrument is proven independently
+of the change.
+
+**Stop condition: continue-to-next-pass** — a first-order defect in shipped code on the first pass; the
+in-scope surface is not exhausted.
+
+---
+
+## Pass 34 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-143 … iter-152 (target: iter-148 + iter-151)
+
+**Method change that produced the finding.** Every existing arm of `test_probe_scope_m257x.py` reads
+`generate.sh`'s **source**. Nothing had ever read the **artifact** — the markdown a human actually grades
+a stack on. Running it takes 0.05–0.24 s per report; the gap was never cost, only method.
+
+**Finding 1 — the report never named the stack it graded.**
+
+`STACK_PROJECT` and `STACK_OFFSET` are the two stack-TARGETING variables (iter-151 measured them as
+read-side only). `target.sh` defaults them to project `anthropos` at offset 0 — the main dev stack.
+iter-148's own SKILL.md note tells the operator to pass them for a demo or a `dev-N`, and warns that
+without them "the probes go to project `anthropos` on base ports, which is the main dev stack, not the
+one you meant."
+
+**Neither variable appeared anywhere in the report.** Measured: a run against `demo-1 @ 10000` and a run
+against `demo-2 @ 20000` produce markdown that is **byte-identical apart from the timestamp**. The
+failure output of the new control is the finding — two complete reports, character for character the
+same, about two different stacks. A forgotten `STACK_PROJECT` was unrecoverable from the artifact.
+
+Now a `**Target**:` line in the header; forgetting **both** variables says `DEFAULTED` out loud rather
+than reading like a deliberate main-dev-stack run.
+
+**Finding 2 — the scope line covered two branches of three.**
+
+`scope_note` was set on the DERIVED branch and the UNDERIVABLE branch, and left **empty** when the caller
+supplied `STACK_SERVICES` — so no scope line reached the report at all. That is the branch the skill
+actively recommends ("an explicit `STACK_SERVICES` always wins") and the branch where the scope is
+**arbitrary**: `✓ pass` off a hand-narrowed one-probe run was indistinguishable from a full sweep. The
+site's own comment claimed *"the probe SCOPE rides in the report"*; it rode in 2 of 3.
+
+**A fence of iter-148's own went RED for a restructure that preserved its property exactly.**
+`test_a_caller_supplied_scope_is_never_overridden` required the LITERAL `[ -z "${STACK_SERVICES:-}" ]`.
+Making the caller-supplied branch disclose turned it into `if [ -n … ]; then <caller> else <derive> fi` —
+same property, different spelling. That is `§5` rule 67/68(d)'s axis **pointed at itself**, inside the
+fence written to apply it. It now asserts the ORDER (an emptiness test, then the derivation after it),
+and the property gained a behavioural arm: a caller's scope survives even with a real platform clone
+under `STACK_ROOT` that the derivation would otherwise have replaced it from.
+
+**Coverage delta:** `test_probe_scope_m257x.py` 6 → 14 tests; behavioural (artifact-reading) arms 0 → 8.
+**Tests added:** iter-148 → `stack-verify/tests/test_probe_scope_m257x.py`: 8 integration.
+**Bugs surfaced + fixed inline:** 2 (`ccffc69`) + the corpus-side doc promise (`420137c` in `rosetta`).
+**Controls:** the 8 net-new tests run against the PRE-FIX `generate.sh` — **6 of 8 fail**. The 2 that
+pass are the derived/underivable disclosures, which are regression pins, not gap proofs; recorded as
+such rather than counted toward the delta.
+
+**Stop condition: continue-to-next-pass** — two more first-order defects in shipped code; the surface is
+still producing.
+
+---
+
+## Pass 35 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-143 … iter-152 (target: iter-148's derivation + verification)
+
+**Finding — iter-148 fixed the OVER-broad scope and left the UNDER-broad one.**
+
+`generate.sh` derives its probe scope from `$STACK_ROOT/platform/docker-compose.yml` — the platform's
+**unmodified** compose. Measured at platform `0c91421`:
+
+```
+platform_topology.py services --platform-dir stack-demo/platform
+-> postgresql redis sentinel backend gotenberg          (five)
+```
+
+A default demo runs **eight** of the registry's rows: those five plus `next-web-app`, `studio-desk` and
+`directus`, which `up-injected.sh` adds through the stack's own **generated override** — a file the
+derivation never reads. The UI tier is opt-**OUT** on a demo (`DEMO_NO_UI`), so this is the default
+shape, not a corner. Three services a presenter cares most about sit outside the scope while the report
+reads `✓ pass`.
+
+Under-broad is the quieter of the two failures iter-148 sits between. Over-broad printed four false
+`down`s — loud, and it got fixed within one iter. Under-broad prints **nothing at all**, and had it not
+been measured here it would have read as a clean bill of health indefinitely. `§5` rule 60/66 exactly: a
+scoped green is evidence about its scope alone.
+
+The derived disclosure now names what it leaves out. **Unioning the stack's generated override into the
+derivation is the real fix and was NOT done** — it reaches from `stack-verify` into `demo-stack`'s
+per-stack layout and cannot be verified without a live demo, which is past the inline-fix boundary.
+
+**Coverage delta:** `test_probe_scope_m257x.py` 14 → 16.
+**Tests added:** 2 — one of which **asserts the measurement itself** rather than trusting the commit
+message: it runs the real derivation against a real platform clone and fails if any of the three UI rows
+ever enters the derived set, so the disclosure cannot outlive the gap it describes.
+**Bugs surfaced + fixed inline:** 1 (`95ef640`).
+**Routed forward:** `FIX-M257x-h33-derive-includes-stack-override` — union the stack's generated override
+compose into `generate.sh`'s derivation, so a demo's UI tier is probed rather than disclosed away.
+Cross-section; needs a live demo to verify. Fate 3.
+
+### Two self-inflicted defects, and what caught them
+
+**(a) This harden pass hid 10 of its own tests behind the `__main__` guard.** Both new classes were
+appended with `cat >>`, landing *below* the `if __name__ == "__main__"` block already at the end of the
+file. Under pytest they ran — 16 passed, the number quoted in two commit messages. Run the file the way
+its own docstring says to (`python3 tests/test_probe_scope_m257x.py`) and it collected **6**, printed
+**OK**, and said nothing about the 10 it skipped. A green that silently drops most of its subjects, in
+the tests written to stop exactly that.
+
+**(b) A test of mine graded the invocation, not the code.** `TestNetworkKeysAreNotServices` did a bare
+`import service_registry_guard`, which resolves only when pytest's rootdir puts `stack-core` on
+`sys.path`. It passed the 3× flake gate **and** the full 1,338-test `stack-core` suite — both of which
+run from inside `stack-core` — and failed the first time anything ran it from one directory up. Now
+imported by path; verified green from the rext root, from `stack-core`, and by direct execution.
+
+**Neither was caught by any control this session wrote.** (a) was caught by
+`test_test_collection_fence.py` — a **different fence, on a different axis, in a different section**.
+(b) was caught by **changing the working directory**. All three of this session's passes were green on
+their own terms throughout, exactly as passes 30/31 were when they introduced their own.
+
+**Flake gate:** 3 consecutive clean runs of both new test files — `test_probe_scope_m257x` 16 passed ×3,
+`test_service_registry_guard` 28 passed ×3.
+
+**Knowledge backfill:** `.claude/skills/test-platform/SKILL.md` — the iter-148 note promised
+*"prints the scope into the report"* unqualified while recommending the branch that printed nothing, and
+warned about a forgotten `STACK_PROJECT` while the report it produced named no stack. Both now true in
+the code and the doc states which branches it covers.
+
+### Suite results (counts, never wall-time — `§5` rule 51's timing leg fails on this host)
+
+| suite | result | baseline |
+|---|---|---|
+| `stack-core` | **2 failed · 1338 passed** | pass 32 recorded 1 failed · 1229 passed |
+| `stack-verify` | **0 failed · 252 passed** | iter-148 recorded 244 passed |
+| targeted (registry guard + probe scope + collection fence) | 0 failed · 60 passed | — |
+
+`stack-core`'s two failures are the standing `test_claim_twin_guard_iter48_answer_key::test_02` **and
+defect (a) above**, which the run caught and which is now fixed — so the residual is the one standing
+failure, unchanged. `stack-verify`'s 252 = 244 baseline + this session's 8; **zero regressions**.
+
+**Guard family** (`--platform stack-demo/platform`): **20 GREEN · 0 RED · 4 not-run**
+(`anchor_offset_guard`, `repair_leak_guard`, `repair_reach_guard`, `value_change_guard` — all
+commit-/input-scoped, needing `--range` or `--ledger`). `service_registry_guard` itself: **ALIGNED**, 12
+registry rows (7 graded, 5 declared absent) vs 7 compose services publishing 10 host ports.
+
+### Session totals (passes 33–35)
+
+**Tests added: +20** — `test_service_registry_guard` 18 → 28, `test_probe_scope_m257x` 6 → 16.
+**Bugs surfaced + fixed inline: 4 behavioural + 4 documentation**, across `e5c0dda`, `ccffc69`,
+`95ef640`, `420137c` (rosetta), plus `622b1cf` and `f7c7ace` repairing this session's own two.
+**Flakes stabilized:** none found; gate 3/3 clean on both files.
+**Routed forward:** `FIX-M257x-h33-derive-includes-stack-override`.
+
+**Stop condition: cap reached without stabilization** — the 3-pass incremental cap fired. Coverage delta
+is nowhere near under 2 % (the include leg went 2 → 9 tests; the report driver gained 8 artifact-reading
+arms where it had none), and the Phase 2 dimension scan found something first-order on **every** pass.
+
+### The sixth consecutive cap-without-stabilization — and the stream is back to what 30/31 saw
+
+Pass 32 reported the cap firing for the fifth time and observed something new: its in-scope iter surface
+came up **empty**, and the only defect it found was one an earlier pass in the same session had created.
+It framed that as the stream changing.
+
+**This session does not reproduce that.** All three passes found first-order defects in **shipped** code
+from the in-scope iters — a fence that mis-attributes its own parse failure to its subject, a report that
+cannot say which stack it is about, a probe scope covering five of eight running services. None of the
+three needed a prior pass to create it. The two defects this session did create are recorded above as
+its own, and neither was found by any control it wrote.
+
+**Per the user's standing ruling, this is routed, not re-litigated, and no machinery is built for it.**
+One observation is worth carrying to the close, and it is narrower than pass 32's: **the three findings
+share a shape.** In each, a mechanism reported a confident verdict about a subject it had not actually
+read — the include leg naming rows it never reached, the report naming a pass it could not attribute to a
+stack, the scope naming five services as though they were all of them. That is not "the iters need
+rework". It is the milestone's own subject, appearing in the milestone's own tooling, which is where a
+harden pass is supposed to find it.
+
+⚠️ **Pass 32's retrospective was shown wrong by iter-145** for characterising a set of failures instead of
+grading them individually. This entry grades each of the three findings separately above and states the
+shared shape only as an observation drawn from three graded cases, not as a property asserted over a set.
