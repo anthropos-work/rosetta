@@ -2615,6 +2615,28 @@ defect, it was arguing for it.*
     collisions worth catching, and a deliberately-shadowing subclass passed. Ownership is about **who
     assigned**, not who ends up in `__dict__`. A control that only ever confirms is not a control.
 
+75. **"THE SUITE" IS NOT ONE COMMAND — this repo's Python tests need TWO interpreters, and neither runs
+    the whole population.** M257x iter-170, censusing all **110** `test_*.py` modules across the five
+    Python sections. `/usr/bin/python3` is **3.9.6** and is the only interpreter on the box **with
+    pytest** — the fleet runner. The working interpreter is **3.14.6** and has **no pytest at all**.
+    Measured, the two **disagree about four modules**: two `import pytest` and cannot load under 3.14; one
+    relied on pytest putting a test's own directory on `sys.path`; one binds a server and fails only under
+    the other. **A green from one runner is not a green** — rule 60 with the scope being the *interpreter*,
+    which nothing had named as a scope before. The population under the fleet runner is **3,332 tests, 0
+    collection errors**; under 3.14/unittest, **101 GREEN · 8 RED · 1 TIMEOUT** over 3,279 executed — and
+    **4 of those 8 REDs are runner artifacts, not defects.** State the runner with every suite number, the
+    way `§8` already requires stating the host with every timing number.
+
+    **Corollary — and the instrument committed the defect it was built to prevent.** The census's third
+    bucket (*needs a live stack or clone — neither green nor a defect*, `§5` rule 73) was first sniffed
+    from **error-message substrings**, and it returned **ZERO against nine genuinely environment-gated
+    failures**. A third bucket that never fires is a two-bucket partition wearing three labels. The
+    repair is the split rule 73 already prescribes: **keep the partition DECLARED, derive its
+    COMPLETENESS** — the nine are named in `stack-core/suite_census.py`'s `ENV_GATED`, a declared entry
+    whose test no longer exists is reported STALE, and an undeclared RED is reported ACTIONABLE. Six of
+    the nine are `FIX-M257x-iter145-sha-baseline-drift`, which is a **freshness signal and must not be
+    re-pinned away**.
+
 ---
 
 ## 6. Classification — the map
