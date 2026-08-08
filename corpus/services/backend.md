@@ -179,7 +179,7 @@ containerized bring-up + migrate, and read-only prod.
   resolved against the **live** corpus by `anchor_construct_guard`, so a corpus repair that shifts the live
   file false-REDs a citation of the fixture. Measured M257x iter-115; routed as
   `FIX-M257x-iter115-anchor-guard-resolves-fixture-paths-live`) plus
-  `stack-core/tests/test_platform_predicate_guard.py:435`. **`rosetta-extensions` is one of the 13 repos
+  `stack-core/tests/test_platform_predicate_guard.py:441`. **`rosetta-extensions` is one of the 13 repos
   the same 44-`.tf` denominator counts**, so a uniqueness claim over "the clone set" could never have been
   true at the scope the sentence itself defined. The `app` occurrence is the load-bearing one and it is
   **not** terraform and is in the **past** tense: *"it used to reach the users, cms, jobsimulation and

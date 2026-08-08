@@ -3557,6 +3557,39 @@ What followed was worse than the failure, and is the part to internalise:
 > a derivation whose correctness you can test at *two* refs — that is the only evidence that distinguishes a
 > derivation from a literal that happens to be right today.
 
+### Fence a registry's COMPLETENESS, never its contents (M257x iter-162)
+
+Several fences in this family are driven by a **registry** — a list of the things the fence looks at.
+`frozen_expectation_census.py` is the clean case: its docstring says it matches *"a value **some
+non-test module derives**"*, and its first implementation executed **three hand-written entries**
+against a population of **125**. Reach was **3 of 53** executable-here derivations — **5.7 %** — and
+nothing in the tree measured that, so the census printed *"0 unexempted candidates"* in exactly the
+words a complete one would use.
+
+**A hand-list and a census print the same sentence. Only one of them earns it.**
+
+The repair is not a bigger hand-list — that is the same defect with a better number, rotting the same
+way. Split the registry in two:
+
+- **Contents stay DECLARED.** Which entries to execute is a judgement (some derivations shell out to
+  docker, some return an audit *verdict* rather than a reference set, some would make the instrument
+  match its own output). Declare each with a **class and a reason**, per site — that is what makes an
+  individual call arguable later.
+- **Completeness is DERIVED.** Enumerate the population mechanically, subtract the table, assert the
+  remainder empty — **and assert the reverse too**, so a decision for a site that no longer exists is
+  caught as fiction rather than carried as reassurance.
+
+Then a member added to the tree tomorrow turns the fence RED **with its own id in the failure
+message**, and the fix is one line. iter-162's fired **twice inside its own commit** — once on a
+function that entered the population because that commit rewrote it, once on seven declines that
+named a class and no reason. Neither would have survived, and neither is the kind of thing a reviewer
+looks for.
+
+**Read the reach as a number before believing a zero** (`§9`: *a census that returns ZERO must prove
+its instrument* — this is the reach half of that obligation, and it is the half a mutation control
+does not cover: a mutation control proves the instrument fires on what it looks at, never that it
+looks at everything it claims to).
+
 ---
 
 ## 9. Cadence
