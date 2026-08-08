@@ -2181,6 +2181,43 @@ defect, it was arguing for it.*
     not look. **A defect class that has been solved in code but not in the rulebook is unsolved.**
     When a fix generalises past the file it lands in, promoting it here is part of shipping it.
 
+    **The remedy now has a home:** `rosetta-extensions/stack-core/prose_reach.py` —
+    `continues_paragraph()` / `join_prev()`, one definition with both consumers asserted to hold the
+    same object, and every exclusion iter-63 paid for carried as a named test. Deliberately not
+    called `*_guard.py`, so the family's derived registry excludes it by construction.
+
+    **The sweep that followed is the rule's own denominator, and it found a second instance.** All 22
+    guards were classified by scanning unit: `unreadable_repo_claim_guard` already works in
+    blank-line-delimited paragraphs and is immune; `platform_predicate_guard` has joined since
+    iter-63; the rest do not associate two things across prose. **`clone_drift_guard` did.** Its D2
+    rule wanted the `go.mod` citation and the module pin on one line, and the `staging-sync.md`
+    colony-requires sentence splits between them — so the site fell through a `continue`
+    **silently**, three lines below a comment reading *"Named, not silently dropped."* Joining moves
+    that guard from **3 graded sites to 4**, and changes nothing else.
+
+    ⚠️ **A WIDENED REACH MUST NOT INVENT SUBJECTS, and this pass proved it the expensive way — on
+    itself.** The first cut of that join reported four further sites and a relabelled fifth. They
+    were **phantoms**: the join fired on lines carrying no module pin at all, attributing a citation
+    to the *blank line beneath it*, and the harden pass wrote all five into a commit message and into
+    this rule before noticing. What noticed was **`anchor_construct_guard`**, which resolved two of
+    the published coordinates and found blank lines — a fence on a different axis catching the
+    fence-widening, exactly as the guard family caught the path-arm gap at iter-142. Two rules fall
+    out, and the second is the one worth carrying:
+
+      * `continues_paragraph` answers whether the PREVIOUS line continues; **only the caller knows
+        whether the current line has anything to continue INTO.** The precondition belongs at the
+        call site and is now a named regression test.
+      * **A measurement taken with a just-changed instrument is a claim about the instrument until
+        something independent confirms it.** The five phantoms read exactly like findings — they had
+        file names, line numbers and a plausible mechanism. Nothing inside the changed guard could
+        have separated them from real ones. The corrected delta is **one** site.
+
+    Where the widened evidence genuinely matters is a case the corpus does not currently contain but
+    will: when a ref pin sits on the CITATION's line rather than the pin's, a join that imported only
+    the citation would grade a ref-scoped claim against HEAD. That ordering ships, guarded
+    **prospectively** by a synthetic test — and it is labelled as such, rather than as something that
+    was measured.
+
 ---
 
 ## 6. Classification — the map
