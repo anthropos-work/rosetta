@@ -3995,6 +3995,55 @@ on iter-173's own commit — while iter-173's post-fix **scoped** re-run was gre
 not see it. `repair_postcondition --accept` writes one of the five. **Nothing enumerates them**
 (`FIX-M257x-iter174-accept-registers-one-registry-of-two`).
 
+### Two derivations of ONE population must be COMPARED, or the weaker one is a silent census (M257x iter-175)
+
+iter-174 left a sentence that is a class, not an item: *"five registries are now known; nothing enumerates
+them."* The five was a **remembered list** — four at iter-173, five at iter-174, each reached by grepping
+for a sibling's name. That is §2's hand-maintained tuple one level up: the registry **of registries**.
+
+**Instrument first, and grade it at the claim's grain (§9, iter-159).** A file naming ≥2 fence modules
+anywhere returns **39** sites and measures *mentions*. A **collection literal** (py `List`/`Tuple`/`Set`/
+`Dict`-keys/call-args, or a JSON array/object) holding ≥2 fence-module names returns **5** — and the claim
+was always about *a set that must track the tree*. The sharper instrument landed on the five the route was
+groping for, plus the one nobody had named.
+
+**What it found, one row above the routed item:** `guard_family.census()` derived the fence family from a
+FILENAME SPELLING (`glob("*_guard.py")` + a hand-maintained `EXTRA_CENSUS_MEMBERS` escape tuple), while
+`repair_postcondition.discover_fences()` — repaired at iter-157 for exactly this — derived **the same
+population** from the `FENCE_KIND` DECLARATION. **26 modules declare; the family censused 25**, and the
+sets disagreed in *both* directions. `predicate_enumerator.py:142` declares itself a fence, and the runner
+whose docstring promises to *"run the WHOLE guard family, and name every member"* had **never run it and
+never named it** — not NOT-RUN in the verdict, *absent from it*. Its own founding sentence is the
+indictment: a guard that was not run reads exactly like a guard that passed.
+
+> **The rule:** when two derivations of one population exist, **the fence is the comparison between them**,
+> not either one's own completeness check. iter-157 shipped a completeness fence — for one module's
+> registry. iter-169's *closing a class means fencing its POPULATION, not its last member*, one turn on:
+> **the population here is the set of DERIVATIONS, and two of them had never been put side by side.**
+
+### Repair a derivation by UNION, never by substitution (M257x iter-175)
+
+The apparent repair — swap the glob for the declaration, the symmetry with iter-157 — is a **weakening**,
+and it looks like a tidy-up. A `*_guard.py` that declares nothing would then leave the family in silence,
+and that file is precisely the one worth catching.
+
+**A member needs only ONE of the two properties to be counted.** `spelled ∪ declared ∪ extra` closes the
+spelling gap and the declaration gap at once and can lose neither; it is strictly stronger in both
+directions, which is the only form of this repair that iter-158's rule permits (*a narrowing that grades a
+broken check green is a defect, not a fix*). The escape tuple survives — demoted to **additive only**: it
+may add a member, never substitute for a property.
+
+**A member the census reaches and the runner does not run needs a DISPOSITION, printed.** An exclusion
+table with a per-member reason, held to the same two directions as the invocation map — an exclusion that
+subtracts nothing is stale, an exclusion that is also invoked is ambiguous — and the reasons are **printed
+on every run**, because a member omitted from the census is that founding sentence with the evidence
+removed.
+
+**And the fixture was carrying the same shape.** Four synthetic guard dirs staged a family with no runner
+in it. One of them asserted `exit 2` and, for the window between the exclusion table landing and the
+fixture being made faithful, got its 2 from a stale-exclusion complaint while the orphan it was written for
+was never reached. **An exit code is not a diagnosis** — assert the sentence.
+
 ---
 
 ## 9. Cadence
