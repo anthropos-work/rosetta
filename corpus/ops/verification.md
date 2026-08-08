@@ -659,7 +659,7 @@ What that looks like from the outside is the part worth internalising:
 
 **The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
 not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
-carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2494`), and an
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2714`), and an
 `Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
 rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
 the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,
