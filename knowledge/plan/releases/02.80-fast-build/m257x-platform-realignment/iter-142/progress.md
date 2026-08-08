@@ -124,7 +124,7 @@ tree). **The guard family grows 22 → 23.**
 | **New fence's own module** (3 mutations + 2 anti-vacuity arms + **6** false-positive regressions across both arms) | **21 passed / 0 failed** |
 | **Scoped rext suites** — chosen by what this iter CHANGED, per rule 63(d): `guard_family`, `corpus_citation_guard`, `retracted_pin_guard`, `anchor_construct_denominator`, `anchor_offset_guard`, both mechanical-fence mutation batteries, `repair_postcondition` battery | **209 passed / 0 failed** (699.66 s) |
 | **Guard family**, `--repo-root` + `--platform stack-demo/platform @ 0c91421` | **19 GREEN · 0 RED · 4 not-run** — up from 18 GREEN pre-iter, the +1 being this iter's own guard. Not a whole-family green; the runner's own summary says so |
-| **The three COMMIT-scoped guards** (`anchor_offset`, `repair_leak`, `value_change`) over the iter's own range — the four the family reports as not-run | **3 RED on the first commit, every one a real miss**: a rotted cross-doc pin, the path-qualified twin, and a value-change twin. All three repaired; re-run green. **This is the gate that found what the tree-state fence could not** |
+| **The three COMMIT-scoped guards** (`anchor_offset`, `repair_leak`, `value_change`) over the iter's own range `fc7d71c3..HEAD` — three of the four the family reports as `not-run` | **3 RED on the first commit, two of them real misses**: the path-qualified twin (the headline) and a cross-doc pin this commit rotted. The third was measured and is a **shingle collision, disclosed not obeyed**. All resolved; **re-run GREEN — `anchor_offset` 25 citations graded of 57 seen, 0 CANNOT-TELL, 0 unmeasured; `repair_leak` GREEN; `value_change` GREEN**. **This is the gate that found what the tree-state fence structurally could not** |
 | **Pre-iter baseline**, same invocation | **18 GREEN · 0 RED · 4 not-run** — identical to iter-141's close, so the delta is attributable |
 | **Whole suite** | **NOT re-run — `§5` rule 60 requires saying so.** Stated as a gap, not characterised as covered. The 8 scoped modules are the change-derived set, and this is the **first** iter since 132 to touch `rosetta-extensions` at all, so iter-132's clean whole-suite run **no longer stands** on this rext tree |
 | **Suite wall-time** | not quoted as a measurement — `FIX-M257x-iter132-suite-walltime-is-not-a-measurement` stands. The 699.66 s above is a duration, not a benchmark |
@@ -158,6 +158,11 @@ keeps the evidence) · `D-M257x-142-4` (a sweep against anchor rot must be line-
 was measured to be).
 **Side-deliverables:** none.
 **Routes carried forward:**
+- **`FIX-M257x-iter142-value-change-articles` (NEW)** — `value_change_guard` treated a one-token
+  **article** change (`the` → `that`) as a corrected *value*, and flagged a site that shares only the
+  house idiom *"a pin is a pin, a branch name is not"*. Measured false; resolved here by keeping the
+  article rather than by editing prose that was never wrong. **An article is not a value** — the guard
+  should not gate on a change confined to function words.
 - **`FIX-M257x-iter142-path-arm-window` (NEW)** — the path arm's *"marker must be within 40 characters
   after the pin"* is a **tuned constant on a five-site denominator**. It scores 6/6 there and the
   alternative scored 1/5, but that is a fit, not a derivation. Derive it or publish it as a disclosed

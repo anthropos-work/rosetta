@@ -91,3 +91,26 @@ Two rules follow, and they are cheap:
 This is the same shape as `D-M257x-140-2` (*a class is censusable iff its subject carries its own head*)
 one level up: **a class is censused iff the predicate's population and the class's population are the
 same set — and that equality is an assumption until something outside the predicate tests it.**
+
+
+## `D-M257x-142-7` — an article is not a value; disclose a false RED, never obey it
+
+`value_change_guard` went RED claiming `storage.md:29` still published a value this commit corrected in
+`skillpath.md`. The "value": **`the` → `that`**. The collision: both docs carry the house idiom *"a pin
+is a pin, a branch name is not"*, and this iter's rewording changed the article that follows it in one
+of them.
+
+Measured before acting, which is the point:
+
+* `rg "CLAUDE\.md (line|anchor) (was|stood)"` returns **exactly two** sites, `backend.md` and
+  `skillpath.md`, and **both already carry the repaired form**. There is no third twin.
+* `storage.md:29` makes a different point entirely — that a **sha is a pin and a branch label is not**,
+  about `origin/main` — and carries no CLAUDE.md-line claim to correct.
+
+**The tempting fix was to edit `storage.md` so the guard would go quiet. That would have been
+vandalism**: changing correct prose to satisfy an instrument is the failure mode this whole fence family
+exists to prevent, one level up. The actual fix was at source — keep the article in this iter's own new
+wording, which says the same thing and removes the collision.
+
+Routed forward as `FIX-M257x-iter142-value-change-articles`: a change confined to **function words**
+should not register as a value change. Until then the behaviour is disclosed rather than assumed benign.
