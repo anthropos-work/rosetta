@@ -2402,6 +2402,38 @@ defect, it was arguing for it.*
       matching the bare token would go RED on exactly the right code. *Executable content only — a
       comment may name a dead endpoint; a command may not.*
 
+69. **A token census finds a value that is WRONG; it can never find one that is ABSENT — and when a
+    repair's own write-up names a sibling that lagged, the repair is not finished until a fence spans
+    BOTH siblings.** *(M257x iter-147)* Two halves of one iter, and they compound.
+
+    **The reach limit.** Rule 68(d) censuses a retired fact by grepping its token. That is exhaustive
+    over *wrong* values and structurally blind to *missing* ones. iter-147's defect was an **empty**
+    compose profile — `docker compose up -d` with no `--profile` selects only the services declaring
+    no `profiles:` key (here: postgresql, redis, sentinel), **exits 0**, and the stack looks alive
+    with the application absent. There is no string to search for; the defect presents as
+    `--profiles ` followed immediately by the next flag. **So invert the search: enumerate what the
+    tooling ANNOUNCES or CHOOSES and grade each against the platform**, rather than hunting a
+    known-dead token across all files. Denominator, stated: **7** profile-selecting compose sites,
+    **5** already deriving, **2** defective — and the 2 were the two nothing exercises, because every
+    documented invocation passes the flag explicitly (`D-M257x-146-2` again).
+
+    **The twin-lag half, which is the expensive one.** This exact defect was repaired three times
+    before iter-147: iter-55 (demo teardown + injected-gen), iter-85 (both `dev-stack` verbs). And
+    **iter-85's own comment names the lag it was closing** — *"gen_injected_override.py derived this
+    at M257x iter-55 for the demo path; the dev path kept the literal for four more releases"* —
+    while leaving the demo path's other two verbs untouched for another **62 iters**. An observation
+    about a twin is not a fence over it. When a repair's rationale says *"the sibling has had this
+    since X"*, the sibling set is already enumerated: **write the fence over the set, in that
+    commit.** iter-147's fence asserts BOTH entry points derive on BOTH their verbs, and names which
+    side drifted — rule 68's lesson, applied at the moment the twin is first noticed rather than at
+    the moment it next breaks.
+
+    **Corollary for a defaults contract.** `demo-up-defaults.md` promises *every knob with its real
+    default*. The `--profile` row had **no default column entry at all**, and the omission read as
+    "there is nothing to say" rather than "the default is none" — which is what hid this for four
+    releases inside the one document written to prevent exactly that. **An omitted default is a
+    claim, not a gap.**
+
 ---
 
 ## 6. Classification — the map
