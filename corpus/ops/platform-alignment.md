@@ -2596,6 +2596,25 @@ defect, it was arguing for it.*
     for this class. Compile the pattern once with the flags it needs and reuse it; care is not the
     defence, a shared compiled constant is.
 
+74. **A FALSE RED WEARING AN OPEN ROUTE'S SIGNATURE IS A DECOY — grade the red before you act on the
+    route.** M257x iter-169. `test_m255_mutation_battery` was found **RED at HEAD**, and its failure mode —
+    a BASELINE RED with no attributable test — is the exact published signature of
+    `FIX-M257x-iter111-staged-battery-dependency-is-underived`, the class whose **last open member was that
+    very battery**. Every prior occurrence of that class had been closed by appending one filename to a
+    stage list, so the available move was obvious, cheap, and **would have been wrong**: the red came from
+    `test_buildbench`'s sampler regression test asserting `callable(Thread._stop)`, and **CPython 3.14
+    removed `Thread._stop`**. The subject was innocent, the fence was rotted, and the open route was a
+    coincidence of symptom. **A route predicts a cause; it does not certify one.** Reproduce the failure
+    *outside* the staged tree first — one command here, and it separated the two immediately (the same
+    test failed in place, so staging was never implicated).
+
+    **Corollary — the repair pins the PROPERTY, and the anti-vacuity control is what proves it.** The
+    replacement asserted "no name `threading.Thread` occupies", computed rather than listed (rule 70/71).
+    Its first form compared `set(vars(sub)) - set(vars(bare))` and the control caught it **in the same
+    minute**: `_target` is set by `Thread.__init__` itself, so the subtraction deleted exactly the
+    collisions worth catching, and a deliberately-shadowing subclass passed. Ownership is about **who
+    assigned**, not who ends up in `__dict__`. A control that only ever confirms is not a control.
+
 ---
 
 ## 6. Classification — the map
@@ -3754,6 +3773,37 @@ feeds a RATCHET — filtering post-capture sites out of a ratchet's input change
 counts and could mask a real induced regression, the one thing it exists to catch. Measure it,
 disclose the exposure, route it. iter-158's rule turned on your own repair: **a pattern that fits
 three members is a hypothesis about the fourth, not a plan for it.**
+
+### Closing a class means fencing its POPULATION, not its last member (M257x iter-169)
+
+`FIX-M257x-iter111-staged-battery-dependency-is-underived` was opened at iter-111 with its own fix stated
+verbatim, then recurred at iter-121, iter-166 and iter-168 — **five occurrences, each closed by appending
+one filename to the list the route was about.** iter-168 derived five of the six known stage sets and routed
+the sixth. iter-169 closed the sixth and found that **that still would not have closed the class**: nothing
+prevented member seven from arriving hand-listed, and the record says member seven is not hypothetical.
+
+**The deliverable is a fence over the population, and the population is derived by property.** A mutation
+battery is *a test module binding a module-level MUTANT registry* — not `*mutation_battery*.py`, which is
+the glob rule 73 forbids. Under that predicate the population is **seven**, and the seventh is **exempt with
+a proof rather than a sentence**: `test_m220_mutation_battery` mutates one subject into a gitignored sibling
+beside the real tree and copies no file set, which the fence re-establishes on every run. An exemption that
+is only asserted is a hand-list with better manners.
+
+Three things fell out of doing it, and each is the general lesson:
+
+* **The sixth occurrence was already live and symptomless.** Deriving m255's stage set returned one file the
+  hand-list did not carry — `fence_provenance.py` — imported inside `main()`, which a suite run never
+  reaches. **A latent registry defect is not an averted one**; it is the same defect waiting for a caller.
+* **Over-approximate on purpose, and assert that you do.** The derivation follows function-scope imports
+  exactly like module-scope ones. Under-staging reports a BASELINE RED with no attributable test;
+  over-staging costs one `shutil.copy2`. The asymmetry is the design, so a permanent test states it —
+  otherwise someone "fixes" the imprecision and re-opens the class.
+* **The widening is a resolution change, not a bigger haystack.** Cross-section staging works by resolving
+  each import against **the importing file's own directory** — what the interpreter does — then falling back
+  to the root-relative conventions. Proved a no-op on the five already-migrated batteries by measuring their
+  derived sets before and after, per rule 73's widen-only-when-the-verdict-is-unchanged corollary. And what
+  a derivation must **refuse**: a repo file that would shadow a stdlib module inside the staged tree is an
+  error, never a copy — that is a staged-only divergence, the exact class the helper exists to end.
 
 ---
 
