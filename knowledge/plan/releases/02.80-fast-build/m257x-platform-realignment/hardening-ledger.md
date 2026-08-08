@@ -2576,3 +2576,254 @@ the pass, not the milestone:
   a 20-minute run *watchable*, and watchable is not *watched*.
 
 Guard family re-run after the corpus edit: 22 members, **18 GREEN · 0 RED**, unchanged.
+
+## Pass 30 — 2026-08-08 — incremental
+
+**Iters hardened this pass:** iter-132 … iter-142 (11 closed iters; of them only **iter-132** and
+**iter-142** touched executable code — `unreadable_repo_claim_guard.py` and the net-new
+`retracted_pin_guard.py`. iters 133–141 are corpus markdown, so dimensions 2/3/5/6 have no surface
+there and the carve-out applies.)
+**Tiks covered since prior pass:** 11
+**Scope boundary:** rext `6ad8866` (pass 29's terminating commit) → `f493615`. Exactly **5 files**
+changed in that span, all in `stack-core` — which is *itself* a measurement, and it is the one that
+made the demo-stack / stack-verify triage decidable (below).
+
+### THE OWED WHOLE-SUITE RUN — and "whole suite" has meant ONE SECTION OF FIVE
+
+iter-142 closed with `FIX-M257x-iter142-whole-suite-owed`. Taken here, on an otherwise-idle host,
+**before any edit** (the pass then did read-only analysis for 35 minutes rather than contaminate it):
+
+| section | result |
+|---|---|
+| `stack-core` | **1 failed · 1229 passed** (23:34) |
+| `demo-stack` | 9 failed · 1038 passed · 11 skipped (3:37) |
+| `dev-stack` | 151 passed (1:38) |
+| `stack-injection` | 335 passed (0:07) |
+| `stack-verify` | 12 failed · 225 passed (6:04) |
+| **total** | **2,978 passed · 22 failed · 11 skipped** |
+
+**stack-core's single failure is the standing, documented `test_claim_twin_guard_iter48_answer_key::test_02`.**
+So iters 132–142 introduced **no RED** — pass 29's two REDs stayed closed.
+
+**The finding is the other 21.** Every prior "whole-suite" number in this ledger — including pass 29's
+*"2 failed · 1202 passed"* — is **`stack-core` alone**: one section of five, 1,230 of 2,989 tests. The
+milestone that exists to catch denominators stated a denominator that omitted **59 %** of its own
+suite. The 21 failures live in sections nothing in this milestone has ever run.
+
+**They are provably not ours.** `git diff --name-only 6ad8866..HEAD` returns 5 files, all `stack-core`;
+`git log 6ad8866..HEAD -- demo-stack/` is empty. The failures are live-clone / live-container
+assertions (demopatch sha pins against the mutable `stack-demo` working clones; `pg_isready` against a
+running container) on a box with a `demo-1` stack up. **Pre-existing, environment-coupled, and out of
+this pass's iter-diff scope** — routed, not fixed, as `FIX-M257x-h30-nonstackcore-suite`.
+
+### Defects surfaced + fixed inline — 3, all in iter-142's net-new fence
+
+**1. The census was LINE-scoped, and this corpus HARD-WRAPS — 10 live class members were never in the
+denominator.** (`ccfd575`) iter-142 published *"50 live instances … the class stands at **0** and the
+fence holds it there."* The 0 is real over the population it enumerated; that population excluded
+every retraction clause straddling a soft line break, and at ~100 columns that is a large share of
+them. Joining each line to the one above surfaces **10 more**, **hand-read 8 true / 2 false** (the two
+falses are the same shape as iter-142's own two — a marker governing something other than the pin).
+Every one still live *after* the repair that reported zero.
+
+**The family had already learned this three times, and the document already said it in general form.**
+`platform_predicate_guard._pin_window` has joined `line[i-1] + line[i]` since **iter-63** (and learned
+the table-row exclusion there); `_NEGATED` needed the same widening at **iter-68**; a third predicate
+records *"line-scoped it reached only 2 of the 4 — two of the live sites wrap"*; and **§7 rule 4 of
+`platform-alignment.md` states it outright — *"the paragraph is the unit of publication."*** The
+newest fence in the family was written after all four and shipped line-scoped anyway. The table-row
+exclusion was re-derived here independently and landed exactly where iter-63 put it.
+
+**2. The disclosed tuned constant was LOAD-BEARING, and the comment beside it said it was not.**
+(`ccfd575`) `PATH_TIER_A_REACH`'s comment promised *"the path arm is SURVEY, never a gate — see
+`main()`."* `main()` returned 1 on any finding at all, so a window fitted to **five sites** decided the
+verdict while the code beside it denied it. **Not one of the 21 tests touched `main()`** — every one
+drove `run()` — which is exactly how a verdict contract stays false in writing for a whole iter.
+`Finding.gating` now implements the promise: the 44/44 bare single-line arm sets the exit code, the
+path and wrapped arms print in full under a SURVEY heading. **Detection unchanged; only belief
+narrowed.**
+
+**3. A docstring asserting an exclusion the code never had.** (`ccfd575`) *"Struck-through /
+code-fenced text is not prose"* — the fenced half is real, the struck-through half was never written.
+Measured **0** sites corpus-wide, so it cost nothing; recorded because it is this milestone's **fourth**
+catch of *comment asserts a guard the code does not have*, and corrected rather than quietly
+implemented, with `DocstringAccuracy` pinning the real behaviour.
+
+**Corpus side (`95983fd`):** rule 63(c‴) now says which population its 0 is over, and **§5 gains
+rule 64** — *a fence over wrapped prose must state its line reach*, with the counter-half (the lesson
+is not "always join"; the reach is a design parameter that must be CHOSEN AND STATED) and the reason
+it recurred: **the remedy existed only as source comments inside one guard**, so nothing a new fence's
+author reads carried it. *A defect class solved in code but not in the rulebook is unsolved.*
+
+**Tests:** 21 → 45 on `retracted_pin_guard` (+24) — the whole `main()` verdict surface, the wrapped
+arm's finds and its four must-not-join boundaries, the two measured falses as named regressions
+asserting they can never reach the VERDICT, a meta-mutation proving the join can be switched off, and
+a **structural** anti-vacuity floor (`joins_evaluated`, measured 1,451) that repairing prose cannot
+drive to zero — deliberately not a finding-count floor, which is the ratchet-against-its-own-repair
+defect iter-132 fixed elsewhere.
+
+**Routed forward:** `FIX-M257x-h30-crossline-repair` — the 8 true sites across 6 files. Editorial prose
+judgement in six documents is an iter's work, not a harden inline fix (Fate 3).
+
+**Stop condition: continue-to-next-pass** — three first-order defects in one fence; the dimension scan
+was nowhere near empty, and the obvious next question (how many sibling fences share the hole) was
+unanswered.
+
+## Pass 31 — 2026-08-08 — incremental
+
+**Scope:** the rule-64 family sweep, plus the self-correction it forced.
+
+### The sweep — all 22 guards classified by scanning unit
+
+`unreadable_repo_claim_guard` already works in blank-line-delimited **paragraphs** and is immune.
+`platform_predicate_guard` has joined since iter-63. The rest either do not associate two things
+across prose or do so within a single token. **One real second instance: `clone_drift_guard`** — its
+D2 rule wanted the `go.mod` citation and the module pin on **one line**, while the `staging-sync.md`
+colony-requires sentence wraps between them. The site fell through a `continue` **silently**, three
+lines below a comment reading *"Named, not silently dropped."* Fixing it moves that guard **3 → 4
+graded sites**. (`0f446cf`)
+
+**`prose_reach.py` is the fix to the fourth-encounter problem itself** — `continues_paragraph()` /
+`join_prev()` as ONE unit with both consumers asserted (`SingleSource`) to hold the *same object*
+rather than two copies that agree today, every iter-63 exclusion carried as a named test, and
+deliberately not named `*_guard.py` so the family's derived registry excludes it by construction
+rather than by a maintained exclusion list.
+
+### ⚠️ THE SELF-CORRECTION — 4 of pass 31's 5 findings were PHANTOMS of pass 31's own bug
+
+(`0a4fe0e`, corpus `9e5b207`.) The first cut reported four *further* ref-pinned sites and a relabelled
+fifth. **All five were manufactured by the change.** The join fired whenever the current line lacked a
+citation — including when it carried **no module pin at all**, including when it was **blank** — so a
+citation was glued onto the empty line beneath it and reported as a site at a coordinate holding
+nothing. Four of those, in four different documents, each with a plausible ref-pin reason attached.
+They were written into a commit message *and* into rule 64 before anything questioned them.
+
+**What caught it could not have been this guard.** Its mutation controls fired correctly and its own
+tests passed — the code did exactly what it was told. **`anchor_construct_guard` caught it**, by
+resolving two of the published coordinates and finding blank lines. A fence on a *different axis*
+catching a fence-widening — the same shape as `repair_leak_guard` catching iter-142's path-arm gap,
+and the argument for running the family rather than the change's own scoped suite.
+
+**Corrected delta: exactly ONE site** (graded 3 → 4); unmeasured unchanged at 14. Two rules fall out,
+both now in rule 64 and in the source:
+
+  * `continues_paragraph` answers whether **PREV** continues; only the **caller** knows whether the
+    current line has anything to continue INTO. **A widened reach must not invent subjects.**
+  * **A measurement taken with a just-changed instrument is a claim about the instrument until
+    something independent confirms it.** The phantoms had file names, line numbers and a mechanism.
+    Nothing inside the changed guard could have told them from real findings.
+
+Every docstring claiming the ref-pin-on-the-citation-line case was *measured* is corrected to say it
+is guarded **prospectively** by a synthetic test — *"we handled a case"* and *"we found the case"* are
+different claims and only one was earned.
+
+**Tests:** +20 (14 `prose_reach`, 6 `clone_drift`), then +1 named regression for the phantom bug
+(`test_a_join_never_fires_on_a_line_with_nothing_to_attribute`).
+
+**Stop condition: continue-to-next-pass** — the in-scope iter-132 surface had still not been attacked
+directly.
+
+## Pass 32 — 2026-08-08 — incremental
+
+**Scope:** iter-132's own change, attacked directly; then the gaps this session created.
+
+### iter-132's `unreadable_repo_claim_guard` change HELD under every angle
+
+The three-bucket tally (`hedged` / `mixed` / `measured`), the re-cut anti-vacuity floor and the
+print order were all attacked and none moved:
+
+* **The buckets are disclosed, not guessed.** `mixed = marked AND measured` is a conjunction of two
+  whole-paragraph predicates — the shape §5 rule 58 warns about — but it is *reported as its own
+  bucket with a `KNOWN_WEAKNESS` line saying the guard cannot tell a quoted retraction from a live
+  hedge*, which is the sanctioned disposition (`D-M257x-121-4`: when a distinction is not mechanical,
+  disclose it in the instrument rather than guess it). Not a defect.
+* **The floor spans all three buckets** (`hedged + mixed + measured >= 22`, actual 27), so a
+  legitimate repair that retires a hedge cannot force a re-cut — the *ratchet-arguing-against-its-own-repair*
+  defect iter-132 fixed. Correctly generalised.
+* **The NOTE is gated on `measured and hedged`, NOT nested under `if mixed:`** — which its diff hunk's
+  indentation makes it look like it is. Read the file, not the hunk. Verdict prints last, per
+  `guard_family.run_one` reporting `lines[-1]`. Correct.
+* **§5 rule 64 does not reach it**: it already works in blank-line-delimited paragraphs.
+
+**No finding.** The first empty in-scope dimension scan in five harden sessions.
+
+### What pass 32 DID find is in code THIS SESSION wrote (`7d986f6`)
+
+Pass 30 split the gate from the survey and added `gating_findings` / `survey_findings` / the wrapped
+census keys to `--json` — **with no test whatsoever**. That is the *identical* omission that let the
+text-mode contract be false in writing for a whole iter: 21 tests, all against `run()`, none against a
+verdict path. A harden pass reproducing the defect it just fixed, one layer over.
+
+Six tests. The one that matters is `test_a_survey_only_run_is_exit_0_with_a_NON_EMPTY_findings_list`
+— **findings present, verdict green**. A consumer reading `findings` as the gate would call that run
+RED while the exit code says otherwise, and nothing before now would have caught the disagreement.
+Plus a partition assert (the halves sum to `findings` — no double-count, no loss), the arms named in
+the document rather than only in the source, and `wrapped` on every finding so a survey hit is
+attributable to the arm that produced it.
+
+### THE MEASUREMENTS — counts, not wall-time (§5 rule 51's timing leg is unusable on this host)
+
+**Post-change `stack-core` whole suite:**
+
+```
+1 failed · 1280 passed  in  1275.99 s (0:21:15)
+```
+
+versus the pre-change baseline of **1 failed · 1229 passed** — **+51 tests, the same single failure**,
+the standing documented `test_claim_twin_guard_iter48_answer_key::test_02`. **No cross-test breakage
+from four changed source files.**
+
+⚠️ **Disclosed confound, and its resolution.** A ledger append landed ~1 minute into that run, so
+tests reading `knowledge/plan/**` saw a mixed tree — a confounded measurement by this milestone's own
+standard. Resolved rather than waved past: the ten `knowledge/plan`-reading test files were re-run on
+a **fully stable tree** and reproduce **1 failed · 162 passed** — the same standing failure, nothing
+else. The whole-suite number above stands for the surfaces it is quoted for.
+
+**Flake gate:** 3 consecutive clean runs, **98 passed** each, across all three touched test files.
+**Guard family:** 23 members — **17 GREEN · 0 RED** · 6 not-run (commit-/input-scoped, needing
+`--range`/`--ledger`/`--platform`). Still not a whole-family green, and the runner's own summary says
+so.
+
+### Session totals (passes 30–32)
+
+**Tests added: +51** — `retracted_pin_guard` 21 → 51, `prose_reach` 0 → 14 (net-new), `clone_drift_guard`
+26 → 33.
+**Bugs surfaced + fixed inline: 5** — `ccfd575` (×3: the line-scoped census, the load-bearing "survey"
+constant, the unimplemented docstring exclusion), `0f446cf` (clone_drift's silently-dropped wrapped
+sites), `0a4fe0e` (the phantom-site bug this session introduced and retracted).
+**Flakes stabilized:** none found; gate 3/3 clean.
+**Knowledge backfill:** `95983fd` + `9e5b207` — rule 63(c‴) corrected to state its population, **§5
+rule 64** net-new with the sweep result, the counter-half, and the two sub-rules the self-correction
+produced.
+**Routed forward:** `FIX-M257x-h30-crossline-repair` (8 true wrapped sites, 6 files);
+`FIX-M257x-h30-nonstackcore-suite` (21 pre-existing failures in demo-stack + stack-verify).
+
+**Stop condition: cap reached without stabilization** — the 3-pass incremental cap fired. Coverage
+delta is not under 2 % (a previously-0 %-covered verdict path went to six tests), so the mechanical
+condition is not met.
+
+### The cap has now fired without stabilizing FIVE consecutive times (22, 25, 26, 29, 32) — but the STREAM changed, and that is the finding
+
+Passes 22/25/26/29 each found first-order defects in **shipped** code and kept finding them to the
+last pass. This session did too — in passes 30 and 31. **Pass 32 did not.** The in-scope iter surface
+(iter-132's guard, iter-142's fence as repaired) came up **empty** for the first time; the only gap
+pass 32 found was one *pass 30 had created three hours earlier*.
+
+That is a different failure mode from "the iters need rework", and it names the real bottleneck:
+**this session's dominant defect source was the harden pass itself.** Two of the five bugs
+(`0a4fe0e`'s phantom sites, `7d986f6`'s untested verdict path) were introduced by passes 30 and 31,
+and both are the *same shape as the defect being fixed* — a widened reach that invented subjects while
+fixing a reach that missed them; an untested verdict path added while fixing an untested verdict path.
+
+**The transferable rule is already booked as rule 64's second sub-rule** — *a measurement taken with a
+just-changed instrument is a claim about the instrument until something independent confirms it* — and
+the mechanism that saved both was **another fence on a different axis** (`anchor_construct_guard`
+resolving published coordinates to blank lines), not the changed guard's own controls, which passed
+throughout.
+
+**So the recommendation is unchanged from pass 29 and now better evidenced: not a fourth pass.** Pass
+29 asked that an iter's close run the whole suite, or that the milestone say out loud that it does
+not. This session adds the sharper half: **"the whole suite" in this ledger has always meant
+`stack-core` alone — one section of five, 1,280 of 3,040 tests.** 21 failures sit in sections no
+harden pass or iter close has ever executed, and they were invisible for the whole milestone. Deciding
+what "the suite" means is a scope call for the milestone, not something a fourth harden pass can fix.
