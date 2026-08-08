@@ -3417,6 +3417,46 @@ will not look is a precondition that gets rediscovered.
   runs have been discarded as confounded for exactly that.
 * **"The whole suite" must name its denominator** — see `§5` rule 68. There are five
   `rosetta-extensions` sections; running one of them is a measurement of one of them.
+* **The working tree contains EXHAUST, and some of it is byte-identical to defects already repaired**
+  (M257x iter-149). The M220 mutation battery stages mutated copies of its subjects **beside** the real
+  ones (`.m220-mutant-*`, gitignored) because those scripts resolve their siblings from `$HERE` and cannot
+  run from `/tmp`; `tearDown` removes them, an interrupted run's survive. iter-149 found **33 of them,
+  oldest four days**, each a verbatim copy of the emitter line iter-146 had repaired — **66 % of that
+  iter's raw census signal**. Two consequences, both general: **(a)** establish what in the tree is a
+  measurement subject and what is exhaust *before* reading any repo-wide count — iter-148's *state the
+  substrate before booking a failure*, in its stronger form; **(b)** a harness that stages copies in the
+  source tree owes a **self-healing sweep**, age-gated so it cannot delete a live sibling run's staging.
+
+### A census that returns ZERO must prove its instrument (M257x iter-149)
+
+A fence built on a clean reading is unfalsifiable from the tree alone: an arm that matches nothing is
+indistinguishable from an arm over content that contains nothing. iter-149 widened the retired-service
+emitter fence from one hard-coded port to a 12-name × 3-arm grid and measured **0** defects, so neither
+the container arm nor the address arm had a single real occurrence to demonstrate it worked.
+
+**Two independent proofs, both required before a zero is published:**
+
+1. **A real answer key.** Run the fence against content from *before* the repair it generalises — here the
+   pre-iter-146 `dev-stack` at `1a44b97^`, which returns the original defect line, against a current file
+   that returns nothing. This is `§5` rule 21's perishability clause: the fixture is spent once the
+   repair is old enough that nobody remembers what it looked like.
+2. **Per arm, on synthetic content written to trip it.** Every arm with no real occurrence gets one.
+   An arm proven only by a green tree is decorative, and the fence reads wider than it is.
+
+And the sibling rule for the subject set: **bind it to a set that is already fenced, never re-declare it.**
+iter-149's fence imports `claim_census_guard.ARCHIVED_SERVICE_NAMES` — the row set of the migration map,
+itself fenced against the platform's `repos.yml` in both directions — so a service entering or leaving the
+map reaches the fence with nobody re-typing anything. A hand-maintained thirteenth list is `§2`'s tuple
+defect wearing a different hat, and this milestone has now found it in a bring-up script (iter-01), a
+probe registry (iter-148), a skills enumeration (iter-129) and a guard's own data (iter-149).
+
+**Corollary, from that last one: a list whose comment claims it is DERIVED, and which is not, will drift.**
+`claim_census_guard.REXT_SECTION_NAMES` said *"derived from the monorepo's own layout"* and was missing
+`stack-secrets` — 10 declared against 11 on disk, so every claim naming that section resolved to no known
+artifact and left the census silently. When the module genuinely cannot derive (no repo-root notion, and
+imported from copies whose layout differs), the repair is **not** to make it derive. It is to fix the
+list, say in the comment that it is declared **and why**, and move the derivation into a test that
+compares the two in both directions — **fence the property the comment asserted.**
 
 ### Iter-type refinement — the 3-no-prog tok-trigger reads UNMEASURED as UNMEASURED (M257x iter-108)
 
