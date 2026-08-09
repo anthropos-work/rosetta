@@ -4858,3 +4858,34 @@ member that is not marked, both mean the list no longer describes the exclusion.
 one — a cited file under a pruned directory is unfindable, which grades as unresolvable. Measured over
 `corpus/**.md` + `CLAUDE.md`: of **2,093** citation-shaped path tokens, exactly **1** crosses a pruned
 name, and it is a wildcard describing build output. Latent, and now sized rather than feared.
+
+### A rule this repo already wrote down can be broken elsewhere in it, and nothing looks (M257x iter-189)
+
+`story_org_count_guard.py:125` carries the rule in bold, with its rationale: *"an exclusion that can
+swallow the whole repo. **Match components; never substrings.**"* Sixty lines from a docstring that opens
+*"**Same derivation**, read from the object store instead of the checkout"*,
+`platform_predicate_guard`'s two readers of one population excluded differently — `"vendor" in
+path.parts` in one, `"vendor/" in rel` in the other. `"cloud-vendor/x.go"` contains `"vendor/"`.
+
+**A stated-but-unfenced rule is a comment.** The corpus and the tooling have both learned this about
+*prose vs guards* (`§8`, iter-43); the same thing is true of rules stated in one module's comments and
+observed nowhere else. If a rule is worth writing in a docstring, the module that would break it is the
+one that needs the arm.
+
+**And the parity corollary, which is the more portable half.** The natural repair is *"assert the two
+readers agree"* — and that assertion is satisfied by two identical zeros. Measured here: the readers
+**did** agree, at `{} == {}`, which is also exactly what a predicate that excludes everything produces.
+Mutation-proven: with the shared predicate hard-wired to exclude all paths, the agreement arm stays
+**green**. So a parity check needs an **expected set**, not just an equality — and the fixture that
+supplies it must carry both the paths that must be seen and the paths that must be excluded, or *"they
+agree"* proves only that nothing is ever excluded.
+
+Two further habits this iter is worth citing for:
+
+- **Repair by one predicate, not by two reconciled rules.** Asserting agreement between two literals
+  fences the symptom and leaves iter-177's shape — one population, two spellings — in place.
+- **Apply an exclusion to a REPO-RELATIVE path.** The component test here ran over the absolute path, so
+  the exclusion depended on where the clone happened to live: a checkout under any directory named
+  `vendor` would exclude every file and report a confident zero for the entire consumer side. Sized at 0
+  on this box, and one line to close — the same whole-population silent zero this milestone keeps
+  finding, in the guard that most loudly refuses one (*"None is not zero"*).
