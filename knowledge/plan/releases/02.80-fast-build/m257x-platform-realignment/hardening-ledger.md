@@ -3775,9 +3775,26 @@ in the scope your change derives.**
 ### The instrument caught its own author
 
 Pass 42's harden-origin-route fence went RED on its **first run against pass 42's own ledger entry** —
-the new `SURVEY-M257x-h42-…` route it had just created was invisible to the backlog fence and
-undispositioned. Now dispositioned. A fence that fires on the pass that wrote it is the cheapest
-possible evidence it is not vacuous.
+the new `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` route it had just created was
+invisible to the backlog fence and undispositioned. Now dispositioned. A fence that fires on the pass
+that wrote it is the cheapest possible evidence it is not vacuous.
+
+> **The id is spelled in full above on purpose.** It was first written abbreviated — the id cut short
+> after its `h42-` segment by a prose ellipsis — and an ellipsis is not an abbreviation to a reader that
+> enumerates: `route_disposition_guard.ID_RE` stops at the ellipsis and yields a **truncated id**, the
+> same producer iter-183 and iter-184 documented for line wraps, manufactured here by prose instead.
+> It cost a wrong count within the hour (next paragraph). Note this note does not reproduce the broken
+> token: quoting a malformed id to explain it re-emits it, which is iter-98's rule — *write the
+> retraction in the vocabulary the fence enumerates.*
+
+> **Count reconciliation — pass 42's table of `5` is a snapshot, not a standing fact.** Pass 42
+> measured **5** harden-origin routes *before its own entry existed*; that entry routed the 6th, so the
+> live figure is **6**. Both are correct at their moment and neither is correct without one. Recorded
+> because this pass then made the milestone's own signature error while checking it: a probe written
+> here with a **private** prefix regex — instead of the module's `HARDEN_ORIGIN_RE` — counted **7**, by
+> admitting the truncated fragment above. The module's own reader says 6. *A count about a population
+> is unreadable until it names the derivation that produced it* (iter-177), and a harden pass is not
+> exempt from its own rule.
 
 **Coverage delta on touched files:** 2 net-new arms (population-by-property; carve-out rot) + 2
 pre-existing REDs cleared. **Tests added:** `test_suite_census_population.py` +1 ·
@@ -3817,3 +3834,109 @@ inside a fence that goes RED if it is dropped.
 **Stop condition:** continue-to-next-pass — four more real defects, two of them RED **at HEAD** and
 unnoticed because the iters that caused them ran scoped suites excluding their graders. Coverage has not
 stabilized.
+
+---
+
+## Pass 44 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-177 … iter-186 (same batch; target: the whole-population claim
+itself, taken with the tree **frozen**)
+**Tiks covered since prior pass:** 10 (same batch as passes 42–43)
+**Runner named on every count** (`§5` rules 75/76): `/usr/bin/python3` **3.9.6** (pytest); the new arm
+additionally under `python3` **3.14.6**, `/usr/bin/python3` unittest, **and direct execution**.
+**Section scope:** **`stack-core` only** — this is the whole-*section* run, not a whole-*population*
+run. Ten sections and both non-Python toolchains were not run (iter-186's rule).
+
+### Finding — the FOURTH way a test file hides its tests (`cf0ba62`)
+
+`test_test_collection_fence.py` already fences three shapes: a `TestCase` below the `__main__` guard
+(statement order), a module that does not import at all, and iter-182's needs-a-runner shape. The
+fourth is the quietest, and it was **inside the fence's own population the whole time**.
+
+A module whose tests are all module-level `def test_*` functions defines nothing `unittest` can
+collect. The stdlib runner then reports:
+
+```
+Ran 0 tests in 0.000s
+OK
+```
+
+**A pass that executed nothing** — this milestone's defect shape verbatim, one layer below where the
+file was already looking.
+
+Measured statically over the fence's own population (no imports; the section run was live):
+
+| section | test modules | `TestCase` tests | module-level fns |
+|---|---|---|---|
+| stack-core | 67 | 1,530 | **25** |
+| demo-stack | 35 | 959 | 0 |
+| stack-injection | 7 | 311 | 0 |
+| stack-verify | 5 | 239 | 0 |
+| dev-stack | 5 | 118 | 0 |
+| **total** | **119** | **3,157** | **25** |
+
+**Exactly one module** has the shape — `stack-core/tests/test_claim_census_guard.py`, 25 tests —
+confirmed on all three runners: pytest 3.9.6 collects **25**; unittest 3.9.6 collects **0 and prints
+OK**; unittest 3.14.6 **cannot import it at all** (no pytest on that interpreter). One of those 25 is
+the `REXT_SECTION_NAMES` disk-drift fence iter-149 built, so it currently runs under **one** runner.
+
+The arm does not forbid the shape — it forbids the shape being **UNDECLARED**: iter-186's rule (*a
+correct exclusion is still a defect while it is silent*) applied to a **runner** instead of a language,
+fenced both ways so the declaration cannot rot. **Conversion of the one member is ROUTED, not taken** —
+iter-182 measured that the obvious translation silently takes a module from 16 collected to 12.
+
+### Two self-inflicted defects, both caught by this pass's own instruments
+
+* **A private regex, in the pass that published iter-177's rule.** A probe written here with an ad-hoc
+  prefix pattern — instead of the module's own `HARDEN_ORIGIN_RE` — counted **7** harden-origin routes.
+  The module's reader says **6**. The spurious member was a truncated id.
+* **The truncated id was manufactured by this ledger's own prose**: pass 43 abbreviated a route id with
+  an ellipsis, and `ID_RE` stops there. Both are corrected in place above, and the correction
+  deliberately does **not** reproduce the broken token (iter-98).
+
+Neither reached a commit. Both are recorded because the milestone's standing caution is that passes
+33–35 *"created two defects no control they wrote caught"* — these were caught, by controls written
+in this session, within minutes.
+
+**Coverage delta on touched files:** 3 net-new arms on a fence that had 3 shapes and now has 4; the
+`stack-core` section run moved **1,548 → 1,621 passed** across this batch (+73: iters 178–186 plus this
+session's 10 tests), **0 failed** both times.
+**Tests added:** `test_test_collection_fence.py` +3.
+**Bugs surfaced + fixed inline:** 1 (the undeclared unittest-invisible module) + the 2 self-inflicted
+above.
+**Flakes stabilized:** none. **Flake gate:** 3 consecutive runs of this session's new modules —
+**73 passed** ×3.
+
+**Suite results (counts, never wall-time; scope named):**
+
+| suite | runner | section scope | result |
+|---|---|---|---|
+| **whole section, tree FROZEN** | pytest 3.9.6 | **`stack-core` only** | **1,621 passed · 2 skipped · 0 failed** |
+| 9 touched + consuming modules (post-ledger-edit) | pytest 3.9.6 | `stack-core` | **168 passed · 0 failed** |
+| new arm | unittest 3.14.6 / 3.9.6 / direct exec | `stack-core` | **OK** ×3 |
+| RED-proof battery, mtime-mitigated | pytest 3.9.6 | `stack-core` | **5/5 RED**, baseline + restore green |
+| `guard_family` · `derived_count_guard` · `route_disposition_guard` | 3.9.6 | fence family · corpus · 3 milestones | **19 GREEN · 0 RED** · **OK, 42 sites** · **OK, 0 contradictions** |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60 + iter-186):** the ten non-`stack-core` sections
+and the **264 Go test files / 45 TypeScript specs** they carry. **1,621 is a section number, not a
+population number** — the exact conflation iter-186 was about, so it is not restated here.
+
+**Knowledge backfill:** none this pass; `§5` rule 77 (pass 42) is this batch's corpus contribution.
+
+**Routed forward (Fate 3), three open:**
+* `FIX-M257x-h36-labeled-prover-denominator` — unchanged, open, now dispositioned inside a fence.
+* `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` — unchanged, open.
+* `FIX-M257x-h44-claim-census-guard-is-single-runner` — **NEW.** Convert
+  `test_claim_census_guard.py`'s 25 pytest-style functions to `TestCase` so both runners collect them,
+  **carefully**: iter-182 measured that the obvious translation loses tests silently. Declared and
+  fenced meanwhile.
+
+**Stop condition:** **cap reached without stabilization** — three passes, **seven defects fixed inline
+and three routed**, and every pass found real defects in the previous iters' newest instruments.
+Coverage has not stabilized. The batch's shape is one sentence: *the instruments audit their subject
+and not themselves* — a backlog fence blind to the file harden passes route into, a partition that
+cannot see a misassignment, a registry fenced for overlap but not occurrence, two fences RED at HEAD
+because the iters that broke them ran suites excluding their graders, a runner-invisible module, and a
+toolchain that can hide a mutation from the proof of the fence that mutation is testing. Per the
+user's standing ruling this is **routed and NOT met with new machinery**; the **ninth**
+cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44).
