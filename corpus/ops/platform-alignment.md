@@ -4255,6 +4255,35 @@ and the registry tax is the thing §8 iter-179 and iter-178 both spent an iter a
 control against the **quiet** failure: here, a resolver that took only the first half of a pair-returning
 operand would not raise, it would report a plausible-looking disagreement.
 
+### A coverage question has no answer until it names its DENOMINATOR (M257x iter-181)
+
+§9 iter-114 already requires a *reach metric* to name its denominator. iter-181 is the same rule one step
+earlier: **the question itself carries a denominator, usually implicitly, and usually the wrong one.**
+
+The route asked how completely `stack-core/README.md` indexes **test modules**. Two readings:
+
+| denominator | reading | is it the claim? |
+|---|---|---|
+| all `tests/test_*.py` on disk | **10 of 63** | **no** |
+| mutation batteries | **6 of 7** | **yes** |
+
+The index's subject is the fence family and its batteries; the other 53 are per-guard *behaviour* suites
+that it deliberately does not list — it lists the guard. Answering on the question's own terms would have
+published an **84 % gap that does not exist**, in a corpus whose entire quarrel is with numbers whose
+denominators nobody stated. At the answerable denominator there was a real gap, and it had been invisible
+for 133 iters *because nobody had chosen a denominator to be short of*.
+
+> **The move is cheap and it is always the same: measure BOTH candidates, publish the refuted one by
+> name, then fence the one that can be answered.** A survey closed as *ill-posed-until-scoped* is a closed
+> survey; a survey answered at the wrong grain is a new false claim with a citation.
+
+**And keep the instrument you discarded.** iter-181's first resolve arm was scoped to `stack-core/` and
+reported a file "missing" that lives one section over and is cross-referenced in the README's own note. The
+narrow version is retained as a **mutation control** asserting that the cross-section reference is still
+what makes it wrong — so the day nothing is named outside the section, the control goes RED on purpose and
+the narrowing must be re-derived rather than silently adopted. **A fence scoped more narrowly than its
+subject manufactures findings** — the instrument-side form of `D-M257x-122-4`.
+
 ---
 
 ## 9. Cadence
