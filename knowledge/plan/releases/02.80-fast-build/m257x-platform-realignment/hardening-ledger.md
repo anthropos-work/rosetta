@@ -4180,3 +4180,89 @@ either share a consequence or declare why they do not* — is recorded here and 
 **Stop condition:** **continue-to-next-pass** — a second consecutive pass found a real defect of the
 same class in a different module of the same batch, so the class is confirmed repeating and the
 coverage delta has not settled. One pass remains before the incremental cap.
+
+## Pass 47 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-187 … iter-196 (same batch; dimension 2/5 — **boundary and input
+shape**, aimed at the three parsers this batch shipped)
+**Tiks covered since prior pass:** 10 (same batch as passes 45–46)
+**Runner named on every count** (`§5` rules 75/76): pytest **3.9.6**, unittest **3.9.6**, unittest
+**3.14.6**; the Go arm `go1.26.5 darwin/arm64`.
+**Section scope:** the Python figures are **`stack-core` only**; the Go figures are **all six Go
+sections**; TypeScript was not re-read.
+
+### The whole-section measurement, tree FROZEN
+
+**1,699 passed · 3 skipped · 0 failed** — pytest 3.9.6, `stack-core` only, Python only, 23m11s, taken
+with no edit in flight. Pass 44's comparable reading was **1,621 · 2 · 0**: **+78**, being iters
+187–196's own arms plus this session's **+10**. The third skip is this session's opt-in live Go arm.
+**1,699 is a SECTION number**, not a population number.
+
+### Finding — `2,714` counts test CASES, and it was published three times as test FUNCTIONS
+
+This batch's headline figure — iter-195's *"the first-ever reading"* — was labelled **test FUNCTIONS**
+at three sites, each contrasting it with iter-186's **264 FILES** under the heading *"Name the unit
+(`§5`, iter-177)"*. Measured this pass:
+
+| measurement | value | instrument |
+|---|---|---|
+| test **CASES** (what `go_census` tallies) | **2,714** | `go test -json`, `Test` field present |
+| top-level test functions | **2,204** | same run, `Test` name without `/` |
+| **subtests** | **510** (18.8 %) | same run, `Test` name with `/` |
+| `func Test…` declarations | **2,186** | static scan of 264 `*_test.go` |
+| `*_test.go` files | **264** | disk (agrees with iter-186 exactly) |
+
+`go test -json` puts a `Test` field on **subtest** events too, so the tally admits them. One population,
+three measurements, and the corpus published the largest under the name of the smallest — **the rule
+against unit errors, containing one, in the number it was written to protect.** A reader checking 2,714
+against a `func Test` grep would find 2,186 and conclude the count had rotted.
+
+**Graded fairly:** the parser was already careful in the direction that had been considered —
+`if ev.get("Test")` correctly excludes package-level `pass` events, which would have inflated the total
+by one per package. Subtests are the case nobody asked about, and the one the unit word is wrong for.
+
+Repair: `go_census` derives the split per section (`subtests`); `GO_FIRST_READING` carries
+`funcs` / `subtests` / `static_decls` so the three measurements can never again be quoted as one; the
+scope line and the `--go` TOTAL say **CASES** and print the split. Verified live — the tool now reports
+**2,714 = 2,204 + 510**, matching the independent measurement exactly.
+
+**Coverage delta on touched files:** `test_suite_census_population.py` **39 → 40** arms, plus two new
+assertions inside the live ratchet (a subtest floor and an anti-vacuity arm: zero subtests across six Go
+sections is a broken split, not a repo without table-driven tests). Across the three passes this module
+moved **30 → 40**.
+**Tests added:** +1 arm, +3 assertions.
+**Bugs surfaced + fixed inline:** 1.
+**Flakes stabilized:** none. **Flake gate:** 3 consecutive runs — **39 passed ×3**.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| **whole section, tree FROZEN** | pytest 3.9.6 | **`stack-core` only** | Python | **1,699 passed · 3 skipped · 0 failed** |
+| the changed module | unittest 3.9.6 / 3.14.6 | `stack-core` | Python | **40 passed · 1 skipped**, both |
+| live Go ratchet (`SUITE_CENSUS_GO_LIVE=1`) | `go1.26.5 darwin/arm64` | all 6 Go sections | **Go** | **40 passed · 0 skipped** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore green |
+| `derivation_registry` completeness | 3.9.6 | rext | Python | **0 unclassified** |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections;
+the **424 TypeScript tests**, still **ENUMERATED and never executed**.
+
+**Knowledge backfill:** none; the rule this pass contributes — *a unit is a claim, and the sentence that
+names the unit is not exempt from checking it* — is recorded here and in the commit body.
+
+**Routed forward (Fate 3), four open (unchanged this pass):**
+`SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` ·
+`FIX-M257x-h44-claim-census-guard-is-single-runner` ·
+`SURVEY-M257x-h45-printed-measurement-literals-uncensused` ·
+`SURVEY-M257x-h46-stale-substrate-direction-undeclared`.
+
+**Stop condition:** **cap reached without stabilization** — three passes, **four defects fixed inline**
+and four routed, and **every pass found a real defect in the previous iters' newest instruments**.
+Coverage has not stabilized. The batch's shape in one sentence: *the instruments were built to grade
+their subject's populations, and nobody graded the instruments' own **sizes**, **verdicts** or
+**units*** — a repo-wide arm that was an identity, a Go verdict fenced by nothing while the weaker
+TypeScript population was ratcheted twice, a prover that called its own recall unreadable and exited 0,
+a census that could disown its denominator and exit 0, and a headline figure carrying the wrong unit in
+the sentence that names units. Per the user's standing ruling this is **routed and NOT met with new
+machinery**; the **tenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41,
+44, 47).
