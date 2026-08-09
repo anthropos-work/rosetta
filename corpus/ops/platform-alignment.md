@@ -4821,3 +4821,40 @@ alone. A **superset** predicate passes while the collector sees nothing — the 
 prevent, re-entering through the spelling (`§5` r70/71). Hazard size was **measured before the change,
 not asserted**: 0 such files across all 11 sections, so latent, and one line to close by deriving the arm
 from the collector itself plus a control that the collector still reads the named glob constant.
+
+### A container-keyed exclusion has an environment-dependent SIZE and an environment-independent SHAPE (M257x iter-188)
+
+iter-187 left a selector rather than a hunch: *a registry keyed by a **container** whose justifying
+reason is a property of the container's **contents***. Run over the tooling repo's declared registries,
+its strongest hit was the prune list of the `os.walk` that builds the basename index **citations are
+resolved against** — twelve directory names, no reason on any of them, and no report of what they
+removed. A directory the walk never enters is a directory no citation can resolve into, so the list
+decides **reach**, not speed.
+
+Measured on the default run: **21,610 files indexed, 50,357 pruned — 70.0 %.** With the optional clone
+tree absent: **0 of 92**. Both are correct; neither is *the* number.
+
+**The rule, and it is the reason this is its own entry.** Such a registry has two properties and they
+must not share a treatment:
+
+- **SIZE is environment-dependent — derive it and PRINT it, never assert it.** An assertion over 70 %
+  would be vacuous on a bare checkout and wrong on a populated one. What a fence *can* prove about a
+  size is that the derivation is capable of returning non-zero (`§9`), and that its attribution
+  partitions the registry exactly — fired ∪ inert ∪ structurally-unreachable == the registry, pairwise
+  disjoint.
+- **SHAPE is environment-independent — assert it, in both directions.** Every member reasoned (`§5`
+  r8); the fast membership set **derived** from the reasoned one, never typed twice (iter-177); and the
+  registry must be the walk's *only* name-based rule, or the other rules are named too.
+
+**The finding that generalises past this one list: a registry can be silently subsumed by an adjacent
+unnamed rule.** The walk reads `d not in SKIP_DIRS and not d.startswith(".")`, so **five of the twelve
+members can never be the reason anything was pruned** — the registry was over-stating its own work, and
+a reader auditing "what do we exclude?" would have counted twelve. Two names did all the pruning; five
+more were inert. Keep the subsumed members (a future caller may prune without the adjacent rule) and
+**mark** them, then assert the marking both ways: a marked member that is not subsumed, or a subsumed
+member that is not marked, both mean the list no longer describes the exclusion.
+
+**And size the hazard before claiming one.** The failure mode here is a *false* defect, not a missed
+one — a cited file under a pruned directory is unfindable, which grades as unresolvable. Measured over
+`corpus/**.md` + `CLAUDE.md`: of **2,093** citation-shaped path tokens, exactly **1** crosses a pruned
+name, and it is a wildcard describing build output. Latent, and now sized rather than feared.
