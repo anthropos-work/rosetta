@@ -2960,6 +2960,77 @@ a form no line-scoped fence can read. **Write a checkable pin claim as `<module>
 and the ref is what makes a claim settleable, and putting them where the checker can see them is what makes
 it *checked*.
 
+### A seventh layer: the TOOLING's own declaration of the platform's topology (M257x iter-222)
+
+Layer 1 fences the corpus's **map** against `repos.yml`. Nothing fenced the **tooling's** copy of the same
+claim — and the tooling has one, load-bearing and shipped.
+
+`rosetta-extensions/demo-stack/clones.pin.json` is the **canonical clone pin**: `ensure-clones.sh` seeds it
+into every fresh `stack-demo/` workspace copy-if-absent (M246), and `DEMO_ADVANCE_CLONES=pinned` checks each
+clone out at the ref it names. It is the artifact a cold bring-up on a fresh box reads to decide **what
+topology to build** — i.e. the tooling's answer to *"which repos are still part of the platform?"*
+
+Measured at iter-222: the pin named **11** repos; `repos.yml` @ platform `origin/main` (`0c91421`) names
+**4** (`app`, `sentinel`, `next-web-app`, `studio-desk`), and with the two sanctioned extras that is **6**.
+**Five keys were phantom** — `cms`, `jobsimulation`, `storage`, `messenger`, `roadrunner` — every one of
+them a repo whose removal `repos.yml`'s own header states in the platform's words: *"Those repos are frozen
+legacy: they own no local schema, no compose service and no clone entry here."* The comment above the pin
+asserted *"jobsimulation stays standalone"*, which was already false when written.
+
+**And nothing read the file.** A `grep` for `clones.pin` across every `.py` in `rosetta-extensions` returned,
+apart from doc-comments, only `test_tooling.py` — which writes **synthetic** pins to exercise the advance
+behaviour. The real file's contents were asserted by nothing, in either repo.
+
+| layer | asserts | lives in |
+|---|---|---|
+| canonical clone pin ↔ `repos.yml`, both ways | (A) no pin key outside `repos.yml` + the two sanctioned extras; (B) no `repos.yml` repo the pin omits — `pinned` leaves an unpinned repo **untouched**, so a hole is silent; (C) no pin value is a moving branch, because a barrier pinned to a branch names a different tree every day | `stack-core/clone_pin_guard.py` (M257x iter-222), with `tests/test_clone_pin_guard.py` — 16 tests, a per-phantom mutation battery and four anti-vacuity controls |
+
+**The two design decisions worth carrying:**
+
+1. **The sanctioned-extra set is a REGISTRY, and its population is fenced, not its contents** (§8 iter-162).
+   Exactly two entries — `platform` (the repo that *contains* `repos.yml`, so it can never list itself) and
+   `ant-academy` (absent by design per v1.10b M49 #5, cloned explicitly by `ensure-clones.sh` phase (d2)).
+   Each carries the reason it sits outside the manifest, and a test asserts the set is those two. Growing it
+   silently is exactly how a phantom becomes sanctioned.
+
+2. **Freshness is deliberately NOT asserted.** The pin was 3-of-6 behind `origin/main` when the fence was
+   written (`app` 28, `next-web-app` 12, `ant-academy` 9) and that is **not** a defect the fence may decide:
+   the pin is M246's reproducible *barrier* — the topology gate clauses 1+2 were proven against — so
+   advancing it is a bring-up decision needing a re-proof, not a manifest edit. A fence that reddened on
+   deliberate staleness would red on its subject's whole purpose. What iter-222 *did* repair is the comment
+   that asserted the pin was *"the barrier's reproducible current-origin/main topology"*: a dated currency
+   claim in a comment names a **run** and gets read as a **property** (iter-208). `ensure-clones.sh` phase
+   (e) measures freshness per run, fetch-verified; read the number there, never a sentence.
+
+### A guard that reads `origin/<branch>` measures whatever the last FETCH left there (M257x iter-222)
+
+This one is not a layer. It is a precondition every layer above silently depends on, and iter-222 found it
+by accident — which is the point, because nothing was looking.
+
+`anchor_construct_guard` and `repair_postcondition` resolve corpus anchors **at the clone's
+`origin/main`**. On this box `stack-demo/app`'s `origin/main` pointed at `ad9f3c498` — *identical to the
+clone's own HEAD* — because nobody had fetched. Both guards were **green**. iter-222 ran a plain
+`git fetch origin` as part of an unrelated survey, `origin/main` moved to `3eaadae68` (**28** commits), and
+the same two guards went **RED with 9 anchors** across four corpus documents, with no corpus file changed
+and no guard edited.
+
+> **A remote-tracking ref is a CACHE, not a remote.** `origin/main` is a local file that says what the
+> remote looked like the last time somebody asked. A guard that resolves against it, on a box where nobody
+> fetches, is grading the corpus against *the corpus's own clone* — which is exactly the tautology
+> `clone_drift_guard`'s design section refuses, arriving through the back door.
+
+**Three consequences, all cheap:**
+
+1. **A guard whose reference is `origin/<branch>` must either fetch, or say in its verdict when that ref was
+   last updated.** A green with a stale reference is the *silent* form of §5 rule 46's over-claimed reach.
+   `guard_family --verify-remote` exists for exactly this and is **opt-in**; the reason it is opt-in
+   (offline-runnable) is good, and the cost of that trade had never been written down.
+2. **`git fetch` is a measurement, not a mutation.** It touches no tracked file. Running it before a fence
+   sweep is not a change to the tree under test — it is the difference between measuring the platform and
+   measuring a memory of it.
+3. **Grade the direction of a new RED.** A guard that reddens after a fetch has not regressed; it has
+   *stopped being blind*. The finding belongs to the corpus, dated to the ref that disclosed it.
+
 ### A sixth layer, on the OTHER inflow: the repair's own induction (M257x iter-107)
 
 The fifth layer watches the platform moving under us. This one watches **us moving things under ourselves**.

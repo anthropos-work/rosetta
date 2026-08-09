@@ -24,3 +24,26 @@ built. The repair is to make the freshness **derivable and dated** instead of **
 
 Routed forward as `ROUTE-M257x-222-pin-advance-needs-a-reproof` — the advance is legitimate work, and it
 is gate-clause-1 work (a cold bring-up at the newer topology), not manifest work.
+
+## D-M257x-222-3 — the fetch finding is a DISCLOSURE, not a regression
+
+`anchor_construct_guard` + `repair_postcondition` went RED after a `git fetch origin` in
+`stack-demo/app` moved `origin/main` from `ad9f3c498` (= the clone's own HEAD) to `3eaadae68`. No corpus
+file changed; no guard changed. **Grade the direction:** the guards stopped being blind. The 9 anchors are
+routed to iter-223, not repaired here, because the first question — is each site ref-pinned (`§5` rules
+41/44, in which case the guard is reading a ref-scoped claim at the wrong ref) or unpinned (corpus rot)? —
+is itself the iter.
+
+**Provenance of the 5 dropped pin keys**, preserved so the repair loses nothing:
+
+| repo | dropped sha |
+|---|---|
+| cms | `93e6aa354a96a4b5c9b52ead4dd4c27351bbb4a1` |
+| jobsimulation | `5d3003f9f133df9dd68acd21b3e336ae27824cd4` |
+| storage | `7696605425a42e41738dfa1fd7413b65eb785689` |
+| messenger | `d41029217828a5ac737920cac82f22ab363e82a6` |
+| roadrunner | `87d8d44382ef07a9f165869530cbac9e5e0a4332` |
+
+The workspace copy `stack-demo/clones.pin.json` is **left as found**: `ensure-clones.sh` never clobbers an
+operator's workspace pin, and it lives in a git-ignored ephemeral workspace. It is re-seeded from the
+canonical pin on any box that does not have one.

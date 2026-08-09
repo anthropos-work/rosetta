@@ -25,7 +25,7 @@ different things**, and conflating them is the first mistake to avoid.
 | Signal | Status | Evidence |
 |---|---|---|
 | **Metrics** | **NONE.** The platform exposes no `/metrics` endpoint and registers no Prometheus collectors | `promhttp` / `/metrics` / `prometheus` grep over `app` and `colony` `.go` → empty. `prometheus/client_golang` is `// indirect` at `app/go.mod:200`. Independently corroborated by the monitoring repo's own backlog: `product-monitoring/prometheus-scrape.yml:265` — *"profile import duration histogram — **needs `/metrics` in colony** (phase 2b)"* |
-| **Traces** | **Sentry-protocol only, 15 % sample. No OpenTelemetry** | `app/main.go:277` `colony.WithLoggingTracing(0.15, 0.15)` → `colony/logging.go:54-55`. `go.opentelemetry.io/otel` is `// indirect` at `app/go.mod:232` and imported by **zero** source files in either repo |
+| **Traces** | **Sentry-protocol only, 15 % sample. No OpenTelemetry** | `app/main.go:278` `colony.WithLoggingTracing(0.15, 0.15)` → `colony/logging.go:54-55`. `go.opentelemetry.io/otel` is `// indirect` at `app/go.mod:232` and imported by **zero** source files in either repo |
 | **Errors** | Sentry SDK, **production-only** | `app/main.go:273` `SentryDSN: os.Getenv("SENTRY_DSN")`; `colony/logging.go:47` early-returns unless `IsProduction()` or `FORCE_SENTRY` |
 | **Frontend errors** | `@sentry/nextjs` ^10.57.0 across web / hiring / integration / maintenance; `@sentry/react-native` on mobile | `next-web-app/apps/*/package.json`; `apps/web/sentry.{edge,server}.config.ts`, `instrumentation-client.ts` |
 | **Health** | `/_meta`, `/_meta/ready`, `/_asynq/` | `app/internal/meta/server.go:23-25` |

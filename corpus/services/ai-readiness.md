@@ -480,7 +480,7 @@ decision):**
   `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
   `ai_readiness_sims` config — and, **for an active cycle, the membership filter is `keepInCycleStep1`**
-  (call site `readiness.go:388`; **`func` at `:710`**): it keeps only members who **FINISHED step 1 inside
+  (call site `readiness.go:388`; **`func` at `:716`**): it keeps only members who **FINISHED step 1 inside
   the cycle window** (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers`
   is the **other** branch — the lifetime filter used when there is **no** active cycle (call site `:390`;
   **`func` at `:730`**). This passage named the wrong one of the two until M257x iter-52, and carried the
