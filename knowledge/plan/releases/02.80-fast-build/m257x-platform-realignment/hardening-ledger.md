@@ -3704,3 +3704,116 @@ evidence about the **code**; rule 77 says an unexplained mutation result is evid
 **Stop condition:** continue-to-next-pass — two real defects surfaced in the newest instruments, both
 fixed inline, plus a toolchain hazard that undermines the *method* the previous passes used. Coverage
 has not stabilized: no delta has been measured across two passes yet.
+
+---
+
+## Pass 43 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-177 … iter-186 (same batch; target: the population machinery iters
+185 and 186 shipped, and — the productive move — their **consumers** rather than only the modules they
+changed)
+**Tiks covered since prior pass:** 10 (same batch as pass 42)
+**Runner named on every count** (`§5` rules 75/76): `/usr/bin/python3` **3.9.6** (pytest); every changed
+module additionally under `python3` **3.14.6** and `/usr/bin/python3` unittest.
+**Section scope:** **`stack-core` only.** Ten sections and both Go/TS suites unrun; nothing here is a
+whole-population claim (iter-186's rule).
+
+### Finding 1 — a PARTITION cannot detect a MISASSIGNMENT (`961a774`)
+
+iter-186 fixed *"Go sections silently ABSENT from the stated denominator"*. The inverse was still open:
+a Go-only section silently **PRESENT in the Python denominator**. `LANGUAGE_EXCLUDED_SECTIONS` is keyed
+by **name**, so `derive_sections` collects anything not spelled in it.
+
+Measured, not argued: dropping a new Go-only section into the repo (a `go.mod` + one `*_test.go`) moves
+`SECTIONS` **5 → 6** and leaves **all six** population arms GREEN. The census then runs a Python runner
+over it, finds nothing, and folds a **silent zero** into a total this milestone quotes as a
+whole-population baseline.
+
+Structurally invisible to every arm iter-186 wrote, because **a misassignment is still a partition** —
+`len(SECTIONS) + len(EXCLUDED) == len(disk)` holds either way. `§5` r70/71: pinned to a **spelling**, not
+to the **property** that justifies it. New arm checks the assignment **by property** in the missing
+direction: excluded sections non-empty in their own language (existing) · collected sections non-empty
+in **Python** (new). iter-150's declared-partition/derived-completeness split preserved.
+
+### Finding 2 — the neighbouring registry had rotted, in a file that states the rule (`961a774`)
+
+`CITATION_EXTS` has a both-ways fence since iter-185, and the file says it outright: *"a registry rots in
+both directions or it is not fenced."* Its immediate neighbour `CITATION_NON_FILE_TAILS` was fenced for
+**overlap** and for **size**, never for **occurrence** — while its own comment claimed *"each is a live
+corpus token."*
+
+Measured over the same 93-file surface the sibling arms use: **4 of 9 never occur** — `org` 0, `work` 0,
+`internal` 0, `io` 0, against `anthropos` 16, `net` 10, `com` 4, `local` 2, `de` 1. (`internal` reads
+live only inside `backend.internal.anthropos:8083`, where the **tail** is `anthropos`.)
+
+The four are **dropped, not excused**: a dead carve-out is not inert — its only reachable effect is to
+**hide** a citation whose tail it names, which is the `go.mod` miss iter-185 paid **51 citations** for,
+pointed the other way. Dropping restores the designed workflow (a future `anthropos.work:8080` turns the
+both-ways `CITATION_EXTS` arm RED and a human buckets it). Behaviour re-checked: `app/go.mod:14-18` and
+`page.jsx:28` still match; all five live authorities still excluded.
+
+### Finding 3 — two fences were RED at HEAD, each naming the iter that broke it (`07035ca`)
+
+Surfaced by running the **consumers** of the in-scope iters. Both are **byte-identical** at `08ad440`
+and in the working tree — pre-existing at HEAD, not introduced here. Graded **per-test**, never as a set
+(pass 32 characterised 21 failures as *"provably not ours"* and iter-145 proved 57 % of that false).
+
+* **iter-185** defined `class TheCitationExtensionClassIsARegistry` (**5 tests**) **after** the
+  `__main__` guard (`test_predicate_enumerator.py:582`), so `python3 test_predicate_enumerator.py` did
+  not collect them **and still printed OK** — **iter-182's finding exactly, committed three iters after
+  the fence for it shipped.** The 5 hidden tests are the citation-registry arms, including Finding 2's
+  new rot arm. Guard moved to the end.
+* **iter-186** added the `derive_sections` derivation without classifying it, so
+  `derivation_registry`'s completeness fence was RED at HEAD. Classified **REGISTERED**.
+
+**The pattern is the finding, and the registry already documents it.** Its DECLINED block records that
+`anchor_subject_census` went RED at iter-163 *"and stayed RED, unlooked-at, through iters 163/164/165,
+because each ran a change-derived scoped suite that did not include the module grading it."* Iters 185
+and 186 then did exactly that. `§5` rule 60, sharpened: **the module that GRADES your change is rarely
+in the scope your change derives.**
+
+### The instrument caught its own author
+
+Pass 42's harden-origin-route fence went RED on its **first run against pass 42's own ledger entry** —
+the new `SURVEY-M257x-h42-…` route it had just created was invisible to the backlog fence and
+undispositioned. Now dispositioned. A fence that fires on the pass that wrote it is the cheapest
+possible evidence it is not vacuous.
+
+**Coverage delta on touched files:** 2 net-new arms (population-by-property; carve-out rot) + 2
+pre-existing REDs cleared. **Tests added:** `test_suite_census_population.py` +1 ·
+`test_predicate_enumerator.py` +1.
+**Bugs surfaced + fixed inline:** 4 — the census misassignment, the rotted carve-out (4 dead members),
+the hidden test class, the unclassified derivation.
+**Flakes stabilized:** none.
+
+**A vacuous RED-proof, caught and redone — recorded because it is this milestone's own class:** the
+first RED-proof of Finding 2 ran in a scratch clone with **no corpus beside it**, so `setUpClass` set
+`root = None` and the arm **skipped** — `32 passed, 3 skipped`, which reads green. Re-done in a mirror
+where the corpus is reachable: baseline **35 run · 0 skipped**, each of the four dead tails re-added
+fails the rot arm, restore green. *A skipped arm proves nothing, and a skip inside a green line is
+invisible.*
+
+**Suite results (counts, never wall-time; section scope named):**
+
+| suite | runner | section scope | result |
+|---|---|---|---|
+| 10 touched + consuming modules | pytest 3.9.6 | `stack-core` only | **174 passed · 0 failed** |
+| the two previously-RED fences | pytest 3.9.6 | `stack-core` | **57 passed · 0 failed** |
+| `test_predicate_enumerator` | unittest 3.14.6 / 3.9.6 | `stack-core` | **OK** (35 each) |
+| RED-proof battery, mtime-mitigated | pytest 3.9.6 | `stack-core` | 4/4 RED, baseline + restore green |
+
+**NOT COVERED (`§5` rule 60):** the whole-section `stack-core` run is reserved for pass close with the
+tree frozen. The other **ten** sections and the Go/TS suites were not run.
+
+**Knowledge backfill:** none as a corpus edit this pass — all four defects are in instruments, and each
+instrument now carries its own measurement and the ref it was taken at. Pass 42's `§5` rule 77 stands as
+this batch's corpus contribution.
+
+**Routed forward (Fate 3):** both pass-42 routes unchanged and still open
+(`FIX-M257x-h36-labeled-prover-denominator`,
+`SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited`), each now carrying a written disposition
+inside a fence that goes RED if it is dropped.
+
+**Stop condition:** continue-to-next-pass — four more real defects, two of them RED **at HEAD** and
+unnoticed because the iters that caused them ran scoped suites excluding their graders. Coverage has not
+stabilized.
