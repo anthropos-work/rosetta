@@ -125,6 +125,45 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 
 ## The baseline
 
+> 🛑 **SUPERSEDED — `D-v28-15` (2026-07-31) retired `odysseus` too, and NOTHING below has been re-pointed.
+> Measured M257x iter-225.** `D-v28-15` supersedes `D-v28-14` in the same day: `billion` is demo-deployment
+> only, **`odysseus` is retired**, and dev/test is **LOCAL to the new Mac**. Read every `odysseus` sentence
+> below as *"the host this doc was written for, which no longer exists for this purpose"* — this doc names
+> `billion` 44 times, `odysseus` 26 and `laptop` 22, and **names the sanctioned dev host zero times.**
+>
+> **The operational consequence, measured on the sanctioned host (`Mac16,11`, arm64, 12 cores, 24 GiB,
+> Docker Desktop `overlay2`, VM 8 CPU / 11.67 GiB / 125.4 GiB disk with 64.97 GiB free):**
+>
+> 1. **There is no host profile for it.** `rosetta-extensions/stack-core/hostprofiles/` holds exactly two —
+>    `billion.json` (8-core x86_64 Linux, containerd) and `laptop.json` (10-core / 16 GiB M1 Pro, 9,937 MiB
+>    VM, 58 GiB VM disk). Neither describes this machine. **Both name `odysseus` as the gate host**, citing
+>    the superseded `D-v28-14`, and **no `odysseus.json` was ever written** — so the host the tooling names
+>    as its gate has no profile either.
+> 2. **Nothing would notice if you used another host's profile.** `buildbench --profile <name>` is
+>    operator-supplied; there is no host auto-detection. A missing *named* profile is correctly exit-2
+>    (`load_host_profile`: *"a missing profile is exit-2 territory, never a pass"*), but a **present and
+>    inapplicable** one is graded silently. `host_facts()` is recorded into the run JSON and **never
+>    compared to the profile.** The harness already refuses an `autoverify.json` verdict *"that does not
+>    describe the run under test"* — the same discipline is simply not applied to the host profile.
+> 3. **`require_measured` does not cover this.** Clause zero fails a `None` *measurement input* (a dead
+>    sampler, an unanswered disk probe). A profile describing the wrong machine supplies numbers, not
+>    `None`, so clause zero passes.
+> 4. **The VM sits below the build floor.** `up-injected.sh`'s `preflight_vm_ram` floor is **12 GiB
+>    binary**; this VM is **11.67 GiB**, so the warning fires on every bring-up here. Non-fatal by design
+>    (`DEMO_VM_MIN_GIB` overrides), and it is the unit trap M257x iter-12 already documented: Docker
+>    Desktop's slider is decimal GB, so setting exactly "12 GB" yields ~11.2 GiB and never clears it.
+> 5. **Disk is NOT the constraint here.** 64.97 GiB free inside the VM against `disk_floor_gib + `
+>    `projected_image_gib` = **25 GiB**.
+> 6. **CPU saturation probably is.** `laptop.json`'s own history is the precedent: a full cycle was
+>    *attempted and REFUSED* by clause 1, `peak load1 10.69 > cores-2`, because *"a developer workstation is
+>    not a bench; it has other jobs."* The sanctioned dev host is a developer workstation.
+>
+> **So gate clause 1 is not gradeable on the sanctioned host today**, and the blocker is not the bring-up —
+> it is that **no measured profile exists for the only machine the release is allowed to test on.** What
+> unblocks it is a `buildbench` measurement run on a quiet box producing a checked-in `Mac16,11` profile.
+> Do not grade a cycle here against `laptop.json` or `billion.json`: a wall-clock figure never transfers
+> between hosts, which is this section's own standing rule.
+
 > ⚠️ **Host change — `D-v28-14` (2026-07-31): the gate host is `odysseus`, not `billion`.** Everything in this
 > section records **where the M255 baseline was measured**, and stays true as such. It is **not** a statement
 > about where v2.8's gates are graded: `billion` is the demo machine now (deploy-only, never dev/test), and
