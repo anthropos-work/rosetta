@@ -4044,6 +4044,43 @@ in it. One of them asserted `exit 2` and, for the window between the exclusion t
 fixture being made faithful, got its 2 from a stale-exclusion complaint while the orphan it was written for
 was never reached. **An exit code is not a diagnosis** — assert the sentence.
 
+### A class is not closed by a repair; it is closed by an ENUMERATION THAT KEEPS RUNNING (M257x iter-176)
+
+iter-175 repaired the largest member of the registry class and **measured** its population with a scratch
+script it deliberately did not check in. The measurement was correct and the population would have gone
+straight back to being *remembered* the moment the script was deleted — which is what iter-173 and
+iter-174 had each already done, one registry at a time.
+
+> **A reading SAMPLES; a fence CENSUSES** — and an instrument that ran once and was deleted is a reading
+> wearing a fence's clothes.
+
+**The tell is in the discovery record, and it is mechanical.** Four consecutive registries were found by
+the most expensive instrument the milestone owns:
+
+| iter | registry found | found by |
+|---|---|---|
+| 173 | three siblings | grep for a sibling's name |
+| 173 | the ratchet baseline (4th) | whole-suite run, after the fact |
+| 174 | the battery's fence-seed list (5th) | whole-suite run, one iter later |
+| 175 | the derivation registry again, and a 6th by hand | whole-suite run + a hand check |
+
+**When the most expensive instrument you own is the one making the discoveries, the cheap instrument does
+not exist yet.** Shipped as a checked-in fence over the population — every collection literal holding ≥2
+fence-module names must be classified `REGISTRY:<what keeps it in sync>` or `DECLINE:<class>: <reason>`,
+unclassified is RED — discovery of the seventh moves from a 36-minute suite run four iters later to a
+sub-second static check.
+
+Two corollaries the iter paid for directly:
+
+1. **The predicate must include the SHAPE the motivating case actually has.** The seed list that started
+   the thread is not a literal at all — it is `helper(ROOT, "markdown_structure_guard.py", …)`, a **call**.
+   A literals-only predicate is tidier and one sentence shorter and **structurally blind to the registry
+   it was commissioned for.** Elegance that cannot see its own commissioning case is not elegance.
+2. **Measure an exclusion before shipping it.** The first draft skipped `fixtures/` on reflex; measured,
+   the site count was **identical with and without it**. An exclusion that changes nothing buys nothing
+   and silently forecloses the case it excludes — and an unmeasured narrowing inside the fence written
+   against unmeasured narrowings is the joke telling itself.
+
 ---
 
 ## 9. Cadence
