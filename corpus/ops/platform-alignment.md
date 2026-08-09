@@ -5085,3 +5085,36 @@ playthroughs 183, stack-secrets 195, stack-seeding 1,276, stack-snapshot 518.
   TypeScript is the only unread language — 45 specs in `playthroughs`, 30 in `stack-verify` — so it is
   printed on every run and fenced, including an arm that keeps `playthroughs` marked **mixed**
   toolchain, because reading a section's Go half must never promote it to fully-read.
+
+### An "unreadable because X" clause names a CAPABILITY, and capabilities are PER-VERB (M257x iter-196)
+
+One iter after Go was read, TypeScript became the last unread language and the obvious next sentence
+was *"Playwright needs a live stack, therefore unreadable."* **Half-true, and the false half is worth
+424 tests**: `playwright test --list` enumerates with no stack, no browser and no server —
+`playthroughs` 215 in 45 files, `stack-verify` 209 in 30.
+
+It is iter-195's defect one language over, and it was avoided only because iter-195 had just written
+the rule down. The generalisation is sharper than iter-195's: **the exclusion was written against the
+strongest verb and silently inherited by every weaker one.** *Run* needs a stack; *list* does not.
+Before accepting any *unreadable-because* clause, ask which verb it was measured against and which
+verbs you actually need.
+
+Two companions, both about not spoiling the finding:
+
+- **When a new number is a different KIND of statement from the one beside it, fence the VOCABULARY,
+  not just the number.** `424` enumerated now sits one line from `2,714` verdicted, and a listed test
+  PARSES and REGISTERS — it has not passed. So the TypeScript census returns `tests`/`files`/`listed`
+  and an arm asserts it has **no `pass` or `fail` key at all**: if the two vocabularies converge, a
+  reader can quote a population as a green and be right about the words. The tool prints the same
+  caution beside the total.
+- **A census that quietly BORROWS its dependencies hides a prerequisite.** `playthroughs` ships no
+  `node_modules` and could be enumerated only by borrowing a sibling's install via `NODE_PATH`, while
+  the six Go sections needed nothing at all. That asymmetry is a fact about the repo, so it is
+  returned, printed and fenced — and fenced in the direction where the section later shipping its own
+  install **fails loudly as good news** rather than passing silently.
+
+And a rule that has now fired three times in three iters, so it is recorded as a rule rather than a
+third worked example: **an instrument that could not run its subject must record NOT-RUN, never a
+zero.** iter-191's refusal gate keyed on the wrong unit, iter-195's `go test` on a non-compiling module
+tallying 0 pass / 0 fail, and iter-196's missing Playwright summary line are one defect in three
+costumes. `0 pass / 0 fail` and `could not run` are opposite claims that print almost identically.
