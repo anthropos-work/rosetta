@@ -95,6 +95,15 @@ class-by-class sweep order in advance) — (3) re-scope: n — (4) user-blocker:
   builtins) rather than estimated.
 - `SURVEY-M257x-iter170-cockpit-runner-dependence` — unchanged; open. Same axis, different mechanism
   (two `test_cockpit` tests pass under one runner and fail under the other).
+  > **✅ CORRECTED — iter-183.** This bullet is **wrong, and it was wrong when it was written**: the
+  > route was **CLOSED BY ROOT CAUSE at iter-171** (`D-M257x-171-1` — not a harness assumption but a
+  > blocking `socket.getfqdn` in shipped `cockpit.py`, 35.005 s on the 3.14 interpreter against a 2 s
+  > bind window), and this bullet re-published it as open eleven iters later while describing the very
+  > mechanism iter-171 had already attributed and repaired. **Re-measured at iter-183, and the repair
+  > holds: `207 = 207 = 207`, all green** — unittest/3.9.6, unittest/3.14.6 and pytest/3.9.6 each run
+  > 207 `test_cockpit` tests with zero failures. So this is a **correction, not a re-open**: there is
+  > no live disagreement to route. Found by `route_disposition_guard.py`, the fence iter-183 built
+  > over this registry after finding it had none.
 - `SURVEY-M257x-iter181-*`, `SURVEY-M257x-iter180-relation-grammar-supports-only-equality`,
   `SURVEY-M257x-iter179-thirty-battery-tests-unrun`, `FIX-M257x-iter173-ledger-denominator`,
   `SURVEY-M257x-iter178-n-of-m-outside-clause-5-is-52-sites` — unchanged; open.

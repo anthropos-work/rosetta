@@ -4597,3 +4597,40 @@ Detection is cheap. Run it on a schedule, not on an incident.
 - [`verification.md`](./verification.md) — pre-flight rung zero (*tagging is not publishing*)
 - [`safety.md`](./safety.md) — the safety contract a re-point must not weaken
 - [`idempotency.md`](./idempotency.md) — what happens when a bring-up step runs twice
+
+### An instrument's own BACKLOG is a registry, and it rots exactly like the ones it watches (M257x iter-183)
+
+M257x had shipped fences over the corpus index, the platform's `repos.yml`, the demo knobs, the anchors,
+the retractions, the derived counts, the guard family and the guards' own tests. It had shipped **none**
+over its **carry-forward route queue** — 183 routes, 779 dispositions across 164 close-blocks, the
+artifact that decides what the next iter works on and the one every sub-agent brief is assembled from.
+
+The consumer noticed before any instrument did. The run-17 orchestrator brief listed a route as open
+with the hedge *"may already be closed — verify before working it."* It was closed. One layer deeper sat
+the real thing: a route **CLOSED BY ROOT CAUSE at iter-171** and re-published as *"unchanged; open"* by
+iter-182, eleven iters later, describing the mechanism iter-171 had already repaired.
+
+**The rule.** When a program builds instruments, its own planning artifacts are in scope for them. A
+backlog is a registry: it has a population, a grammar and a consistency property, and *"we maintain it
+carefully"* is the same sentence every registry this milestone has caught said about itself.
+
+**Three corollaries, each paid for in this iter.**
+
+1. **Write the fence in the registry's own grammar; do not impose a new one.** 164 blocks were already
+   writing ` · ` segments, `half CLOSED`, *supersedes*, and tables-that-are-not-bullets. A reader that
+   binds a verdict to the whole BULLET returns **6** findings here and **5 are false** — one per grammar
+   feature it ignored. A reader written to the existing grammar returns **1**, matching an independent
+   hand adjudication. Reading the grammar cost less than converting the prose, and left it readable.
+2. **A stale carry-forward and a legitimate re-open are the same sentence — so re-run the subject.**
+   The verdict was settled by measurement (`207 = 207 = 207` across three runner combinations), not by
+   reading the record, and only then landed as a `CORRECTED` annotation rather than a re-open.
+3. **A pre-flight that finds one precondition has not established there is only one.** Phase 0d named
+   the one registration the new fence needed; the suite then named **two more** — the provenance stamp
+   and a published index disclosure that is a *measurement* and therefore moves when the population
+   does. Budget the registration cost of a fence as plural.
+
+**And the reading hazard underneath all of it, because it is invisible until measured:** these route ids
+are long enough that markdown hard-wraps them mid-token with a trailing hyphen. A line-scoped reader
+returns **207 ids where 204 exist** — 3 phantoms, 3 real ids invisible. Every prior statement this
+milestone made about "the open routes" was made under it. **Rejoin before enumerating, and count the
+joins**, so the hazard stays demonstrated rather than assumed away.
