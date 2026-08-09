@@ -3292,6 +3292,42 @@ the `::` reader dead.
 
 ### Finding 2 — the disclosed limit said `16 of 27`; it was `15 of 26` the day it was written (`d24132f`)
 
+> ## ⚠️ THIS FINDING IS RETRACTED — measured and refuted by iter-177, re-derived independently by harden pass 42
+>
+> **`16 of 27` was never wrong.** It is an **exact** reading of `guard_family.union()`. `15 of 26` is an
+> equally exact reading of a **third** population — `repair_postcondition.declared_kind` — that this
+> finding did not know existed. The sentence below, *"both operands were wrong at publication"*, is
+> **false in both operands**, and the heading above is false as written.
+>
+> One population, **three live derivations**, re-derived from the owners by pass 42 in a scratch
+> `git archive` copy at **both** refs this finding used (never in the tree):
+>
+> | derivation | owner | rule | at `5b108d0` (iter-175's own commit) | at `c7f4c3d` | at rext HEAD `08ad440` |
+> |---|---|---|---|---|---|
+> | `union` | `guard_family.union` | spelled ∪ declared ∪ `EXTRA_CENSUS_MEMBERS` | **16 of 27** | **16 of 27** | 17 of 28 |
+> | `census` | `guard_family.census` | `union` − `CENSUS_EXCLUSIONS` | **16 of 26** | **16 of 26** | 17 of 27 |
+> | `declaring` | `repair_postcondition.declared_kind` | declares `FENCE_KIND` | **15 of 26** | **15 of 26** | 16 of 27 |
+>
+> **`census` and `declaring` both return 26 over different members** — they differ by exactly one member
+> in *each* direction, each for a correct, documented reason: `guard_family` is IN `declaring` (it
+> declares a `FENCE_KIND`) and OUT of `census` (running the family runner inside itself recurses);
+> `repair_postcondition` is the mirror. `union == census | declaring` holds at all three refs. **So every
+> count-based comparison of the two 26-member sets reads GREEN**, which is how one population came to
+> publish `15 of 26`, `16 of 26` and `16 of 27` at the same time with nothing going RED.
+>
+> The defect was never arithmetic — it was a **missing population label, in the claim *and* in this
+> retraction of it**. This finding corrected a number onto a different population without noticing there
+> were three, so it did not fix the error; it reproduced it and added authority. **A retraction inherits
+> every weakness of the claim it retracts.**
+>
+> **Consequently `FIX-M257x-h39-survey-id-embeds-retracted-figure` is CLOSED AS REFUTED** — the routed id
+> `SURVEY-M257x-iter175-readme-fence-index-is-16-of-27` embeds a **correct** figure and needs no rename.
+> What iter-175 actually got wrong was calling a `union` reading *"the census"*. The live instrument
+> (`tests/test_fence_registry_population_m257x.py`) now publishes one **labelled** figure per derivation
+> and asserts each against its own owner; the two 26-member sets are compared by **membership**, not
+> count. Note the population **grows** — 27/26/26 at iter-177, 28/27/27 at HEAD — so quote these figures
+> with their ref, never as standing facts.
+
 Same file, one level down. `test_the_disclosed_limit_is_STATED_not_assumed` exists, in its own words, to
 keep the limit *"honest by measuring it rather than asserting its absence"* — and asserted
 `len(named) >= 2`. Measured now: **15 of 26**. Re-derived at **`5b108d0`, iter-175's own commit**,
@@ -3493,10 +3529,12 @@ and iter-145 proved 57 % of that characterisation false):
 instrument now carries its own retraction, its measurement, and the ref the measurement was taken at.
 
 **Routed forward (Fate 3), both open:**
-* `FIX-M257x-h39-survey-id-embeds-retracted-figure` — the routed id
-  `SURVEY-M257x-iter175-readme-fence-index-is-16-of-27` carries a **retracted figure inside the
-  identifier**; iter-175's and iter-176's `progress.md` cite it, and a harden pass does not rewrite an
-  iter's own record.
+* ~~`FIX-M257x-h39-survey-id-embeds-retracted-figure`~~ — **CLOSED AS REFUTED** (iter-177; re-derived
+  independently by harden pass 42). This route existed only because pass 39 believed `16 of 27` was
+  retracted. It is not: it is an exact reading of `guard_family.union()` at both refs, and the id
+  `SURVEY-M257x-iter175-readme-fence-index-is-16-of-27` therefore embeds a **correct** figure. **Only
+  one of the two routes below was ever open.** See the retraction banner on pass 39 Finding 2 for the
+  three-derivation measurement.
 * `FIX-M257x-iter174-accept-registers-one-registry-of-two` — untouched. Pass 39 *enumerated* the
   registry population (3 → **6 registries + 2 declines**); it did not make `--accept` write the second
   one.
@@ -3508,3 +3546,161 @@ spelling, a disclosed limit asserted as a floor, a stdlib set that excluded a di
 reading it, a completeness check derived from the thing it checks, and a population scan keyed on
 filenames. Coverage has not stabilized. Per the user's standing ruling this is **routed and NOT met with
 new machinery**; the eighth cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41).
+
+---
+
+## Pass 42 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-177 … iter-186 (10 tiks; target: the instrument's own
+population/backlog/grammar, which is what those ten iters were about)
+**Tiks covered since prior pass:** 10
+**Runner named on every count below** (`§5` rules 75/76): `/usr/bin/python3` **3.9.6**, the only
+interpreter on this box with pytest. Every new module additionally run under `python3` **3.14.6**
+(unittest) and `/usr/bin/python3` unittest, from **two** directories.
+**Section scope named on every count** (iter-186's finding — a "whole-population" figure that does not
+name its sections describes 5 of 11): this pass is **`stack-core` only**. The other ten sections were
+not run and nothing is claimed about them.
+
+### The owed item, discharged — `FIX-M257x-iter177-ledger-carries-a-retracted-retraction`
+
+Pass 39 Finding 2 now carries a retraction banner, and pass 41's routed-forward list is corrected.
+**Re-derived here independently before writing it**, because the whole class exists because equal-sized
+sets compare green — reading iter-177's table and copying it would have reproduced exactly the error
+pass 39 made. Read through the owners (`guard_family.union` / `.census`, `repair_postcondition.
+declared_kind`) in a scratch `git archive` copy at both refs; the tree was never edited to take a
+measurement:
+
+| derivation | at `5b108d0` (iter-175's own commit) | at `c7f4c3d` | at rext HEAD |
+|---|---|---|---|
+| `union` | **16 of 27** | **16 of 27** | 17 of 28 |
+| `census` | 16 of 26 | 16 of 26 | 17 of 27 |
+| `declaring` | **15 of 26** | **15 of 26** | 16 of 27 |
+
+`16 of 27` is an **exact** reading of `union`; `15 of 26` is an **exact** reading of `declaring`. Pass
+39's *"both operands were wrong at publication"* is **false in both operands**. `census` and `declaring`
+differ by exactly one member in each direction (`repair_postcondition` / `guard_family`), both for
+documented reasons, and `union == census | declaring` holds at all three refs.
+`FIX-M257x-h39-survey-id-embeds-retracted-figure` is **closed as refuted**. Note the population
+**grows** — quote these with a ref, never as standing facts.
+
+### Finding 1 — harden passes route into a file the backlog fence cannot read (`5228b2d`)
+
+`route_disposition_guard` exists to audit *"the queue every sub-agent on this milestone is briefed
+from"*. Its population is one line — `milestone_dir.glob("iter-*")` (`:207`) — and **`hardening-ledger.md`
+is not in it**. But harden passes route too, under their own origin token `h{K}`, and the ledger *is*
+briefed from: this pass's own prompt lifted its owed item out of it.
+
+Measured — **5** harden-origin routes; **4 are reachable only because some later iter happened to cite
+them**, which is luck, not a rule:
+
+| route | reachable? | via |
+|---|---|---|
+| `FIX-M257x-h30-crossline-repair` | yes | iter-144 |
+| `FIX-M257x-h30-nonstackcore-suite` | yes | iter-144, iter-145 |
+| `FIX-M257x-h33-derive-includes-stack-override` | yes | iter-153 |
+| `FIX-M257x-h39-survey-id-embeds-retracted-figure` | yes | iter-177 |
+| **`FIX-M257x-h36-labeled-prover-denominator`** | **NO** | **nothing, ever** |
+
+That last one has been **open and structurally invisible since pass 36** — through passes 37, 38, 39, 40
+and 41. It is not trivia: `labeled_spelling_pins.py` contradicts itself inside one report, and the
+published `RECALL 4/6 = 67 %` is an artifact of applying the module's own exclusion rule to one third of
+the sites that qualify for it (consistently: 4/4, or 4/7).
+
+`test_harden_origin_route_visibility_m257x.py` makes the exclusion **loud** rather than widening the
+guard's population — the ledger uses a different disposition grammar (`**Routed forward — … (Fate 3).**`,
+not `**Routes carried forward:**`), and choosing one is a design decision, not a corollary of a test
+(Fate-3 boundary). The registry is checked **both ways**: an undispositioned invisible route is RED, and
+so is a stale entry — a "known exceptions" list that only grows in one direction is how iters 157, 162,
+174 and 175 each failed. Readers are **imported from the guard that owns them**; a private `ID_RE` would
+be a second derivation of the very thing being compared (iter-177's rule).
+
+**This module shipped a fail-open green in its own first run and its own baseline caught it:**
+`REPO_ROOT` was `parents[3]` (correct from `stack-core/`, off by one from `stack-core/tests/`) and the
+missing-subject path raised `SkipTest` — together they read **`1 passed, 4 skipped`**, green in CI-speak,
+with all four load-bearing asserts unrun. The probe now **FAILS** on a missing subject. *A capability
+probe that fails OPEN disarms the check it guards*, this time inside the pass that wrote it.
+
+### Finding 2 — a size-preserving mutation can be invisible to the runner (`5228b2d`)
+
+Found while RED-proving Finding 1: one mutation read **GREEN batched and RED alone**. Not flake — in the
+green run **the interpreter never loaded the edit**.
+
+CPython invalidates a cached `.pyc` on **(source mtime in whole seconds, source size)**. A
+**size-preserving** edit landing **within the same clock second** changes neither operand, so stale
+bytecode is reused. Demonstrated end-to-end: `VALUE = "CCC"` on disk, `import mod; mod.VALUE` → `AAA`.
+
+**Two hypotheses were refuted by their own controls before the real one** — recorded because the
+refutations are the finding's evidence, not detours:
+
+| attempted mitigation | result |
+|---|---|
+| `rm -rf __pycache__` | **no effect** — the directory is genuinely ABSENT while stale bytecode is served |
+| `PYTHONDONTWRITEBYTECODE=1` | **no effect** — suppresses *writes*; reads still consult the cache |
+| bump the source mtime | **works** |
+
+The host-specific half: macOS system Python caches **out of tree**, at
+`~/Library/Caches/com.apple.python/<abs source path>/`. Scope was corrected **by the control's own
+3.14.6 run**, not assumed — the first draft claimed 3.14.6 "is not affected" and it is: staleness is
+CPython's rule, not Apple's, and only the cache LOCATION differs (in-tree there, so clearing helps
+there and not here). **The mtime bump is the mitigation that holds on both.**
+
+**Why this milestone is exposed:** rule 75 established `/usr/bin/python3` 3.9.6 is the only interpreter
+here with pytest — the runner named in nearly every mutation proof in this file — and the exposed class
+is exactly the shape these fences are mutated with: `16 of 27` → `15 of 26`, `>=` → `<=`, a single-digit
+count, a one-character path index. **A mutation of that shape reported as "did not fire" may never have
+been loaded.** `test_mutation_proof_cache_hazard_m257x.py` reproduces the masking constructively and
+asserts the mitigation defeats it.
+
+**This pass re-ran its own mutation battery under the mitigation rather than trusting the first run:**
+4/4 RED (including the previously-masked size-preserving one), baseline and restore green.
+
+**Coverage delta on touched files:** 2 net-new control modules, 8 tests, over machinery that had 0
+coverage for these two properties (harden-origin route visibility; mutation-proof validity).
+**Tests added:** `stack-core/tests/test_harden_origin_route_visibility_m257x.py` 5 ·
+`stack-core/tests/test_mutation_proof_cache_hazard_m257x.py` 3.
+**Bugs surfaced + fixed inline:** 2 — the fail-open `parents[3]`/`SkipTest` pair, and the first draft's
+wrong interpreter-scope claim (both caught by this pass's own controls, both fixed before commit).
+**Flakes stabilized:** none — but one apparent flake was **diagnosed as not a flake**: the batched-vs-
+alone mutation disagreement was a stale-bytecode artifact with a deterministic cause.
+
+**Suite results (counts, never wall-time — `§5` rule 51's timing leg fails on this host; section scope
+named per iter-186):**
+
+| suite | runner | section scope | result |
+|---|---|---|---|
+| 2 new modules + 5 consuming/adjacent modules | pytest 3.9.6 | `stack-core` only | **106 passed · 0 failed** |
+| both new modules | unittest 3.14.6 | `stack-core` only | **OK** (8 tests) |
+| both new modules | unittest 3.9.6 | `stack-core` only | **OK** (8 tests) |
+| `guard_family` runner (`--repo-root` = rosetta) | 3.9.6 | fence family | **19 GREEN · 0 RED · 0 could-not-check · 8 not-run** (each names the input it lacks; exit 2 = the runner refusing to call an unsupplied input a pass) |
+| `derived_count_guard` over the edited ledger + corpus | 3.9.6 | milestone + corpus | **OK — 42 sites, 0 findings** |
+| `route_disposition_guard` | 3.9.6 | 3 milestones | **OK — 0 contradictions** |
+
+**NOT COVERED by this pass, stated rather than implied (`§5` rule 60, sharpened by iter-186):** the
+whole-section `stack-core` run (~1,550 collected) was **not** taken this pass — it is reserved for pass
+close with the tree frozen, since editing during a run has confounded nine runs in this milestone. The
+other **ten** rext sections (`stack-verify`, `dev-stack`, `stack-injection`, `demo-stack`,
+`stack-seeding`, `stack-secrets`, `stack-snapshot`, `alignment`, `playthroughs`, `clerkenstein`) and the
+**Go** suites were not run. Nothing here is a whole-population claim.
+
+**Knowledge backfill:** `corpus/ops/platform-alignment.md` **§5 rule 77** — *a size-preserving mutation
+can be invisible to the runner*, with the two failed mitigations, the per-interpreter cache-location
+table, and the instruction to re-run any size-preserving mutation proof under a forced mtime bump before
+quoting it. Placed as rule 76's twin one layer down: rule 76 says an unexplained runner disagreement is
+evidence about the **code**; rule 77 says an unexplained mutation result is evidence about the
+**toolchain**.
+
+**Routed forward (Fate 3):**
+* `FIX-M257x-h36-labeled-prover-denominator` — **unchanged and still open**, but no longer silent: it
+  now carries a written disposition inside a fence that goes RED if it is dropped. Choosing between the
+  two consistent readings (4/4 vs 4/7) moves a figure the milestone quotes, so it stays a design
+  decision.
+* `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` — **NEW.** Rule 77 says a size-preserving
+  mutation proof may have been vacuous; this pass proved the mechanism and fixed its **own** battery, but
+  did **not** audit the milestone's prior mutation proofs for the pattern. That is a census across ~40
+  ledger passes and iter records — out of inline scope, and explicitly **not** a claim that any prior
+  proof was vacuous (grade findings individually — pass 32 characterised a set and iter-145 proved 57 %
+  of it false).
+
+**Stop condition:** continue-to-next-pass — two real defects surfaced in the newest instruments, both
+fixed inline, plus a toolchain hazard that undermines the *method* the previous passes used. Coverage
+has not stabilized: no delta has been measured across two passes yet.
