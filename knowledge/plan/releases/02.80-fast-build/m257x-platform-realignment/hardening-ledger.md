@@ -4734,3 +4734,90 @@ rationale can state one.
 **Stop condition:** **continue-to-next-pass** — the pass repaired 12 defects and every one of them was
 in an instrument this milestone built to catch that exact class, so coverage has not stabilized; the
 whole-section reading is still owed.
+
+## Pass 52 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-207 … iter-216 (same batch as pass 51; dimension 3 — error paths,
+and the reach of the instruments that grade this milestone's own record)
+**Tiks covered since prior pass:** 10 (same batch as pass 51)
+**Runner named on every count:** unittest **3.9.6**, `stack-core` only, **Python**; the guard-family
+readings are `guard_family.py` over the **rosetta** corpus at `001d1b8`, also Python.
+
+### The whole guard family, read — and it is green
+
+The reading nobody in this batch took. `guard_family.py --repo-root <rosetta> --allow-not-run`:
+**19 GREEN · 0 RED · 0 could-not-check · 8 not-run**, and with `--range` supplied for the batch's own
+rosetta commits, **20 GREEN · 0 RED · 2 could-not-check · 5 not-run**. The two that could-not-check —
+`repair_leak_guard`, `value_change_guard` — are **correct refusals**: the batch's rosetta diff added
+prose and removed none, so there were no candidate shingles and no replaced token run. **A refusal that
+fires for the right reason is the control this family was built to have**, and it is worth recording as
+the one place this pass looked and found nothing wrong.
+
+### THE FINDING: the ledger records every measurement, and 46 of its 51 entries are graded by nothing
+
+`derived_count_guard` prints `OK — 57 site(s): 48 derivable count(s) equal their derivation` over a
+subject of **829 files**. Attributed at this pass:
+
+| | |
+|---|---|
+| sites | **57** |
+| files carrying at least one site | **30** of 829 |
+| sites inside `hardening-ledger.md` | **11** — the heaviest single contributor |
+| ledger pass entries carrying a site | **5** of **51** — passes 23, 25, 30, 41, 44 |
+| ledger pass entries carrying NONE | **46**, including every entry since pass 44 |
+
+So the document that records every measurement this milestone takes is graded almost nowhere — and the
+three entries that were *explicitly auditing their own derived figures* (passes 48–50) are among the 46.
+iter-215's rule, *a check that SKIPS reads exactly like one that PASSES*, on the highest-value subject
+available. It is also the **structural explanation** for the standing observation that derived figures
+here are wrong at roughly one in three: **nothing grades them.**
+
+**The reach is NOT widened, deliberately.** Arms A/B/C/D grade table totals, explicit deltas, percent
+triples and clause-5 dispositions — not prose figures — and that is correct as designed. Widening moves
+a live RED surface and would need iter-209's zero-false-REDs precondition paid first. What is repaired
+is the **silence**: the report now derives and states how many scanned files contributed no site, and
+what a zero there means (`NOT CHECKED — it was not cleared`). Printed above the verdict line, so
+`guard_family.run_one`'s `lines[-1]` reporting is untouched — family view re-run, unchanged.
+
+### The pass's own control that did not fire, and the arm was the reason
+
+Worth more than the fix. `test_the_disclosure_is_DERIVED_from_the_sites_never_restated` searched for a
+digit run preceded by a **quote** (`'"829'`), while a hard-coded figure inside an f-string is preceded
+by a **space** — so replacing `{len(_site_files)}` with a literal `30` left the arm **green**. iter-205's
+case-sensitivity class and iter-210's `corpus`-vs-`CORPUS_DIR` class for a third time, and it surfaced
+only because the mutation was **run** rather than assumed — harden pass 45's caution, *check your own
+new arms can fail*, earned rather than quoted. The arm now reads the REACH line, strips interpolations,
+and refuses any remaining digit; re-mutated after strengthening, it fires. Kept in the docstring as an
+executable record rather than deleted.
+
+**Coverage delta on touched files:** `test_derived_count_guard.py` **17 → 21** arms.
+**Tests added:** +4 arms, +1 derived disclosure line.
+**Bugs surfaced + fixed inline:** 2 — the undisclosed silence (commit `2aa68cc`) and this pass's own
+non-firing control, fixed in the same commit.
+**Flakes stabilized:** none surfaced.
+
+**Suite results (counts only; runner + section scope + language named on every row):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| `test_derived_count_guard` | unittest 3.9.6 | `stack-core` | Python | **21 passed** |
+| guard family, tree-scoped | `guard_family.py` | rosetta corpus @ `001d1b8` | Python | **19 GREEN · 0 RED · 8 not-run** |
+| guard family, `--range d3f1c64..062df38` | `guard_family.py` | rosetta corpus | Python | **20 GREEN · 0 RED · 2 correct refusals** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **2 mutations, 1 fired then 1 after the arm was fixed**; restores sha-verified |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60), derived this pass:** the **six** non-`stack-core`
+sections carrying no Python (`alignment`, `clerkenstein`, `playthroughs`, `stack-secrets`,
+`stack-seeding`, `stack-snapshot`) — **no Go verdict is claimed**; the **424 TypeScript tests**, still
+**ENUMERATED and never executed**. The four Python sections were read at pass 51 and are not re-claimed
+here. The whole-`stack-core` section reading is owed and is taken at pass 53, tree frozen.
+
+**Knowledge backfill:** one rule — *a site count without its silent remainder reads as coverage of the
+whole subject; derive the remainder and say what a zero there MEANS.*
+
+**Routed forward (Fate 3), one new:**
+`SURVEY-M257x-h52-derived-count-guard-reaches-no-prose-figure-in-the-ledger` — the ledger's pass entries
+state their figures as prose, which arms A–D do not reach by design; widening needs the zero-false-REDs
+precondition paid first, and until it is, the ledger's own numbers are checked by re-derivation alone.
+
+**Stop condition:** **continue-to-next-pass** — the silence is disclosed but not closed, and the
+whole-section reading this batch has never had is still outstanding.
