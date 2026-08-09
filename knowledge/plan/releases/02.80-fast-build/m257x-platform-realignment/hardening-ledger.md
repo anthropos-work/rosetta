@@ -5471,13 +5471,25 @@ members had no input supplied.
 **2 routed**, and the third pass found the largest reach gap of the session rather than going quiet.
 
 > **The 7, enumerated where they are printed rather than carried** (`§5`, and the rule this ledger has
-> broken twice): (1) the identity gate disclosed only through the exit code, so `campaign.json` and the
-> offline `report` subcommand both read green on a mismatched host; (2) `_ledger`, the fixture whose
-> docstring promises the real ledger shape, omitted `host_identity`; (3) rext anchors resolved to two
-> checkouts 162 commits apart depending on spelling; (4) iter-238's route glob left a truncated id stem
-> reading as live backlog, and `route_disposition_guard` was RED on the inherited tree; (5) `CLAUDE.md`'s
-> "Go Services" block described `app` while naming `sentinel` (0 of 5 directories, 0 of 2 make targets, no
-> `atlas.hcl`) and decommissioned `cms`; (6) `guard_family` told two unfetchable clone states to fetch;
-> (7) 491 range anchors sat outside the reach denominator that reported on them. Per the user's standing
-> ruling the two routes are recorded and NOT met with new machinery; the **fourteenth**
-> cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59).
+> broken twice — **it very nearly broke it a third time here**, see the note under the list):
+>
+> | # | pass | defect |
+> |---|---|---|
+> | 1 | 57 | the identity gate disclosed **only** through the exit code, so `campaign.json`, `print_report` and the offline `report` subcommand all read green on a mismatched host — **and `_ledger`, the fixture whose docstring promises the real ledger shape, omitted `host_identity`**, which is how the field went a whole iter unread |
+> | 2 | 57 | rext anchors resolved to two checkouts **162 commits apart** depending on how the citation was spelled |
+> | 3 | 57 | iter-238's route glob left a truncated id stem reading as live backlog; `route_disposition_guard` was **RED on the inherited tree** |
+> | 4 | 58 | `CLAUDE.md`'s "Go Services" block described `app` while naming `sentinel` (**0 of 5** directories, **0 of 2** make targets, no `atlas.hcl`) and decommissioned `cms` |
+> | 5 | 58 | `guard_family` told two **unfetchable** clone states to fetch |
+> | 6 | 59 | **491** range anchors sat outside the reach denominator that reported on them |
+> | 7 | 59 | this session's **own** rotted anchor — `build-budget.md` → `buildbench.py:1396-1433`, moved by pass 57 |
+>
+> **The near-miss, recorded because it is the point.** The first draft of this list ran to seven items by
+> counting the `_ledger` fixture as its own row and **dropping row 7 entirely** — the session's own defect,
+> the one whose whole lesson is that a repair pass rots what it does not re-derive. It still summed to 7,
+> so the arithmetic would not have caught it; only reading the list against the per-pass counts (**3 + 2 +
+> 2**) did. The fixture is folded into row 1 because that is how pass 57 counted it. *The enumeration is
+> the source and the total is the derivative* — a total that agrees with a wrong list is the failure mode.
+>
+> Per the user's standing ruling the two routes are recorded and NOT met with new machinery; the
+> **fourteenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50,
+> 53, 56, 59).
