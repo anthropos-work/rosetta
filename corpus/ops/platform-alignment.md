@@ -4128,6 +4128,49 @@ a count that moved by one where nobody was looking.
 somebody else's measurement. Before you do, ask which function produced **their** number. Twice in this
 milestone the answer was *"a correct one you have not run."*
 
+### A NOT-REACHED clause is a MEASUREMENT or it is a mood (M257x iter-178)
+
+Disclosing what a fence does not reach is already better than hiding it — this protocol has argued that
+since iter-121, and a guard that prints its blind spot on every green run is one of the milestone's
+better habits. **But a disclosure with no number is not yet a finding.** It cannot be ranked against
+anything, it cannot be worked, and it cannot go stale in a way anybody notices.
+
+**The worked case.** `derived_count_guard` had printed, on every run for five iters:
+
+> *NOT REACHED: the `N of M` prose shape. `M` names no source, so attributing it to a table is an
+> inference.*
+
+Every word of that is true and the decline was correct. **Nobody had ever counted the class.** Measured
+at iter-178: **61** occurrences across the published corpus, and **9, over 8 lines, on the gate's own
+surface.** Nine is enumerable exactly — so the reason it stayed unreached for five iters was never
+difficulty; it was that an unmeasured hole looks the same size as any other unmeasured hole.
+
+**The move, and it does not require solving the hard part.** Splitting the *verification* of the value
+from the *disposition* of the claim leaves a check that is fully mechanical:
+
+> Do not verify `M`. Require that **every** member of the declined class carries a **written
+> disposition** — here `DERIVABLE: <the derivation>` / `OBSERVED: <why it cannot be re-derived>` /
+> `HISTORICAL: <what past state it records>` — and reconcile **both directions**, so a member with no
+> disposition is RED *and* a disposition matching no member is RED.
+
+That turns *"not reached"* into *"reached at the grain of the claim I can actually decide"* (§9
+iter-159), and it costs nothing epistemically: the guard still refuses to attribute `M` to a nearby
+table, and says so in the same breath. Of iter-178's nine, four were DERIVABLE and all four re-derived
+**true** at the refs the prose itself cites; the other five are genuinely not re-derivable from a
+checkout, and **that is now written down next to each one instead of being a property of the fence's
+silence.**
+
+**Assert the population size too.** The class was fenceable *because* it was nine; sixty-one would have
+been a different decision. So the number is a test, not a memory — a move in either direction is a
+signal (a claim arrived and needs a disposition, or a claim left the surface).
+
+**And close the fail-open it creates.** A fixed subject surface means the arm no-ops on any tree without
+that surface — the shape §8 iter-174 names, *a capability probe that fails OPEN disarms the check it
+guards*. Two halves, both required: the guard **records the surface state** on every run (so the no-op
+is visible in the output and in `--json`), and a test asserts the surface is **present on the real
+tree**. A fail-open you can see and a fail-open that cannot be the real tree's state are different
+things, and only the pair is safe.
+
 ---
 
 ## 9. Cadence
