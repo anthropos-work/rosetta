@@ -4937,3 +4937,94 @@ sessions of harden passes have now each reproduced it while auditing it. That is
 about iters 207–216; it is a measured property of writing a derived figure into prose at all, and the
 only repair this milestone has found that holds is the one both pass 50 and this pass reached
 independently: **do not carry the figure — derive it where it is printed.**
+
+## Pass 54 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-217 … iter-228 (12 iters; 5 pre-redirect instrument, 7 post-redirect
+platform/corpus). Scope weighted to the post-redirect half per the user's 2026-08-09 redirect — *"the goal
+remains alignment and be able to build a working stack with the new platform repos"* — so the two brand-new
+instruments that stand between the tooling and a buildable stack were taken first.
+
+**Tiks covered since prior pass:** 12.
+
+**Subject:** `stack-core/clone_pin_guard.py` (iter-222) and `stack-core/patch_anchor_guard.py` (iter-223) —
+the artifact that declares *which platform repos a demo clones* and the one that answers *would the demo's
+patch layer still apply*. Both shipped in the last two iters; neither had been hardened.
+
+**Bugs surfaced + fixed inline (4, commit `8345c1d`, pushed to `rosetta-extensions` origin):**
+
+- **`clone_pin_guard` arm C compared the pin ref LITERALLY** to `{main, master, HEAD}`, so it caught three
+  spellings and no others. `ensure-clones.sh` phase (d3) runs `git checkout -f "$_pref"`, which resolves
+  `origin/main`, `refs/heads/main` and `refs/remotes/origin/main` to the same moving branch — **all read
+  GREEN**. The "reproducibility BARRIER" could therefore name a different tree every day while the fence
+  written to refuse exactly that agreed with it. `moving_branch_name()` normalises first.
+  **The shipped test iterated `sorted(G.MOVING_BRANCHES)` — an identity test against the guard's own
+  constant** — which is how a gap in the arm survived its own battery. (Pass 45 of this milestone found
+  the same shape in a repo-wide arm; that makes twice.)
+- **`clone_pin_guard` arm B never REQUIRED either sanctioned extra**, only allowed them, because it is
+  derived from `repos.yml` and neither extra is in it. **A pin with no `platform` key read GREEN** — the
+  largest possible instance of the exact hole arm B exists to catch, since `platform` is the clone whose
+  `repos.yml` defines the topology every other entry is derived against. `platform` is now required;
+  `ant-academy` stays optional **and the docstring now says so**, with a test pinning the statement, so the
+  remaining hole is declared rather than invisible (`§5` rule 60).
+- **`patch_anchor_guard` answered from the cache.** It resolves `--ref` with one command, `git show
+  <ref>:<path>`, which reads the local object store — so `--ref origin/main` answered *"would the patch
+  layer apply at the last `origin/main` this clone happened to fetch"* and printed, flatly, `OK at
+  origin/main`. **This is the class iter-222 measured ONE ITER EARLIER** (nobody had fetched; `app` was 28
+  commits stale behind it and 17 corpus anchors were rotten behind that). Adds `--fetch` (rc-checked,
+  stderr never suppressed; a **failed** fetch at a remote-tracking ref is **exit 2**, never a verdict) and
+  puts the ref's authority *in the verdict line*.
+- **`guard_family`'s RED summary named its reds and not its reach.** Measured, same command, two working
+  directories: **24 GREEN · 0 RED · 0 could-not-check** from the rosetta root against **4 GREEN · 3 RED ·
+  17 could-not-check** from `stack-core/` — and the line an operator quotes forward was, in full,
+  `guard-family: RED — demo_knob_guard, dev_flag_guard, platform_predicate_guard`. All three reds are
+  artifacts of the wrong corpus root, the same misconfiguration that blocked the other 17, and the quoted
+  sentence carried no trace of either. **That is iter-103's misread-RED incident — a RED read against a
+  sheet of greens, two false conclusions drafted from the difference — reachable today by running the
+  family from the directory the guards live in.** `reach_caveat()` now rides on the summary line, scoped
+  to the RED branch because the could-not-check and not-run branches name their own members.
+  This is the **third** pass to fix this one sentence (pass-20 the `OK` line, pass-23 the provenance
+  caveat, pass-54 the reach) — the pattern is that each fix covered the branch that pass was looking at.
+
+**Plus one in the test layer:** `TestCollectionParity`'s locator, `src.find('if __name__ == "__main__"')`,
+**matched its own quoted literal** four lines below. It was checking *"is every class above
+`TestCollectionParity`"*, not *"above the `__main__` guard"* — so a class appended in the correct place,
+at the foot of the file above the real guard, went RED **naming a cause that was not true**. Anchored at
+column zero and taken as the last occurrence, with a regression test and an anti-identity control.
+
+**Tests added:** +21 across 3 modules —
+`tests/test_clone_pin_guard.py` 16 → **23** (7: a 9-spelling moving-ref battery, a 7-spelling
+false-RED control, the finding's naming, the normaliser as a unit, and 3 required-extra),
+`tests/test_patch_anchor_guard.py` 15 → **22** (7: a real-remote fixture whose upstream moves without the
+clone fetching, both fetch dispositions, the local-ref control, the predicate as a unit),
+`tests/test_guard_family_verdict_line_m257x.py` 30 → **37** (7: 5 reach-caveat incl. the wired-call-site
+arm, 2 parity-locator).
+
+**Mutation controls (`§9` — a green must prove its instrument):** 5 pin spellings flipped GREEN → RED with
+3 controls holding GREEN and the live canonical pin unaffected; blinding `is_remote_tracking` to the
+pre-fix world fired **4 of 7** cache tests (the other 3 do not depend on the predicate, and say so).
+
+**Flakes stabilized:** none surfaced.
+
+**Suites (runner · section scope · language, per the standing rule):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the 3 touched modules | unittest, CPython 3.9.6 | `stack-core` | Python | **45 + 37 passed · 0 failed** |
+| collection parity, one module | pytest 8.4.2 / CPython 3.9.6 | `stack-core` | Python | **37 passed** — same 37 |
+| `--ceilings` one-command form | `derivation_registry.py` | `stack-core` | Python | **3 ratchets exact, exit 0** |
+| `guard_family --platform`, correct root | `guard_family.py` | `stack-core` | Python | **24 GREEN · 0 RED · 5 not-run** |
+
+**NOT COVERED, stated rather than implied:** no whole-`stack-core` pytest reading is claimed by this entry
+(one is taken at session end); the four non-`stack-core` **Python** sections were last read at pass 51
+(**1,824 passed · 9 failed, all ENV_GATED**) and are not re-claimed; **no Go verdict**; the **424
+TypeScript tests** remain ENUMERATED and never executed.
+
+**Knowledge backfill:** two rules, both earned here —
+*a fence that compares a ref to a literal set has the reach of that set, not of the property it names —
+`git` resolves more spellings than any list you will write, so normalise before you compare*; and
+*a summary line must state its REACH as well as its verdict, because a misconfigured reference blocks some
+members and reddens others from the same cause, and only the verdict gets quoted forward.*
+
+**Stop condition:** continue-to-next-pass — four defects in the newest instruments, all found by the first
+dimension scan of the pass; the corpus-prose half of the batch (iters 224–228) has not been swept.
