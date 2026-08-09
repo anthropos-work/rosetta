@@ -102,7 +102,7 @@ re-taken here; the other 10 sections, the 6 Go sections and the 424 TypeScript t
   measurement proves the drift exists; it does not remove it. `materialize` still reads working-tree
   bytes, so every excerpt an adjudicator sees is still the stale one. A `--ref origin/main`
   materialization mode is the structural repair and was not attempted.
-- Unchanged and still open: `SURVEY-M257x-h42-…` · `SURVEY-M257x-h45-printed-measurement-literals-
+- Unchanged and still open: `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` · `SURVEY-M257x-h45-printed-measurement-literals-
   uncensused` · `FIX-M257x-h44-claim-census-guard-is-single-runner` ·
   `SURVEY-M257x-iter197-the-derivation-registry-sees-only-NAME-shaped-derivations` ·
   `SURVEY-M257x-iter196-no-typescript-test-has-ever-been-EXECUTED` · and the standing queue.

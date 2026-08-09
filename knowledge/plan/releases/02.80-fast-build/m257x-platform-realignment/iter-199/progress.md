@@ -74,7 +74,7 @@ and because it independently corroborates
 
 **Outcome:** the class that had been hand-repaired in three consecutive work units — harden pass 45
 (three sites), harden pass 47 (`2,714` under the wrong unit), iter-197 (*"the other 121 modules"*, stale
-inside its own iter) — now has a census. **11 hits over 51 non-test modules in 8 sections: 2 `literal`,
+inside its own iter) — now has a census. **11 hits over 62 non-test modules in 4 sections: 2 `literal`,
 2 `ordinal`, 7 `guarded-zero`**, with the two excluded classes reported rather than dropped and the
 zero-exclusion written as a checkable **condition** (a bare `OK — 0 files` still counts). Both `literal`
 findings sat in `labeled_spelling_pins`, two lines below a derived `len(LABELED_SET)`, and **all three
@@ -112,7 +112,7 @@ changed-code reach (`§5` r60) — no Go, no TypeScript, and the whole-section f
   hand-listed set of ~30 words. A count printed beside a noun outside it (`3 heroes`, `5 orgs`) is not
   seen. This is `§5` r70/71's *a fence pinned to a SPELLING is not pinned to a PROPERTY*, applying to
   this iter's own instrument, and it bounds the zero above.
-- Unchanged and still open: `SURVEY-M257x-h42-…` · `FIX-M257x-h44-claim-census-guard-is-single-runner` ·
+- Unchanged and still open: `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` · `FIX-M257x-h44-claim-census-guard-is-single-runner` ·
   `SURVEY-M257x-iter197-the-derivation-registry-sees-only-NAME-shaped-derivations` (independently
   corroborated this iter) · `SURVEY-M257x-iter198-the-nineteen-exposed-pairs-are-unadjudicated` ·
   `SURVEY-M257x-iter198-materialization-reads-the-working-tree-by-construction` ·
