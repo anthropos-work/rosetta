@@ -5028,3 +5028,72 @@ members and reddens others from the same cause, and only the verdict gets quoted
 
 **Stop condition:** continue-to-next-pass — four defects in the newest instruments, all found by the first
 dimension scan of the pass; the corpus-prose half of the batch (iters 224–228) has not been swept.
+
+## Pass 55 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-217 … iter-228 (same batch; this pass swept the **corpus-prose** half
+the pass-54 entry recorded as unswept).
+
+**Subject:** the fence between the corpus's prose and `repos.yml` — i.e. whether the corpus can go on
+naming the wrong platform repos. Directly the redirect's target: *"be able to build a working stack with
+the new platform repos (only the remaining ones that are still part of it)."*
+
+**Method:** by-effect census, the method iter-219 established — mutate the reference, ask which guards
+notice, rather than reading code and inferring. Two mutations of a scratch `repos.yml` copy:
+
+| mutation | `clone_pin_guard` | `platform_alignment_guard` | `platform_predicate_guard` |
+|---|---|---|---|
+| ARRIVAL (`brand-new-svc` added, 4 → 5) | RED | RED | RED — 10 G2 sites incl. `CLAUDE.md:360` |
+| **SWAP** (`studio-desk` → `brand-new-svc`, count stays 4) | RED | RED | **GREEN** |
+
+**Bugs surfaced + fixed inline (2, commit `91c926e`, pushed to `rosetta-extensions` origin):**
+
+- **G2 grades the COUNT and reads as grading the MEMBERSHIP.** On the swap, ten corpus sites go on naming
+  `studio-desk` — `CLAUDE.md:360` among them, **inside a runnable `make init` block, in the file every
+  session loads** — and G2 is green because 4 is still 4. **A consolidation program retiring one repo and
+  adding another is exactly what produces a count-preserving swap**, which is the program this milestone
+  exists to track. New arm **G2b**: where a repo-count claim also ENUMERATES the set on its own line, the
+  names must be exactly `repos.yml`'s. **5 enumerations reached live, 0 findings; 5 of 5 fire on the
+  swap.** Conservative by construction (only on a line G2 already matched, only after a list delimiter,
+  every token must be a known repo name, and the list must be CLOSED on the line).
+  **The closed-list clause is not decoration.** The first draft went RED on `staging-bringup.md:118`,
+  where the list continues on the next line inside a bash comment —
+  a **false RED in the corpus's own onboarding path**, in a module whose stated landing precondition is
+  *zero false REDs*. It held only because the arm was run against the live tree before it was believed.
+- **The repo-wide test-collection fence was blind to the pattern it is mostly written in.** Both of its
+  predicates matched only a base spelled `…TestCase`, so a class inheriting from a **local fixture base**
+  — `Baseline(Fixture)`, `MutationBattery(Fixture)`, `AntiVacuity(Fixture)`, … — was invisible.
+  Demonstrated, not argued: **pass 54 appended `RemoteTrackingIsACache(Fixture)`, 7 tests, below the guard
+  in `test_patch_anchor_guard.py`, and this fence stayed GREEN** while a direct run skipped all 7 and
+  printed OK. Bases now resolve transitively, with a mutant reproducing the blind spot and a
+  false-positive control (a plain helper class must stay unswept).
+
+**Three of this session's OWN regressions, each caught by a shipped repo-wide fence rather than by
+review** — which is the fences working, and is worth recording as such: two hidden test classes (moved
+above the guard), two fixtures duplicating the derived clone set (rewritten synthetic — the frozen-
+expectation census's preferred repair is *stop duplicating*, not *claim an exemption*), and a stale
+derived share in `claim_census_guard`'s docstring, **re-derived at this tree: 293 of 706 distinct-grain,
+410 of 981 pair-grain** (it read 704 / 979).
+
+**Tests added:** +8 `tests/test_platform_predicate_guard.py` (`TestG2bRepoSetMembership`: the three
+delimiter shapes, the half-list refusal, incidental-mention and unknown-token refusals, the swap
+comparison, an anti-identity control, and a **live-corpus reach control** that fails if G2b reaches
+nothing); +5 `tests/test_test_collection_fence.py` (`TheFenceSeesLocalFixtureBases`).
+
+**Suites (runner · section scope · language):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the 7 touched modules | pytest 8.4.2 / CPython 3.9.6 | `stack-core` | Python | **430 passed · 0 failed** |
+| `--ceilings` one-command form | `derivation_registry.py` | `stack-core` | Python | **3 ratchets exact, exit 0** |
+| `platform_predicate_guard`, live | itself | `stack-core` | Python | **exit 0**, G2b reach **5** |
+| `platform_predicate_guard`, swap probe | itself | `stack-core` | Python | **exit 1**, 5 G2b findings |
+
+**Knowledge backfill:** one rule — *a fence that grades a COUNT reads as grading the SET; a swap that
+preserves the count passes it, and consolidation programs produce swaps.* Filed against the same family
+as pass 54's *normalise before you compare*: both are the shape where the check is a proxy for the
+property and the proxy is not said out loud.
+
+**Stop condition:** continue-to-next-pass — the count-vs-membership class was found in the first
+by-effect probe of the pass, and its sibling question (whether the anchor instruments still read a
+FETCHED ref after iter-222's *"a remote-tracking ref is a cache"* finding) is not yet asked.
