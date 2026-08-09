@@ -5158,8 +5158,25 @@ opt-in `--fetch`; exit 2 on a failed fetch at a remote-tracking ref) is a ready 
 
 **Tests added:** none — by design; this pass changed no code.
 
-**Suites (runner · section scope · language):** the whole-`stack-core` reading for this session is taken
-below, at the session's final tree, and is not claimed per-pass.
+**Suites (runner · section scope · language) — the session's whole-section reading, taken at the FINAL
+tree (`rosetta-extensions` `91c926e`), after every pass-54/55 edit had landed:**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| **whole section, final tree** | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | **1,945 passed · 0 failed · 3 skipped** (28 m 45 s) |
+| flake gate, the 32 net-new tests | pytest 8.4.2 / CPython 3.9.6 | `stack-core` | Python | **32 passed ×3 consecutive** |
+| `guard_family --platform`, correct root | `guard_family.py` | `stack-core` | Python | **24 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+| `--ceilings` one-command form | `derivation_registry.py` | `stack-core` | Python | **3 ratchets exact, exit 0** |
+
+**This is the first whole-section reading in this milestone's recent harden history with ZERO failures**
+— pass 53 read **1,850 passed · 4 failed** at a frozen tree and explicitly did not claim a post-repair
+re-read; the batch's own mid-session reading was **1,922 passed · 3 failed**, and all three of those were
+this session's own regressions, each caught by a shipped repo-wide fence and repaired in pass 55.
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` **Python** sections
+were last read at pass 51 (**1,824 passed · 9 failed, all declared ENV_GATED**) and are **not** re-claimed
+here; **no Go verdict** is claimed by any of passes 54–56; the **424 TypeScript tests** remain ENUMERATED
+and never executed. The 3 skips are unchanged from the prior reading and are not new.
 
 **Knowledge backfill:** one rule — *a reach number is not a verdict; the same census can return an
 identical denominator at two refs and a different answer at each, so a claim that "the ref made no
