@@ -4467,3 +4467,107 @@ operand needs whitespace after it, and this repo bolds its important figures.
 **Stop condition:** `continue-to-next-pass` — the three modules the batch touched are swept, but the
 batch also published derived figures in **iter progress/decisions markdown**, which no census reads at
 all, and pass 48's own headline (`22 of 121`) has not been re-derived since the regex widened.
+
+## Pass 50 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-197 … iter-206 (same batch; dimension 1/4 — **re-derive what passes
+48 and 49 themselves published**, plus the milestone-level figure they invalidate)
+**Tiks covered since prior pass:** 11 (same batch as passes 48–49)
+**Runner named on every count:** unittest **3.9.6** and pytest **3.9.6**, `stack-core` only, **Python**.
+
+### CORRECTION to iters 205/206 — the standing class is 147, not 168
+
+Pass 48 fixed the classifier's window. This pass asked what that does to the number the **milestone**
+published. Re-derived at **iter-206's own tree** (`ede026d`), with **iter-206's own vocabulary**, and the
+window fixed — so the only variable is the defect:
+
+| site-kind | published | re-derived at `ede026d` |
+|---|---|---|
+| comments | 118 rows · **95 standing** | 117 rows · **74 standing** |
+| docstrings | 164 rows · 73 standing | 164 · **73** — correct, unaffected |
+| **the standing class** | **168 sized · 7 derived · 161 unverified** | **147 · 7 · 140** |
+
+**Inflated by 21.** iter-205's headline — comments carry *"a far higher standing share than either
+sibling"* — survives as a **fact** but not at the size it was given: **63 % against 45 %**. And iters
+205 and 206 published **95** and **96** for the same reading in adjacent progress lines. Recorded as a
+marked correction in the milestone's own `progress.md`, appended rather than substituted.
+
+### Three of THIS SESSION'S derived figures were wrong, and that is the finding
+
+The batch's disclosed error rate reproduced itself inside the hardening of it:
+
+1. *"22 of 121 matches (18.2 %)"* was written into **two docstrings two hundred lines apart with two
+   DIFFERENT `standing` figures** — `95 → 73` in the module, `95 → 75` in the fence. Live at the time:
+   **75**. One pass later the hyphen widening moved every operand again (**31 of 137** today).
+2. *"21 sites across 13 modules"* for the hyphen gain was a **pre-widening dry run reported under the
+   WRONG UNIT** — they were rows. Live: **25 rows at 22 sites across 14 modules**. `§5` r75, *name the
+   unit*, missed inside the paragraph announcing a reach fix.
+3. Pass 48's comment-ceiling paragraph named **126 → 120 → 124** across three drafts (already recorded).
+
+**The conclusion is not "be more careful."** Across passes 48–50 every single derived figure written
+into prose went stale or wrong within one pass, including the ones written by the pass that was
+auditing exactly that. The class is not a property of iters 197–206; it is a property of **carrying a
+derived figure in prose at all**. So the repair is iter-206's, turned on our own writing:
+`classifier_window_miss_rate()` derives the rate on every run, **no docstring carries it**, and an arm
+greps both files for the shape. The hyphen figure is stated **once**, in `_MEASURED_RE`'s own note,
+with its unit and its wrong first draft beside it.
+
+**Coverage delta on touched files:** `test_frozen_expectation_census_m257x.py` **84 → 86** arms
+(the live-rate arm now reads the derived helper **and** requires the per-line window to over-report
+`standing` — the defect's *direction*, not merely its existence).
+**Tests added:** +2 arms, +1 derived production helper.
+**Bugs surfaced + fixed inline:** 3 (commit `5f4b779`).
+**Flakes stabilized:** none.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| **whole section, tree FROZEN** | pytest **3.9.6** | **`stack-core` only** | Python | **1,799 passed · 3 skipped · 0 failed** |
+| the two changed fence modules | unittest 3.9.6 | `stack-core` | Python | **102 passed** |
+| all seven modules this batch touches | unittest 3.9.6 | `stack-core` | Python | **245 passed · 1 skipped** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **2/2 RED**, restore sha-verified |
+| **flake gate** | unittest 3.9.6 | `stack-core` | Python | **12 passed ×3 consecutive** |
+
+**1,799 is a SECTION number, not a population number.** Pass 47's comparable reading was **1,699**:
+**+100**, of which **+13** are this session's arms (passes 48/49/50 = 7 + 4 + 2) and **+87** are iters
+197–206's own. Taken with **no edit in flight** — the tree was frozen from the last commit of pass 50
+through the run, per the nine runs this milestone has discarded as confounded.
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections;
+the six Go sections beyond the one verdict re-derivation recorded at pass 49; the **424 TypeScript
+tests**, still **ENUMERATED and never executed** — **no TypeScript verdict is claimed by any of passes
+48–50.**
+
+**Knowledge backfill:** two rules, recorded here and in the commit bodies —
+*two callers of one rule are only as shared as the ARGUMENT they hand it* (pass 48), and
+*a derived figure carried in prose goes stale between the paragraph announcing a fix and the paragraph
+implementing it — the repair is not to carry it* (pass 50, earned three times in three passes).
+
+**Routed forward (Fate 3), four standing + one new:**
+`SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` ·
+`FIX-M257x-h44-claim-census-guard-is-single-runner` — **note: iter-201 closed the runner gap 25 → 0;
+this route's title now describes a closed condition and should be retired or re-scoped at close** ·
+`SURVEY-M257x-h45-printed-measurement-literals-uncensused` ·
+`SURVEY-M257x-h46-stale-substrate-direction-undeclared` ·
+`SURVEY-M257x-h48-the-censuses-cannot-see-a-bold-wrapped-operand` (new at pass 48; the hyphen sibling
+was closed at pass 49, this one is not — `**292 of 704**` needs whitespace after the closing operand
+and this repo bolds its important figures).
+
+**Stop condition:** **cap reached without stabilization** — three passes, **14 defects fixed inline**
+and one routed, and **every pass found a real defect in the previous iters' newest instruments — and
+in its own.** Coverage has not stabilized. The batch's shape in one sentence: *the instruments were
+built to grade prose figures, and the figures the instruments themselves publish were graded by
+nobody* — a shared classifier fed two unequal windows, a module count wrong on the day it was typed
+and wrong twice more since, a ceiling narrated at three values at once, a stated miss rate that was a
+mood, two reach holes (case at iter-205, separator here) each of which was hiding a live defect at the
+moment it was measured, and a milestone-level denominator inflated by 21. Per the user's standing
+ruling this is **routed and NOT met with new machinery**; the **eleventh** cap-without-stabilization in
+this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50).
+
+**The pass's own honesty note.** Passes 48–50 wrote **three** wrong derived figures of their own — a
+miss rate published with two different operands two hundred lines apart, a reach gain reported under
+the wrong unit, and a ceiling paragraph that named three values across three drafts. Each was caught
+by re-derivation inside this session, not by review. That is the same **~1-in-3** rate iter-206
+measured for the batch, reproduced by the pass auditing it, which is the strongest available evidence
+that the class is structural rather than a lapse of the ten iters under audit.
