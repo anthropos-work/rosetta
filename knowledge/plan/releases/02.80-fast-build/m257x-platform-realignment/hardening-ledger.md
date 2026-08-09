@@ -3406,3 +3406,100 @@ their runner in the instrument's own docstring.
 **Stop condition:** continue-to-next-pass — two further defects, both of the same shape as pass 39's
 (a control that measures something adjacent to its claim). Four findings in two passes is not a
 stabilizing series; one more pass is owed before the cap.
+
+---
+
+## Pass 41 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-166 … iter-176 (same batch; target: iter-171's monorepo-wide server
+population scan — the one instrument in the batch whose *scope* claim is larger than its section)
+**Tiks covered since prior pass:** 11 (shared scope with passes 39–40)
+**Runners:** `/usr/bin/python3` **3.9.6** (pytest) · `python3` **3.14.6** (direct). Named per count.
+
+### Finding 5 — the monorepo-wide scan skipped every basename collision, silently (`c7f4c3d`)
+
+iter-171's `TestSectionPopulationHasNoUnfixedServer` is explicit that its scope is the whole monorepo:
+*"would let the next HTTP server — in `stack-verify`, say — bind through CPython's resolver unnoticed."*
+Its loader cached by **basename**: `name = "_iter171_" + splitext(basename(path))[0]`, with a
+`sys.modules` hit in front of it.
+
+Two candidate files sharing a basename therefore **collapse onto one module**. Demonstrated with a clean
+`a/srv.py` and a stock-class `b/srv.py`: the second import returns the first's module, `OffenderServer`
+is never read, and **`checked` increments anyway** — counting the first module's classes twice. Result
+`checked = 2, offenders = []`: **a missed offender AND a reach metric that hides the miss**, with no
+assert able to fire, because the anti-vacuity floor `checked >= 3` is satisfied by the duplicate.
+
+Latent today only because all four candidates live in `demo-stack/` with distinct names — and the names
+that repeat across sections are exactly `cockpit.py`, `server.py`, `test_cockpit.py`, the ones this scan
+exists to reach. Keyed on the repo-relative path now. **Mutation-proved:** restoring the shipped
+basename key FAILS with `['_iter171_srv', '_iter171_srv']`.
+
+**And the class is closed at its population, not at its last member** (iter-169's rule; §8 iter-168's
+denominator). Censused: **16 `spec_from_file_location` sites in the repo; exactly 2 insert into
+`sys.modules`** — this one, and `test_predicate_enumerator.py:255`, which uses a constant name over a
+single per-test temp path and cannot collide. The other 14 name a constant and load one fixed path with
+no cache, so re-importing merely re-executes. **1 of 16 had the hazard. Not systemic.**
+
+### The whole population, one runner, unit named
+
+**pytest 3.9.6**, five sections, taken on an otherwise-idle box **before** the pass's last edit. *tests*
+below = **collected = passed + failed + skipped**.
+
+| section | passed | failed | skipped | collected |
+|---|---|---|---|---|
+| `stack-core` | 1545 | 0 | 2 | 1547 |
+| `demo-stack` | 1063 | 9 | 2 | 1074 |
+| `stack-injection` | 335 | 0 | 0 | 335 |
+| `stack-verify` | 275 | 0 | 0 | 275 |
+| `dev-stack` | 151 | 0 | 0 | 151 |
+| **total** | **3369** | **9** | **4** | **3382** |
+
+`stack-core` — the section this ledger's older entries meant by *"the whole suite"* — is **1,547 of
+3,382 collected, 46 %**. **`stack-core` is 0 failed**: the long-standing
+`test_claim_twin_guard_iter48_answer_key::test_02` is GREEN (iter-167), and no pass 39–41 change
+introduced a RED. `stack-verify` was **12 failed** at pass 30 and is **0** here.
+
+**The 9 `demo-stack` failures, graded ONE BY ONE** — never as a set (pass 32 characterised 21 failures
+and iter-145 proved 57 % of that characterisation false):
+
+* **3 × `test_migrate_race_live`** — and *not* for the reason a set-level reading would have given.
+  A demo stack **is** up on this box (`demo-1-backend-1`, `demo-1-directus-1`, …), so "no container" is
+  refuted. The actual messages: `pg_isready` probes `/var/run/postgresql:5432 — no response` (a local
+  socket, not the demo's port); `migrate-demo.sh` aborts with *"missing …/stack-core/lib/repos_yml.sh —
+  this rext checkout is incomplete"* from its **own** temp staging (a shell path, **not** the
+  `battery_stage.local_deps` helper this pass edited); the third fails downstream of the second
+  (`first run should seed; got ''`).
+* **6 × sha-pin against a live clone** (`test_ant_academy` 1, `test_demopatch` 2, `test_ssr_origin_chain`
+  3) — each compares a file in `/Users/marco/workspace/anthropos/rosetta/stack-demo/…`, **outside this
+  repo entirely**, against a manifest under `demo-stack/patches/`. `git log 95e174a..HEAD --
+  demo-stack/patches/` is **empty**, and the clone is not in the repo at all, so **both operands of every
+  one of the six are byte-unchanged by this session**.
+* **The consumption check, per module:** none of the four failing modules imports `battery_stage`,
+  `suite_census`, the fence-registry test or the bind test. They import `manifest_loader`,
+  `gen_injected_override` and `uuid` — none touched. That is a per-test proof, not a property asserted
+  over a group.
+
+**Flake gate:** 3 consecutive clean runs of the four touched test files — **45 passed · 2 skipped**, ×3.
+**Fence check:** `derived_count_guard` GREEN over the edited ledger — **28 sites, 0 findings**.
+**Invocation parity** (the pass-33/35 self-inflicted class): the changed files were run under pytest
+3.9.6, unittest 3.14.6 **and** unittest 3.9.6, from `stack-core`, the rext root and `stack-core/tests`.
+
+**Knowledge backfill:** none as a corpus edit. All five findings are defects in instruments; each
+instrument now carries its own retraction, its measurement, and the ref the measurement was taken at.
+
+**Routed forward (Fate 3), both open:**
+* `FIX-M257x-h39-survey-id-embeds-retracted-figure` — the routed id
+  `SURVEY-M257x-iter175-readme-fence-index-is-16-of-27` carries a **retracted figure inside the
+  identifier**; iter-175's and iter-176's `progress.md` cite it, and a harden pass does not rewrite an
+  iter's own record.
+* `FIX-M257x-iter174-accept-registers-one-registry-of-two` — untouched. Pass 39 *enumerated* the
+  registry population (3 → **6 registries + 2 declines**); it did not make `--accept` write the second
+  one.
+
+**Stop condition:** cap reached without stabilization — three passes, **five defects fixed inline, two
+routed**. Every pass found a real defect in the previous iters' newest instruments, and all five are the
+same shape: *the control measured something adjacent to its claim* — a registry reader blind to a key
+spelling, a disclosed limit asserted as a floor, a stdlib set that excluded a directory instead of
+reading it, a completeness check derived from the thing it checks, and a population scan keyed on
+filenames. Coverage has not stabilized. Per the user's standing ruling this is **routed and NOT met with
+new machinery**; the eighth cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41).
