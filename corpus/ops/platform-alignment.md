@@ -4284,6 +4284,36 @@ what makes it wrong — so the day nothing is named outside the section, the con
 the narrowing must be re-derived rather than silently adopted. **A fence scoped more narrowly than its
 subject manufactures findings** — the instrument-side form of `D-M257x-122-4`.
 
+### A test file hides its tests THREE ways, and the third is that it needs a runner (M257x iter-182)
+
+`test_test_collection_fence.py` was built for two of them: a class below the `__main__` guard is never
+registered (statement **ORDER**), and a module that cannot be imported takes the whole run down with it
+(**IMPORT**). The third is that the module **requires a runner the box may not have.** A file built on
+`@pytest.fixture` or `@pytest.mark.parametrize` contributes **zero** tests under plain `unittest` — and
+says nothing while doing it, which is the same silence the other two arms exist to break.
+
+**Two rules came out of repairing one:**
+
+**1. A conversion that moves a COUNT is not a conversion.** The obvious translation of a 5-case
+`@parametrize` is one `subTest` loop. Every assertion still executes and every failure is still
+reported — **and the module collects 12 instead of 16.** Nothing would have flagged it, and the delta
+would have been absorbed into a suite total three iters later. So: five named methods, and the count is
+proven on **both** interpreters before and after. Every `assert`, message and docstring left byte-identical;
+the fixture becomes a plain builder; `monkeypatch.setattr` becomes an explicit save/restore in
+`try/finally`. iter-158's rule — *a narrowing that grades a broken check green is a defect, not a fix* —
+applies to conversions, not only to fences.
+
+**2. A route that names N things has not established that they are one piece of work.** This route named
+two modules as a pair. Sized: 165 lines / 16 tests / one fixture versus 481 lines / 25 tests / a fixture
+**plus three pytest builtins**. One is mechanical; the other is three shims. Sizing first turned an
+intimidating open item into one conversion **plus one measured, registered obligation** — Fate 1 and
+Fate 3, chosen on a measurement rather than on an estimate.
+
+**And key the census on the right token.** `pytest.skip()` is a call inside a test body and runs fine
+under `unittest`; the **decorators** are what change collection. Keyed on `import pytest` the population
+reads as a fleet-wide crisis instead of one open member — so the control asserts that more modules import
+pytest than are blocked by it, keeping the distinction load-bearing rather than editorial.
+
 ---
 
 ## 9. Cadence
