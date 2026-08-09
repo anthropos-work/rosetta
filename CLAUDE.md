@@ -535,9 +535,19 @@ pnpm test
 **Studio-Desk** (TypeScript):
 ```bash
 cd studio-desk
+cp .env.example .env   # REQUIRED — see the port note below
 npm install
-npm run dev    # Runs on localhost:9100 (frontend) and localhost:9000 (backend)
+npm run dev    # frontend 9100 (vite.config.ts:10), backend 9000 (.env.example:4)
 ```
+
+> **⚠️ The `cp .env.example .env` step is load-bearing and this block omitted it** (added M257x iter-238),
+> even though the Environment Configuration section above already says Studio-Desk needs its own `.env`.
+> **9000 is not a code default — it comes from `.env.example:4`.** `src/index.ts:60` reads
+> `process.env.PORT || 9100`, so without the copy the backend binds **9100**, the same port vite is on,
+> and `npm run dev` half-fails in a way that looks like a vite problem. The container is unaffected:
+> compose sets `PORT=9000` / `FRONTEND_PORT=9100` explicitly (`docker-compose.yml`, the `studio-desk`
+> block), which is why the documented pair is right for `make up PROFILE=studio-desk` and was wrong only
+> for the native path.
 
 **Studio-Room** (Python):
 
