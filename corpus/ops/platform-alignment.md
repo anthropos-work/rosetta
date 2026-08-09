@@ -4986,3 +4986,36 @@ spelling; a total counted off the tree is pinned to the property.**
   grain it was routed at**; the enumeration still earned its keep by producing a *lead*, and the deciding
   was judgement. Shipping a selector that flags most of its population as a fence would be this
   milestone's own defect, committed by the tool built to find it.
+
+### An enumeration that keeps running catches what a PRIMED READER re-introduces (M257x iter-193)
+
+iter-192 routed the decidable residual of its class with a sharp selector — *a printed total assembled
+by arithmetic over a module-level registry, where a derivation of the same quantity exists in the
+module.* Censused repo-wide it is tiny: **62 non-test Python modules across the 4 of 11 sections that
+carry any Python, 4 printed add/subtract totals, 1 in-class.**
+
+The single hit was `labeled_spelling_pins.prove()` printing `len(LABELED_SET) - recall_eligible` and
+labelling it *"declared-blind"*. The subtraction is the blind count only while every instance is
+readable at both refs; an unreadable one increments neither counter, so it joined the declared-blind
+figure **and left the RECALL denominator** — so **the published recall RISES when the instrument loses
+the ability to read a case.** A rate that improves on losing a case is not a rate. It agreed with the
+truth on the day it was measured (7 − 6 = 1, and exactly 1 is declared blind), which is the same
+agreeing-reconstruction signature as iter-192, one iter later, in another module.
+
+Three things generalize:
+
+- **The census re-found a route that had been open and invisible for 36-plus harden passes.**
+  `FIX-M257x-h36-labeled-prover-denominator` was in the session brief the whole time, and four iters of
+  judgement had walked past it. A backlog is not read; a selector is run.
+- **The census caught its own author.** The repair's own follow-up line was written as
+  `len(LABELED_SET) - declared_blind` — a fresh instance of the class being closed, inside the function
+  being repaired — and the census returned it on the next run. This is the strongest argument for
+  enumeration in the milestone so far, and it is not *"a census finds what a careless reader misses"*:
+  a reader who had spent twenty minutes on this exact defect in this exact function **re-introduced it
+  immediately.** Then the derivation registry's completeness fence went RED for the census function
+  itself within a minute of its existing. Two fences firing on their own author inside one iter.
+- **A census's first duty is to prove its own REACH.** This one's first run reported two sections as
+  holding zero modules, because its walk was `*.py` + `lib/*.py` and their Python sits deeper. Had that
+  gone unchecked, the zero would have been a statement about a fraction of the tree wearing the words of
+  a repo-wide result — the defect class, committed by the tool built to find it. Print the scope with
+  the finding, and put a FLOOR on it in the fence, so a shrunken walk cannot present as a clean tree.
