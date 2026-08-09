@@ -343,12 +343,23 @@ is right for Studio-Desk/Studio-Room and WRONG for Ant Academy** — see its row
 
 **Ant Academy** requires its own `.env` file at `ant-academy/code/.env.local` (not the repo root — the React app reads only from `code/.env.local`). Reuse `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` from `platform/.env`, and add `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` for the `/api/ai/chat` route. Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` for solo local dev to skip the org-membership gate.
 
-Critical environment variables:
+Critical environment variables — **each one verified declared in `platform/.env_example` @ `0c91421`**
+(M257x iter-237; this list is a hand-maintained tuple and nothing fences it, so treat it as a dated
+measurement):
 - `GH_PAT` (GitHub Personal Access Token — required for Docker builds to pull private Go modules)
 - `CLERK_SECRET_KEY` (Auth — backend services)
-- `OPENAI_KEY` (AI services)
+- `OPENAI_KEY` (AI services — the name really is `OPENAI_KEY`, **not** `OPENAI_API_KEY`; both exist and mean different things)
 - `VITE_CLERK_PUBLISHABLE_KEY` (Studio-Desk via Docker)
-- `DIRECTUS_PUBLIC_BASE_ADDR` (Content)
+- **`DIRECTUS_TOKEN`** (Content — ships **BLANK** at `.env_example:92` and is the one you must fill; a
+  missing value is the classic *stack boots, catalog empty* failure). `DIRECTUS_BASE_ADDR` (`:91`) is
+  declared with a working default.
+
+> **⚠️ `DIRECTUS_PUBLIC_BASE_ADDR` was listed here and is NOT a variable you set** (corrected M257x
+> iter-237). Compose **hardcodes** it —
+> `DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work` at `docker-compose.yml:53` — and
+> `.env_example` does not declare it at all, so putting it in your `.env` does nothing. The corpus already
+> said so precisely at `corpus/architecture/external_services.md:133`; only this list disagreed. It named
+> the one Directus variable you **cannot** set while omitting the one you **must**.
 
 ### Makefile-Driven Workflow
 
