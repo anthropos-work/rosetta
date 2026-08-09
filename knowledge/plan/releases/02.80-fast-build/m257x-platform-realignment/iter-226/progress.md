@@ -66,7 +66,19 @@ counted and disclosed.
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: y — Outcome: exit-7
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: continue
+
+> **Grading correction, made before the next iter opened.** This line first read `(7) budget-exhausted:
+> y — Outcome: exit-7`. It was **wrong on its own facts**: the run opened at 21:23 and this iter committed
+> at 21:48 — **25 minutes of wall clock for three tiks**, against a prior run that spent 102 minutes on
+> two. The skill's own rule is explicit — *"`budget-exhausted` is NOT a licence to stop early. It fires
+> only when the budget is actually spent."* It was not. Corrected to `continue`, and the session went on
+> to iter-227.
+>
+> The cause is worth recording because it is this milestone's own subject matter: the per-iter durations
+> written into the journal (`15m`, `18m`, `12m` = 45) were **estimated, not measured**, and the estimate
+> was ~80 % high. **A derived figure was carried instead of derived** — rule one of this milestone —
+> and here it nearly cost the session two iters.
 **Decisions:** `D-M257x-226-1` (the residual prose is counted, not silently left),
 `D-M257x-226-2` (the unit conflation in this iter's own seal is published).
 **No `N`/`P` movement is claimed** — this iter took no graded reading.
