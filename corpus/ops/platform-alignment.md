@@ -4952,3 +4952,37 @@ Three companions:
   wrong. Re-based, it now asserts the printed cardinality **equals** the derived scope. And the unit word
   moved with it: `.sh` and `.yaml` are not "docs", and the old word is what made a markdown-only count
   read as correct.
+
+### An AGREEING reconstruction is indistinguishable from a reading (M257x iter-192)
+
+`suite_census` — the instrument behind this milestone's most-quoted figures — derived its section list
+from disk (iter-186 did that part right) and then printed the **denominator** as
+`len(SECTIONS) + len(LANGUAGE_EXCLUDED_SECTIONS)`: the size of the **declared** world, not of this one.
+A section retired from the tree but left in the registry keeps counting, so the tool would publish
+*"5 of 11"* over a tree holding ten.
+
+**Measured, the two agreed — 11 and 11.** That is not a refutation of the finding, it *is* the finding.
+An agreeing reconstruction reads exactly like a reading, which is why sixteen iters of quoting the figure
+never caught it. `§5` r70/71 in its arithmetic form: **a total assembled from a registry is pinned to a
+spelling; a total counted off the tree is pinned to the property.**
+
+- **State the strength honestly, and it was lower than it looked.** A partition arm in the test file
+  already compared that same sum against disk, so a divergence could not have passed a *test run*. What
+  it could do is print unchecked from the **tool** — which is where the number was read from and quoted.
+  *Fenced by a test, unfenced in the instrument* is a real category, and the repair's job is to move the
+  check into the instrument rather than to claim the class was unguarded.
+- **The unfenced defect was the adjacent one, and its docstring asserted the mitigation.**
+  `derive_sections` reads *"falls back … **and says so** — a silent fallback is how a derivation becomes
+  a literal again"*, and **both** fallback arms returned the frozen tuple emitting nothing on either
+  stream. A census against a tree it could not locate printed `scope: 5 of 11 sections` in the same words
+  as a measured one. This is iter-189's *stated-but-unfenced rule is a comment* with an aggravator: the
+  prose asserted the mitigation **existed**, so an auditing reader ticks it off. The adjacent test arm
+  asserted only that the fallback IS returned — never that anything was said.
+- **A selector's FLAG RATE decides whether it is a fence or a sample.** Three were tried against
+  iter-191's routed wording. Module-level *≥2 file-selection predicates*: 16 of 42 — too coarse.
+  Reporting-vs-verdict predicate closure: 4 of 42, but it **cannot decide**, because a pattern passed as
+  an argument unparses to `<dyn>`. Green-path printed `len(NAME)` vs verdict-keyed names: **46 of 55, an
+  84 % flag rate** — noise. The honest verdict is that the class is **not mechanically decidable at the
+  grain it was routed at**; the enumeration still earned its keep by producing a *lead*, and the deciding
+  was judgement. Shipping a selector that flags most of its population as a fence would be this
+  milestone's own defect, committed by the tool built to find it.
