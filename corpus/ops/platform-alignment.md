@@ -4672,3 +4672,38 @@ brief that quoted the queue. `§5` rule 73 said this already; what was missing w
 it against. **Repair by withdrawal, not deletion** — strike the glob, annotate the correction beneath it,
 and teach the reader the strikethrough idiom the corpus already uses, so a closed iter's published record
 stays legible and the retraction stays legible beside it.
+
+### Try the DERIVATION first and record its refutation — then fence the declaration both ways (M257x iter-185)
+
+iter-184's rule says *derive the population, never declare it*. iter-185 found the class's second member
+and could **not** derive it — and the useful part is that the attempt is on the record.
+
+The subject was `predicate_enumerator.CITATION_RE`, whose thirteen typed file extensions decide what the
+enumerator can see at all. Measured, the corpus line-pins **eleven more**, headed by **`mod` at 51
+citations — `app/go.mod:14-18` alone is 12**, the anchor `CLAUDE.md`'s shared-libraries banner rests on.
+A predicate anchored there was outside the reach denominator entirely.
+
+**Three derivations were tried before the tuple was touched, and each is recorded with its verdict:**
+a `/` in the stem means a path — **refuted**, `.anthropos` has 14 with-slash hits, every one an
+`https://` authority; not inside a `scheme://` token — better, still leaves `api.clerk.com:443`;
+resolve the path on disk — ground truth, but needs a clone set this enumerator does not take.
+
+So iter-184's **fallback clause** fires: the declaration is a registry and gets the both-directions
+treatment — *cited ⇒ declared* and *declared ⇒ occurs*. The second direction is not optional garnish; it
+is the one that let iter-184's own fence carry two route kinds (`PROBE`, `TASK`) that had never existed.
+
+**Two rules worth carrying.**
+
+1. **A fence with a lower threshold than the survey that motivated it is doing its job.** The census
+   here used a ≥2 threshold; the fence has none, and named `vue`, `css` and one authority the moment it
+   ran. **A threshold is a sampling decision and a fence is a census** — do not carry the survey's
+   threshold into the fence. Assert over the whole population, then disposition the tail individually.
+2. **A carve-out needs its own fence, because a reason list is how a blanket exclusion disguises
+   itself.** Authority tails (`host.tld:port`, not `file.ext:line`) are excluded by name with a reason
+   each — and then asserted: no tail may be in both lists, and the carve-out may not outgrow the class
+   it carves out of.
+
+**And publish the reach delta rather than absorbing it.** Widening the class moved the citation
+denominator **1,276 → 1,376 (+7.8 %)** across **978 → 1,041** corpus lines. Every ratio previously
+computed against a corpus-derived citation denominator was computed over the smaller one; a population
+change with downstream numbers attached is a retraction-shaped event even when nothing was wrong.
