@@ -4074,3 +4074,109 @@ here and in the commit bodies.
 **Stop condition:** **continue-to-next-pass** — two defects found and fixed in the first pass over this
 batch, both inside instruments shipped in the last ten iters, so the coverage delta has not been
 measured against a second pass yet.
+
+## Pass 46 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-187 … iter-196 (same batch; dimension 3 — **error paths and refusal
+gates**, asked of the whole population rather than one module)
+**Tiks covered since prior pass:** 10 (same batch as pass 45)
+**Runner named on every count** (`§5` rules 75/76): pytest **3.9.6**, unittest **3.9.6**, unittest
+**3.14.6**.
+**Section scope:** **`stack-core` only**; **Python only** — no Go or TypeScript figure is quoted here.
+
+### The sweep, and why it was worth doing as a population
+
+Pass 45's second finding was a refusal that printed and returned 0. Rather than trust that it was
+singular, this pass **enumerated the class**: every `print` in the batch's seven instruments whose text
+speaks about the *instrument's own validity* (`CANNOT RUN`, `⚠`, `BROKEN`, `UNRUNNABLE`, `STALE`,
+`vacuous`, `not GREEN`, `UNDECLARED`, `REFUS…`) — **16 sites** — each graded against what its enclosing
+function can still return.
+
+### Finding — the census reports two kinds of registry rot and grades only one
+
+`suite_census.main`'s exit expression was `1 if actionable or stale else 0`.
+
+**In it:** `stale_declarations` — a declared TEST that no longer exists.
+
+**Printed with a ⚠ and returned 0:**
+
+* `stale_excluded_sections` — a declared language-exclusion naming no directory on this tree. **This is
+  the rot iter-192 wrote that function to expose.**
+* a section on disk in **neither** bucket — the partition, broken on the real tree rather than in a unit
+  test.
+* `SECTIONS_ARE_DERIVED is False`, where the scope line prints, verbatim: *"scope: UNMEASURED — the
+  section list is the frozen iter-186 literal … The figures below describe that declaration, not this
+  tree."*
+
+Two rot reporters, two consequences, and **nothing declaring the difference** — the module states no
+exit-code contract anywhere. Three sibling guards in this repo (`story_org_count_guard`,
+`claim_census_guard`, and `labeled_spelling_pins` since pass 45) already answer this situation with
+CANNOT RUN. A census that can print a total over a denominator it has just disowned, and exit green, is
+this batch's defect **inside the machinery built to end it**.
+
+Repair: the three breaches are collected and returned as **2** (CANNOT RUN — the code this module
+already uses when the pytest half is unavailable), outranking the **1** it returns for findings. A RED
+module is a finding *about* the population; a breach means there is no population to have findings
+about. The list also lands in `--json`.
+
+**Folded into the final return rather than failing fast, on purpose.** Failing fast at the detection
+point would leave the three ⚠ prints unreachable — a check deleted rather than enforced, which is
+exactly the trap pass 45 walked into one module over and reverted. Stated cost: a breach is learned
+after the run, not before.
+
+### Graded individually, found clean — recorded so they are not re-derived
+
+`§5` — grade findings individually, never characterise a set (pass 32 characterised 21 failures as
+"provably not ours" and iter-145 proved 57 % of that false).
+
+* `claim_census_guard` `COULD NOT RUN` ×3 and `no baseline on disk` → **`return 2`**. Correct.
+* `claim_census_guard` `RATCHET BROKEN` → **`return 1`**. Correct.
+* `claim_census_guard` **`STALE SUBSTRATE`** → non-fatal, and the message itself says a stale substrate
+  *"produces evidence AGAINST a true one"*. Graded: the substrate feeds `_live_names`, so it can move
+  the tier-2 count — but **only upward**, so its error direction is toward a false RED, never a hidden
+  GREEN. Conservative, therefore defensible; the **direction and the verdict consequence are
+  undeclared**, which is iter-186's rule. Routed, not fixed — and it is outside this batch's diff
+  scope (iter-188 touched this module's `SKIP_DIRS`, not its substrate logic).
+* `route_disposition_guard` **`N ambiguous segments REFUSED`** (3 live) → non-fatal. Graded: refusing to
+  interpret an ambiguous segment is a declined reading, not a claimed one; it is named, counted in the
+  summary line, and the guard carries anti-vacuity floors elsewhere. **No defect.**
+* `labeled_spelling_pins` `⚠ N instance(s) could not be read` → non-fatal **by design**: those instances
+  are accounted, named, and removed from the denominator with the direction stated. Correct as it
+  stands (its sibling, the partition breach, was pass 45's finding).
+
+**Coverage delta on touched files:** `test_suite_census_population.py` **35 → 39** arms. Across both
+passes this batch's two most-modified test modules moved **30 → 39** and **22 → 23**.
+**Tests added:** +4 (three breach arms driving the real `main()` end-to-end, narrowed to one module so a
+full census is not needed — ~3 s each — plus the anti-vacuity control that a healthy narrowed census
+still exits 0). Anything less would have fenced the message again instead of the verdict.
+**Bugs surfaced + fixed inline:** 1.
+**Flakes stabilized:** none. **Flake gate:** 3 consecutive runs — **38 passed ×3**.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the changed module | unittest 3.9.6 / 3.14.6 | `stack-core` | Python | **39 passed · 1 skipped · 0 failed**, both |
+| 5 consuming modules | pytest 3.9.6 | `stack-core` | Python | **131 passed · 1 skipped · 0 failed** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore green |
+| `derivation_registry` completeness | 3.9.6 | rext | Python | **0 unclassified · 0 printed-arithmetic totals** |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections; Go
+and TypeScript were not re-read this pass and no figure here describes them.
+
+**Knowledge backfill:** none; the rule this pass contributes — *two rot reporters in one function must
+either share a consequence or declare why they do not* — is recorded here and in the commit body.
+
+**Routed forward (Fate 3), five open:**
+* `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` — unchanged, open.
+* `FIX-M257x-h44-claim-census-guard-is-single-runner` — unchanged, open.
+* `SURVEY-M257x-h45-printed-measurement-literals-uncensused` — unchanged, open.
+* `SURVEY-M257x-h46-stale-substrate-direction-undeclared` — **NEW.** `claim_census_guard`'s
+  STALE SUBSTRATE warning is conservative (false-RED only) and says neither that nor its verdict
+  consequence. Declare the direction, or grade it.
+* `FIX-M257x-h36-labeled-prover-denominator` — closed at pass 45; listed here only so the transition is
+  legible.
+
+**Stop condition:** **continue-to-next-pass** — a second consecutive pass found a real defect of the
+same class in a different module of the same batch, so the class is confirmed repeating and the
+coverage delta has not settled. One pass remains before the incremental cap.
