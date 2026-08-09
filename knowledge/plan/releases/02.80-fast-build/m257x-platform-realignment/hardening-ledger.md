@@ -5097,3 +5097,75 @@ property and the proxy is not said out loud.
 **Stop condition:** continue-to-next-pass — the count-vs-membership class was found in the first
 by-effect probe of the pass, and its sibling question (whether the anchor instruments still read a
 FETCHED ref after iter-222's *"a remote-tracking ref is a cache"* finding) is not yet asked.
+
+## Pass 56 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-217 … iter-228. **No instrument was changed this pass** — deliberately.
+The user's redirect says the target is the platform and a buildable stack, not deeper tooling, so this
+pass is a **reading**: it asks the one question iters 222–228 opened and did not close, using instruments
+that already exist.
+
+**The question.** iter-222 established *"a remote-tracking ref is a cache, not a remote"* and re-derived
+17 rotted anchors. iter-224 fetched and advanced. But `anchor_construct_guard` — the instrument that
+resolves the corpus's anchors — was **not touched by either iter**, and its `auto` ladder prefers
+`origin/main`. So: **is the corpus aligned to the tree a stack actually BUILDS, or to `origin/main`?**
+Those are not the same tree. `clones.pin.json` pins `app` at `ad9f3c49`; `origin/main` is `3eaadae6`.
+
+**Measured — every clone's currency, from `.git/FETCH_HEAD` mtime, no network:** all **13** clones
+fetched **1.0 h ago** (iter-224's fetch). Three are behind their own `origin/main` — `app` **28**,
+`next-web-app` **12**, `ant-academy` **9** — plus the per-stack `rosetta-extensions` at its pin (159),
+which is by design. So the readings taken this session are current; what is unasserted is that they stay
+that way.
+
+**Measured — the same corpus, the same instrument, three refs:**
+
+| `CITE_REF` | verdict | reach |
+|---|---|---|
+| `origin/main` | **exit 0 — OK** | 881/1475 = 59.7 % |
+| `auto` (the family default) | **exit 0 — OK** | 881/1475 = 59.7 % |
+| `HEAD` (= the pinned tree a demo builds) | **exit 1 — RED, 1 anchor** | 881/1475 = 59.7 % |
+
+The reach is identical at all three and **the verdict is not** — which is worth stating on its own,
+because a reader comparing reach numbers across refs would conclude the ref made no difference.
+
+**The one RED, and it is a real corpus defect:** `corpus/ops/observability.md:28` cites
+`app/main.go:278` for `colony.WithLoggingTracing(0.15, 0.15)`. At `ad9f3c49` line 278 is `)`; the
+construct is at **`:277`**. And the document **already knows this** — its own preamble (`:12-23`) says,
+in as many words, *"Every `app` anchor in the table below is pinned to `app` `ad9f3c49`, and to that ref
+ALONE"*, and then names the correct pair at that ref: **`:273`/`:277`**. The table cites `:273` and
+**`:278`** — the first from the declared pin, the second from `3eaadae6`. **The cell contradicts its own
+preamble**, in a block whose preamble exists because *"an earlier revision cited `main.go:278` @
+`3eaadae6` and named `ad9f3c49` in the same cell"* and cost exactly one RED to learn. The prose repair
+landed; the cell was not re-derived with it.
+
+**And the default masks it.** The family runs `auto`, `auto` prefers `origin/main`, and at `origin/main`
+`:278` is correct — so **the guard reads GREEN by resolving at a ref the document explicitly
+disclaims.** The two `go.mod` anchors in the same table (`:200`, `:232`) are identical at both refs and
+are not implicated.
+
+**Disposition: ROUTED FORWARD (Fate 3), not fixed inline.** Correcting the cell to `:277` makes the
+document right at the ref it declares and would turn the **default** family run RED, because the block
+pin the preamble states is not the scope the resolver honours for that row. Which of those two moves
+first — restructure the document so its pin is inside the block, or widen the resolver's block-pin scope
+— is a design decision, which is the inline boundary's own named exit.
+`ROUTE-M257x-h56-observability-cell-contradicts-its-own-declared-pin`.
+
+**Also routed, from the same thread:** `anchor_construct_guard` and `clone_drift_guard` run exactly one
+git command each and never fetch, so both answer at whatever the local cache holds — **the identical
+shape pass 54 fixed in `patch_anchor_guard`**, whose repair (disclose the ref's authority in the verdict;
+opt-in `--fetch`; exit 2 on a failed fetch at a remote-tracking ref) is a ready template.
+`ROUTE-M257x-h56-anchor-guards-answer-from-the-cache-like-patch-anchor-guard-did`.
+
+**Tests added:** none — by design; this pass changed no code.
+
+**Suites (runner · section scope · language):** the whole-`stack-core` reading for this session is taken
+below, at the session's final tree, and is not claimed per-pass.
+
+**Knowledge backfill:** one rule — *a reach number is not a verdict; the same census can return an
+identical denominator at two refs and a different answer at each, so a claim that "the ref made no
+difference" must compare verdicts, not reaches.*
+
+**Stop condition:** cap reached without stabilization — three passes, **6 defects fixed inline** and
+**2 routed**, and pass 56 found a corpus defect that the family's own default ref selection hides. Per
+the user's standing ruling this is routed and NOT met with new machinery; the **thirteenth**
+cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56).
