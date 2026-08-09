@@ -4821,3 +4821,119 @@ precondition paid first, and until it is, the ledger's own numbers are checked b
 
 **Stop condition:** **continue-to-next-pass** — the silence is disclosed but not closed, and the
 whole-section reading this batch has never had is still outstanding.
+
+## Pass 53 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-207 … iter-216 (same batch as passes 51–52; the whole-section
+reading this batch never had, plus the structural half of pass 51's headline)
+**Tiks covered since prior pass:** 10 (same batch as passes 51–52)
+**Runner named on every count:** pytest **8.4.2 / CPython 3.9.6** for the section reading, unittest
+**3.9.6** for the fences; **`stack-core` only**, **Python**. No Go and no TypeScript verdict is claimed.
+
+### THE WHOLE-SECTION READING, tree frozen — and it came back RED
+
+Taken at `2aa68cc` with the rext tree frozen from pass 52's last commit through the run (three earlier
+attempts this session were **discarded as confounded** the moment an edit landed mid-run, per the nine
+this milestone has already thrown away):
+
+> **`stack-core` — 4 failed · 1,850 passed · 3 skipped**, pytest 8.4.2 / CPython 3.9.6, Python.
+
+For scale: pass 50's comparable reading was **1,799 passed · 3 skipped · 0 failed**. The **+51** is this
+batch's arms plus passes 51–53's own; the **4 failed** is the finding.
+
+### THE FINDING: the defect reproduced itself one pass after being documented
+
+All four failures are ceiling breaches — **the same three ratchets pass 51 had just re-pinned with
+recorded reasons.** The cause is pass 52's **own** four arms and its **own** comment block, written one
+pass later, in the same session, by the same author, with the recorded reason sitting directly above the
+constant it invalidated.
+
+So pass 51's headline was right about the facts and **wrong about the class**. It is not that iters
+207–216 forgot: **any commit that writes prose moves these populations**, and the only reading available
+cost a 95-arm import of a fence nothing in the iter loop runs. *A check whose cheapest invocation is a
+suite is a check that gets skipped* — and then the ratchet is the thing that rots, which is precisely
+what the seven-iter history shows.
+
+**Repair — the reading gets a one-command form.** `derivation_registry.py --ceilings` prints live vs
+ceiling for all three, names the heaviest contributing modules on a breach, and exits non-zero. It
+asserts nothing the arms do not; it makes the cost a second instead of a suite, so an iter's close step
+can carry it. A bare invocation **errors** rather than reading — a `__main__` that acts by default is a
+footgun, and a silent default read would look like a green. Re-pinned **COMMENT 153 → 159** and
+**TEST_MODULE 487 → 492**; **DOCSTRING held exact at 195**.
+
+The fence then caught this pass's own `ceiling_report` as an unclassified derivation — **the same
+registry arm that caught iter-212's fold at pass 51, now catching its author.** Registered.
+
+### CORRECTION to pass 51's own coverage figures — 1 of 4 was wrong
+
+Appended, not substituted, per this milestone's standing practice. Pass 51 published
+`test_suite_census.py` **11 → 19** arms. Re-derived by running the module at `7ba6054`: **Ran 12 tests**.
+The correct arrow is **12 → 19**. The other three published pairs are correct —
+`test_corpus_citation_guard` **31 → 35**, `test_frozen_expectation_census_m257x` **91 → 95**,
+`test_derived_count_guard` **17 → 21**.
+
+The wrong operand came from counting `def test_` with `grep`, which also matches the **staged test
+modules written inside fixture strings** — a count of a different population wearing the arm count's
+name. `§5` r75, *name the unit*. **One in four**, which is the rate the brief predicted, the rate
+iter-206 measured, the rate passes 48–50 reproduced, and now the rate passes 51–53 reproduced too.
+
+### One clean zero, and it is a real zero
+
+Pass 52 found `CHANGELOG.md` — a git-tracked root document, 639 lines — is in **no** fence's population:
+`EXTRA_SOURCES` is `("README.md", "CLAUDE.md")` and there is nothing declaring the third root document
+either in or out. Sized before judging: **17 distinct backticked `corpus/`/`.claude/` paths and 2
+markdown links**, against README's 5/12 and CLAUDE.md's 88/8. **Every one of the 18 references resolves
+on this tree**, so there is no live defect — only an undeclared population boundary, and a plausible
+reason to exclude (a changelog describes past states, so a stale path in it may be correct history
+rather than a defect). **Routed rather than landed**, because declaring it is a population change and
+iter-209's zero-false-REDs precondition governs those.
+
+**Coverage delta on touched files:** `test_frozen_expectation_census_m257x.py` **95 → 99** arms.
+**Tests added:** +4 arms, +1 derived reader (`ceiling_report`), +1 CLI verb, 2 ceiling re-pins,
+1 registry entry.
+**Bugs surfaced + fixed inline:** 3 — the two re-breached ratchets and the unclassified
+`ceiling_report` (commit `3965790`).
+**Flakes stabilized:** none surfaced; **flake gate 3/3 clean** on the new arms.
+
+**Suite results (counts only; runner + section scope + language named on every row):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| **whole section, tree FROZEN at `2aa68cc`** | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | **1,850 passed · 4 failed · 3 skipped** |
+| the frozen-expectation fence, after repair | unittest 3.9.6 | `stack-core` | Python | **99 passed · 0 failed** |
+| `--ceilings` one-command form | `derivation_registry.py` | `stack-core` | Python | **3 ratchets exact, exit 0** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **2/2 mutations fired**, restores sha-verified |
+| flake gate | unittest 3.9.6 | `stack-core` | Python | **4 passed ×3 consecutive** |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60), derived this pass:** the **six**
+non-`stack-core` sections carrying no Python (`alignment`, `clerkenstein`, `playthroughs`,
+`stack-secrets`, `stack-seeding`, `stack-snapshot`) — **no Go verdict is claimed by any of passes
+51–53**; the **424 TypeScript tests**, still **ENUMERATED and never executed**. The four
+non-`stack-core` **Python** sections were read at pass 51 (**1,824 passed**) and are not re-claimed here.
+⚠ **The 4 failed above is a reading of `stack-core` at `2aa68cc` and is REPAIRED at `3965790`** — the
+post-repair whole-section re-read is **not taken**, and this entry does not claim one.
+
+**Knowledge backfill:** two rules —
+*a check whose cheapest invocation is a suite is a check that gets skipped; give the reading a
+one-command form or expect the ratchet to rot* (this pass, earned by breaking it ourselves), and
+*a `grep -c "def test_"` is a count of a different population when the module stages fixtures — name the
+unit or run the runner* (the corrected 11 → 12).
+
+**Routed forward (Fate 3), one new, plus the two from pass 51 and one from pass 52:**
+`SURVEY-M257x-h53-changelog-is-a-tracked-root-doc-in-no-fence-population` — declare it in or out with a
+reason and reconcile both ways; needs the zero-false-REDs precondition paid first.
+
+**Stop condition:** **cap reached without stabilization** — three passes, **17 defects fixed inline**
+and four routed, and **every pass found a real defect in the previous passes' newest instruments,
+including its own.** Coverage has not stabilized: the pass that documented a ratchet's seven-iter rot
+broke that same ratchet one pass later, which is the strongest available evidence that the class is
+structural rather than a lapse. Per the user's standing ruling this is **routed and NOT met with new
+machinery**; the **twelfth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38,
+41, 44, 47, 50, 53).
+
+**The pass's own honesty note.** Passes 51–53 published **one wrong derived figure of four** and were
+caught by re-derivation, not review — the same ~1-in-3 rate the batch under audit exhibits. Three
+sessions of harden passes have now each reproduced it while auditing it. That is no longer evidence
+about iters 207–216; it is a measured property of writing a derived figure into prose at all, and the
+only repair this milestone has found that holds is the one both pass 50 and this pass reached
+independently: **do not carry the figure — derive it where it is printed.**
