@@ -490,29 +490,44 @@ Usage: `make up PROFILE=core`
 
 ## Working with Service Code
 
-### Go Services (Backend, CMS, Sentinel, etc.)
+### Go Services — `app` and `sentinel` (there are only two, and they are NOT alike)
 
-Common development pattern:
+> **⚠️ This section described `app` and called it "Go services", plural — corrected M257x harden pass 57.**
+> The heading read *"Backend, CMS, Sentinel, etc."*: **`cms` is decommissioned** (no compose service, no
+> `repos.yml` entry, ECS destroyed — see the merge banner above), and of the four commands and five
+> directories below, **`sentinel` has one command and zero directories**. A developer told to `make setup`
+> in `sentinel` gets *"No rule to make target"*, and goes looking for an `rpc.go` that has never existed
+> there. Measured at `stack-demo/{app,sentinel}` with `platform` at `0c91421` (= `origin/main`).
+
+| step | `app` | `sentinel` |
+|---|---|---|
+| `make setup` (install toolchain) | ✅ installs **five** tools — mockgen, oapi-codegen, ent, atlas, gqlgen (not the three this file used to list) | ❌ **no such target** — its Makefile declares exactly `initdb` and `proto` |
+| `make gen` (codegen) | ✅ `go generate ./...` | ❌ **no such target** — regenerate protobuf with `make proto` |
+| `atlas migrate apply --env local` | ✅ `atlas.hcl` declares `env "local"` | ❌ **no `atlas.hcl` at all**; schema is seeded from `init_policy.sql` |
+| `go run .` · `go test ./...` | ✅ | ✅ (`main.go` at the repo root) |
+
 ```bash
-# Setup (first time only)
-make setup    # Install tools: mockgen, ent, atlas
-make gen      # Generate code from protobuf/ent schemas
+# app — the backend monolith
+cd stack-dev/app
+make setup                       # first time only
+make gen
+atlas migrate apply --env local  # or `make migrate` from platform/, which is the usual path
+go run . && go test ./...
 
-# Database migrations (when schema changes)
-atlas migrate apply --env local
-
-# Run locally
-go run .
-
-# Run tests
-go test ./...
+# sentinel — authorization only; a much smaller repo with a different shape
+cd stack-dev/sentinel
+make proto                       # NOT `make gen`
+go run . && go test ./...
 ```
 
-Key directories in Go services:
+**Key directories — these are `app`'s, and `sentinel` matches none of them** (measured: 0 of 5):
 - `rpc.go`: Main RPC server implementation (entry point for API)
 - `internal/data/ent`: Database schema and ORM code
 - `internal/app`: Component wire-up
 - Domain-specific folders: `internal/organization`, `internal/user`, etc.
+
+`sentinel`'s own layout is `main.go` + `cmd/` + `internal/`, with its Casbin policy bootstrapped from
+`init_policy.sql` — read `corpus/services/sentinel.md` rather than mapping `app`'s tree onto it.
 
 ### Frontend (Next.js Monorepo)
 
