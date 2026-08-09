@@ -4217,6 +4217,44 @@ which requires reading what a staged suite asserts, so it is **declared per site
 owner (§8 iters 70/71 — never the spelling). A battery that starts staging the baseline tomorrow enrols
 itself and is RED until classified.
 
+### A prose claim about SETS is a claim a machine can GRADE (M257x iter-180)
+
+A classification table is prose that decides behaviour, and prose rots. `derivation_registry.py` declined
+two derivations with **one shared sentence** — *"each returns the same population `census` does (modulo
+`CENSUS_EXCLUSIONS`)"*. Measured:
+
+| derivation | size | the sentence |
+|---|---|---|
+| `guard_family::union` | 27 | **TRUE** — `census ∪ CENSUS_EXCLUSIONS`, exactly |
+| `guard_family::declaring_modules` | 26 | **FALSE, in both directions** — it differs from `census` (26) by two members, and adding the exclusions back never produces it |
+
+**Two things made it survive five iters.** First, `len(census) == len(declaring_modules)`, so every
+count-based comparison of them reads green — a cardinality coincidence this milestone already had a
+mutation control for, on the *other* side of the repo. Second, and more general:
+
+> **One rationale covering two entries is two claims wearing one.** The true half carries the sentence's
+> credibility and the false half rides on it. This is `D-M257x-121-2`'s *enumerated tables over
+> adjectives*, reached from the other direction: a shared rationale is not economical, it is
+> unfalsifiable at the site where it is wrong.
+
+**The repair is a grammar, not a rewrite.** Rewriting the sentence fixes today's reading and leaves the
+class exactly as rottable. Instead: census the class first — *how many rationales assert a relation
+between named derivations?* (**2 of 76**, derived, and they were the two under review) — then give the
+claim a form the suite can resolve:
+
+> `RELATION: <module::attr> == <module::attr> [| <module::attr>]`
+
+asserted **both directions** on every run: a rationale naming a sibling with no clause is RED, and a
+clause that does not hold is RED with the symmetric difference printed. **Run it against the defect
+before you repair the defect** — a fence first seen green over an already-repaired tree is a fence nobody
+has watched fail (§9 iter-149).
+
+**Two constraints worth carrying.** Keep the operand resolver *generic* — `module::attr`, call it if
+callable, flatten to a set of strings — because a resolver with a per-site lookup table **is** a registry,
+and the registry tax is the thing §8 iter-179 and iter-178 both spent an iter avoiding. And write the
+control against the **quiet** failure: here, a resolver that took only the first half of a pair-returning
+operand would not raise, it would report a plausible-looking disagreement.
+
 ---
 
 ## 9. Cadence
