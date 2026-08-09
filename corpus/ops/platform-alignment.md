@@ -4707,3 +4707,36 @@ is the one that let iter-184's own fence carry two route kinds (`PROBE`, `TASK`)
 denominator **1,276 → 1,376 (+7.8 %)** across **978 → 1,041** corpus lines. Every ratio previously
 computed against a corpus-derived citation denominator was computed over the smaller one; a population
 change with downstream numbers attached is a retraction-shaped event even when nothing was wrong.
+
+### A CORRECT exclusion is still a defect while it is silent (M257x iter-186)
+
+`suite_census.py` produces this milestone's headline suite figure — the one quoted in briefs and iter
+closes as **"the whole-population baseline"**. Its section tuple named **5** sections. The repo has
+**11**, and the six omitted carry **264 Go test files and 45 TypeScript specs** (`stack-seeding` alone
+has 119).
+
+Nothing about the omission is wrong: no Python runner collects a Go test. **The defect is that the tuple
+said none of it**, so a total over 5 of 11 sections was quoted, repeatedly, as a total over everything.
+`§5` rule 60 already says a scoped green is evidence about its scope alone — and an instrument that does
+not *print* its scope makes that rule unenforceable by the person reading the number.
+
+**The rule.** Every census prints its scope beside its total, on every run, derived — not in a docstring,
+not in a commit message, in the output. And every exclusion is **named with a reason** (`§5` rule 8),
+never expressed as absence from a list, because absence and oversight are the same shape.
+
+**Make the exclusion checkable, or it becomes a place to hide a live section.** Four properties, each
+mutation-proven: every directory on disk is collected *or* excluded by name; no accounted name is
+missing from disk (a **stale exclusion** keeps its name and reason after its subject is gone); every
+excluded member is **non-empty in its own terms** (an exclusion whose subject has no tests is either
+stale or was never true, and both read as green); and the two halves **partition** the ground truth
+exactly, since an overlap or a gap is what made "the whole population" unreadable in the first place.
+
+**And a search key worth reusing.** Two earlier members of this class were found by hand-sweeping. The
+third was found by **enumerating** — 70 module-level string collections in one section — and selecting on
+**two literals that name one population with different cardinality** (11 vs 5). That is iter-177's
+finding used as a *search key* rather than as a post-mortem, and it cost one command.
+
+**A derivation needs a control that it is not a literal wearing a function.** `derive_sections()` must
+read the disk, and its last-measured fallback tuple must be reachable **only** through the
+cannot-locate-the-repo path — a silent fallback is how a derivation quietly becomes the literal it
+replaced.
