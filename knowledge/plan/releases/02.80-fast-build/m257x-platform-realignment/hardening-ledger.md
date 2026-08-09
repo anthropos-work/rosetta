@@ -5165,7 +5165,16 @@ below, at the session's final tree, and is not claimed per-pass.
 identical denominator at two refs and a different answer at each, so a claim that "the ref made no
 difference" must compare verdicts, not reaches.*
 
-**Stop condition:** cap reached without stabilization — three passes, **6 defects fixed inline** and
-**2 routed**, and pass 56 found a corpus defect that the family's own default ref selection hides. Per
+**Stop condition:** cap reached without stabilization — three passes, **7 defects fixed inline** and
+**2 routed**, and pass 56 found a corpus defect that the family's own default ref selection hides.
+
+> **The 7, enumerated — because this entry first said SIX.** (1) `clone_pin_guard` arm C compared the ref
+> literally; (2) arm B never required `platform`; (3) `patch_anchor_guard` answered from the local cache;
+> (4) `guard_family`'s RED summary omitted its reach; (5) `TestCollectionParity`'s locator matched its own
+> quoted literal; (6) `platform_predicate_guard` G2 graded the count and read as membership; (7) the
+> repo-wide collection fence was blind to local fixture bases. The wrong figure was **carried** from a
+> commit message rather than derived from the list — the ~1-in-3 rate this milestone has measured four
+> times, reproduced once more by the pass that was auditing for it, and caught the way the ledger says to
+> catch it: **enumerate where you print, never carry.** Per
 the user's standing ruling this is routed and NOT met with new machinery; the **thirteenth**
 cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56).
