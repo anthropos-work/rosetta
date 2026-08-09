@@ -104,9 +104,16 @@ class-by-class sweep order in advance) — (3) re-scope: n — (4) user-blocker:
   > 207 `test_cockpit` tests with zero failures. So this is a **correction, not a re-open**: there is
   > no live disagreement to route. Found by `route_disposition_guard.py`, the fence iter-183 built
   > over this registry after finding it had none.
-- `SURVEY-M257x-iter181-*`, `SURVEY-M257x-iter180-relation-grammar-supports-only-equality`,
+- ~~`SURVEY-M257x-iter181-*`~~, `SURVEY-M257x-iter180-relation-grammar-supports-only-equality`,
   `SURVEY-M257x-iter179-thirty-battery-tests-unrun`, `FIX-M257x-iter173-ledger-denominator`,
   `SURVEY-M257x-iter178-n-of-m-outside-clause-5-is-52-sites` — unchanged; open.
+  > **✅ CORRECTED — iter-184.** The struck first entry was a **glob**, and **it denotes the empty set**:
+  > iter-181 created **no** route (measured — its close names seven ids, every one pre-existing, and
+  > closes `SURVEY-M257x-iter179-readme-indexes-test-modules-unmeasured`). The glob nevertheless read as
+  > a live backlog item in every brief that quoted this queue, including run 17's. `§5` rule 73 —
+  > **a glob is not a derivation** — and a carry-forward that names a SET must ENUMERATE it. Now fenced:
+  > `route_disposition_guard.malformed()` refuses any carried member that is not a well-formed route id
+  > and names its site.
 - The standing queue, unchanged.
 
 **Lessons:** **a conversion that moves a COUNT is not a conversion** — the obvious `subTest` translation

@@ -4634,3 +4634,41 @@ are long enough that markdown hard-wraps them mid-token with a trailing hyphen. 
 returns **207 ids where 204 exist** — 3 phantoms, 3 real ids invisible. Every prior statement this
 milestone made about "the open routes" was made under it. **Rejoin before enumerating, and count the
 joins**, so the hazard stays demonstrated rather than assumed away.
+
+### A fence's POPULATION is a registry too, and it is the one nobody audits (M257x iter-184)
+
+iter-183 shipped a fence over the milestone's route registry: green, with a mutation control, an
+anti-vacuity control, a printed census line and a stated denominator. One iter later it was measured
+against its own subject and found to be reading **189 of 327 distinct carried ids — 57.8 %**.
+
+The cause is worth naming exactly. The property under test — *is this registry internally consistent?* —
+was fenced properly. The property that decides **what the registry IS** — which id kinds count as
+routes — was a **tuple typed from memory**: `(FIX|SURVEY|SWEEP|PROBE|TASK)`. Measured, the blocks carry
+eight further kinds (`CHECK` alone is 76 distinct ids, `DOC` 28, `FENCE` 15, `MEASURE` 10) and **two of
+the five declared kinds never occur at all**. Every control fired correctly — on the 57.8 %.
+
+**The rule.** A fence has two halves: the assertion, and the population it asserts over. Auditing the
+first is routine here. The second is usually a literal in the source, it is never RED, and no mutation
+control can reach it — a mutation battery perturbs the *subject*, and the population decides what the
+subject is. **Derive the population; do not declare it.** If deriving is impossible, the declaration is
+itself a registry and needs the both-directions treatment every other registry in this corpus gets.
+
+**Two corollaries, each paid for in this iter.**
+
+1. **Extending the tuple is not the fix.** The instinct on finding `CHECK` missing is to add `CHECK`.
+   That ships the same defect one kind wider and leaves the next kind to be discovered the same way.
+   Removing the tuple — deriving the kind from the text — closes the class instead of its last member
+   (iter-169's rule, applied to a population rather than to a finding).
+2. **A predicate tuned to the majority shape manufactures findings about the minority shape** — and it
+   is invisible until the population is wide enough to contain one. Widening here immediately booked
+   `HOST-M257x-toolchain` as malformed because its kind is not iter-scoped and the well-formedness rule
+   demanded `<origin>-<slug>`. The rule was narrowed to assert **exactly** the defect (*an id may not end
+   in `-`*) and nothing else. This is the instrument-side form of `D-M257x-122-4`.
+
+**And the finding that started it, because it generalises:** a carry-forward that names a SET must
+**ENUMERATE** it. iter-182 discharged a group of routes with the glob `SURVEY-M257x-iter181-*`; iter-181
+had created **no** route, so the glob denoted the **empty set** while reading as live backlog in every
+brief that quoted the queue. `§5` rule 73 said this already; what was missing was a population to check
+it against. **Repair by withdrawal, not deletion** — strike the glob, annotate the correction beneath it,
+and teach the reader the strikethrough idiom the corpus already uses, so a closed iter's published record
+stays legible and the retraction stays legible beside it.
