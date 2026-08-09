@@ -71,7 +71,7 @@ sub-phases from `up-injected.sh`'s **own** progress lines against a checked-in a
 unattributed and every attribution in it is suspect.
 
 > **The count is TWELVE, not eleven** — corrected M257x. `BRINGUP_ANCHORS`
-> (`rosetta-extensions/stack-core/buildbench.py:114-130`, entries at `:117-129`, @ rext `415240f`) holds **12**:
+> (`rosetta-extensions/stack-core/buildbench.py:115-131`, entries at `:118-130`, @ rext `415240f`) holds **12**:
 > `host_preflight · secrets_provision · clones_and_inject · backend_builds · seed_tooling · ui_next_web ·
 > ui_studio_desk · ui_hiring · compose_up · serve_and_egress · set_dress · autoverify`. The **4.1–4.12 table
 > immediately below already listed all twelve**, and so does the p50 table in "The baseline" — only this
@@ -85,7 +85,7 @@ unattributed and every attribution in it is suspect.
 > ```
 >
 > **Widened once** (Rule 57): `grep -rn "BRINGUP_ANCHORS" .` across the whole rext tree returns exactly two
-> hits — the definition at `buildbench.py:114` and its single consumer at `:249`. There is no second anchor
+> hits — the definition at `buildbench.py:115` and its single consumer at `:250`. There is no second anchor
 > list, so the number does not move. Three of the twelve are conditional (`ui_*` on the UI tier,
 > `serve_and_egress` on `--public-host`) and are reported as *not applicable* rather than missing when their
 > feature is off — a conditional phase is still a declared phase.
@@ -328,7 +328,7 @@ bench host (`billion` for the M255 baseline; **`odysseus`** since `D-v28-14`), n
 > matter more than a wall-clock total would have. The one field this leaves derived rather than measured is
 > the profile's `projected_image_gib` — and **the only thing labelling it is prose**, inside `laptop.json`'s
 > `notes` blob, **which no code reads**. The loader validates it *identically* to the four genuinely-measured
-> numeric fields (`buildbench.py:408-411`), so nothing mechanical stops a derived number being quoted as one.
+> numeric fields (`buildbench.py:409-412`), so nothing mechanical stops a derived number being quoted as one.
 > **There is no `provisional_fields` list and no provenance object** — M257 owes the real mechanism (it is a
 > carried M255 item); until then, treat "measured or derived?" as a question the profile answers only to a
 > human who opens it.
@@ -377,9 +377,9 @@ failure fails the whole assert.
 | 3 | **disk** | free < `disk_floor_gib` + `projected_image_gib` |
 
 > **Clause zero is the one a brand-new host hits FIRST, and it is unpredictable from a three-clause reading.**
-> `buildbench.py:450` names it in its own comment (implemented `:460-469`) and it fires in **all three**
-> production call sites — `pre_rep_assert` requires `disk_avail_gib` (`:723`), the post-rep gate requires
-> `peak_load1` **and** `disk_avail_gib` (`:980`), the `assert-headroom` CLI requires `disk_avail_gib` (`:1271`).
+> `buildbench.py:451` names it in its own comment (implemented `:461-470`) and it fires in **all three**
+> production call sites — `pre_rep_assert` requires `disk_avail_gib` (`:724`), the post-rep gate requires
+> `peak_load1` **and** `disk_avail_gib` (`:1175`), the `assert-headroom` CLI requires `disk_avail_gib` (`:1470`).
 > It exists because the first version *skipped* any clause whose input was `None`, so a rep whose sampler died
 > handed in `peak_load1=None` and the gate **returned `ok=True` on a host it had never measured** — the same
 > "an empty result read as a pass" class the rest of `stack-core` refuses. The failures it emits are named
@@ -388,8 +388,8 @@ failure fails the whole assert.
 > assert working, not a broken profile.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
-> peak (`max` over the sampler's rows, `buildbench.py:978`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1267`) — and the failure message still
+> peak (`max` over the sampler's rows, `buildbench.py:1173`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1466`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
 
@@ -412,12 +412,12 @@ to ~3 % across three independent cycles is a model, not a guess — which is wha
 > = **1 on billion**, **1 on the laptop.** Neither host fits two concurrent Next.js build lanes in RAM.
 
 **Both guards in that formula are load-bearing, and an earlier draft of this doc omitted them.** The code
-(`buildbench.py:429-435`) clamps at `ui_image_count` (3) and **floors at 1**; the bare `floor(…)` returns **0**
+(`buildbench.py:430-436`) clamps at `ui_image_count` (3) and **floors at 1**; the bare `floor(…)` returns **0**
 on an undersized host where the code returns **1**. `billion` and the laptop agree with the bare version by
 coincidence (1.153 → 1, 1.736 → 1) — **a third host need not**, which matters now that `odysseus` is the gate
 host and its profile is unwritten.
 
-> **The floor of 1 is NOT a claim that one lane FITS** (`buildbench.py:424-427`, verbatim intent). A host too
+> **The floor of 1 is NOT a claim that one lane FITS** (`buildbench.py:425-428`, verbatim intent). A host too
 > small for a single lane still has to build one, so the *plan* is 1 either way — on such a host it is
 > `headroom_assert(lanes=1)` **clause 2** that fails, and that is where the fact gets reported. Do not read a
 > return of 1 as "headroom verified"; read it as "the plan is one lane". The two are checked in different
@@ -430,7 +430,7 @@ the M239-F1 ENOSPC walked past a GREEN pre-flight.
 ### Two contracts, deliberately different — D-M255-1
 
 `up-injected.sh`'s pre-flights are **advisory by design**: *"never block a genuinely good bring-up on a soft
-heuristic"* (`:279`, `:319`). M255 does **not** retract that, and the retraction it *does* make is narrower
+heuristic"* (`:280`, `:320`). M255 does **not** retract that, and the retraction it *does* make is narrower
 and different: `preflight_vm_ram()` declares its variables `local`, assigns no global and returns no verdict,
 so **nothing branches on it** — it is advisory in the sense of *inert*, which is not the same as *tolerant*.
 
@@ -584,7 +584,7 @@ python3 stack-core/buildbench.py env-snapshot                                 # 
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse at `buildbench.py:1197-1234`). The ones above are the
+**The full flag surface** (verified against the argparse at `buildbench.py:1396-1433`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |
@@ -607,19 +607,19 @@ common path; these are the rest, and two of them decide whether a campaign is co
 | `BUILDBENCH_PROFILE` | `:1205`, `:1217` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so an `odysseus` campaign must pass `--profile odysseus` explicitly or export `BUILDBENCH_PROFILE=odysseus`, or it will grade itself against the wrong host's profile |
 | `BUILDBENCH_LANES` | `:873` | `1` | the lane count `run` asserts headroom for. **Env-only — there is no `--lanes` flag on `run`** (`--lanes` exists on `assert-headroom` alone) |
 
-*(`--public-host` also falls back to `STACK_PUBLIC_HOST` (`:1206`) — the same stack-wide knob the rest of the
+*(`--public-host` also falls back to `STACK_PUBLIC_HOST` (`:1405`) — the same stack-wide knob the rest of the
 demo family reads.)*
 
 > **`--reps 1` exits 0 and is NOT a gateable number.** The harness separates **integrity** (`ok`) from
-> **quotability** (`gateable`): `report["gateable"]` is `ok and len(ledgers) >= 3` (`buildbench.py:1126`), and a
+> **quotability** (`gateable`): `report["gateable"]` is `ok and len(ledgers) >= 3` (`buildbench.py:1325`), and a
 > sound sub-`n=3` campaign carries `not_gateable_reason` — *"n=1 is below the n>=3 floor — sound, but not a gate
-> number"* (`:1128`), printed by `report` at `:1185-1186`. **The exit code does not distinguish them**: a
+> number"* (`:1327`), printed by `report` at `:1384-1385`. **The exit code does not distinguish them**: a
 > `--reps 1` smoke run reports `ok: True` and exits `0`. That is exactly how a non-gateable figure gets quoted
 > as a gate — at `n=2` this very campaign would have reported **~773 s on `billion`** against its real
 > **666.29 s on `billion`** p50. **Read `gateable`, not the exit code, before quoting any number.**
 
-> **`parse --json` is a DEAD flag.** It is declared (`:1233`) and then never consulted: the `parse` branch ends
-> in an unconditional `print(json.dumps(out, indent=2))` (`:1312`), so `parse` **always** emits JSON with or
+> **`parse --json` is a DEAD flag.** It is declared (`:1432`) and then never consulted: the `parse` branch ends
+> in an unconditional `print(json.dumps(out, indent=2))` (`:1511`), so `parse` **always** emits JSON with or
 > without it. Harmless, but do not read its presence as implying a non-JSON `parse` mode exists.
 
 **Every ledger entry is self-describing** — the exact `argv` of both legs, the rext HEAD and tag (and whether

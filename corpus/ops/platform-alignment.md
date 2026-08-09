@@ -3036,6 +3036,55 @@ and no guard edited.
 3. **Grade the direction of a new RED.** A guard that reddens after a fetch has not regressed; it has
    *stopped being blind*. The finding belongs to the corpus, dated to the ref that disclosed it.
 
+### Before comparing a DECLARED number to an OBSERVED one, ask what the declared number is a number OF (M257x iter-229)
+
+The sibling of the fetch rule above, on the other operand. That one is about a reference that is stale;
+this one is about a reference that is **fresh, present, correctly named — and denotes a different
+quantity than the observation it is being compared to.** It is harder to see, because both sides parse,
+both sides are numbers, and the comparison returns a clean verdict either way.
+
+`buildbench` grades a run against a measured, checked-in **host profile** the operator names with
+`--profile`. Nothing compared that profile to the host underneath it: `host_facts()` was collected into the
+rep ledger as a *record* and read by no assert, while `read_verdict()` one screen away already refuses an
+`autoverify.json` that *"describes an earlier stack."* The harness had the discipline and was pointing it
+one object too late — **the verdict only reports what happened; the profile decides whether the run was
+worth attempting.**
+
+The obvious repair is to compare `profile["cores"]` to the host's core count. It is wrong, and the
+sanctioned dev host demonstrates it:
+
+| quantity | value |
+|---|---|
+| `os.cpu_count()` — host total | **12** |
+| `docker info` NCPU — the Docker Desktop **VM allocation** | **8** |
+| `billion.json` `cores` (a `native-linux` **x86_64** profile) | **8** |
+| `laptop.json` `arch` | `arm64` — **the same as this host** |
+
+`laptop.json`'s own `budget_source` says its numbers are *"the Docker Desktop VM allocation, NEVER host
+totals."* So **`cores` denotes a different quantity in different profiles, and which one is declared by a
+sibling field** (`kind`). Two cheaper implementations each ship a **silent accept** here: comparing `cores`
+to the engine's NCPU **matches `billion` on an arm64 Mac** (8 == 8), and comparing `arch` alone **matches
+`laptop`** — the very profile the host does not fit.
+
+> **Rule.** A field name is not a unit. Before a guard compares a declared value to an observed one, it
+> must resolve **what the declared value is a value of** — and if the answer lives in another field
+> (`kind`, `budget_source`, `schema`), that field is part of the comparison, not context. When the
+> governing field holds a value the guard does not recognise, the arm is **UNMEASURED**, never a pass.
+
+Three corollaries, each of which cost something here:
+
+1. **Grade a candidate implementation by the case it ACCEPTS, not the case it rejects.** Every arm
+   considered rejects *something*; only one of them rejects `billion` on a Mac. Write the naive versions
+   down and find their silent accepts before choosing — and then **pin each one as a regression test that
+   opens by asserting the coincidence still exists**, so the test cannot quietly go vacuous when a profile
+   is re-measured.
+2. **A field that looks like identity but is a budget belongs to whichever guard already grades budgets.**
+   `mem_budget_mib` is *observed* by the identity check and explicitly not graded by it, with the reason in
+   the payload — one fact with two homes and two tolerances is how a number starts to drift.
+3. **The cheapest arm is usually the self-passing one.** `arch` is one string compare and agrees with the
+   host in the exact case that motivated the check. `§5`'s self-matching-locator class is not confined to
+   locators.
+
 ### A sixth layer, on the OTHER inflow: the repair's own induction (M257x iter-107)
 
 The fifth layer watches the platform moving under us. This one watches **us moving things under ourselves**.
