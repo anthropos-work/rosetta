@@ -3788,8 +3788,12 @@ that wrote it is the cheapest possible evidence it is not vacuous.
 > retraction in the vocabulary the fence enumerates.*
 
 > **Count reconciliation — pass 42's table of `5` is a snapshot, not a standing fact.** Pass 42
-> measured **5** harden-origin routes *before its own entry existed*; that entry routed the 6th, so the
-> live figure is **6**. Both are correct at their moment and neither is correct without one. Recorded
+> measured **5** harden-origin routes *before its own entry existed*; that entry routed the 6th. **Any
+> figure written here is stale the moment a later pass routes anything** — pass 44 then routed the 7th,
+> which is the regress, and the reason no standing number belongs in this prose. The live value has
+> exactly one reader: `_harden_origin_routes()` in
+> `stack-core/tests/test_harden_origin_route_visibility_m257x.py`, which is also the fence that fails if
+> a route goes undispositioned. Quote **it**, at a ref. Recorded
 > because this pass then made the milestone's own signature error while checking it: a probe written
 > here with a **private** prefix regex — instead of the module's `HARDEN_ORIGIN_RE` — counted **7**, by
 > admitting the truncated fragment above. The module's own reader says 6. *A count about a population
