@@ -571,8 +571,12 @@ fingerprint does not match. **Cache layers, never images.** M257 asserts it.
 ```bash
 cd <the rext clone>
 # --profile names a checked-in hostprofiles/<name>.json; an unknown name exits 2.
-# `odysseus.json` is M257's first deliverable — until it lands this line cannot run.
-python3 stack-core/buildbench.py run 1 --reps 3 --profile odysseus \
+# ⚠️ M257x iter-226: `odysseus.json` will NEVER land — `D-v28-15` retired that host on 2026-07-31.
+# Name the profile of the host you are ACTUALLY on. `hostprofiles/` currently holds only
+# `billion.json` (8-core x86_64, containerd) and `laptop.json` (10-core/16 GiB M1 Pro) — so on the
+# sanctioned dev host there is NO applicable profile yet, and nothing in buildbench compares the
+# profile you name to the machine you are on (M257x iter-225). Measure one first; do not borrow.
+python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
         --public-host <magicdns> --label baseline
 python3 stack-core/buildbench.py report stack-core/.buildbench/baseline-<ts>
 python3 stack-core/buildbench.py assert-headroom --profile laptop --lanes 2   # exit 1 = plan oversubscribes
