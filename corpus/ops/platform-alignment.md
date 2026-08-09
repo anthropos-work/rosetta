@@ -2970,8 +2970,13 @@ into every fresh `stack-demo/` workspace copy-if-absent (M246), and `DEMO_ADVANC
 clone out at the ref it names. It is the artifact a cold bring-up on a fresh box reads to decide **what
 topology to build** — i.e. the tooling's answer to *"which repos are still part of the platform?"*
 
-Measured at iter-222: the pin named **11** repos; `repos.yml` @ platform `origin/main` (`0c91421`) names
-**4** (`app`, `sentinel`, `next-web-app`, `studio-desk`), and with the two sanctioned extras that is **6**.
+Measured at iter-222: the pin declared **11 keys**; `repos.yml` @ platform `origin/main` (`0c91421`)
+names **4** (`app`, `sentinel`, `next-web-app`, `studio-desk`), and with the two sanctioned extras the
+legitimate pin population is **6**. *("11 keys", not "11 repos" — `platform_predicate_guard`'s G2 arm
+reads a number next to the word `repos` as a claim about the clone set and went RED on the first
+phrasing of this very paragraph. It was right to: the sentence is about the PIN's population, and
+saying so is `§8` iter-98 applied to a fence's own documentation — write the claim in the vocabulary
+the fence enumerates.)*
 **Five keys were phantom** — `cms`, `jobsimulation`, `storage`, `messenger`, `roadrunner` — every one of
 them a repo whose removal `repos.yml`'s own header states in the platform's words: *"Those repos are frozen
 legacy: they own no local schema, no compose service and no clone entry here."* The comment above the pin

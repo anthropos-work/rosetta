@@ -23,7 +23,7 @@
 > directory"* and named two methods.** The source's own type doc says otherwise in as many words
 > (`manager.go:36-39`): *"the slice of the workforce manager this domain needs: the active-member
 > directory … **and the org's skill-scale setting**."* `LevelsCount` is an **org setting**, not a member
-> call — `readiness.go:770` reads `maxLevel := int(m.workforce.LevelsCount(ctx, orgID))`.
+> call — `readiness.go:776` reads `maxLevel := int(m.workforce.LevelsCount(ctx, orgID))`.
 > **And *"whose implementations stayed in `members.go`"* is wrong for the fourth**: `LoadMembers` /
 > `LoadMembers` / `LoadMembersByUserIDs` / `BaseMembers` are at `app/internal/workforce/members.go:349`/`:353`/`:357`,
 > but **`LevelsCount` is at `app/internal/workforce/manager.go:90`** (`git grep "func .*LevelsCount"`
@@ -500,7 +500,7 @@ decision):**
   `job_simulation_sessions` query about a different proposition. So an **active**-cycle dashboard requires the
   **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
   counted, not the evidences. **Both branches read that one table, at different strictness**, and the
-  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:684`) demands
+  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:690`) demands
   `step_type = skill_mapping` **AND** `status = completed` **AND** `completed_at >= cycle.start`, so a
   progress row seeded `in_progress` — enough for `keepStartedMembers` — leaves the member **invisible**
   on an active cycle (write the real skill evidences +

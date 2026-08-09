@@ -484,6 +484,49 @@ file **byte-for-byte**. Only then does it write the pin.
 
 `--repin` **never touches the target file** — only the manifest.
 
+### 6-bis. The pre-flight nobody could run: *would the whole set still apply, at ref X?* (M257x iter-223)
+
+`demopatch preflight` answers this for **one** manifest against the **checked-out** tree. There was no way
+to ask it of the **set**, at an **arbitrary ref** — which is the question you actually have when deciding
+whether to advance the clones. Until iter-223 the only way to find out was to run a bring-up and read the
+warnings ~11 minutes in, and §5-bis is the record of what that costs: *a silently-refused perf patch
+shipped a 76 s members grid for four releases.*
+
+`rext stack-core/patch_anchor_guard.py --clones-root <stack-demo> [--ref <ref>]` censuses every manifest
+at a named ref and asserts the two conditions `demopatch`'s own G2 refuses on — **the path exists**, and
+**the anchor occurs exactly once**. It runs in seconds, needs no build, and is a member of the guard
+family (`--ref` defaults to `HEAD`, so the family asks *"does the patch layer apply to what this stack
+would build now"*; pass `--ref origin/main` for the pin-advance question).
+
+**Sha drift is counted and printed and is never a finding**, which is the whole design decision. Since
+M217 the gate self-heals: a drifted whole-file sha with the anchor intact `1×` is `pristine`, WARNed and
+applied. A fence that reddened on drift would contradict the shipped mechanism and go RED on a set that
+works — and a fence that cries wolf gets suppressed.
+
+**The first run, and the number that matters is the second one:**
+
+| measured at `stack-demo`, 2026-08-09 | `HEAD` (the pin) | `origin/main` |
+|---|---|---|
+| manifests | 23 | 23 |
+| path missing | 0 | 0 |
+| anchor occurs exactly once | **23 / 23** | **23 / 23** |
+| `pre_sha256` no longer matches | 10 | 10 |
+
+The clones were **not** at the same tree in those two columns — iter-222 measured `app` **+28**,
+`next-web-app` **+12**, `ant-academy` **+9** behind `origin/main`. So the answer to *"would advancing the
+clones break the patch layer?"* is **no**, and that is a real result about a real question.
+
+**And the drift sets are IDENTICAL, member for member.** Those 10 baselines were already stale at the ref
+the demo builds today; the platform advancing did not make them so, and advancing further would not make
+them worse. At least one is stale **by design** — §6's chain case, where `next-web-public-website-url`'s
+`pre_sha256` *is* studio's `post_sha256` and reads DRIFTED against a pristine file on purpose. Which of
+the remaining nine are chain cases and which are simply un-repinned is **not** settled here, and the
+guard is deliberately silent on it: it reports the count, never a verdict on the cause.
+
+**Read the green over its reach.** This says every patch *applies*. It does not say any patch is still
+*right* — an anchor can survive onto a line whose meaning moved — and it says nothing about two patches
+interacting on one path, which is `union_apply_guard`'s subject.
+
 ---
 
 ## 7. Adding a new patch
