@@ -61,8 +61,13 @@ while writing its tests and repaired with controls in both directions.
 **Gate:** NOT MET
 **Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n (twenty-seventh consecutive `closed-fixed`;
 **no `P`/`N` reading taken — UNMEASURED, not unmoved**, `§9`) — (3) re-scope: n — (4) user-blocker: n —
-(5) cap-reached: **y** (fifth tik of this invocation) — (6) protocol-stop: n — (7) budget-exhausted: n —
-Outcome: **exit-5**
+(5) cap-reached: **n** — **CORRECTED in place.** This first read `y (fifth tik)` and ended the run. It
+was the **FOURTH**: iters 192, 193, 194, 195. The cap is a COUNT and I graded it from a feeling of
+length — the iter ran 16 minutes after a 30-minute predecessor. **A cap is a derivation too**
+(iter-191's rule, turned on the protocol's own exit grading rather than on a guard). Caught by the
+commit list at close-out: four `iter(...)` commits against a claim of five tiks — the arithmetic the
+report itself prints — (6) protocol-stop: n — (7) budget-exhausted: n —
+Outcome: **continue**
 **Decisions:** `D-M257x-195-1` … `D-M257x-195-4` (see [`decisions.md`](decisions.md))
 
 **Audit:** **Go — 2,714 passed · 0 failed · 0 skipped** across all **6** Go sections (`go1.26.5
