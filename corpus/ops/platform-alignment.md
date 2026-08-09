@@ -2747,6 +2747,61 @@ defect, it was arguing for it.*
     about the **toolchain**, and the cheap dismissal — "that mutation just doesn't fire" — is the one
     reading that guarantees a vacuous proof gets recorded as a real one.
 
+### A corpus QUOTES source by paraphrase — so containment cannot grade a citation (M257x iter-234)
+
+**REFUSED INSTRUMENT. Do not rebuild it.** The obvious next rung after *"the sha resolves"* (iter-230),
+*"the claim agrees"* (iter-231) and *"the file exists"* (iter-232) is *"does the cited LINE carry the text
+the corpus quotes?"* — a **co-quotation containment test**: take every `file:NN` anchor, take the
+backticked literals beside it, ask whether any appears at line `NN`. It is mechanical, it needs no
+interpretation, and it is exactly `TOK-08`'s shape.
+
+**It does not work, and the reason is a property of good documentation.** Measured over **409** anchor
+sites into the six live repos (`app` 230 · `platform` 165 · `sentinel` 7 · `next-web-app` 4 ·
+`ant-academy` 2 · `studio-desk` 1), read at the `stack-demo` clone set:
+
+| reading | exact-LANDS |
+|---|---|
+| all 278 naively-gradable sites | **56.8 %** |
+| the 93-site subset where the instrument is *valid* (single-anchor line, no negation marker) | **53.8 %** |
+
+A 46 % failure rate looks like a corpus in ruins. **It is not. Five of five unambiguous "MISMATCH"
+candidates, hand-verified against the clone, were the corpus being exactly right** — and each failed for a
+different, nameable reason:
+
+| shape | corpus wrote | file says | why containment fails |
+|---|---|---|---|
+| **declaration paraphrase** | `` `OrganizationSettingAIReadiness = "ai_readiness"` `` | `OrganizationSettingAIReadiness OrganizationSetting = "ai_readiness"` | the corpus drops the Go **type name** — correct prose, unmatchable substring. Lands on the exact line (`:47`) |
+| **reference-form paraphrase** | `` `local.project = "backend"` `` | `  project   = "backend"` | the corpus quotes how you **reference** a terraform local; the file **declares** it (`locals.tf:6`) |
+| **invocation-form paraphrase** | `` `make pull` `` | `pull: ## Pull main branch on all repos` | the corpus quotes the **invocation**; the Makefile declares the **target** (`Makefile:31`) |
+| **cross-line polarity** | `` `internal.anthropos` `` beside `main.tf:58` | absent | the sentence continues *"appears in **no** `.tf` file in any clone"* — **on the next markdown line**. The claim is that the string is ABSENT, and the instrument scored its absence as the defect |
+| **non-source literal** | `` `FIX-M257x-iter43-…-livepath` `` | absent | a fix-id is corpus vocabulary; it will never appear in source, by construction |
+
+**Three rules fall out, and the first is the general one.**
+
+1. **A citation binds a CLAIM to a location; it does not promise a TRANSCRIPT.** Paraphrase — dropping a
+   type, quoting the reference form, quoting the invocation — is the *correct* scholarly form, not sloppiness.
+   Any instrument that treats a citation as a quotation will report the corpus's best-written sentences as
+   its worst. **The 53.8 % is a floor on demonstrable agreement, never a ceiling on correctness**, and the
+   complement is **not** a defect rate. Publish it only with that sentence attached.
+2. **Polarity is not a line-local property.** The corpus's most careful claims assert **absence**
+   (*"occurs in zero Go source"*, *"is set nowhere and read by nothing"*, *"`ai` is NOT among them"*), and
+   markdown hard-wraps prose, so the negation routinely sits on a **different line** from the anchor it
+   governs. A line-scoped negation detector inverts exactly those claims. The unit is the **sentence**.
+3. **A corpus line is not one claim.** A wide table row carries several anchors and several literals;
+   pairing by line manufactures mismatches out of literals belonging to a *neighbouring* anchor.
+   Nearest-anchor association reduces this and **cannot eliminate it** — which is why the valid subset is
+   only **93 of 278 (33.5 %)**. State that reach; a census that hides it is measuring its own regex.
+
+**What the same census DID establish, and it is worth keeping.** Grading each site at **two clocks** — the
+clone HEAD a demo actually builds, and the sha the site itself names — found **15 sites that miss at clone
+HEAD and land at their own stated sha**. Those are **correct and dated**, not wrong. This is harden-54's
+*read the corpus at the tree a demo builds* made concrete in the opposite direction: when a site names its
+ref, the ref it names is the tree that grades it. Collapsing the two clocks recreates iter-69's *a pin is
+a date* one layer up.
+
+> A corpus can only be graded mechanically on what it promised mechanically. It promised **where to look**,
+> not **what the bytes are**.
+
 ---
 
 ## 6. Classification — the map
