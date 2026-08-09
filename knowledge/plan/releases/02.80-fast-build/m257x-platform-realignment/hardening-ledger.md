@@ -3433,7 +3433,10 @@ an anti-vacuity floor. **Mutation-proved:** dropping `dev-stack` from `SECTIONS`
 | `test_suite_census` | pytest 3.9.6 / unittest 3.14.6 | **12 passed / Ran 12, OK** |
 
 **NOT COVERED by this pass (§5 rule 60):** the six mutation batteries and the four non-`stack-core`
-sections. `TestTheRealBatteriesStillDerive` is green, so no battery's staged set moved, but the batteries
+sections [**left as written, and it is the exhibit of pass 51's finding**: this entry carries the right
+NUMBER with an ambiguous noun — there are **ten** non-`stack-core` sections and **four** of them carry
+Python — while passes 45–50 carried the right noun with the wrong number. Neither pass ever held both
+halves, and both halves were in this one file the whole time]. `TestTheRealBatteriesStillDerive` is green, so no battery's staged set moved, but the batteries
 themselves run at pass close.
 
 **Knowledge backfill:** none as a corpus edit; both repairs carry their measurement, their allowance and
@@ -4051,7 +4054,7 @@ readers** (`rglob` + per-file filter vs `os.walk` + dir-pruning). Enumerated bot
 divergence**, and the traversals are equivalent on this interpreter (`rglob` does not skip dot-dirs).
 **No defect.** iter-191's repair is sound.
 
-**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` **Python** sections;
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` **Python** sections [**four**, CORRECTED at pass 51 — this entry read *ten* as written; the four are `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`];
 the **424 TypeScript tests**, which remain **ENUMERATED and never executed** — iter-196's vocabulary is
 in force and no count here is a TypeScript verdict.
 
@@ -4161,7 +4164,7 @@ still exits 0). Anything less would have fenced the message again instead of the
 | RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore green |
 | `derivation_registry` completeness | 3.9.6 | rext | Python | **0 unclassified · 0 printed-arithmetic totals** |
 
-**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections; Go
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` Python sections [**four**, CORRECTED at pass 51 — this entry read *ten* as written; the four are `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`]; Go
 and TypeScript were not re-read this pass and no figure here describes them.
 
 **Knowledge backfill:** none; the rule this pass contributes — *two rot reporters in one function must
@@ -4244,7 +4247,7 @@ moved **30 → 40**.
 | RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore green |
 | `derivation_registry` completeness | 3.9.6 | rext | Python | **0 unclassified** |
 
-**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections;
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` Python sections [**four**, CORRECTED at pass 51 — this entry read *ten* as written; the four are `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`];
 the **424 TypeScript tests**, still **ENUMERATED and never executed**.
 
 **Knowledge backfill:** none; the rule this pass contributes — *a unit is a claim, and the sentence that
@@ -4454,7 +4457,7 @@ outcome recorded beneath it.
 | RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore sha-verified over 3 files |
 
 **NOT COVERED (`§5` rule 60):** the whole-section pytest reading — taken once at session end, tree
-frozen. The ten non-`stack-core` Python sections and the **424 TypeScript tests** are unrun as ever.
+frozen. The four non-`stack-core` Python sections [**four**, CORRECTED at pass 51 — this entry read *ten* as written; the four are `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`] and the **424 TypeScript tests** are unrun as ever.
 
 **Knowledge backfill:** *the exemption IS the derivation* — a prose figure earns its place by being
 recomputed, not by being right. Recorded here and in the commit body.
@@ -4534,7 +4537,7 @@ with its unit and its wrong first draft beside it.
 197–206's own. Taken with **no edit in flight** — the tree was frozen from the last commit of pass 50
 through the run, per the nine runs this milestone has discarded as confounded.
 
-**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` Python sections;
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` Python sections [**four**, CORRECTED at pass 51 — this entry read *ten* as written; the four are `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`];
 the six Go sections beyond the one verdict re-derivation recorded at pass 49; the **424 TypeScript
 tests**, still **ENUMERATED and never executed** — **no TypeScript verdict is claimed by any of passes
 48–50.**
@@ -4571,3 +4574,163 @@ the wrong unit, and a ceiling paragraph that named three values across three dra
 by re-derivation inside this session, not by review. That is the same **~1-in-3** rate iter-206
 measured for the batch, reproduced by the pass auditing it, which is the strongest available evidence
 that the class is structural rather than a lapse of the ten iters under audit.
+
+## Pass 51 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-207 … iter-216
+**Tiks covered since prior pass:** 10
+**Runner named on every count:** unittest **3.9.6** and pytest **8.4.2 / CPython 3.9.6**, section scope
+stated per row, **Python**. No Go and no TypeScript verdict is claimed anywhere in this entry.
+**Diff scope:** 20 files, all `rosetta-extensions/stack-core`, `5f4b779..7ba6054`.
+
+### THE HEADLINE: the milestone's own frozen-expectation fence was RED at HEAD for seven iters
+
+Measured, not inferred. Each of the batch's own commits was unpacked with `git archive` and censused by
+**that tree's own** `derivation_registry`:
+
+| commit | docstring | comment | test-module | |
+|---|---|---|---|---|
+| iter-207 `f6c6f27` | 181 / 181 | 141 / 141 | 462 / 462 | exact, on the day it was taken |
+| iter-210 `0b17938` | 184 / 181 | 144 / 141 | 465 / 462 | **BREACHED** |
+| iter-216 `7ba6054` | 188 / 181 | 148 / 141 | 477 / 462 | **BREACHED, and shipped** |
+
+Running `test_frozen_expectation_census_m257x.py` at `7ba6054` reproduces **9 genuine failures** (plus
+5 artifacts of an archived tree not sitting inside the rosetta worktree). **Every iter close in this
+batch reported `N passed / 0 failed`** over a scoped module set, and **not one of those sets contained
+this fence.** `§5` rule 60 — *a scoped green is evidence about its scope alone* — at the highest price
+this milestone has paid for it: the file passes 48, 49 and 50 were spent deepening was RED at HEAD
+throughout, including while those passes were deepening it.
+
+The 9 are three independent defects wearing seven faces, all repaired inline:
+
+1. **All three literal ratchets breached.** Re-pinned **181 → 195**, **141 → 153**, **462 → 487**, each
+   with the recorded reason its contract demands, written where the ratchet lives.
+2. **Four orphaned decisions + two unclassified derivations — one defect, two faces.** iter-212's fold
+   turned `scan_targets` in four guards into a one-line delegation: **the NAME survives, so any check
+   looking for the name sees nothing**, while the derivation SITE left the registry's population. Four
+   `DECLINE:tree-scan` decisions were orphaned and the two sites that inherited the work
+   (`corpus_sources`, `claude_docs_outside_skills`) arrived unclassified. iter-214's rule (*a waiver
+   outliving its subject reads as coverage*) meeting iter-212's own (*two readers of one construct must
+   SHARE the derivation*) **in a single commit**: the sharing was done correctly and the registry of
+   what-derives-what was left describing the tree before it.
+3. **Four undecided measurement nouns** — `collectors`, `pins`, `duplicates` admitted; **`iters` sent to
+   `_NOT_NOUNS`**, because `iter` is already an ORDINAL word and admitting its plural would have made
+   every *"iter 210"* reference a measurement literal. The vocabulary's reach closing on the sentence
+   that widened it, for the fourth time.
+
+**Repair beyond the re-pin.** A ratchet that says only `477 > 462` makes a **blind bump** the cheapest
+available response — and a ratchet answered with a blind bump has become the chore its own contract
+warns against. `rows_by_file` now folds the heaviest contributing modules into all three breach
+messages, so the recorded reason is *writable*.
+
+### The two items owed to this pass, both re-derived here and neither carried
+
+**1 — the rule-60 clause: there are FOUR, not ten.** Derived with `suite_census.python_sections()`: 11
+sections on disk, **10 non-`stack-core`**, of which **4 carry Python** — `demo-stack`, `dev-stack`,
+`stack-injection`, `stack-verify`. All five wrong clauses (passes **45, 46, 47, 49, 50**) corrected in
+place with a provenance marker so no reader mistakes the correction for what that pass wrote.
+
+**And the correct value was already in this file.** **Pass 40** wrote *"the four non-`stack-core`
+sections"* — the right NUMBER with an ambiguous noun — thirteen hundred lines above five entries
+carrying the right noun with the wrong number. **Neither pass ever held both halves, and both halves
+were in this one file the whole time.** Pass 40's line is annotated, not corrected: it is the exhibit.
+
+Re-read with the tree frozen (pytest **8.4.2 / CPython 3.9.6**, each section its own invocation):
+`demo-stack` **1,063 passed · 9 failed · 2 skipped** · `dev-stack` **151** · `stack-injection` **335** ·
+`stack-verify` **275** — **1,824 passed**, and the 9 failures are **exactly** the 9 declared `ENV_GATED`
+entries, **0 undeclared**.
+
+**2 — the standing class, re-derived at a STATED ref rather than copied.** At **`7ba6054`** (the batch's
+closing commit): docstrings **188 rows / 85 standing**, comments **148 / 85**, **union 336 distinct rows
+/ 170 standing**, overlap 0. **Fourth value for one class: 168 → 147 → 157 → 170.**
+
+**And the drift is the smaller half of the story.** All four values describe the **non-test** population
+only, while the population iter-207 exposed — `test_*.py` modules — measures **477 rows / 323 standing**
+at the same commit. **The milestone-level "standing class" has always named ~41 % of the repo's
+measurement-literal rows and has never said so.** Post-pass at `0248f38` the censused union reads **348
+/ 179** and the excluded population **487 / 332**; both moved because this pass wrote prose, which is
+the mechanism, not an accident.
+
+### The pass's own three findings, beyond the two owed items
+
+**F1 — the env-gated bucket's key cannot identify its subject** (commit `f2a9b34`). `ENV_GATED` is keyed
+`module-relpath::test-name` and **both** readers drop the CLASS. Demonstrated on a staged tree, **not
+argued**: declare `NeedsTheWorld::test_x`, let an undeclared `PlainLogic::test_x` fail for a real reason,
+and `run_one` returns **ENV-GATED under both runners** — the `failures` list carrying the same key twice,
+the instrument holding the evidence of its own ambiguity and discarding it. A genuinely actionable RED
+reported as the platform's absence is the exact inversion `§5` r73 exists to prevent, committed by the
+bucket written to honour it. Exposure **LIVE and sized**: **15 test methods across 5 files** share a
+(file, name) key, three pairs of them inside `test_frozen_expectation_census_m257x.py` itself. None of
+the nine declarations sits in such a file today, so **nothing is mis-absorbed right now** — iter-213's
+discipline, report the reach and never a false-GREEN it did not have. Repair is **fail-closed** and
+**deliberately does not parse the class out of runner output**: measured here, the two interpreters this
+module runs both of disagree about the failure line (3.9.6 `FAIL: test_x (mod.Alpha)`, 3.14.6 `FAIL:
+test_x (mod.Alpha.test_x)`), so keying on that shape would make the bucket's correctness a property of
+which python ran it. ⚠ The **sibling-survives** staleness direction is **structurally out of reach at
+this key grain** and is routed, not claimed; the ast read did widen the other half — four staged shapes
+where the old `f"def {test}(" in source` reported a **deleted** test as present.
+
+**F2 — the family's denominator is a `len` and every check is a `set`** (commit `9cb833d`). iters
+210–212 folded five private derivations onto `fence_provenance.corpus_sources` and fenced **the
+sharing** — correctly. Every one of those arms, **including iter-212's census-by-effect**, compares a
+SET; the number the family publishes (*"1,801 citations over 114 sources"*, *"8 collectors, 114 each"*)
+is the **`len` of a concatenated list**. Staged: an `EXTRA_SOURCES` entry inside `corpus/` made the
+denominator read **4** where every arm saw **3**, all fifteen symmetric differences still zero. The
+batch's own class **one grain below where it was fixed**. Order-preserving dedup; **114 before, 114
+after**, which is the half a de-duplication must always prove.
+
+**F3 — three self-corrections inside this pass, left visible.** (a) The `claude_docs_outside_skills`
+rationale's first draft named its sibling in backticks and **correctly went RED** on
+`ARationaleThatAssertsASetRelationIsGRADED`: the true claim is a **DIFFERENCE**, which the `RELATION:`
+grammar cannot express and whose operands `_resolve_operand` would resolve empty regardless (it passes
+the guard dir, never a repo root). Routed rather than smuggled. (b) That fix's own pointer **named an arm
+that does not exist**. (c) The mutation control **resurrected one orphan and instantly armed the new
+rationale against itself** through a backticked name — de-armed in place with the reason. Three in one
+pass, all caught by re-derivation rather than review, which is the same **~1-in-3** rate iters 205–206
+measured and passes 48–50 reproduced.
+
+**Coverage delta on touched files:** `test_suite_census.py` **11 → 19** arms; `test_corpus_citation_guard.py`
+**31 → 35**; `test_frozen_expectation_census_m257x.py` **91 → 95**.
+**Tests added:** +16 arms (8 + 4 + 4), +2 production helpers (`defining_classes`/`ambiguous_declarations`,
+`rows_by_file`), 1 dedup, 3 ceiling re-pins, 6 registry entries changed, 4 nouns decided.
+**Bugs surfaced + fixed inline:** **12** — 9 pre-existing REDs at HEAD (`0248f38`), the ENV_GATED
+absorption + staleness pair (`f2a9b34`), the `len`-vs-`set` denominator (`9cb833d`).
+**Flakes stabilized:** none surfaced.
+
+**Suite results (counts only; runner + section scope + language named on every row):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the frozen-expectation fence, before | unittest 3.9.6 | `stack-core` | Python | **9 genuine failures at `7ba6054`** |
+| the frozen-expectation fence, after | unittest 3.9.6 | `stack-core` | Python | **95 passed · 0 failed** |
+| `test_suite_census` | unittest 3.9.6 | `stack-core` | Python | **19 passed** |
+| the `suite_census` family (4 modules) | unittest 3.9.6 | `stack-core` | Python | **98 passed · 1 skipped** |
+| the `corpus_sources` consumers (4 modules) | unittest 3.9.6 | `stack-core` | Python | **155 passed** |
+| the four non-`stack-core` Python sections | pytest 8.4.2 | `demo-stack`, `dev-stack`, `stack-injection`, `stack-verify` | Python | **1,824 passed · 9 failed · 2 skipped** — all 9 declared `ENV_GATED`, 0 undeclared |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **3/3 mutations fired**, all restores sha-verified |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60), and this clause is DERIVED this pass rather
+than copied:** the **six** non-`stack-core` sections that carry no Python at all (`alignment`,
+`clerkenstein`, `playthroughs`, `stack-secrets`, `stack-seeding`, `stack-snapshot`) — their Go suites
+were not re-read here and **no Go verdict is claimed**; the **424 TypeScript tests**, still
+**ENUMERATED and never executed**. The four Python sections above *were* read this pass and are
+reported, not disclaimed — which is exactly the confusion iter-208 found in the five clauses this pass
+corrected.
+
+**Knowledge backfill:** three rules, recorded here and in the commit bodies —
+*a fold that keeps the NAME and moves the DERIVATION is invisible to every check that looks for the
+name* (F-headline 2); *the published figure is a `len` over a list and every check is over a set — put
+distinctness in the derivation, not in each reader* (F2); and *a ratchet whose breach message names no
+file has already chosen the blind bump for you* (the repair beyond the re-pin).
+
+**Routed forward (Fate 3), two new:**
+`SURVEY-M257x-h51-env-gated-key-drops-the-class` — re-key `ENV_GATED` to carry the class so the
+sibling-survives staleness direction becomes reachable; pinned by an executable arm that goes RED the
+day someone does it ·
+`SURVEY-M257x-h51-relation-grammar-cannot-express-a-difference` — `RELATION: A == B [| C]` plus a
+resolver that passes the guard dir make a difference-claim ungradeable; both halves need work before a
+rationale can state one.
+
+**Stop condition:** **continue-to-next-pass** — the pass repaired 12 defects and every one of them was
+in an instrument this milestone built to catch that exact class, so coverage has not stabilized; the
+whole-section reading is still owed.
