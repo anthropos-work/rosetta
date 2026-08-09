@@ -4266,3 +4266,114 @@ a census that could disown its denominator and exit 0, and a headline figure car
 the sentence that names units. Per the user's standing ruling this is **routed and NOT met with new
 machinery**; the **tenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41,
 44, 47).
+
+## Pass 48 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-197 … iter-206 (dimension 1/3 — **the batch's own derived figures**,
+re-derived rather than read, because iter-206 measured this batch's error rate on freshly-written
+derived figures at **4 of 6**)
+**Tiks covered since prior pass:** 11
+**Runner named on every count** (`§5` rules 75/76): unittest **3.9.6**, `stack-core` section only,
+**Python** only. No Go, no TypeScript arm this pass.
+
+### The scope hole this pass opened on
+
+iter-206 derived **six** standing figures in `claim_census_guard.py`'s comments and found **four**
+stale, **two** of them written by the same run. It graded exactly one module. The module the batch
+actually spent itself on — `derivation_registry.py`, **530 net-new lines across iters 199/200/203/204/205**,
+and the module that *implements* the comment and docstring censuses — was never turned on itself.
+
+### Finding — one shared classifier, two unequal windows (22 of 121, 18.2 %)
+
+iter-205 factored `_classify_measurement` out precisely so the docstring census and the comment census
+*"cannot drift apart on the classification while sharing a name for it."* **They drifted on the
+ARGUMENT.** A `#` comment is tokenised per LINE, so the comment caller handed the classifier
+`tok.string` while the docstring caller hands it the whole string — and the classifier's whole basis
+for `dated` is a ±120-char context window it could therefore never fill from a comment:
+
+```
+# M257x iter-197 wrote this and it rotted:
+# the repo has 121 modules today      → standing  (as a comment)
+                                      → dated     (the same sentence, as a docstring)
+```
+
+| measurement | value |
+|---|---|
+| comment matches misclassified | **22 of 121 (18.2 %)** |
+| rows moved `standing` → `dated` | **21** |
+| `standing` bucket | **95 → 75** |
+| population SIZE change | **0** — a classification defect, never a reach defect |
+
+The published reading that comments carry *"a far higher standing share than either sibling, which
+fits what comments are for"* is therefore **part artefact of the window**, not a fact about comments.
+
+**The fence for this exact property passed throughout.** `test_the_classifier_is_SHARED_so_the_two_cannot_drift`
+greps both callers' *source* for the callee's NAME — **a name check cannot see what is passed to the
+name.** New rule: *two callers of one rule are only as shared as the argument they hand it.*
+
+**Fixed as a pair, because the first alone imports a second defect.** `_DOC_RELATIVE` was searched over
+the same ±120 neighbourhood, so a number could borrow an unrelated *"65 lines away"* beside it. Latent
+while comments were read one line at a time (**measured: 0 of 7** doc-relative docstring rows borrowed)
+and live the instant the window widens — this module's own `205 of 695` specimen sits two lines under
+two genuine ones and flipped. Now decided on the match's own phrase.
+
+### Four more, every one a figure this batch wrote
+
+1. `comment_measurement_literals`'s docstring published **"101 measurement-shaped numbers across 89
+   sites"** as a standing size. Live: **117 across 101** — both operands stale one iter after writing,
+   and **101 had become the SITE count**, so a reader checking the number would have been *reassured*.
+2. `DOCSTRING_LITERAL_CEILING`'s own block narrated *"RE-BASELINED to 160"*, then *"162, not the 160"*,
+   beside a constant reading **164**. Three numbers for one value; iter-205's reason lived only in a
+   commit message, which is not where *"may not grow without a recorded reason"* can be read.
+3. *"Reporting the split with its own miss rate stated"* was a **MOOD** — no miss rate had ever been
+   measured, while the sibling making the same promise names the audit that measures its own
+   (`claim_census_guard.py:101`). Measured now, and the first reading is the 18.2 % above.
+4. The `205 of 695` specimen is marked **REFUTED** (iter-202 derived **292 of 704**) — an unmarked
+   refuted figure inside the module that finds refuted figures is the class illustrating itself.
+
+### The pass committed the error it was auditing, three times, and that is recorded
+
+The comment-ceiling paragraph named **126** (a prediction), then **120** (measured before the note
+explaining it existed), then **124** (measured after) — because **a provenance note joins the
+population it explains**, exactly as `noun_vocabulary_reach`'s docstring did at iter-204. `D-M257x-203-2`,
+committed while writing the paragraph that warns about it. Stable form: that paragraph carries **no
+figure**, and its sibling's arrow chain is **fenced** instead. Ceilings re-taken from the census after
+the last edit — comments **118 → 121**, docstrings **164 → 165**; `matches` joined `_MEASURED_NOUNS`,
+forced by iter-204's residual arm going RED on this pass's own sentence.
+
+**Coverage delta on touched files:** `test_frozen_expectation_census_m257x.py` **76 → 83** arms
+(2 new classes, 7 arms).
+**Tests added:** +7 arms.
+**Bugs surfaced + fixed inline:** 6 (commit `92b25c1`).
+**Flakes stabilized:** none.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the changed module | unittest 3.9.6 | `stack-core` | Python | **83 passed** (76 before) |
+| the four sibling batch modules | unittest 3.9.6 | `stack-core` | Python | **88 passed** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore sha-verified, post-restore green |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the whole-section pytest reading is **not
+taken at this pass** — the tree is still being edited, and nine runs in this milestone have been
+discarded as confounded for exactly that; it is taken once at session end with the tree frozen. The ten
+non-`stack-core` Python sections, the six Go sections and the **424 TypeScript tests** are untouched
+this pass.
+
+**Knowledge backfill:** the rule this pass contributes — *two callers of one rule are only as shared as
+the ARGUMENT they hand it* — is recorded here and in the commit body.
+
+**Routed forward (Fate 3), four open (unchanged) + one new:**
+`SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` ·
+`FIX-M257x-h44-claim-census-guard-is-single-runner` ·
+`SURVEY-M257x-h45-printed-measurement-literals-uncensused` ·
+`SURVEY-M257x-h46-stale-substrate-direction-undeclared` ·
+**`SURVEY-M257x-h48-the-censuses-cannot-see-a-bold-wrapped-operand`** — `_MEASURED_RE` needs
+whitespace after the closing operand, so this repo's own emphasis idiom (`**292 of 704**`) is invisible
+to all three censuses. Measured incidentally while writing this pass's own notes; sizing it moves all
+three ceilings again, so it is routed rather than bundled.
+
+**Stop condition:** `continue-to-next-pass` — the classifier/window defect is closed and fenced, but the
+sweep of the batch's derived figures has covered one module of the three the batch touched
+(`suite_census.py` and `claim_census_guard.py`'s non-comment figures are unread).
