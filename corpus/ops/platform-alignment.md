@@ -2692,6 +2692,54 @@ defect, it was arguing for it.*
     sites are out of the population **by property** (its `server_bind` calls `getsockname()` and stops),
     not by exemption.
 
+77. **A SIZE-PRESERVING MUTATION CAN BE INVISIBLE TO THE RUNNER — a mutation battery's GREEN is only
+    evidence if the interpreter actually loaded the mutated bytes.** M257x harden pass 42, found while
+    RED-proving something else: one mutation read **GREEN batched and RED alone**. Neither result was
+    flaky — in the green run the interpreter never saw the edit.
+
+    CPython invalidates a cached `.pyc` on the tuple **(source mtime in whole seconds, source size)**.
+    A mutation that is **size-preserving** and lands **within the same clock second** as the state it
+    replaces changes neither operand, so stale bytecode is reused. Demonstrated end-to-end: with
+    `VALUE = "CCC"` on disk, a fresh `import mod; mod.VALUE` returned `AAA`.
+
+    **The two mitigations everyone reaches for first BOTH fail on this host**, which is what makes the
+    class worth a rule rather than a footnote:
+
+    | attempted mitigation | result |
+    |---|---|
+    | `rm -rf __pycache__` | **no effect** — on `/usr/bin/python3` the directory is genuinely ABSENT while stale bytecode is served |
+    | `PYTHONDONTWRITEBYTECODE=1` | **no effect** — it suppresses *writes*; reads still consult the cache |
+    | bump the source mtime (`os.utime`) | **works** |
+
+    The reason the first one fails is the host-specific half: macOS's system Python redirects bytecode
+    **out of tree**, to `~/Library/Caches/com.apple.python/<absolute source path>/`. Scope, and it was
+    corrected by the control's own 3.14.6 run rather than assumed — the first draft claimed 3.14.6 was
+    "not affected", and it is:
+
+    | interpreter | pytest? | cache location | is clearing `__pycache__` a mitigation? |
+    |---|---|---|---|
+    | `/usr/bin/python3` 3.9.6 (Apple system) | yes — **the only one** | `~/Library/Caches/com.apple.python/…` | **NO** |
+    | `python3` 3.14.6 (homebrew) | no | in-tree `__pycache__` | yes |
+
+    **Staleness is CPython's rule, not Apple's; only the cache LOCATION differs** — and the location is
+    what decides whether cache-clearing is a mitigation at all. So the rule to follow is the **mtime
+    bump**, which holds on both.
+
+    **Why this milestone is unusually exposed.** Rule 75 established that `/usr/bin/python3` 3.9.6 is
+    the only interpreter here with pytest, so it is the runner named in nearly every mutation proof in
+    `hardening-ledger.md`. And the exposed class — size-preserving edits — is exactly the shape these
+    fences are mutated with: `16 of 27` → `15 of 26`, `>=` → `<=`, a single-digit count, a
+    one-character path index. **Re-run any such proof with a forced mtime bump before quoting it**; a
+    mutation that "did not fire" may never have been loaded. Pinned by
+    `stack-core/tests/test_mutation_proof_cache_hazard_m257x.py`, which reproduces the masking
+    constructively and asserts the mitigation defeats it — so if a host change removes the hazard, the
+    control says *why* instead of quietly passing.
+
+    **The general shape.** This is rule 76's twin one layer down: rule 76 says an unexplained runner
+    disagreement is evidence about the code. This one says an unexplained *mutation* result is evidence
+    about the **toolchain**, and the cheap dismissal — "that mutation just doesn't fire" — is the one
+    reading that guarantees a vacuous proof gets recorded as a real one.
+
 ---
 
 ## 6. Classification — the map
