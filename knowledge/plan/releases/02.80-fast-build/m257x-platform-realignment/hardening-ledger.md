@@ -3454,8 +3454,13 @@ below = **collected = passed + failed + skipped**.
 | `dev-stack` | 151 | 0 | 0 | 151 |
 | **total** | **3369** | **9** | **4** | **3382** |
 
-`stack-core` — the section this ledger's older entries meant by *"the whole suite"* — is **1,547 of
-3,382 collected, 46 %**. **`stack-core` is 0 failed**: the long-standing
+`stack-core` — the section this ledger's older entries meant by *"the whole suite"* — is
+**1,547 of 3,382 collected, 46 %**.
+*(That triple is on ONE line deliberately: `derived_count_guard`'s arm C matches per line, so the first
+draft — which wrapped between `of` and `3,382` — published a percent-triple the fence could not see.
+Caught by reading the guard's arm counts before and after, `C 4 → 5`. The same defect this pass spent
+three findings on, committed while writing them up.)*
+**`stack-core` is 0 failed**: the long-standing
 `test_claim_twin_guard_iter48_answer_key::test_02` is GREEN (iter-167), and no pass 39–41 change
 introduced a RED. `stack-verify` was **12 failed** at pass 30 and is **0** here.
 
