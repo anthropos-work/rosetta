@@ -250,6 +250,13 @@ development-only qualifier was missing until run 81, which over-stated productio
 
 ### Recompose the supergraph manually
 
+> **⚠️ Historical — and the repo is not in any clone set.** The router was **deleted from the platform**
+> at `2adcf71`: no `graphql` compose service, no `repos.yml` entry, no federation gateway, and the
+> supergraph is one subgraph served directly by `backend`. `make init` does not clone this repo — clone
+> it by hand if you need to read the pre-deletion source. There is nothing on a current stack for the
+> composed `config.json` to configure. (The five sibling archived-service docs carry this same caveat
+> beside their `cd <repo>` blocks; this one did not until M257x iter-235.)
+
 ```bash
 cd graphql-wundergraph
 wgc router compose -i supergraph-config-compose.yaml -o config.json
