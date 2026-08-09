@@ -5019,3 +5019,39 @@ Three things generalize:
   gone unchecked, the zero would have been a statement about a fraction of the tree wearing the words of
   a repo-wide result — the defect class, committed by the tool built to find it. Print the scope with
   the finding, and put a FLOOR on it in the fence, so a shrunken walk cannot present as a clean tree.
+
+### A registry that SUPERSEDES a list must reach everything the list does (M257x iter-194)
+
+`route_disposition_guard` is the milestone's backlog fence, and session briefs say to trust it **over**
+any hand-written route list where the two differ. Its population was `glob("iter-*")` and nothing else,
+so a route raised by a **harden pass** entered it only if some later iter happened to re-type the id.
+
+Measured: **7 harden-origin route ids, 5 reachable, 2 LEDGER-ONLY** — and **both unreachable ones were
+on the brief's own open-routes list.** Following the instruction to prefer the registry would have
+dropped exactly the two the registry could not read. A subset that is quoted as a superset is a worse
+failure than an acknowledged gap, because the instruction to trust it is what does the damage.
+
+Four companions, each a rule in its own right:
+
+- **A reach repair that manufactures a FALSE RED is worse than the silence it replaced.** The first cut
+  parked ledger dispositions at a constant key above every iter, making the ledger the latest word about
+  every route; a route open in pass 36 and closed by iter-193 reported instantly as a contradiction.
+  Ordering must be **derived** — the ledger states the iters each pass covered — never invented. Where
+  it cannot be derived, fall back in the direction that can only **suppress** a finding, and **count**
+  the fallbacks so an undated entry is visible rather than assumed.
+- **Reading a source with another source's grammar reports as an EMPTY BACKLOG.** The ledger read was
+  first wired to the *iter* block heading and pulled **2 dispositions out of 45 passes** — a number
+  plausible enough that it does not read as a bug. The ledger writes `**Routed forward:**` twelve times
+  to the iter spelling's one. Measure the grammar of the source you are adding; do not inherit it.
+  (And the first fix for that changed nothing, because `Routes?` does not match `Routed` — one symptom,
+  two independent defects.)
+- **A disclosed exclusion is not a repaired one, and the disclosure can be excellent.** Harden pass 42
+  found this defect, fenced it, wrote a compensating registry for the unreachable routes, and declined
+  the repair *for a correct stated reason* — it needed a grammar decision a test cannot make. iter-186's
+  rule (*a correct exclusion is still a defect while it is silent*) had already been applied in full.
+  What remained was a **decision**, and decisions do not close themselves by being well documented.
+- **Retire the compensating machinery on the same commit that removes its cause.** Pass 42's pin fired
+  the moment the guard learned to read the ledger, and its own failure message named the remedy. A
+  hand-written registry of routes the fence cannot reach becomes, the day the fence reaches them, a
+  second registry that can disagree with the first — so it is emptied and **fenced empty**, and the
+  exclusion-pin is inverted into a **reach pin** so the surviving arms cannot go quietly vacuous.

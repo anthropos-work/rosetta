@@ -93,7 +93,7 @@ and the other 10 sections remain unread.*
   language; the instrument is an AST census over Python. The 6 Go sections carry no Python, so this is a
   **class-reach** gap, not a module-reach gap — and it needs a different instrument, not a wider glob.
 - `SURVEY-M257x-iter193-harden-routed-items-are-still-invisible-to-the-backlog-fence` — **NEW.** The
-  root cause that kept `FIX-M257x-h36-…` unseen for 36-plus passes is **unrepaired**: the backlog fence
+  root cause that kept `FIX-M257x-h36-labeled-prover-denominator` unseen for 36-plus passes is **unrepaired**: the backlog fence
   reads iter-routed items and not harden-routed ones. This iter found the item by luck of selector.
   **Nothing guarantees the next one.**
 - `SURVEY-M257x-iter192-printed-cardinality-census-is-one-section-of-eleven` ·
