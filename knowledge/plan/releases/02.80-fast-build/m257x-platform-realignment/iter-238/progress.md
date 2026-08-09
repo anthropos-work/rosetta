@@ -105,7 +105,18 @@ family re-run at platform reach, 24 GREEN / 0 RED.
 - `ROUTE-M257x-238-container-vs-native-is-undrawn` → **new.** The corpus has no vocabulary separating *what
   compose sets for you* from *what you must set natively* — the same conflation as
   `ROUTE-M257x-237-hardcoded-vs-settable`, one layer out. Two iters have now hit it independently.
-- `ROUTE-M257x-237-critical-env-list-is-unfenced`, `ROUTE-M257x-236-*`, `ROUTE-M257x-235-*` → open.
+- `ROUTE-M257x-237-critical-env-list-is-unfenced` → open.
+- `ROUTE-M257x-236-disclosure-scope-is-document-level` → open.
+- `ROUTE-M257x-236-host-is-the-unreliable-witness` → open.
+- `ROUTE-M257x-235-fence-scope-is-unread` → open.
+- `ROUTE-M257x-235-runnable-block-has-two-halves` → open.
+
+  *(The last four were originally carried as two wildcard globs over the iter-235 and iter-236 families,
+  which `route_disposition_guard` refused — `§5` rule 73: a carry-forward that names a SET must ENUMERATE
+  it, because a glob leaves a truncated id stem behind and that stem reads as live backlog in every brief
+  quoting this queue. Enumerated in the M257x harden pass 57; the guard was RED at `907cbc3`. Note the
+  repair could not quote the offending spellings either — reproducing them re-arms the same finding, the
+  `retracted_pin_guard` class one document over.)*
 
 **Lessons:**
 1. **Trace a port to the file that BINDS it, not to the doc that repeats it.** Four documents state

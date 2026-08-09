@@ -611,12 +611,39 @@ common path; these are the rest, and two of them decide whether a campaign is co
 demo family reads.)*
 
 > **`--reps 1` exits 0 and is NOT a gateable number.** The harness separates **integrity** (`ok`) from
-> **quotability** (`gateable`): `report["gateable"]` is `ok and len(ledgers) >= 3` (`buildbench.py:1325`), and a
-> sound sub-`n=3` campaign carries `not_gateable_reason` — *"n=1 is below the n>=3 floor — sound, but not a gate
-> number"* (`:1327`), printed by `report` at `:1384-1385`. **The exit code does not distinguish them**: a
-> `--reps 1` smoke run reports `ok: True` and exits `0`. That is exactly how a non-gateable figure gets quoted
-> as a gate — at `n=2` this very campaign would have reported **~773 s on `billion`** against its real
-> **666.29 s on `billion`** p50. **Read `gateable`, not the exit code, before quoting any number.**
+> **quotability** (`gateable`): a sound sub-`n=3` campaign carries `not_gateable_reason` — *"n=1 is below the
+> n>=3 floor — sound, but not a gate number"* — printed by `report`. **The exit code does not distinguish
+> them**: a `--reps 1` smoke run reports `ok: True` and exits `0`. That is exactly how a non-gateable figure
+> gets quoted as a gate — at `n=2` this very campaign would have reported **~773 s on `billion`** against its
+> real **666.29 s on `billion`** p50. **Read `gateable`, not the exit code, before quoting any number.**
+
+> **`gateable` has a SECOND clause — the host identity — and the rule above is why it had to.** M257x
+> iter-229 taught `buildbench` to refuse a `--profile` that does not describe the machine under it, and wired
+> the refusal into `run_campaign`: a mismatch exits with the reserved `EXIT_HOST_IDENTITY`, and the escape
+> hatch `BUILDBENCH_ALLOW_HOST_MISMATCH=1` lets the campaign *measure* while keeping its exit code non-zero.
+> **That put the entire disclosure in the exit code — the one channel the paragraph above tells you not to
+> read.** `campaign.json` is the file this release quotes from, `print_report`'s stdout is what gets pasted
+> into a ledger, and `buildbench.py report <dir>` re-aggregates the same rep ledgers in a *different process*
+> that never sees the run's exit code at all. All three read clean. Fixed in the M257x harden pass:
+> `build_report` now rolls every rep's `host_identity` up **worst-first** into `report["host_identity"]`,
+> `print_report` states the verdict on **every** run (including `MATCH` — a disclosure that appears only when
+> it is bad teaches nothing about the runs where it is silent), and:
+>
+> | rolled-up verdict | meaning | `ok` | `gateable` |
+> |---|---|---|---|
+> | `match` | every rep demonstrated its profile describes this host | ✅ | ✅ |
+> | `mismatch` | **any** rep ran against a profile that does not | ❌ **RED** | ❌ |
+> | `unmeasured` | the probe could not read the engine | ✅ | ❌ |
+> | `absent` | the ledger predates the check (any pre-iter-229 campaign directory) | ✅ | ❌ |
+>
+> **`absent` is a verdict, not a default.** Treating a missing field as `match` would have awarded a
+> gate-quality green to every campaign directory produced before the check shipped — including the ones the
+> baseline numbers in this document came from. Nothing is known to be *wrong* with those runs, which is why
+> `absent` is not RED; what they cannot do is *demonstrate* the profile described the host, which is exactly
+> what `gateable` asserts. `mismatch` is RED and not merely un-gateable because a p50 aggregated across two
+> machines is not a measurement of either. Fenced by
+> `stack-core/tests/test_buildbench.py::TestIdentityReachesTheQUOTABLEArtifact` (8 tests), whose control arm
+> asserts a matched campaign is **still** gateable — a clause that refuses everything grades nothing.
 
 > **`parse --json` is a DEAD flag.** It is declared (`:1432`) and then never consulted: the `parse` branch ends
 > in an unconditional `print(json.dumps(out, indent=2))` (`:1511`), so `parse` **always** emits JSON with or
