@@ -529,8 +529,18 @@ npm run dev    # Runs on localhost:9100 (frontend) and localhost:9000 (backend)
 ```
 
 **Studio-Room** (Python):
+
+> **⚠️ There is no `studio-room` directory to `cd` into, and this block contradicted the Tier-2 section
+> above until M257x iter-236.** The repo is `anthropos-studio-room`, it is **not in `repos.yml`**, and
+> `make init` does not clone it — it is pulled into the `app` **image** by CI (`additional_repo`), which
+> is what the Tier-2 entry means by *"never a standalone deployment."* Its root **is `app/studio/`**, and
+> that path is **`.gitignore`d in `app` itself** (`app/.gitignore:78-79`, *"pulled at build via
+> additional_repo"*) — so it is absent from a fresh `make init` clone and present only on a box where a
+> build or a hand-clone populated it. `cd app/studio` is the real path when it is there; see
+> `corpus/services/studio-room.md`.
+
 ```bash
-cd studio-room
+cd app/studio          # NOT `cd studio-room` — see the warning above
 pip3 install -r requirements.txt
 python3 gen.py --media simulation
 # ⚠️ There is NO --template flag. gen.py's parse_known_args SILENTLY ABSORBS it, so

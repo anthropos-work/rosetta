@@ -161,8 +161,13 @@ npm install
 
 ### Studio-Room (Python)
 
+> **⚠️ Not a `make init` clone, and not a `make pull` repo.** `anthropos-studio-room` has no `repos.yml`
+> entry, so neither `make init` nor `make pull` touches it — it rides into the `app` image via CI
+> (`additional_repo`). Its root is `app/studio/`, `.gitignore`d inside `app` (`app/.gitignore:78-79`).
+> Update it by rebuilding the `app` image, or by pulling a hand clone.
+
 ```bash
-cd stack-dev/studio-room
+cd stack-dev/app/studio        # or a hand-cloned stack-dev/studio-room
 pip3 install -r requirements.txt --upgrade
 ```
 

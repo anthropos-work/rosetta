@@ -337,8 +337,13 @@ Studio-Room is the AI-powered generation pipeline. Unlike other services, it run
 
 ### Navigate to Studio-Room Directory
 
+> **⚠️ `make init` does not create `stack-dev/studio-room`.** `anthropos-studio-room` has no `repos.yml`
+> entry; it is pulled into the `app` **image** by CI (`additional_repo`). Its in-repo root is
+> **`app/studio/`**, which `app` itself `.gitignore`s (`app/.gitignore:78-79`). So use `stack-dev/app/studio`
+> if a build populated it, or clone `anthropos-studio-room` by hand — the path below assumes you did.
+
 ```bash
-cd stack-dev/studio-room
+cd stack-dev/app/studio        # or a hand-cloned stack-dev/studio-room
 ```
 
 ### Verify Python Environment

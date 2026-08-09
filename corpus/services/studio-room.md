@@ -344,6 +344,11 @@ python gen.py --simid <uuid> --force
 # root (app/internal/cms/studio/studioManager.go:119) in argv (exec) form — never via a shell,
 # never `bash -c` (runCommand, :1096-1101) — against the managed venv at
 # `studio/studio-venv` (studioManager.go:93-96, the const block). All @ app ad9f3c49.
+#
+# ⚠️ `app/studio/` is NOT in the `app` clone. It is `.gitignore`d by app itself
+# (app/.gitignore:78-79 — "pulled at build via additional_repo, like cms"), so a fresh
+# `make init` leaves it absent and this `cd` fails; it is present only on a box where an
+# image build or a hand-clone populated it. The sibling block in cms.md:298 says the same.
 cd app/studio
 pip install -r requirements.txt
 ```
