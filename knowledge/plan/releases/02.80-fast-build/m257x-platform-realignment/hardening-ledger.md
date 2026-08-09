@@ -4377,3 +4377,93 @@ three ceilings again, so it is routed rather than bundled.
 **Stop condition:** `continue-to-next-pass` — the classifier/window defect is closed and fenced, but the
 sweep of the batch's derived figures has covered one module of the three the batch touched
 (`suite_census.py` and `claim_census_guard.py`'s non-comment figures are unread).
+
+## Pass 49 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-197 … iter-206 (same batch; dimension 1/3 continued — the module
+pass 48 could not reach, `suite_census.py`)
+**Tiks covered since prior pass:** 11 (same batch as pass 48)
+**Runner named on every count:** unittest **3.9.6**, `stack-core` only, **Python**; plus one **Go**
+re-derivation, `go1.26.5 darwin/arm64`, all **6** Go sections.
+
+### Finding — iter-197's module count was wrong on the day it was typed
+
+`suite_census.py` said *"measured 23 s serial for **122 modules** × 2 runners"* and its fence's own
+docstring said *"the whole **122-module** × 2-runner census."* Derived at every relevant ref:
+
+| ref | live `modules()` | what the prose said |
+|---|---|---|
+| `1d7e5cf` (iter-197, the iter that wrote it) | **123** | 122 |
+| `e1b7345` (iter-201) | **124** | 122 |
+| `ede026d` (iter-206 / batch HEAD) | **124** | 122 |
+
+**Wrong when written, then wrong again** — and iter-197's *own prose* reads *"1 of 123"* in the same
+iter. This is the second instance of the defect that iter's progress notes describe as *"a size
+literal that rotted inside its own iter"*; the first was found, these two were not.
+
+### Finding — a THIRD copy that the census could not see: the separator was `\s+`
+
+`suite_census.py:889` carried `122-module` — **invisible to all three measurement-literal censuses**,
+because `_MEASURED_RE` required whitespace between number and noun. It flagged the space-separated
+twin **two lines away** and was blind to the hyphenated one. Sized before widening: **21 attributive
+compounds across 13 modules** (`3-service floor`, `98-site sweep`, `93-repo register`, `60-line`, …).
+The same shape as iter-205's case-sensitivity find, **one character over** — and it was hiding a
+defect at the time it was measured, which the case-sensitivity find also was.
+
+### Finding — the ratchet was anti-vacuity wearing a ratchet's badge
+
+`MIN_MODULES = 100` against a live population of **124**: **two dozen** test modules could have left
+this repo without one arm moving. That is precisely how three wrong prose copies survived ten iters.
+Replaced by `MODULE_FLOOR = 124`, taken from the census, plus an arm requiring the collection census to
+cover the same population the floor is taken over.
+
+### Finding — the fencing register had gone stale in the safe direction
+
+`suite_census.py:130`'s table still read `Go 2,714 passed · 0 failed | **none — 0 arms** | no`. That
+column is the **pass-45 diagnosis**; **harden pass 47 gave the Go verdict its live arm.** Wrong in the
+harmless direction and still costly: a register of *which claims are fenced* is the one table that,
+stale, points the next reader at work already done. Now labelled *"live arm AT PASS 45"* with pass 47's
+outcome recorded beneath it.
+
+### What re-derived CLEAN, stated because a sweep that only reports defects is not a measurement
+
+* the **Go verdict**: `2,714 pass · 0 fail · 510 subtests · 2,204 top-level`, six sections — **exact**;
+* `424 tests / 75 files` TypeScript — exact (`215/45` + `209/30`);
+* `5 of 11 sections`, three sites — exact;
+* `35 modules` for demo-stack — exact, **and now derived rather than merely correct**: `DERIVED_PROSE_COUNTS`
+  exempts a prose count from the new ban only because the same entry recomputes it from the live census
+  and requires the rendered text verbatim. **The exemption IS the derivation**; a count that is merely
+  correct gets none;
+* `claim_census_guard.py` — **zero** ungraded standing docstring figures. iter-206's fence covers its
+  six comment figures, and this pass found nothing left in it. The batch's last iter did its job on the
+  module it chose.
+
+**Coverage delta on touched files:** `test_suite_census_collection.py` **16 → 19** arms;
+`test_frozen_expectation_census_m257x.py` **83 → 84**.
+**Tests added:** +4 arms.
+**Bugs surfaced + fixed inline:** 5 (commit `7b73cff`).
+**Flakes stabilized:** none.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| the two changed fence modules | unittest 3.9.6 | `stack-core` | Python | **100 passed** |
+| five sibling batch modules | unittest 3.9.6 | `stack-core` | Python | **143 passed · 1 skipped** |
+| Go verdict re-derivation | `go1.26.5 darwin/arm64` | all 6 Go sections | **Go** | **2,714 pass · 0 fail** |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **4/4 RED**, restore sha-verified over 3 files |
+
+**NOT COVERED (`§5` rule 60):** the whole-section pytest reading — taken once at session end, tree
+frozen. The ten non-`stack-core` Python sections and the **424 TypeScript tests** are unrun as ever.
+
+**Knowledge backfill:** *the exemption IS the derivation* — a prose figure earns its place by being
+recomputed, not by being right. Recorded here and in the commit body.
+
+**Routed forward (Fate 3):** the four standing entries, plus
+`SURVEY-M257x-h48-the-censuses-cannot-see-a-bold-wrapped-operand` — **now the only open reach hole of
+its family**, since this pass closed the hyphen one. `**292 of 704**` is still invisible: the closing
+operand needs whitespace after it, and this repo bolds its important figures.
+
+**Stop condition:** `continue-to-next-pass` — the three modules the batch touched are swept, but the
+batch also published derived figures in **iter progress/decisions markdown**, which no census reads at
+all, and pass 48's own headline (`22 of 121`) has not been re-derived since the regex widened.
