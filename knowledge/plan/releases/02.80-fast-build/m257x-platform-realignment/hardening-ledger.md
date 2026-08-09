@@ -5373,3 +5373,111 @@ per-repo table + a runnable block per repo + a pointer to `corpus/services/senti
 
 **Stop condition:** continue-to-next-pass — two more defects, both in the batch's own repaired surface, and
 no cross-pass coverage delta measured yet; pass 59 takes the whole-section reading at the final tree.
+
+## Pass 59 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-229 … iter-238 (third and final pass over the batch).
+
+**Tiks covered since prior pass:** 10 (one batch, three passes).
+
+**Bugs surfaced + fixed inline: 2.** Enumerated. The first is the session's most consequential finding and
+the second is the session's own defect, found by the corrective this batch wrote.
+
+**(1) A third of the corpus's qualified anchors were not *unresolvable* — they were UNSEEN**
+(`rext` `cb8bcb3`). `anchor_construct_guard._QUALIFIED` requires a closing backtick immediately after the
+line number, so a **range** citation — `` `foo.py:1396-1433` `` — matches nothing the guard scans. Range
+anchors appear in **neither** `resolved` **nor** `unresolvable`: the reach ratio is computed over a
+denominator that silently excludes them, and the guard's green reads as coverage it does not have.
+
+Measured on the fenced surface (`corpus/**` + `CLAUDE.md` + `README.md` + `.claude/skills/**`, 114 docs):
+
+| population | count |
+|---|---|
+| single-line `` `path:NN` `` citations — what `_QUALIFIED` matches | **975** |
+| **RANGE `` `path:NN-MM` `` citations — invisible to it** | **491** across **67** files |
+| range share of the qualified population | **33.5 %** (the guard prints **24.9 %**, against the wider `denom + total` it can see — both stated with their denominators) |
+
+The top file is **`corpus/architecture/platform-migration-status.md` (36)** — the map this corpus calls
+authoritative for per-service claims — then `org-repos.md` (29), `ai_architecture.md` (21),
+`backend.md` (21), `safety.md` (19).
+
+> **This is the structural explanation for iter-229's "22 anchors rotted, the instruments caught 3."**
+> The batch read that as a tuning gap. It is a population gap: the guard's floor already discloses that it
+> cannot detect *"resolves to the WRONG construct"*, and this adds the sharper one — a third of the
+> anchors are not in its subject at all.
+
+**Grading them is ROUTED, not done** — which line of a range carries the claim is a design decision with a
+491-anchor blast radius. `ROUTE-M257x-h59-range-anchors-are-ungraded`. **Counting them is free**, and an
+unmeasured population that is STATED is a different object from a silent one: the disclosure prints on
+every run **including when the count is zero**, names the route, lists the top five files, and rides in
+`--json` beside `reach` so a machine consumer cannot take the partial denominator for the whole.
+
+**(2) This session rotted a corpus anchor and shipped it past three green fences** (`735c8ea`).
+`build-budget.md`'s `buildbench.py:1396-1433` was correct when written. Pass 57's edits to that module
+moved it: `1396` now lands on `_reclaim_attribution`, and the argparse the sentence claims to verify
+against begins at `1464`. **Nothing caught it** — `anchor_construct_guard` read GREEN (finding 1 is why),
+the pre-commit hook passed, and the out-of-range check *cannot* fire on an insertion, which only grows the
+file. It surfaced because the anchor re-derivation was **deliberately deferred to after the session's last
+edit** to those modules rather than run when the first one landed.
+
+> **§9's corrective, working exactly as written, on the pass that was auditing for it.** *"Re-derive after
+> the LAST edit, not the first."* The batch's own caution earned its place. Repaired to the **single-line**
+> form `buildbench.py:1464` rather than to the corrected range — restoring a correct number into a slot
+> finding (1) proves is ungraded would have been the weaker fix.
+
+**Coverage delta on touched files:** the cross-pass reading the stop condition asks for. Passes 57 → 58 →
+59 surfaced **3 → 2 → 2** inline-fixable defects; the dimension scan has **not** gone quiet, so the delta
+condition is not met and this is a cap, not a stabilization.
+
+**Tests added: 5** — `test_anchor_construct_denominator.py::TestRangeCitationsAreCOUNTEDEvenThoughUngraded`,
+including a **partition control** (the two patterns must not both match one citation — so the counter
+cannot become a double-count if `_QUALIFIED` ever learns ranges), a **zero-count** arm, and an arm pinning
+the share's denominator.
+
+**Suites (runner · section scope · language) — taken at the FINAL tree** (`rosetta` `735c8ea`,
+`rext` `cb8bcb3`, pushed to origin), after the last edit of the session:
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| flake gate, the **24 net-new** tests | pytest 8.4.2 / CPython 3.9.6 | `stack-core` | Python | **24 passed ×3 consecutive** |
+| `guard_family --platform stack-demo/platform` | `guard_family.py` | `stack-core` | Python | **24 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+| whole section | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | recorded in the pass-59 verification note below |
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` **Python** sections
+were last read at pass 51 (1,824 passed · 9 failed, all declared ENV_GATED) and are **not** re-claimed
+here; **no Go verdict** is claimed by passes 57–59; the **424 TypeScript tests** remain enumerated and
+never executed. The `guard_family` line above is **not a whole-family green** — it says so itself, and 5
+members had no input supplied.
+
+**Knowledge backfill:** two rules, both generalisable beyond their sites.
+1. *The presence of an `origin` **remote** is not evidence a clone came from origin.* Only the refs say who
+   populated it — the measured bundle clone carries a correct GitHub fetch URL and zero refs under it.
+2. *A citation shape the scanner's regex cannot match is not a low-confidence citation; it is an absent
+   one.* Reach must be reported over the population, and the shapes excluded by **construction** are the
+   ones no reach ratio will ever reveal.
+
+**Routes carried forward from this session:**
+- `ROUTE-M257x-h59-range-anchors-are-ungraded` → **new.** 491 range anchors are counted and not graded;
+  deciding which line of a range carries the claim is the design call.
+- `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` → **new.** `.agentspace/` is git-ignored by `rosetta`
+  and `rext` has no hooks and no CI, so an edit to a rext module can never appear in `git diff --cached` on
+  the corpus side. The pre-commit runner is gated on staged `corpus/`, `.claude/skills/`, `CLAUDE.md`,
+  `README.md` paths. A rext edit that rots corpus anchors fires **nothing, anywhere, by construction** —
+  which is the enabler behind finding (2) and behind iter-229's 19 silent.
+
+**Flakes stabilized:** none surfaced; the 24 net-new tests passed 3×3 consecutive.
+
+**Stop condition:** cap reached without stabilization — three passes, **7 defects fixed inline** and
+**2 routed**, and the third pass found the largest reach gap of the session rather than going quiet.
+
+> **The 7, enumerated where they are printed rather than carried** (`§5`, and the rule this ledger has
+> broken twice): (1) the identity gate disclosed only through the exit code, so `campaign.json` and the
+> offline `report` subcommand both read green on a mismatched host; (2) `_ledger`, the fixture whose
+> docstring promises the real ledger shape, omitted `host_identity`; (3) rext anchors resolved to two
+> checkouts 162 commits apart depending on spelling; (4) iter-238's route glob left a truncated id stem
+> reading as live backlog, and `route_disposition_guard` was RED on the inherited tree; (5) `CLAUDE.md`'s
+> "Go Services" block described `app` while naming `sentinel` (0 of 5 directories, 0 of 2 make targets, no
+> `atlas.hcl`) and decommissioned `cms`; (6) `guard_family` told two unfetchable clone states to fetch;
+> (7) 491 range anchors sat outside the reach denominator that reported on them. Per the user's standing
+> ruling the two routes are recorded and NOT met with new machinery; the **fourteenth**
+> cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59).
