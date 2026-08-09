@@ -3332,3 +3332,77 @@ taken at.
 **Stop condition:** continue-to-next-pass — two real defects in the newest fence, both fixed inline; the
 `FIVE registries` structural lead is now enumerated at six but its *sibling* obligation
 (`FIX-M257x-iter174-accept-registers-one-registry-of-two`) is untouched, and the batteries are unrun.
+
+---
+
+## Pass 40 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-166 … iter-176 (same batch; target: the two instruments iters 172 and
+174 shipped, on the axis pass 39 opened — *does the control test the claim, or something near it*)
+**Tiks covered since prior pass:** 11 (shared scope with pass 39)
+**Runners:** `/usr/bin/python3` **3.9.6** (pytest) and `python3` **3.14.6** (direct). Both named per count.
+
+### Finding 3 — the repaired stdlib set still missed every C extension (`dc2e677`)
+
+iter-174 repaired a capability probe that failed OPEN and stated the asymmetry that makes it serious:
+*an over-broad stdlib set refuses a legitimate file LOUDLY; an empty one permits a shadow SILENTLY.*
+**The repair sat on the wrong side of that asymmetry for one class of module.** It excluded
+`lib-dynload` as a **directory name** and never listed inside it, so every C-extension module was absent
+— measured **232 names on 3.9.6**, carrying `json`/`os`/`re` and **not** `math`, `array`, `binascii`,
+`select`, `zlib`, `cmath`, `mmap`, `unicodedata`, `termios`, `resource`, `readline`, `pyexpat`, `fcntl`,
+`grp`, `syslog`. A repo module named `math.py` was **still silently staged over the stdlib**, on the only
+interpreter this milestone's suite counts are taken on.
+
+Why iter-174's four net-new controls could not see it — **and the fourth one says so in its own
+docstring**: the floor is `> 100` and 232 clears it; the membership control names six modules, all
+pure-Python; and `test_it_agrees_with_the_native_attribute_where_the_interpreter_HAS_one` **skips on 3.9
+and is a TAUTOLOGY on 3.14**, where the fast path returns the very attribute it is compared with. Its
+docstring reads *"where it is [used], nothing else can cross-check it."* That sentence was the finding.
+
+Fix: walk `stdlib` **and** `platstdlib`, and list the platform extension directory (`lib-dynload` POSIX /
+`DLLs` Windows) by module stem — **306 names on 3.9.6, 303 on 3.14.6**. And the cross-check iter-174 said
+could not exist, does: on an interpreter that HAS the attribute, **patch it away, force the derivation,
+compare**. `native − derived` must be empty against an allowance **enumerated by class and named member
+by member** — 12 names: 7 windows-only, 2 optional C extensions this build lacks, 2 frozen bootstrap
+modules, 1 excluded on purpose — with a staleness check in the other direction, and an assert that the
+patch TOOK so the control cannot decay back into the tautology it replaces. Over-claim measured too:
+**18 extras on 3.14.6**, all CPython test/build artifacts, **0 collisions against the repo's 171 module
+names**.
+
+### Finding 4 — the census's completeness check compared a set with a subset of itself (`f0ac50e`)
+
+`test_the_module_population_is_enumerated_not_globbed_from_one_section` asserts
+`{m.split("/")[0] for m in modules(REXT)} == set(SECTIONS)`. **`modules()` iterates `SECTIONS`**, so the
+left side is a subset of the right *by construction*: the equality can only catch a **declared** section
+that contributes nothing. It cannot catch a **Python-bearing section that was never declared** — the
+direction the word *population* is about, and the direction the test's own name promises.
+`suite_census.SECTIONS` is a hand-written tuple of five, and the census publishes its result as the whole
+population (iter-172: *112 modules*, *3350 tests*).
+
+**No published number is wrong.** Measured: the repo has **12** top-level directories, **5** hold Python
+at all, and they are exactly the five declared — the tuple is complete today. It is not *derived*, which
+is what `§2` prescribes, and the risk is concrete for this repo: `CLAUDE.md`'s own section enumeration
+omitted `stack-secrets` and `playthroughs` until iter-129, one of which a documented skill already
+depended on. Added the missing direction, derived by walking the tree independently of `SECTIONS`, with
+an anti-vacuity floor. **Mutation-proved:** dropping `dev-stack` from `SECTIONS` leaves the OLD test
+**GREEN** and turns the NEW one **RED** naming `['dev-stack']`.
+
+### Suite results (counts, never wall-time)
+
+| suite | runner | result |
+|---|---|---|
+| 9 touched + consuming test files | pytest 3.9.6 | **248 passed · 2 skipped · 0 failed** |
+| `test_battery_stage` | unittest 3.14.6 | **Ran 19, OK** — all 19 execute there, incl. the new cross-check |
+| `test_battery_stage` | unittest 3.9.6 | **Ran 19, OK** (skipped=2 — the two that need a native attribute) |
+| `test_suite_census` | pytest 3.9.6 / unittest 3.14.6 | **12 passed / Ran 12, OK** |
+
+**NOT COVERED by this pass (§5 rule 60):** the six mutation batteries and the four non-`stack-core`
+sections. `TestTheRealBatteriesStillDerive` is green, so no battery's staged set moved, but the batteries
+themselves run at pass close.
+
+**Knowledge backfill:** none as a corpus edit; both repairs carry their measurement, their allowance and
+their runner in the instrument's own docstring.
+
+**Stop condition:** continue-to-next-pass — two further defects, both of the same shape as pass 39's
+(a control that measures something adjacent to its claim). Four findings in two passes is not a
+stabilizing series; one more pass is owed before the cap.
