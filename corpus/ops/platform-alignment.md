@@ -4920,3 +4920,35 @@ Three habits worth carrying:
 - **Make the fixture carry the case that would fail.** A realistic compose fixture is entirely
   letter-initial, so every arm here stays green under either recogniser. The fixture carries `9front`
   deliberately, and the mutation run confirms that without it the arms prove nothing.
+
+### A false CANNOT-RUN is as wrong as a false green, and much harder to see (M257x iter-191)
+
+`story_org_count_guard` walks four suffixes (`.md .sh .yaml .yml`) and computed the number it *published*
+— and the number its **refusal gate** keys on — from `rglob("*.md")` alone. Measured: **119 printed
+against 164 scanned, 72.6 %.**
+
+The under-stated total is the visible half. The other half is the one worth the entry: the same
+expression decides whether the guard runs at all, so a scope with no markdown but 45 shell/YAML sites
+exits 2 saying *"0 markdown file(s) in scope. Nothing was checked; this is not GREEN"* — over a scope
+with 45 files to check and, measured, **124 lines matching the guard's own claim pattern** among them.
+
+**Refusing looks conservative.** A guard that answers when it could not is caught by the next reader who
+checks; a guard that refuses when it could have answered reads as caution, and nothing in the output
+distinguishes it from a genuinely empty scope. Any refusal gate is therefore a **derivation**, and it
+must read the same population the check reads — not a convenient proxy for it.
+
+Three companions:
+
+- **Re-survey moves targets, and the routed subject can be sound.** This iter's routed member — the
+  prune list — was fine: component-matched, reasoned, carrying the story of the bug it memorialises.
+  Taking it at face value would have produced a cosmetic iter; the defect was one expression below it.
+- **A fix can address the MODE and leave the SCOPE.** The prune list's own comment records a real RED
+  caused by matching an absolute path *as a substring*, and prescribes *"match components; never
+  substrings."* The component fix landed; the **absolute** half did not, so a checkout under any
+  directory named `knowledge` would still have excluded everything beneath it. Both halves were in the
+  same sentence of the original bug report.
+- **An arm pinned to a SPELLING will not notice.** The existing anti-vacuity arm asserted the regex
+  `all \d+ scanned doc\(s\) agree` and stayed green throughout, because the number was present — just
+  wrong. Re-based, it now asserts the printed cardinality **equals** the derived scope. And the unit word
+  moved with it: `.sh` and `.yaml` are not "docs", and the old word is what made a markdown-only count
+  read as correct.
