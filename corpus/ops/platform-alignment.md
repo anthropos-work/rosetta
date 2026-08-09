@@ -4889,3 +4889,34 @@ Two further habits this iter is worth citing for:
   `vendor` would exclude every file and report a confident zero for the entire consumer side. Sized at 0
   on this box, and one line to close — the same whole-population silent zero this milestone keeps
   finding, in the guard that most loudly refuses one (*"None is not zero"*).
+
+### A selector that finds only the case it was written from is not an enumeration (M257x iter-190)
+
+iter-189 found one pair of functions reading one population two ways, and routed the question forward
+with a selector drawn from what it had just seen: *a function whose docstring claims to be the same
+derivation as another*. Re-surveyed one iter later, that selector returns **one hit — the founding case.**
+
+**Prose selectors describe the specimen, not the class.** Replace them with something a machine derives.
+Here: *a module-level constant used by BOTH a filesystem-reading function and a git-reading function*, by
+AST over every module in the section. One anecdote became **6 pairs** with a declared population, checked
+both ways — a derived pair with no declaration is RED, a declaration whose pair is gone is RED.
+
+**And then prove the instrument, because that is where the defect was.** All 6 pairs agreed, which is a
+zero, which `§9` says must be earned. Earning it surfaced the pair the census **structurally cannot
+see**: two functions reading the *same construct out of the same file* with **different regexes**, so
+they share no constant. One accepted a compose service name only if it began with a letter; the other
+accepted compose's real charset. Five of nine candidate names were classified differently — and the
+narrow one drove the **topology** that profile-membership grading runs against, so a service it could not
+see was *absent* (claims about it UNREACHED) while the counting reader counted it. **Under-count on the
+side that grades.**
+
+Three habits worth carrying:
+
+- **Unify on a shared source, not on matching literals.** Agreement today is not the property; sharing
+  the charset is (iter-177). Two patterns that merely happen to match are two patterns.
+- **Decide by the DIRECTION of the error when the merits are arguable.** Over-count and under-count are
+  not symmetric — the one that removes a subject from a graded population is the one that turns a defect
+  into silence.
+- **Make the fixture carry the case that would fail.** A realistic compose fixture is entirely
+  letter-initial, so every arm here stays green under either recogniser. The fixture carries `9front`
+  deliberately, and the mutation run confirms that without it the arms prove nothing.
