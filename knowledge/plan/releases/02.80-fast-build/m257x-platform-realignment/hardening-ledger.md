@@ -5195,3 +5195,102 @@ difference" must compare verdicts, not reaches.*
 > catch it: **enumerate where you print, never carry.** Per
 the user's standing ruling this is routed and NOT met with new machinery; the **thirteenth**
 cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56).
+
+## Pass 57 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-229 … iter-238 (the ten tiks since pass 56).
+
+**Tiks covered since prior pass:** 10.
+
+**Scope, and the shape of it — stated first because it decided the whole pass.** Only **one** of the ten
+iters landed executable code: **iter-229** (`rext` `da093f1`, +203 `buildbench.py` / +189 its tests). Iters
+230–238 were **census tiks** whose instruments lived in the scratchpad and were never committed, so their
+per-iter diff footprint in either repo is **documentation only** (8 corpus/CLAUDE.md files, 254 insertions).
+A six-dimension sweep against nine doc-only diffs would have produced nothing; the pass went instead at the
+one production surface and at the **substrate the ten censuses ran on** — which the batch's own §9 corrective
+names as the thing to distrust first.
+
+**Bugs surfaced + fixed inline: 3.** Enumerated here rather than counted, because this ledger has twice
+recorded a *carried* figure that its own list refuted.
+
+**(1) The identity gate reached the exit code and nothing else** (`rext` `dd5ba84`). iter-229's
+`profile_describes_host()` is sound — 6/6 sealed predictions held and its three arms each catch a case a
+cheaper arm passes. It was wired into `run_campaign` **only**: a mismatch exits with the reserved
+`EXIT_HOST_IDENTITY`, and `BUILDBENCH_ALLOW_HOST_MISMATCH=1` lets the campaign measure while keeping the
+exit code non-zero. The comment at the return statement states the intent exactly — *"a campaign run on a
+host its profile does not describe must never exit 0, or the hatch converts an honest UNMEASURED into a
+quotable green"* — and **that is the entire disclosure.** Measured: `build_report` never reads
+`host_identity`; `campaign.json` records `"ok": true, "gateable": true` beside the p50; `print_report` prints
+a clean summary; and **`buildbench.py report <dir>` re-aggregates the same rep ledgers in a different process
+that never sees the run's exit code**, returning 0.
+
+> **The corpus made it worse rather than better, and that is why this counts as a platform-alignment
+> defect rather than a tooling nit.** `corpus/ops/demo/build-budget.md` instructs the reader, in bold,
+> **"Read `gateable`, not the exit code, before quoting any number."** The rule is *correct* about `--reps
+> 1` — and it routed a reader past the one channel that carried the host gap. Following the documented rule
+> exactly produced a quoted p50 measured on a machine the profile does not describe.
+
+Repaired with `_identity_rollup()`: every rep's verdict folded **worst-first** into `report["host_identity"]`
+— `mismatch` → RED (any single rep is enough: a p50 aggregated across two machines measures neither);
+`unmeasured` and `absent` → not RED but **not `gateable`**, with the reason stated; `match` → still gateable.
+**`absent` is a verdict, not a default**: defaulting a missing field to `match` would have awarded a
+gate-quality green to every campaign directory written before iter-229 — including the ones this release's
+baseline numbers came from.
+
+**(1b) The enabler, which is the more useful finding.** The test fixture `_ledger` carries the docstring
+*"a rep ledger in the shape `run_campaign` really writes"* and **omitted `host_identity` entirely**, so every
+report test in the file was asserting against a ledger shape the harness does not produce. That is how a
+field could be written into every rep ledger by one function and read by no other for a whole iter. Fixed at
+the fixture, which is what made the new control arm (`match` is *still* gateable) meaningful instead of
+vacuous.
+
+**(2) The same rext file resolved to two different checkouts depending on how it was spelled**
+(`rext` `dd5ba84`). `anchor_construct_guard.resolve()` walks the clone roots before falling back to the
+authoring rext copy. `stack-demo/rosetta-extensions` **is a real directory**, so a citation headed
+`rosetta-extensions/…` matched the loop's `(root / head).is_dir()` test and returned the **tag-pinned
+per-stack clone**; the fallback at the bottom was unreachable for that spelling. `tracked_basenames`
+excludes that clone on the stated grounds that *"the authoring copy is the current one, and `resolve()`'s
+existing rext fallback already prefers it"* — **false for one of the three spellings, and the docstring is
+where the belief was recorded.**
+
+| spelling | resolved to (measured, before) |
+|---|---|
+| `rosetta-extensions/stack-core/buildbench.py` | `stack-demo/rosetta-extensions/…` — **pinned `09d0607`** |
+| `stack-core/buildbench.py` | `.agentspace/rosetta-extensions/…` — authoring `da093f1` |
+| `.agentspace/rosetta-extensions/stack-core/buildbench.py` | `.agentspace/rosetta-extensions/…` — authoring |
+
+The two checkouts are **162 commits apart**, with **66 of 1,106** common tracked files differing (both
+measured this pass). So this was not one guard with a spelling quirk — it was **two guards**, and nothing in
+the output said which one had answered.
+
+**(3) A carry-forward glob that reads as live backlog** (`9bc8aef`). `route_disposition_guard` was **RED at
+`907cbc3`**, the tree this pass inherited: iter-238 carried `ROUTE-M257x-236-*` / `ROUTE-M257x-235-*` as
+wildcards, and `§5` rule 73 refuses them — a glob leaves a truncated id stem behind, and that stem reads as
+an open route in every brief quoting the queue. Enumerated the four real ids. **The first repair attempt
+stayed RED**, because the explanatory note quoted the offending spellings — the `retracted_pin_guard` class
+reproduced one document over, by the repair for a sibling rule. Guard: `EXIT 1 → OK`, malformed **2 → 0**.
+
+**Coverage delta on touched files:** not computed as a percentage this pass, and stated rather than implied.
+The in-scope production surface is a single file (`buildbench.py`) whose new arms were reached by 8 net-new
+tests written to fail first (**8/8 RED before the fix, 8/8 GREEN after**) — a line-coverage percentage over a
+1,400-line module would move ~1 % and describe nothing. The measurement that mattered was the *reach* one:
+which artifacts carry the verdict (4 checked: `campaign.json`, `print_report` stdout, the `report`
+subcommand's exit code, the rep ledgers — **1 of 4 carried it before, 4 of 4 after**).
+
+**Tests added: 12.**
+- iter-229 → `stack-core/tests/test_buildbench.py`: **8** (`TestIdentityReachesTheQUOTABLEArtifact`) — RED
+  before the fix, including the control arm that asserts a matched campaign is **still** gateable.
+- substrate → `stack-core/tests/test_anchor_construct_denominator.py`: **4**
+  (`TestRextCitationsResolveToOneCheckout`) — three-spelling convergence, a fixture-non-vacuity control, an
+  unresolvable-stays-unresolvable arm, and a scope control proving non-rext citations are untouched.
+
+**Knowledge backfill:** `corpus/ops/demo/build-budget.md` — the `gateable` second clause, the four-verdict
+table, and why `absent` is a verdict. The edit also **dropped three `buildbench.py:NN` line-anchors** in
+favour of the symbol names they cite: this pass's own edit had just moved them, and re-deriving a line
+anchor only re-arms the rot iter-234 measured (5 of 5 hand-checked "mismatches" were the corpus being right
+and the instrument wrong).
+
+**Flakes stabilized:** none surfaced.
+
+**Stop condition:** continue-to-next-pass — three defects in the first dimension scan and no coverage delta
+measured across passes yet; the census substrate is the named next target.
