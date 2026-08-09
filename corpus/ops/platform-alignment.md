@@ -4171,6 +4171,52 @@ is visible in the output and in `--json`), and a test asserts the surface is **p
 tree**. A fail-open you can see and a fail-open that cannot be the real tree's state are different
 things, and only the pair is safe.
 
+### A check is only as strong as the runs that REACH it — and "too slow" is a MEASUREMENT (M257x iter-179)
+
+A fence can be correct, cheap, and effectively absent. `test_000_the_copy_list_stages_every_fence_the_
+baseline_names` is thirty lines of set arithmetic deciding whether a mutation battery can run at all. It
+takes **0.04 s**. It had been routed for four iters as something that arrives *"only from a ~14-minute
+battery, one iter after the fact"* — and every word of that was true of the **file it lives in**, never of
+the check.
+
+**Measure the cost before you inherit the cost.** The route asked for a repair sized to a performance
+problem, and there was no performance problem. There was a **reachability** problem: the assertion lived
+in a module whose name says `mutation_battery`, and the standing practice — on this milestone, in its own
+harden passes — is scoped runs that exclude exactly those. iter-173's post-fix scoped re-run came back
+**167 passed, green**, and structurally could not have seen it.
+
+> Ask of every new assertion: **which runs reach this?** A check that no habitual invocation touches fires
+> one iter late — which, on a milestone that ships per-iter, is after the commit it existed to gate.
+
+**Three corollaries, all paid for here.**
+
+**1. When you relocate a check for reach, keep whatever was load-bearing about its old position.**
+`test_000`'s *ordering* is its deliverable: it sorts before `test_00_` so the failure arrives as *"you
+forgot a file"* rather than as the RED BASELINE that reads *"the fence is broken."* So it stays where it is
+and **delegates** to the fast module's finder — one derivation, two call sites, no drift (§8 iter-175).
+
+**2. A sufficient PAIR must be asserted as a pair.** The contract was not one direction of an equality; it
+was `P1 ∧ P2 ⟹ conclusion`:
+
+| conjunct | claim |
+|---|---|
+| **P1** | on the real tree, the baseline's fence set **equals** the participating set |
+| **P2** | the battery stages every fence the baseline names |
+| **⟹** | inside the staged tree the same equality holds, since `participating ∩ staged = baseline ∩ staged = baseline` |
+
+P2 is sufficient **only while P1 holds** — and P1 was a hard-coded set of four until iter-118, so the
+premise has already been the weaker half once. An entailment nobody writes down can be broken from the end
+nobody is watching, with nothing going red. **Assert the premise where you assert the bridge, and name the
+other call site.**
+
+**3. Derive the POPULATION, declare the VERDICT.** The obligation was not universal: of the two modules
+staging the baseline, one owed the bridge and one owed nothing — and the second is *green today with five
+of its six baseline-named fences unstaged*, which is a proof rather than an argument. Deciding which is
+which requires reading what a staged suite asserts, so it is **declared per site** (`D-M257x-159-4`), while
+**membership** is derived every run from the staged file list and the baseline's own name read off its
+owner (§8 iters 70/71 — never the spelling). A battery that starts staging the baseline tomorrow enrols
+itself and is RED until classified.
+
 ---
 
 ## 9. Cadence
