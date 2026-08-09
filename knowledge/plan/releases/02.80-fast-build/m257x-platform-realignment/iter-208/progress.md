@@ -1,4 +1,4 @@
-**Type:** tik — under [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them).
+**Type:** tik — under [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07).
 
 # iter-208 — the milestone's own NOT-COVERED clause names ten Python sections; the repo derives four
 

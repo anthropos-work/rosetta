@@ -4,9 +4,15 @@ status: in-flight
 active_strategy: TOK-08
 ---
 
-# iter-208 — the milestone's own NOT-COVERED clause names ten Python sections; the repo derives five
+# iter-208 — the milestone's own NOT-COVERED clause names ten Python sections; the repo derives four
 
-**Active strategy reference:** [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them)
+> **Unit correction, made at iter-209 and left visible.** This title first read *"the repo derives
+> **five**"*. Five is the count of sections carrying Python tests **including `stack-core`**; the clause
+> under audit says *non-`stack-core`*, which is **four**. Comparing ten against five is the exact
+> apples-to-oranges the iter is about, committed in the iter's own headline while its body and its
+> `progress.md` both said four. `§5` r75, *name the unit*.
+
+**Active strategy reference:** [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07)
 — *census the mechanical classes; stop sampling them.* This iter applies it to the **scope disclaimer**
 itself, which is a claim about a population and has never been graded against one.
 

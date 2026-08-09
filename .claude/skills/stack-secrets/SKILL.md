@@ -139,7 +139,7 @@ Clone a stack's repos (`make init` / `/dev-up` / `/demo-up`'s `ensure-clones`) �
 - **Never write prod.** `provision` refuses the main dev stack (N=0) without `--force`; the default target is
   non-prod. On non-prod the `DIRECTUS_TOKEN` family is written **blank** — `provision` defers to the injection
   override and never re-arms the prod-write path (the fix16/17 / `DIRECTUS_TOKEN`-non-rearm class — see
-  [`corpus/ops/safety.md`](../../../corpus/ops/safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m28)).
+  [`corpus/ops/safety.md`](../../../corpus/ops/safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m30)).
 - **Idempotent.** Copy-if-absent by default — re-running is safe (skips present keys, re-blanks the strip
   keys). `--force` is the deliberate overwrite.
 

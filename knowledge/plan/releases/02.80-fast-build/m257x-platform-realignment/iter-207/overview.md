@@ -6,7 +6,7 @@ active_strategy: TOK-08
 
 # iter-207 — the three literal censuses skip every test module, and the skipped population is the larger one
 
-**Active strategy reference:** [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them)
+**Active strategy reference:** [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07)
 — *census the mechanical classes; stop sampling them.* A reading SAMPLES; a fence CENSUSES. Work the
 classes in descending measured size, and **state the denominator**.
 

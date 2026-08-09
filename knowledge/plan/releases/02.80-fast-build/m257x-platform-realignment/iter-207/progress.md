@@ -1,4 +1,4 @@
-**Type:** tik — under [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them),
+**Type:** tik — under [`TOK-08`](../decisions.md#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07),
 *census the mechanical classes; stop sampling them.*
 
 # iter-207 — the three literal censuses drop every test module, and the dropped population is the bigger one
