@@ -1473,12 +1473,19 @@ refuting citation and a one-line correction — authored to be executed without 
 anchors verified.** Two of the *corrections* were false.
 
 Items #8/#10 said, at `2adcf71`, that `JOBSIMULATION_RPC_ADDR=http://jobsimulation:8401` was stale and
-should read `http://backend:8083`. Origin HEAD `2adcf71` said otherwise: **only `SKILLER_RPC_ADDR` was
+should read `http://backend:8083`. Platform origin HEAD **as it stood at iter-22**, `2adcf71`, said otherwise: **only `SKILLER_RPC_ADDR` was
 re-pointed**; at `2adcf71` both `CMS_RPC_ADDR` and `JOBSIMULATION_RPC_ADDR` still addressed the husk
 containers — deliberately, per `app/main.go:1196-1202` **@ `app` `5ba17044`** (the same comment stands at
 `:1205-1211` @ `b948604` v1.366.0, and is itself now stale — see below), *"additive + DORMANT: external callers (messenger)
 keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."* Applying the correction
 **at that ref** would have replaced two true statements with false ones.
+
+> **The date is load-bearing and was missing (M257x iter-231).** This paragraph read *"Origin HEAD
+> `2adcf71`"* — an **undated present-tense noun phrase inside a past-tense narrative**, which is `§5`'s
+> *a clause that WAS a measurement, copied forward until it reads as a property* in its smallest form.
+> `2adcf71` was platform's origin HEAD when iter-22 measured it; platform `origin/main` is **`0c91421d`**,
+> **6 commits ahead**, and the whole point of the paragraph is that a correction is only true *at a stated
+> ref*. Repaired by dating the phrase, **not** by bumping the sha — the sha is right and is the subject.
 
 > **And then it flipped — twice, which is the second half of the lesson (M257x iter-60, extended at
 > iter-87).** At platform `0dab54d` the M809 re-point **had landed**: compose set **four** `*_RPC_ADDR`
