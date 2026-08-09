@@ -4605,6 +4605,50 @@ imported from copies whose layout differs), the repair is **not** to make it der
 list, say in the comment that it is declared **and why**, and move the derivation into a test that
 compares the two in both directions — **fence the property the comment asserted.**
 
+### The corpus cites six repos NOBODY can check — and one of them carries 61 citations (M257x iter-230)
+
+iter-230 censused every commit sha the corpus cites: **138 distinct shas across 1,497 citation sites** in
+`corpus/**` + `CLAUDE.md`, each resolved with `git cat-file -e <sha>^{commit}` against **14 platform
+clones** plus this repo and the `rosetta-extensions` authoring copy.
+
+**132 of 138 resolve. Zero are demonstrably wrong.** The instrument was proved in both directions before
+that zero was published (`§9`, above): three fabricated shas resolve nowhere, and three real shas read out
+of the clones themselves resolve to exactly their own repo.
+
+The **6 residuals are UNMEASURED, not false** — every one belongs to a repo that is in **no clone set on
+this box**:
+
+| sha | sites | repo the prose names | in any clone set? |
+|---|---:|---|---|
+| `13c248e6` | **61** | `infrastructure` | **no** |
+| `7dd1b80` | 11 | `db-backup` | **no** |
+| `6e1fb15b` | 4 | `db-backup` | **no** |
+| `5d944e4a` | 3 | `ant-singularity` | **no** |
+| `b810b28` | 2 | `colony` (a shared Go module, pulled at Docker build) | **no** |
+| `b49eb7af` | 1 | `ant-observability` | **no** |
+
+**82 citation sites rest on evidence this box cannot re-read.** The head of that list is not a footnote:
+`13c248e6` is the `infrastructure` commit that settles the standing **cms M810** question — *there is no
+`module "cms"`* — which `CLAUDE.md`'s merge banner, `corpus/README.md`, `service_taxonomy.md`,
+`platform-migration-status.md` and `org-repos.md` all lean on. iter-123 cloned `infrastructure` to
+establish it and the clone is gone.
+
+> **Rule.** A sha that does not resolve is **two different findings** wearing one symptom: a wrong citation,
+> or a repo you do not have. They are indistinguishable from the sha alone, so a census over refs must
+> partition on **clone-set membership** before it reports a rate — and a `0 %` error rate over a population
+> that silently excludes its own largest member is the `§5` scoped-green defect with the scope left off.
+
+Two consequences worth acting on:
+
+1. **A sha is not self-describing.** 0 of 138 resolved in more than one repo, so ambiguity is not the
+   hazard here — *absence* is. A citation into a repo the reader cannot clone should say which repo it is,
+   every time; `13c248e6`'s sites mostly do, and that is the only reason this table could be built.
+2. **Verifiability is a property of the CLONE SET, and the clone set is not part of the corpus.** The
+   repos this corpus most needs for the migration story — `infrastructure` above all — are the ones
+   `repos.yml` never lists, so `make init` never fetches them and every guard built on "resolve it in a
+   clone" is structurally blind to them. That is the same shape as iter-123's lesson (*a clone-set limit
+   is not a measurement limit*), now with a measured size: **82 sites.**
+
 ### And grade the instrument at the GRAIN OF ITS CLAIM (M257x iter-159)
 
 The companion failure to the one above, and it points the other way: iter-149's rule stops you
