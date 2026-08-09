@@ -14,7 +14,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 > and carry a merge banner at the top. **"No longer deploy separately" is a claim about PROD, and it is not
 > uniformly measurable** — for `customerio-sync` in particular the standalone's terraform lives in a repo
 > that has never been in any clone set, so its prod half is asserted from `app`'s side only
-> ([`platform-migration-status.md:101`](../architecture/platform-migration-status.md)). The fenced map is
+> ([`platform-migration-status.md:128`](../architecture/platform-migration-status.md)). The fenced map is
 > authoritative per service; this banner is about the LOCAL stack.
 >
 > **`roadrunner` is the eighth, and it is different: DELETED AND REPLACED, not merged-and-undeployed.**

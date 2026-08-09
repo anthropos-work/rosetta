@@ -42,6 +42,33 @@ this file is *allowed* to be out of date only for as long as it takes CI to say 
 
 ---
 
+> ### ⚠️ An archived repo's OWN `CLAUDE.md` is not a source of truth for its status — four of the six say they are live
+>
+> **Censused M257x iter-227**, all six archived repos read at their `origin/main` tips (fetched and
+> advanced at iter-224). The question was iter-224's lesson turned into a check — *"a resolved anchor
+> quoting a verbatim line is not the source's position; read the repo's **retraction surface**"* — and the
+> census says **that method only works for two of them.**
+>
+> | repo | what the repo's own `CLAUDE.md` says about itself | verdict |
+> |---|---|---|
+> | `messenger` | **⚠️ FROZEN — this service no longer runs** | **agrees** |
+> | `storage` | **⚠️ FROZEN — the service no longer runs, but the terraform module is LIVE** | **agrees** |
+> | `cms` | *"Content layer for the platform: serves job simulations, skill path chapters, and the content library **via GraphQL Federation**"* — **no status statement anywhere** | **corpus-ahead** |
+> | `jobsimulation` | a live-service doc; **no status statement**, though `6092c6d2` destroyed its ECS service and ECR repository | **corpus-ahead** |
+> | `graphql-wundergraph` | *"**it is currently the sole subgraph**"* — a live router, with **no mention** that platform `2adcf71` deleted it. Also carries the **`2 → 1`** subgraph figure this corpus corrected to **`3 → 1`** | **corpus-ahead ×2** |
+> | `roadrunner` | *"Sandboxed code execution service… **Deploy: Docker -> ECR -> ECS**… used exclusively by `jobsimulation`"* — a live service, consumed by another that is itself gone | **corpus-ahead** |
+>
+> **Two of six carry a freeze banner; four describe themselves as running services.** Not one of the six
+> states a status this map does not already hold, and **not one contradicts this map on direction** — every
+> disagreement is the repo being behind, never the corpus being wrong. That is the reassuring half.
+>
+> **The trap is the other half, and it is aimed at exactly the reader this corpus is written for:** an
+> agent that clones `cms` or `roadrunner` to check a claim will open its `CLAUDE.md` and be told the
+> service is live and deployed to ECS. The freeze wave of 2026-08-05 reached `storage` and `messenger`
+> and stopped. **So "check the repo's own docs" is a method with a 2-in-6 hit rate here, and the
+> platform's `repos.yml` + `infrastructure`'s `services.tf` remain the authorities** — as [§4 The
+> fence](#4-the-fence) already asserts mechanically.
+
 ## 1. How to read a row
 
 | state | means |

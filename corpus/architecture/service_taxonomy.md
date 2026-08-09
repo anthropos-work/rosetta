@@ -151,7 +151,7 @@ two carry none either.
 > **no clone can measure it and neither can this corpus** — re-checked M257x iter-98: `gh` is not installed
 > on this host and the repos are private, so even the anonymous REST path is closed. Each date below was true
 > when taken and **carries an expiry**; the `Jobsimulation` row is the live proof that they expire (its flat
-> archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:89`).
+> archive assertion was refuted by four post-dated commits — see the row, and `platform-migration-status.md:116`).
 > **Read every date here as "asserted on", never as "is".** This note exists because the **Skiller**
 > **Roadrunner** and **Skillpath** rows publish the flat form immediately above the **Jobsimulation** row —
 > the one cell retracting exactly that predicate. ⚠️ **The row NUMBERS are now gone entirely (M257x
