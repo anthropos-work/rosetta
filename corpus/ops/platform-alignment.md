@@ -4081,6 +4081,53 @@ Two corollaries the iter paid for directly:
    and silently forecloses the case it excludes — and an unmeasured narrowing inside the fence written
    against unmeasured narrowings is the joke telling itself.
 
+### A count about a population NAMES ITS DERIVATION — and a retraction is a count too (M257x iter-177)
+
+The previous rule says two derivations of one population must be compared. This is what happens when they
+are **not**, and it is the more common shape because it produces no disagreement to notice: the number
+looks fine, it just answers a question nobody asked.
+
+**The worked case, three readings of one sentence.** *"How much of the fence family does the section
+README index?"* has three live answers, all correct, all in production:
+
+| derivation | rule | count | indexed |
+|---|---|---|---|
+| `union` | spelled `*_guard.py` ∪ declares `FENCE_KIND` ∪ an explicit extras tuple | 27 | 16 |
+| `census` | `union` minus an exclusions table | 26 | 16 |
+| `declaring` | declares `FENCE_KIND` | 26 | 15 |
+
+iter-175 published **`16 of 27`** and called it *"the census"*. A hardening pass re-derived it as
+**`15 of 26`** and recorded that *"both operands were wrong at publication"* — then routed a **rename of
+the identifier** that embedded the "wrong" figure. Both readings reproduce identically at the original
+commit. **Nothing was wrong with either arithmetic.** The number was right and its **population label**
+was missing; the correction was right and its label was missing too, so it landed on a third population
+and retracted a correct figure.
+
+> **A retraction inherits every weakness of the claim it retracts.** If the original number could not be
+> read without knowing which derivation produced it, neither can its replacement — and a retraction that
+> omits the same thing does not correct the error, it **doubles** it and adds authority.
+
+**Two mechanisms, and the second is the one that generalises.**
+
+1. **Publish one figure per derivation, each labelled, and require all of them.** Parse the published
+   prose as a construct — `**N of M** (\`derivation\`)` — check each against *that* derivation's live
+   value, and make an unlabelled pair, an unknown label, or a derivation with no published row all RED.
+   A fourth derivation then cannot enter the way the third one did: by being nobody's declared subject.
+2. **When two derivations return the SAME COUNT, compare them by MEMBERSHIP.** Here `census` and
+   `declaring` are both 26 and differ by one member *in each direction*, each for a good documented
+   reason — so **every count-based comparison of them reads green**. Assert the symmetric difference
+   against a table of written dispositions; a third difference is RED in either direction. Ship the
+   control that makes it non-obvious: assert that the counts *do* agree, so that if the coincidence ever
+   ends the control goes RED on purpose and the hazard is re-characterised rather than quietly deleted.
+
+**And pin the derivations into one algebra** (`union == census | declaring`, asserted). Three sets with
+no stated relation are three opinions; one identity turns any divergence into a named failure instead of
+a count that moved by one where nobody was looking.
+
+**The cheapest tell that you are in this trap:** you are about to write *"it was actually N of M"* about
+somebody else's measurement. Before you do, ask which function produced **their** number. Twice in this
+milestone the answer was *"a correct one you have not run."*
+
 ---
 
 ## 9. Cadence
