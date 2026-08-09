@@ -2606,9 +2606,20 @@ iter-142 closed with `FIX-M257x-iter142-whole-suite-owed`. Taken here, on an oth
 So iters 132–142 introduced **no RED** — pass 29's two REDs stayed closed.
 
 **The finding is the other 21.** Every prior "whole-suite" number in this ledger — including pass 29's
-*"2 failed · 1202 passed"* — is **`stack-core` alone**: one section of five, 1,230 of 2,989 tests. The
+*"2 failed · 1202 passed"* — is **`stack-core` alone**: one section of five, 1,230 of 3,011 tests, where
+*tests* means **executed = passed + failed + skipped**. The
 milestone that exists to catch denominators stated a denominator that omitted **59 %** of its own
 suite. The 21 failures live in sections nothing in this milestone has ever run.
+
+> ⚠️ **This line read `1,230 of 2,989` until harden pass 39, and the way it was wrong is the finding
+> iter-173 booked.** `2,989 = 2,978 passed + 11 skipped` — assembled from the five-section table three
+> lines above, **dropping that same table's 22 failures**, so the denominator silently changed unit from
+> *executed* to *passed-and-skipped* inside the entry whose subject is denominators. Re-derived from the
+> table: `2,978 + 22 + 11 = 3,011`, of which `stack-core` is `1,229 + 1 + 0 = 1,230`. The **59 %** below
+> is unaffected (`1 − 1230/3011 = 59.2 %`; the old operands gave 58.9 %) — which is exactly why it
+> survived: *a percentage can survive an error its operands do not.* Repaired by
+> `FIX-M257x-iter173-ledger-denominator`, owed to a harden pass because the iter that found it is
+> contractually barred from editing this file.
 
 **They are provably not ours.** `git diff --name-only 6ad8866..HEAD` returns 5 files, all `stack-core`;
 `git log 6ad8866..HEAD -- demo-stack/` is empty. The failures are live-clone / live-container
@@ -2824,7 +2835,10 @@ throughout.
 **So the recommendation is unchanged from pass 29 and now better evidenced: not a fourth pass.** Pass
 29 asked that an iter's close run the whole suite, or that the milestone say out loud that it does
 not. This session adds the sharper half: **"the whole suite" in this ledger has always meant
-`stack-core` alone — one section of five, 1,280 of 3,040 tests.** 21 failures sit in sections no
+`stack-core` alone — one section of five, 1,281 of 3,062 tests** (*tests* = executed = passed + failed
++ skipped; this line read `1,280 of 3,040` until harden pass 39 — it carried pass 30's dropped-failures
+hole forward as `2,989 + 51 = 3,040` and dropped this section's own single failure from the numerator.
+`1,280/3,040` and `1,281/3,062` are **both 42 %**, which is how it survived 28 iters). 21 failures sit in sections no
 harden pass or iter close has ever executed, and they were invisible for the whole milestone. Deciding
 what "the suite" means is a scope call for the milestone, not something a fourth harden pass can fix.
 
