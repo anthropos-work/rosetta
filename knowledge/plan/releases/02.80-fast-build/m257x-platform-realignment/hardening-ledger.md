@@ -5294,3 +5294,82 @@ and the instrument wrong).
 
 **Stop condition:** continue-to-next-pass — three defects in the first dimension scan and no coverage delta
 measured across passes yet; the census substrate is the named next target.
+
+## Pass 58 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-229 … iter-238 (same batch; this pass went at the **substrate** and at
+the runnable surface the batch repaired).
+
+**Tiks covered since prior pass:** 10 (unchanged — pass 57 and 58 are two passes over one batch).
+
+**Bugs surfaced + fixed inline: 2.** Enumerated, not counted.
+
+**(1) `CLAUDE.md`'s "Go Services" section described `app` and named two repos it does not** (`bfc4bd9`).
+The heading read *"Go Services (Backend, CMS, Sentinel, etc.)"* and offered one *"common development
+pattern"*. Measured against the **two** Go repos a current stack builds (`stack-demo/{app,sentinel}`,
+`platform` at `0c91421` = `origin/main`):
+
+| documented step | `app` | `sentinel` |
+|---|---|---|
+| `make setup` | ✅ — and it installs **five** tools, not the three the doc listed | ❌ **no such target** (`initdb`, `proto`) |
+| `make gen` | ✅ `go generate ./...` | ❌ **no such target** — it is `make proto` |
+| `atlas migrate apply --env local` | ✅ `atlas.hcl` declares `env "local"` | ❌ **no `atlas.hcl` at all** |
+| the 5 listed "key directories in Go services" | **5 of 5** | **0 of 5** |
+
+`repos.yml` independently agrees on the last row — `sentinel` carries `migrations: false`. And the heading
+named **`cms`**, a repo this milestone established is decommissioned. A developer following the section
+into `sentinel` collects two *"No rule to make target"* errors and then hunts for an `rpc.go` that has
+never existed there. **This is `ROUTE-M257x-238-claude-md-fences-are-unmaintained` firing again** — the
+prose one screen above is current about the merges and the fence below it is four releases old, which is
+exactly what iter-238 predicted the next defect would be.
+
+**(2) `guard_family`: "the clone has NO origin/main" was three states wearing one sentence, and the remedy
+it printed is impossible for two of them** (`rext` `8fbf5b9`). The refusal is correct and stays — without
+`origin/main` a guard asked to read the ref the exit gate names silently reads the checkout. The *advice*
+was *"Fetch the clone"*, universally. Measured on this box:
+
+- **`absent`** — `--platform stack-dev/platform` names a directory that **does not exist** (the platform
+  clone lives under `stack-demo/`). The runner printed `@ ? (origin/main ABSENT, DIVERGED)` for a path with
+  no repository at all and then told the operator to fetch it.
+- **`bundle`** — `stack-dev/studio-desk`, the clone **iter-233 measured**: a correct-looking GitHub fetch
+  URL on `origin` and **not one ref under `refs/remotes/origin/`**; all 281 refs came from the bundle
+  remote, so `git fetch origin` cannot create what is missing without the real network remote.
+- **`unfetched`** — the only state for which the original advice was ever right.
+
+Classified into five kinds; the print site keys a table with **no default branch**, so an unclassified
+state `KeyError`s rather than inheriting the fetch advice that caused this.
+
+> **The rule the first attempt got wrong, recorded because it is the generalisable part:** *the presence of
+> an `origin` **remote** is not evidence the clone came from origin.* The first classifier read
+> `git remote` and graded the real bundle clone `unfetched`. It was caught by **exercising the new arm
+> against the actual clone rather than only the fixture** — the fixture would have passed either way.
+
+**Measured and NOT changed, because the corpus was right — stated rather than omitted (`§5` rule 60).**
+Three of this pass's first-look "findings" were the instrument, which is the batch's own §9 caution
+reproduced a third time in one session:
+
+| checked | reading | verdict |
+|---|---|---|
+| all 7 `CLAUDE.md` → `docker-compose.yml:NN` anchors | **7/7** resolve to the text claimed | corpus right |
+| the profile table vs compose | correct **once `include: common.yml` is read** — `postgresql`/`redis` live there, both with no `profiles:` key. A first parse of `docker-compose.yml` alone said "5 services, no database" | **instrument wrong** |
+| `make setup`/`make gen` | present in `app/Makefile`; absent from `platform/Makefile` — which is not where the doc says to run them | **instrument wrong** (the real defect was `sentinel`, found second) |
+| `make force-gen` (`shared_libraries.md`) | belongs to the `proto` repo, which is not in the clone set | **unmeasurable**, not wrong |
+| `repos.yml` vs the 4 repos `CLAUDE.md` names | exact match | corpus right |
+| `app/.gitignore:78-79` (iter-236's studio cite) | lands on the studio-ignore comment + `studio/*` | corpus right |
+| `stack-demo/app/studio` populated (18 entries) | iter-236's repaired `cd` target is real | corpus right |
+
+**Coverage delta on touched files:** the two touched modules gained arms that were **unreachable before**
+(`_ref_state`'s classifier did not exist; `CLAUDE.md` has no executable coverage). Reach measured instead:
+`_ref_state`'s missing-`origin/main` path had **1** outcome and now has **5**, each with a distinct remedy
+and each exercised — plus a non-vacuity arm asserting a healthy clone carries **no** kind, and a control
+keeping `unfetched` saying "fetch".
+
+**Tests added: 7** — `stack-core/tests/test_guard_family.py::TestMissingOriginMainIsCLASSIFIEDNotJustReported`.
+
+**Knowledge backfill:** `CLAUDE.md` § Working with Service Code — replaced the one-pattern block with a
+per-repo table + a runnable block per repo + a pointer to `corpus/services/sentinel.md`.
+
+**Flakes stabilized:** none surfaced.
+
+**Stop condition:** continue-to-next-pass — two more defects, both in the batch's own repaired surface, and
+no cross-pass coverage delta measured yet; pass 59 takes the whole-section reading at the final tree.
