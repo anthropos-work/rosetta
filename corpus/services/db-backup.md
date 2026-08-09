@@ -17,7 +17,10 @@
 >
 > **What still exists in production**, because commenting the rule out did not remove them: the ECR repo
 > (`main.tf:215`), the ECS **task definition** (`:51`), both IAM roles, the security group, the log group,
-> and the S3 bucket with a 30-day expiry (`storage.tf:24-38`). **Everything needed to run a backup is
+> and the S3 bucket with a 30-day expiry (`db-backup/terraform/storage.tf:24-38` — **written repo-qualified
+> deliberately**: a bare `storage.tf` is unique across the clone set, so it resolved *silently* to
+> `storage/terraform/storage.tf`, a different repository from the one this page is about, and no ambiguity
+> guard caught it because there was exactly one hit. Measured M257x iter-202). **Everything needed to run a backup is
 > deployed; nothing fires it.**
 >
 > **This is not "no backups", and the distinction is the whole point.** AWS-native durability on the same
