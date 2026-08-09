@@ -584,7 +584,7 @@ python3 stack-core/buildbench.py env-snapshot                                 # 
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse at `buildbench.py:1396-1433`). The ones above are the
+**The full flag surface** (verified against the argparse constructed at `buildbench.py:1464`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |
