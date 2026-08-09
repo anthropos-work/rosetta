@@ -4788,3 +4788,36 @@ finding used as a *search key* rather than as a post-mortem, and it cost one com
 read the disk, and its last-measured fallback tuple must be reachable **only** through the
 cannot-locate-the-repo path — a silent fallback is how a derivation quietly becomes the literal it
 replaced.
+
+### An exclusion registry sits at ONE grain; the runner's reach sits at another (M257x iter-187)
+
+iter-186 partitioned the tooling repo's **11** sections into 5 collected / 6 excluded-by-language, named
+every exclusion with a reason, printed the scope beside every total, and mutation-proved four properties.
+All of it correct. All of it at **section** grain — and the runner's actual reach is at **(section ×
+language)** grain.
+
+Measured one grain down: **`stack-verify` is COLLECTED, carries 5 Python modules — so every membership
+arm is green over it — and *also* carries 30 Playwright `*.spec.ts`** that no Python runner collects, that
+no other instrument in the milestone reads, and that the printed line `scope: 5 of 11 sections — Python
+only` presents as read. iter-186's own rule, recurring inside a member of the population iter-186 fixed.
+
+**The rule.** A membership check cannot see a hole *inside* a member. When an exclusion is justified by a
+**property of the files** (language, runner, toolchain) but recorded against a **container** (section,
+package, directory), the registry is coarser than the thing it claims to describe, and every part of the
+container that fails the property is excluded in fact and named nowhere. **State the grain of the
+exclusion, then check the registry AT that grain** — here, a second declared registry over collected
+sections' non-Python files, with its completeness derived from disk in both directions.
+
+**The corollary for published figures.** iter-186 published *"264 Go test files and 45 TypeScript
+specs"*, correctly scoped to the six excluded sections. Nothing published a **repo-wide** figure, so the
+six-section one was the only number available to quote — and repo-wide it is **264 Go + 75 TS**. A
+correctly-scoped number is still a trap when it is the *only* number in the room; publish the total whose
+denominator a reader will assume.
+
+**And re-base a predicate on its consumer, never on a restatement of it.** Harden pass 42 added an arm
+requiring every collected section to carry Python tests — precisely so a silent zero could not hide in a
+quoted total. Its predicate globbed `test_*.py` **and** `*_test.py`; the collector globs `test_*.py`
+alone. A **superset** predicate passes while the collector sees nothing — the defect the arm exists to
+prevent, re-entering through the spelling (`§5` r70/71). Hazard size was **measured before the change,
+not asserted**: 0 such files across all 11 sections, so latent, and one line to close by deriving the arm
+from the collector itself plus a control that the collector still reads the named glob constant.
