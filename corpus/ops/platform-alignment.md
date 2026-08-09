@@ -5055,3 +5055,33 @@ Four companions, each a rule in its own right:
   hand-written registry of routes the fence cannot reach becomes, the day the fence reaches them, a
   second registry that can disagree with the first — so it is emptied and **fenced empty**, and the
   exclusion-pin is inverted into a **reach pin** so the surviving arms cannot go quietly vacuous.
+
+### "No runner HERE collects it" is a fact about the runner, not about the subject (M257x iter-195)
+
+`suite_census` excluded six of eleven sections with the reason *"Go module — N `*_test.go`; no Python
+runner collects it."* Every word of that is true, and for **nine iters** it was read as *unreadable*:
+`SURVEY-M257x-iter186-264-go-tests-have-never-been-read` stayed open, and every whole-population figure
+published in between inherited a gap of six sections and one language.
+
+Testing the implication cost three seconds. The sections run **offline, from a cold checkout, without
+credentials**. First reading: **2,714 passed · 0 failed · 0 skipped** — alignment 126, clerkenstein 416,
+playthroughs 183, stack-secrets 195, stack-seeding 1,276, stack-snapshot 518.
+
+- **A correct exclusion carries an implication, and the implication is not covered by the exclusion's
+  evidence.** *"This runner cannot collect it"* is evidence about this runner. *"Therefore it is
+  unmeasured"* is a separate claim needing its own reading, and it is the one that was assumed. iter-186
+  was right to name the exclusion; naming it is not the same as testing what it implies.
+- **Name the unit, again.** iter-186's **264** counts `*_test.go` FILES; **2,714** counts test
+  FUNCTIONS. The file count was independently re-derived at **264 exactly**, so the two corroborate
+  rather than compete — but the ratio between them is not a constant and neither substitutes for the
+  other.
+- **A census that cannot BUILD its subject must say so — 0 pass / 0 fail reads as a clean section.**
+  `go test -json` on a non-compiling module emits **no test events**, so the first cut of the runner
+  tallied a silent zero and would have summed it into a green total. This is iter-191's false
+  CANNOT-RUN in the mirror, and it is the **worse** direction: refusing is loud and gets investigated;
+  answering green without having run is indistinguishable from success. Caught while writing the
+  function's own tests, and controlled in both directions.
+- **Closing a long-open gap is exactly when the remaining one goes invisible.** With Go read,
+  TypeScript is the only unread language — 45 specs in `playthroughs`, 30 in `stack-verify` — so it is
+  printed on every run and fenced, including an arm that keeps `playthroughs` marked **mixed**
+  toolchain, because reading a section's Go half must never promote it to fully-read.
