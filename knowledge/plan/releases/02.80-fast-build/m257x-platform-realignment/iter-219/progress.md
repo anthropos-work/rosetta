@@ -103,6 +103,16 @@ fence — that is the iter's finding, not a deliverable beside it.
 - `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` — **still OPEN**, and no longer a bare
   re-listing: the method is by-effect recording, the obstacle is named, the fix is designed (record the
   path at open time, `stat` once at process exit, never touch the handle).
+  > ⚠️ **CORRECTED at iter-221, appended and not substituted — the line above is WITHDRAWN.**
+  > `route_disposition_guard` went RED on it: **h42 was CLOSED at iter-200** — *"answered by census in
+  > both directions, with the exposed shape at zero"* — and this iter published it open nineteen iters
+  > later. **The premise came from `hardening-ledger.md`, which re-listed it as *"routed forward"* in
+  > passes 48, 49, 50 and 53, all of them after the closure.** The ledger is a **second disposition
+  > surface that the route registry does not read**, so a closed route went on being published as open
+  > and cost an iter its opening claim. What iter-219 actually produced stands and is *not* withdrawn:
+  > an **independent reproduction** of iter-200's answer (exposed shape **0**, by a different
+  > instrument), and a **new** obstacle belonging to that instrument, carried by the two routes below.
+  > The fence caught this, at iter-221, on its own session's writing.
 - `SURVEY-M257x-iter219-write-recorder-must-not-touch-the-handle` — **NEW.** The redesign above, with
   the re-run cost stated (26 min instrumented).
 - `SURVEY-M257x-iter219-a-test-fixture-depends-on-refcount-timing` — **NEW.**
