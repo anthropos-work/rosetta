@@ -3944,3 +3944,133 @@ because the iters that broke them ran suites excluding their graders, a runner-i
 toolchain that can hide a mutation from the proof of the fence that mutation is testing. Per the
 user's standing ruling this is **routed and NOT met with new machinery**; the **ninth**
 cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44).
+
+## Pass 45 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-187 … iter-196 (the batch's own thesis, turned on the batch:
+*an instrument's declared population is a registry, and it rots at whatever grain nobody checked*)
+**Tiks covered since prior pass:** 10
+**Runner named on every count** (`§5` rules 75/76): pytest **3.9.6**, unittest **3.9.6**, unittest
+**3.14.6**; the Go arm `go1.26.5 darwin/arm64`.
+**Section scope:** **`stack-core` only** for the Python arms. The Go figures are **all six Go
+sections**; the TypeScript figures are **enumerated, never run** (iter-196's vocabulary holds here).
+
+### Baseline, taken with the tree FROZEN before any edit
+
+`suite_census.py` whole-population run, both runners: **122 modules · GREEN 118 · ENV-GATED 4 ·
+RED 0 · TIMEOUT 0**, **0 modules on which the runners disagree**, **0 actionable RED**.
+Tests: **3,502 (unittest) / 3,527 (pytest)** — the 25-test gap is exactly
+`FIX-M257x-h44-claim-census-guard-is-single-runner`, still open, and it reconciles.
+
+### Finding 1 — the memberships were derived and the SIZES were literals, and one of them was a VERDICT
+
+Iters 187–196 derived every population they **listed** and hand-wrote every population they
+**counted**: eight per-section file counts inside `LANGUAGE_EXCLUDED_SECTIONS` / `UNREAD_IN_COLLECTED`,
+`264 Go + 75 TS` repo-wide in the header, and on the **always-printed** scope line
+`2,714 passed · 0 failed` — a verdict the printing invocation did not measure. Measured this pass: all
+eight agree with disk, **and nothing read any of them**. Every membership arm fires when a section
+enters or leaves a bucket; a section that keeps its name and loses two hundred test files was invisible
+to all of them. That is the live rule *print the SIZE, assert the SHAPE* with its halves swapped, and
+iter-192's *an agreeing reconstruction is indistinguishable from a reading* one grain further down.
+
+Two components, both proven rather than argued:
+
+* **A repo-wide arm that could not fail.** `test_the_repo_wide_unread_population_is_STATED_not_implied`
+  asserted `sum(A) + sum(B) == sum(A|B)` — an **identity** whenever A and B are disjoint, which
+  `test_the_two_languages_PARTITION_the_repo` already guarantees. It could not fail for **any** file
+  count, and the figures its name promises to keep readable — **264 and 75** — were asserted **nowhere
+  in the class**; they appeared only in its docstring.
+* **The fencing ran opposite to the strength of the claim.**
+
+  | published claim | strength | live arms on the REAL repo | ratchet |
+  |---|---|---|---|
+  | TypeScript 424 tests / 75 files | POPULATION | **3** | yes |
+  | Go 264 `*_test.go` | POPULATION | non-empty only | no |
+  | Go **2,714 passed · 0 failed** | **VERDICT** | **0** | no |
+
+  `go_census(REPO)` was called by **zero** arms — its only two callers pass synthetic one-test temp
+  dirs. **Cost cannot explain it**: measured here the six-section Go census re-runs in **23 s** and the
+  TypeScript enumeration that *is* ratcheted costs **0.59 s**. Both affordable; only the weaker claim
+  was fenced.
+
+Repair: published figures become named constants the fences read (`GO_FIRST_READING`,
+`TS_FIRST_ENUMERATION`, `NON_PYTHON_FILE_FLOOR`) so a printed number and its ratchet are the same
+object; `declared_file_counts()` / `derived_file_counts()` give **sizes** the declared/derived split
+iter-150 gave **memberships**, with an unreadable declaration a REFUSAL rather than a pass; the identity
+becomes two real repo-wide floors; and the Go verdict gets its first arm — live behind
+`SUITE_CENSUS_GO_LIVE=1`, whose **skip names the exact command**, because *a NOT-REACHED clause is a
+measurement or it is a mood*. Live re-derivation: **2,714 pass · 0 fail, 24.7 s**.
+
+### Finding 2 — the prover called its own recall unreadable and exited 0
+
+`labeled_spelling_pins.prove()` prints, on a broken bucket partition, *"The RECALL above is unreadable
+as a rate; fix the accounting before quoting it"* — and then fell through to **`return 0`** and
+published that rate. `spelling_pin_census.py --labeled-set` returns the value straight to the shell, so
+**every exit-code-keyed caller read a pass** over a denominator the instrument had just disowned.
+
+Reachable and not contrived: `declared_blind` is derived over the whole registry while `unreadable`
+counts every unreadable instance, so the buckets over-count by exactly `#(blind AND unreadable)` — the
+day a declared-blind instance's file moves. Proven by monkeypatching `lines_at` for the one blind
+instance: **PARTITION BROKEN printed, rc=0**.
+
+**iter-193 built the control for this branch and asserted on the printed MESSAGE**, because its `_run`
+harness **discarded `prove`'s return value**. The check stayed decoration for exactly as long as the
+control written to prove it wasn't. *Assert the verdict, not the message.*
+
+### The repair that was written, measured, and NOT taken
+
+Netting the blind-and-unreadable overlap out of `declared_blind` makes the three buckets sum to
+`len(LABELED_SET)` **identically, for every possible input** — the branch becomes **unreachable** and
+iter-193's arm goes RED for the right reason. A tidier ratio bought by deleting the check (`§9`: *a good
+repair can destroy the proof the instrument fires* — and it is Finding 1's identity, re-created by my
+own hand two hours after finding it). Written, measured, reverted, and now pinned by a reachability arm.
+
+**Coverage delta on touched files:** `test_suite_census_population.py` **30 → 35** arms (+1 rewritten
+from an identity to two floors); `test_spelling_pin_census_m257x.py` **22 → 23** (+4 arms upgraded from
+message-assertions to verdict-assertions).
+**Tests added:** +5 / +1, and 5 existing arms strengthened.
+**Bugs surfaced + fixed inline:** 2 (both above). **Self-inflicted and caught by this pass's own
+controls:** 2 — the netting repair above, and a `pgrep -f suite_census.py` wait-loop that **matched its
+own command line** and would never have exited.
+**Flakes stabilized:** none. **Flake gate:** 3 consecutive runs of the two modules — **57 passed ×3**.
+
+**Suite results (counts, never wall-time; runner + scope + language named):**
+
+| suite | runner | section scope | language | result |
+|---|---|---|---|---|
+| whole population, tree FROZEN (baseline) | pytest + unittest 3.9.6 | 5 collected | Python | **122 modules · 118 GREEN · 0 RED · 0 disagreements** |
+| 12 touched + consuming modules | pytest 3.9.6 | `stack-core` | Python | **240 passed · 1 skipped · 0 failed** |
+| the 2 changed modules | unittest 3.9.6 / 3.14.6 | `stack-core` | Python | **OK ×2** |
+| live Go verdict ratchet | `go1.26.5 darwin/arm64` | all 6 Go sections | **Go** | **2,714 pass · 0 fail** (24.7 s) |
+| RED-proof battery, mtime-mitigated (`§5` r77) | unittest 3.9.6 | `stack-core` | Python | **8/8 RED**, restore green |
+| `story_org_count_guard` · `route_disposition_guard` · `derivation_registry` | 3.9.6 | corpus · 3 milestones · rext | Python | **OK, 164 files** · **OK, 0 contradictions** · **0 unclassified** |
+
+**Graded clean, recorded so it is not re-derived** (`§5` — grade findings individually, never
+characterise a set): `story_org_count_guard`'s printed denominator and its violation scanner are **two
+readers** (`rglob` + per-file filter vs `os.walk` + dir-pruning). Enumerated both: **164 = 164, zero
+divergence**, and the traversals are equivalent on this interpreter (`rglob` does not skip dot-dirs).
+**No defect.** iter-191's repair is sound.
+
+**NOT COVERED, stated rather than implied (`§5` rule 60):** the ten non-`stack-core` **Python** sections;
+the **424 TypeScript tests**, which remain **ENUMERATED and never executed** — iter-196's vocabulary is
+in force and no count here is a TypeScript verdict.
+
+**Knowledge backfill:** none this pass; the two rules it contributes (*assert the verdict, not the
+message*; *a fence's ratchet should track the STRENGTH of the claim, not its convenience*) are recorded
+here and in the commit bodies.
+
+**Routed forward (Fate 3), four open:**
+* `FIX-M257x-h36-labeled-prover-denominator` — **CLOSED by Finding 2's repair** (the verdict half was
+  the remainder).
+* `SURVEY-M257x-h42-size-preserving-mutation-proofs-unaudited` — unchanged, open.
+* `FIX-M257x-h44-claim-census-guard-is-single-runner` — unchanged, open; the 3,502/3,527 baseline gap
+  above is its live size.
+* `SURVEY-M257x-h45-printed-measurement-literals-uncensused` — **NEW.** iter-193's
+  `printed_arithmetic_totals` censuses a printed total assembled by ARITHMETIC over a registry. The
+  strictly simpler sibling — a printed total that is a **LITERAL of a past measurement** — has no
+  census at all, and this pass fixed its three instances **by hand, in one module**. Per the user's
+  standing ruling the general census is routed, not built.
+
+**Stop condition:** **continue-to-next-pass** — two defects found and fixed in the first pass over this
+batch, both inside instruments shipped in the last ten iters, so the coverage delta has not been
+measured against a second pass yet.
