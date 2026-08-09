@@ -3239,3 +3239,96 @@ routed. Each pass found a real defect in the previous iters' newest instruments,
 stabilized; the residual is the routed `FIX-M257x-h36-labeled-prover-denominator` plus the standing
 process gap the two RED fences exposed (a change-derived scoped suite cannot see the fence that grades
 it). Per the user's standing ruling, this is routed and NOT met with new machinery.
+
+---
+
+## Pass 39 — 2026-08-09 — incremental
+
+**Iters hardened this pass:** iter-166 … iter-176 (11 tiks; target: the registry/enumeration machinery
+iters 174–176 built, and the ledger figure iter-173 was barred from repairing)
+**Tiks covered since prior pass:** 11
+**Runner named on every count below** (§5, iter-170): `/usr/bin/python3` **3.9.6**, the only interpreter
+on this box with pytest. Direct-execution checks additionally on `python3` **3.14.6**.
+
+### The owed item, discharged — `FIX-M257x-iter173-ledger-denominator` (`c7234fd`)
+
+Two sites in this file published a figure the file's own table refutes. `1,230 of **2,989**` was
+assembled as `2,978 passed + 11 skipped`, **dropping the same table's 22 failures**, so the denominator
+changed unit from *executed* to *passed-and-skipped* inside the entry whose subject is denominators; pass
+32 carried the hole forward as `2,989 + 51 = 3,040` and additionally dropped its own section's single
+failure from the numerator. Re-derived here **independently of iter-173's pre-computation**, because
+`1,280/3,040` and `1,281/3,062` are both 42 % and a careless repair would inherit the same protection
+the defect had: `2,978 + 22 + 11 = 3,011`, `stack-core` `1,229 + 1 + 0 = 1,230`; after the `+51`,
+**1,281 of 3,062**. Both sites now name the unit and carry the retraction. The `59 %` on the following
+line is unaffected (59.2 % vs 58.9 %) and is left as written.
+
+### Finding 1 — the enumeration was blind to a registry its own docstring names twice (`6b83e61`)
+
+iter-176 shipped `test_fence_registry_population_m257x.py` to close
+`FIX-M257x-iter174-accept-registers-one-registry-of-two` *"at its population rather than at its last
+member"*. It reported **5** sites and classified 5. **Its own history table names six.**
+`derivation_registry` appears there twice — found at iter-173 by grep, again at iter-175 by hand — and
+appeared in the fence's output never.
+
+Cause: `_norm()` normalised a string constant by stripping a trailing `.py`.
+`derivation_registry.DECISIONS` is keyed `"stack-core/derived_count_guard.py::postcondition_sites"` — a
+**qualified id** — so it matched no fence name and scored 0 against a floor of 2. **Structurally
+invisible: no number of runs could have surfaced it**, the same shape as iter-174's fail-open probe, and
+the **fourth** enrolment-by-spelling defect in M257x after iters 157, 162 and 175.
+
+That it is a registry is not an opinion: `3fb1d98` — iter-173's fence commit — adds that key **in the
+same commit that ships the fence**, and `test_frozen_expectation_census_m257x.py:239` asserts
+`unclassified() == []`, so the obligation is enforced. Widened `_norm` measured **5 → 7 sites, 0 lost**:
+`derivation_registry.py` (REGISTRY:reconciled) and `test_m255_mutation_battery.py` (DECLINE:subject — it
+stages M255's own three subjects and asserts no superset over the fence population, unlike the M257x
+battery whose `test_000` does). Two additions, both real — a widening, not a volume change.
+Control: `test_mutation_control_the_QUALIFIED_KEY_reader_is_load_bearing` restores the shipped
+bare-name `_norm` and **requires `derivation_registry.py` to be LOST** — written as a mutation rather
+than an `assertIn`, which would still pass in a future that re-keys `DECISIONS` by bare name and leaves
+the `::` reader dead.
+
+**The registry population is now 6 + 2 declines.**
+`FIX-M257x-iter174-accept-registers-one-registry-of-two` stays open (unchanged by this pass).
+
+### Finding 2 — the disclosed limit said `16 of 27`; it was `15 of 26` the day it was written (`d24132f`)
+
+Same file, one level down. `test_the_disclosed_limit_is_STATED_not_assumed` exists, in its own words, to
+keep the limit *"honest by measuring it rather than asserting its absence"* — and asserted
+`len(named) >= 2`. Measured now: **15 of 26**. Re-derived at **`5b108d0`, iter-175's own commit**,
+reconstructed with `git archive`: the tree said 15 of 26 **there too**.
+
+So it is **not drift — both operands were wrong at publication**, by an instrument iter-175 ran once and
+did not check in, and iter-176 quoted it twice. A floor of two cannot detect an error of one in a
+numerator or one in a denominator. The assert is now the claim: both docstrings' `**N of M**`
+disclosures are parsed as a construct (§8) and must equal the live measurement — **no hand-maintained
+constant**, the published prose is the subject (§2, derive at the point of use). Mutation-proved:
+restoring `16 of 27` FAILS naming both figures, deleting the disclosure FAILS naming the missing
+construct, baseline and restore PASS.
+
+**Routed forward — `FIX-M257x-h39-survey-id-embeds-retracted-figure` (Fate 3).** The routed id
+`SURVEY-M257x-iter175-readme-fence-index-is-16-of-27` carries the retracted figure **inside the
+identifier**, and iter-175's and iter-176's `progress.md` both cite it. A harden pass does not rewrite an
+iter's own record, so the rename is routed rather than taken.
+
+### Suite results (counts, never wall-time — `§5` rule 51's timing leg fails on this host)
+
+| suite | runner | result |
+|---|---|---|
+| 20 in-scope + consuming test files | pytest 3.9.6 | **693 passed · 1 skipped · 0 failed** |
+| guard family (`--repo-root` = rosetta) | 3.9.6 | **18 GREEN · 0 RED · 0 could-not-check · 8 not-run** (each not-run names the input it lacks; exit 2, which is the runner refusing to call an unsupplied input a pass) |
+
+`test_claim_twin_guard_iter48_answer_key::test_02` — the failure standing since pass 29 — is **GREEN**,
+as iter-167 reported; this pass confirms it independently.
+
+**NOT COVERED by this pass, stated rather than implied (§5 rule 60):** the six mutation batteries
+(`test_m255_*`, `test_m257x_claim_twin_*`, `test_m257x_mechanical_fences_*`,
+`test_m257x_repair_postcondition_*`, `test_m257x_repair_reach_*`, `test_repair_leak_guard_*`) and the
+`dev-stack` / `stack-injection` / `stack-verify` sections. They run at pass close, not per pass.
+
+**Knowledge backfill:** none as a corpus edit — both findings are defects in instruments, and each
+instrument's own docstring now carries its retraction, its measurement and the ref the measurement was
+taken at.
+
+**Stop condition:** continue-to-next-pass — two real defects in the newest fence, both fixed inline; the
+`FIVE registries` structural lead is now enumerated at six but its *sibling* obligation
+(`FIX-M257x-iter174-accept-registers-one-registry-of-two`) is untouched, and the batteries are unrun.
