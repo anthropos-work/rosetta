@@ -4219,6 +4219,49 @@ is visible in the output and in `--json`), and a test asserts the surface is **p
 tree**. A fail-open you can see and a fail-open that cannot be the real tree's state are different
 things, and only the pair is safe.
 
+### A NOT-COVERED clause DECAYS — it names a RUN and gets read as a PROPERTY (M257x iter-208)
+
+[iter-178](#a-not-reached-clause-is-a-measurement-or-it-is-a-mood-m257x-iter-178) established that a
+not-reached clause is a measurement or it is a mood. This is the failure one step later: a clause that
+**was** a measurement, copied forward until it read as a standing property.
+
+**The worked case, and it is this protocol's own.** Six harden passes closed with the rule-60 scope
+disclosure. Counted over the milestone's ledger:
+
+| form | instances | correct? |
+|---|---|---|
+| *"the ten non-`stack-core` **sections**"* | **1** | ✅ 11 sections on disk, minus `stack-core` |
+| *"the ten non-`stack-core` **Python** sections"* | **5** | ❌ there are **four** |
+
+**One adjective was inserted into a correct sentence and the number was not re-derived.** Six of the
+"ten" carry **zero** `test_*.py` files, which is what the tooling's own exclusion registry says about
+each of them. The wrong form then propagated verbatim through five consecutive passes and into the
+orchestration prompt of the run that caught it.
+
+**The second error is the worse one, and it is independent of the first.** *"NOT COVERED"* was true of
+the pass that wrote it and was read as *"never read"* — while the same document holds the tables that
+refute it: an iter that ran all four of those sections and graded 21 failures individually, and two
+harden passes that ran them again with per-section pass/fail counts.
+
+**The rule.** A scope disclosure is a claim about a population and obeys the same discipline as any
+other claim about a population:
+
+1. **Its denominator is DERIVED, not typed.** If the tooling can compute the set, the clause cites the
+   derivation. When it cannot, that is the finding — here the tooling derived `go_sections()` from
+   `go.mod` and `ts_sections()` from `playwright.config.ts` and had **no Python derivation at all**, so
+   the sentence had nothing to be graded against. A language triple missing its third leg is why an
+   adjective could change a claim's subject silently.
+2. **It names the RUN, not the milestone.** *"not covered by this pass"* and *"never read"* are
+   different claims with different evidence. A clause that does not say which one it means will be read
+   as the stronger one.
+3. **Copying it forward RE-ASSERTS it.** A disclosure pasted into a new pass is a fresh claim at a fresh
+   tree and inherits every weakness of the original — [iter-98's retraction rule](#write-the-retraction-in-the-vocabulary-the-fence-enumerates-m257x-iter-98)
+   applied to the disclosure that never retracted anything.
+
+The cost is exact: a sentence written to make scope honest overstated the unread surface by **six
+sections** and understated the milestone's own coverage, for five consecutive passes, inside the clause
+that cites rule 60 by name.
+
 ### A check is only as strong as the runs that REACH it — and "too slow" is a MEASUREMENT (M257x iter-179)
 
 A fence can be correct, cheap, and effectively absent. `test_000_the_copy_list_stages_every_fence_the_
