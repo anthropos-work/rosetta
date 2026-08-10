@@ -5756,3 +5756,72 @@ the *unstated quantifier*, not the arity. It is recorded here — the doc every 
 reads — rather than left in iter-267's `progress.md`, because a lesson that lives only in a closed
 iter's dated record is a lesson the next iter does not receive. That is the whole reason this section
 exists.
+
+### An OPERATING list must not name a corpse; a SCANNING domain must (M257x iter-270)
+
+The milestone spent 270 iterations removing decommissioned service names from rext, so it is worth
+stating precisely where that rule *inverts* — because iter-270 shipped both halves within one hour, in
+two files, and getting the second one backwards would have silently disarmed a live fence.
+
+| kind of list | must it name a decommissioned service? | why |
+|---|---|---|
+| **operating** — what the tooling clones, builds, injects, re-points, migrates | **NO** | naming one makes the tooling *act on* a corpse. `INJECT_CANDIDATES`, `INJECTED`, `REUSE_DEV`, `_studio_repos` |
+| **scanning** — the domain a fence walks looking for a property | **YES** | a husk clone still on disk that still *behaves* like a live consumer is precisely what the fence exists to notice. `DIRECTUS_READER_DOMAIN` |
+
+The concrete failure: `test_directus_consumer_derivation.py` passed `gen_injected_override.INJECTED` as
+the compose-service→repo map it scanned. That was fine while INJECTED happened to list three live repos.
+The moment iter-270 pruned `cms` and `jobsimulation` out of it — a correct edit, for unrelated reasons —
+the fence's **reach** shrank with it, and *"cms stopped reading Directus"* and *"cms was never looked
+at"* collapsed into the same green verdict.
+
+> **A fence whose reach is a side effect of an unrelated map is not a fence.** Give it its own domain,
+> and write down that the domain is deliberately wider than anything the tooling operates.
+
+And the correction has a second half that is easy to skip. Widening the domain re-broke the same fence
+from the other side: the live corroboration selected its clone root with
+`all(isdir(root/repo) for repo in DOMAIN)`, so adding a husk that is cloned **nowhere on this box**
+(`skiller`) made the selector return `None` and the test **SKIP**. Green suite, question never asked —
+§8 iter-174 again, arriving through the door marked *"improvement"*. The selector must ask for the
+**anchor** repo only, and the assertion must grade `shipped ∩ present` while **naming what was
+unmeasured** (§8 iter-241: a fence's reach is a property of the clone set; §8 iter-91: grade the
+cannot-tell).
+
+### A one-line window over a multi-line construct is a check of a DIFFERENT thing (M257x iter-270)
+
+`test_no_script_gates_studio_on_a_service_name` is the direct anti-regression for M257 B2's *"studio
+handling keyed to one hardcoded service"* bug. It was **green for four releases while the bug was
+present**, and the reason is entirely mechanical: it required both halves of its predicate — a
+`"$svc" = <name>` comparison **and** the word `studio` — **on the same line**, and the regression had
+re-entered in the two-line form shell `if`/`elif` actually takes:
+
+```sh
+elif [ "$_svc" = cms ]; then                                        # the gate — no "studio"
+  log "cms: make init-studio (clone … into stack-demo/cms/studio)"  # "studio" — no gate
+```
+
+Measured against the pre-repair file: the **widened** window (line + successor) returns **1** hit; the
+**old one-line** window returns **0**. iter-268 found the hardcode by hand instead, with this test
+passing throughout.
+
+The generalisation is not "use bigger windows" — it is that **a line-scoped predicate silently redefines
+its own subject** when the construct it grades spans lines. State the window, and prove it on the shape
+you claim to catch: iter-270 ships the widened predicate with a mutation control that plants **both** the
+one-line and the two-line forms and demands it fire on each, so the widening cannot later be narrowed
+back without a red test.
+
+### A summary that counts its own INPUT cannot disclose a filter (M257x iter-270)
+
+`gen_injected_override.py` ended every run with `f"({len(INJECTED)} injected, …)"`. `INJECTED` is the
+**candidate** map; what actually ships is the subset the platform's compose still declares. So on every
+bring-up since `ef32d4c` the line read **"3 injected"** while exactly **one** image was injected — and
+the number was *published to the operator*, in the log, on the path the whole demo family runs.
+
+This is the reporting twin of the fail-open rule. A fail-open probe reports a check it did not run; an
+input-counting summary reports a filter it did not apply. Both are green, both are wrong, and both are
+fixed the same way: **count the OUTPUT.** The repaired line counts the emitted `:injected` image lines,
+so if the filter ever drops something the number moves.
+
+⚠️ Worth pairing with the fixture rule (§8 iter-166): the same iter found `test_injection.py`'s `_cfg`
+fixture declaring **four** services the compose had deleted, with tests asserting they receive injected
+images. A fixture is a registry; a summary is a claim; both rot toward whatever was true when they were
+written, and neither errors while doing it.

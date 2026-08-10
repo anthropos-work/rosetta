@@ -512,8 +512,8 @@ and the profile carries the same arithmetic so the operator warning and the gate
 
 ## The parallelism rule (union-apply)
 
-`next-web` and `hiring` build from **the same clone** — `ctx=$DEMO/next-web-app` (`up-injected.sh:490`,
-`:1008`) — with different demo-patch sets. Building them in parallel naively races the shared working tree
+`next-web` and `hiring` build from **the same clone** — `ctx=$DEMO/next-web-app` (`up-injected.sh:571`,
+`:1089`) — with different demo-patch sets. Building them in parallel naively races the shared working tree
 against three of `demopatch`'s own guards: **G2** (drift-refuse), **G4** (idempotent), **G5** (self-revert).
 A G2 refusal is **non-fatal and silent**, so the failure mode is *an image that ships unpatched while the
 bring-up grades green*.

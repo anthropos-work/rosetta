@@ -266,7 +266,7 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
 > **It is not a bug in either half, and that is why it survived.** Append-only is what makes the tool
 > values-blind — `provision/io.go:173-175`: *"an existing line is never re-read for its value or rewritten,
 > so provision can never corrupt or echo a value already in the target."* And `--force` is deliberate:
-> `up-injected.sh:1522` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
+> `up-injected.sh:1529` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
 > last-wins** (the strip-on-non-prod class)."* **Compose's last-wins resolution is therefore LOAD-BEARING,
 > not incidental** — the blank is delivered *by being appended last*.
 >

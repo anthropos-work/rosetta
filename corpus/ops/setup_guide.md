@@ -355,8 +355,16 @@ git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
 
 The path is gitignored, so this does not dirty `app`'s tracked state. **Derive the need rather than
 memorising this list** — any service whose `Dockerfile`/`Dockerfile.dev` contains a `COPY … studio`
-line needs the same tree, which is how the demo tooling decides
-(`rosetta-extensions/demo-stack/lib/studio.sh`, `studio_required`).
+line needs the same tree, which is how the tooling decides
+(`rosetta-extensions/stack-core/lib/studio.sh`, `studio_required`).
+
+> **This manual step is for the MAIN dev stack (`N=0`) only** — the `make init` + `make up` path this
+> guide documents. Since M257x iter-270, **`dev-stack up N` (an additional `dev-N`) acquires the tree
+> itself**, from the same shared lib the demo path uses: it derives the consumer set from the platform's
+> own `repos.yml`, clones `anthropos-studio-room` into each consumer that needs it, and **aborts if it
+> cannot** — rather than letting `docker compose up` die ~20 minutes later on `"/build/studio": not
+> found`. The lib moved out of `demo-stack/lib/` precisely so the dev path could reach it without the
+> dev section depending on the demo section.
 
 *(Historical: this used to be `cd ../cms && make init-studio`, which cloned the same project into
 `cms/studio/` for the cms image build. **The dependency did not go away when cms did — it moved to

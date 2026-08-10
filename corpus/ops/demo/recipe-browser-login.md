@@ -49,12 +49,17 @@ on `127.0.0.1:5401+offset` (loopback-bound deliberately — see [`frontend-tier.
 >    `docker-compose.yml` — `sentinel` (`:5`), `backend` (`:28`), `studio-desk` (`:112`), `next-web-app`
 >    (`:143`), `gotenberg` (`:170`) — plus `postgresql` (`:2`) and `redis` (`:24`) from the included
 >    `common.yml`. No `cms`, no `jobsimulation`; the cms domain runs in-process inside `backend`. The demo
->    tooling reaches the same conclusion at runtime: `up-injected.sh:216` still lists
->    `INJECT_CANDIDATES="app cms jobsimulation"`, but `derive_inject_svcs` (`:1688-1704`) **filters it
->    against the platform compose's own build set** and logs *"injection candidate 'cms' is no longer built
->    by the platform compose — skipping (folded into app)"*, leaving `INJECT_SVCS="app"`. So exactly **one**
->    service is authn-disarmed, not five — hence the seam-table correction above. (`sentinel` does
->    authorization, not Clerk token verification, and is not a candidate.)
+>    tooling reaches the same conclusion at runtime, and since **M257x iter-270** it reaches it twice over:
+>    `up-injected.sh:222` now lists `INJECT_CANDIDATES="app"` — the two corpses were removed from the
+>    candidate list itself — and `derive_inject_svcs` (`:1709-1725`) still **filters the candidates against
+>    the platform compose's own build set**, so `INJECT_SVCS="app"` by both routes. The old *"injection
+>    candidate 'cms' is no longer built by the platform compose — skipping (folded into app)"* line no
+>    longer prints, because there is no longer a candidate to skip. **That filter is now FAIL-CLOSED**: an
+>    underivable build set `die`s rather than falling back to the unfiltered list (it used to fall back, and
+>    on a box carrying the stale cms/jobsimulation clones the fallback would have built two injected images
+>    for services the compose does not declare). So exactly **one** service is authn-disarmed, not five —
+>    hence the seam-table correction above. (`sentinel` does authorization, not Clerk token verification,
+>    and is not a candidate.)
 > 2. **`extra_hosts` is written but never applied.** `inject.py:98-108` does emit an
 >    `extra_hosts: !override / - "api.clerk.com:<ip>"` snippet — into `<stack>/docker-compose.inject.yml`,
 >    against a service named **`app`** (which does not exist; the service is `backend`). That file is passed

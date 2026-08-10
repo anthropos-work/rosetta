@@ -585,8 +585,13 @@ npm run dev    # frontend 9100 (vite.config.ts:10), backend 9000 (.env.example:4
 > `git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio` BEFORE `make up`** —
 > `corpus/ops/setup_guide.md` § *Acquire the Studio runtime*. There is no `.gitmodules` since app
 > `851cf3fb`, and `init-studio` was always a **cms** target. The demo path has hidden this since
-> 2026-07-27 because `rosetta-extensions/demo-stack/lib/studio.sh` acquires it automatically; the **dev
-> path has no such step**.
+> 2026-07-27 because `rosetta-extensions/stack-core/lib/studio.sh` acquires it automatically.
+> **⚠️ *"the dev path has no such step"* was true and is now HALF-true (M257x iter-270).** The lib was
+> hoisted out of `demo-stack/lib/` into `stack-core/lib/` and **`dev-stack up N` now acquires the tree
+> too** — deriving the consumer set from `repos.yml` and **aborting** if it cannot, instead of failing
+> inside `docker build`. It is the **main dev stack (`N = 0`)** — the `make init` + `make up` path this
+> banner describes — that still needs the manual clone, because nothing in rext drives it. Say which
+> dev path you mean: the two now differ.
 
 ```bash
 cd app/studio          # NOT `cd studio-room` — see the warning above

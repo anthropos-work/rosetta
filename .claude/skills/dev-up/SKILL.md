@@ -66,8 +66,14 @@ before/after each step, request confirmation before installs or destructive ops,
    > (v1.10b M49 #5), so for a dev stack you `git clone` it by hand only if you need it (native-only,
    > port 3077, never in docker-compose).
    > **(b) There is no CMS studio submodule step.** `cd cms && make init-studio` **fails outright** — `cms`
-   > is not cloned and has no compose service. `studio-room` is pulled into the `app` image by CI, not by a
-   > local submodule.
+   > is not cloned and has no compose service.
+   > **⚠️ But the studio runtime is still REQUIRED, and this note used to imply it was not** (corrected
+   > M257x iter-270). *"`studio-room` is pulled into the `app` image by CI"* is true of CI and inverts the
+   > causality locally: `app/Dockerfile` hard-COPYs `studio/` and `pip install`s it, so a local `make up`
+   > **dies** with `"/build/studio": not found`. For the **main dev stack (`N = 0`)** you must
+   > `git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio` before `make up`
+   > (the path is gitignored). For an **additional `dev-N`**, `dev-stack up N` acquires it itself — it
+   > derives the consumer set from `repos.yml` and refuses if it cannot.
 
    **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
    — it bootstraps the extensions + schemas, atlas-migrates **the set it DERIVES from `repos.yml`**, and loads

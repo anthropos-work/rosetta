@@ -32,8 +32,13 @@ ssh -T git@github.com               # GitHub SSH (run /setup-github if this fail
 # First-time build (in stack-dev/platform):
 make init                 # clone the 4 repos in repos.yml: app, sentinel, next-web-app, studio-desk
                           # (ant-academy is NOT in repos.yml by design — clone it by hand if you need it;
-                          #  the old `cd cms && make init-studio` step is dead: cms is not cloned, and
-                          #  studio-room ships inside the app image)
+                          #  the old `cd cms && make init-studio` step is dead: cms is not cloned.)
+git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
+                          # REQUIRED for N=0 (M257x iter-262/270). "studio-room ships inside the app
+                          # image" is CI's story and it inverts the causality locally: app/Dockerfile
+                          # hard-COPYs studio/ + pip-installs it, so a local `make up` DIES with
+                          # `"/build/studio": not found` if the tree is absent. `dev-stack up N`
+                          # (N >= 1) does this for you; the make-driven N=0 path does not.
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"

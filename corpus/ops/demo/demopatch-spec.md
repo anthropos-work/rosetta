@@ -227,7 +227,7 @@ in LIFO order**, and this sentence used to say it was. The next-web trap
 (`demo-stack/up-injected.sh:741` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
 aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
 *studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
-back-to-cockpit* (`:757`, `:762`, `:781`, `:793`, `:805`, `:817`, `:831`, `:842`, `:855`): **only two adjacent
+back-to-cockpit* (`:763`, `:768`, `:787`, `:799`, `:811`, `:823`, `:837`, `:848`, `:861`): **only two adjacent
 pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
 reverted in apply order.** That is the same
 finding the §4 correction box above records — see its table for the hiring lane, whose revert

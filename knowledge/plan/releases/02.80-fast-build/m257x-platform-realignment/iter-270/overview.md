@@ -2,7 +2,7 @@
 iter: 270
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10
 active_strategy: TOK-08
 route: FIX-M257x-268-ensure-clones-hardcodes-cms-as-studio-fetcher (+ ROUTE-M257x-h68, FIX-M257x-262-dev-path-needs-the-studio-acquisition)
