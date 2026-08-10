@@ -102,7 +102,9 @@ bare basenames, applied unchanged to refs.
 ## Phase D — the advance, taken
 
 All three clones fast-forwarded (`merge --ff-only`, all clean, all ancestors), and **the canonical pin
-advanced with them** — which is the half that actually decides what a cold demo builds:
+advanced with them** — which is the half that decides what a `DEMO_ADVANCE_CLONES=pinned` bring-up
+builds (⚠️ this sentence said *"what a cold demo builds"* until iter-257 measured the default to be **no
+pin at all**; see the amendment on `D-M257x-256-4`):
 `rosetta-extensions/demo-stack/clones.pin.json`, `app` → `3eaadae68`, `next-web-app` → `19423a1fb`,
 `ant-academy` → `249430c39`. `clone_pin_guard` stays GREEN (4 `repos.yml` repos + 2 sanctioned extras,
 every ref reproducible). All six clones now report `behind=0`.

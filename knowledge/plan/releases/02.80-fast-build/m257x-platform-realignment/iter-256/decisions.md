@@ -58,10 +58,20 @@ this milestone exists to remove.
 
 ## `D-M257x-256-4` — the advance is the PIN, and taking it is booked as an unproven state change
 
+> ⚠️ **AMENDED AT iter-257 — the paragraph below was too strong and the strong half is RETRACTED.**
+> Measured at iter-257: `DEMO_ADVANCE_CLONES` defaults to `0` (`ensure-clones.sh:212`) and **no other
+> file in rext sets it**, so a default bring-up applies **no pin at all** — a fresh box gets each repo's
+> default-branch tip from `git clone` + `make init`, and an existing workspace builds whatever its
+> clones are checked out at. The pin is a **reproducibility barrier available on request**
+> (`DEMO_ADVANCE_CLONES=pinned`), and it reaches the clones through the **workspace copy**, not the
+> canonical file. So *"the next `/demo-up` would have re-pinned them back"* is **false** — nothing
+> would have. What is true, and is why iter-256's action was still right, is that advancing the
+> **checkouts** is what a default bring-up actually consumes, and advancing the **canonical pin** is
+> what `pinned` should mean when someone asks for it. Both were needed; neither is the sentence below.
+
 `git merge --ff-only` in three clones changes what is on disk. `rosetta-extensions/demo-stack/clones.pin.json`
-changes what a **cold bring-up on any box** builds — `ensure-clones.sh` checks each clone out at the ref it
-names. Advancing only the checkouts would have been theatre: the next `/demo-up` would have re-pinned them
-back.
+changes what a `DEMO_ADVANCE_CLONES=pinned` bring-up builds — `ensure-clones.sh` checks each clone out at
+the ref it names. Advancing only the checkouts would have left that mode pointing at the old refs.
 
 Both were advanced (`app` `3eaadae68`, `next-web-app` `19423a1fb`, `ant-academy` `249430c39`), and
 `clone_pin_guard` stays GREEN.

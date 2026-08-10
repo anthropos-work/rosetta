@@ -2834,9 +2834,18 @@ defect, it was arguing for it.*
       human must read this*, and three of six refusals overturned the premise the other 27 ran under.
     - **Taking the advance is the cure, not the risk.** Once the clones sit at `origin/main`, the two
       clocks collapse into one and the mis-framed residual becomes measurable at a single ref for the
-      first time. Do it deliberately, advance **`demo-stack/clones.pin.json` with the checkouts** (§7
-      rule 4 — the pin is what a cold bring-up reads; a checkout-only advance is undone by the next
-      `ensure-clones.sh`), and book the bring-up as **unproven** until a quiet host runs it.
+      first time. Advance **the checkouts AND `demo-stack/clones.pin.json`**, and book the bring-up as
+      **unproven** until a quiet host runs it.
+
+      **Advance both, for two different reasons — and do not conflate them (M257x iter-257).** A
+      default bring-up applies **no pin**: `DEMO_ADVANCE_CLONES` defaults to `0` and nothing else in
+      rext sets it, so a fresh box takes each repo's default-branch tip from `git clone` + `make init`
+      and an existing workspace builds **whatever its clones are checked out at**. The checkout
+      advance is therefore what a bring-up consumes. The pin is a reproducibility barrier available
+      **on request** (`DEMO_ADVANCE_CLONES=pinned`), and it reads the **`stack-*/clones.pin.json`
+      copy**, not the canonical file — a copy `ensure-clones.sh` seeds **copy-if-absent** and never
+      reconciles. Advance the canonical pin so `pinned` means the new refs, and check the workspace
+      copy, or `pinned` will quietly restore the old ones. Fenced by `clone_pin_guard` **arm D**.
 
 ### A corpus QUOTES source by paraphrase — so containment cannot grade a citation (M257x iter-234)
 
