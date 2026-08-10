@@ -28,10 +28,18 @@ Tools required to provision the environment and run the core infrastructure.
 ## 2. Service Development (Backend)
 Tools specific to developing, building, and running the Go-based microservices.
 
-*   **Go** (v1.23+)
+*   **Go** (**v1.25+**)
     *   *Function*: Programming Language & Runtime.
     *   *User*: Backend Engineers.
-    *   *Context*: Compiling and running service code (`app`, `cms`, `jobsimulation`) locally.
+    *   *Context*: Compiling and running service code locally, and — the binding constraint — the
+        `rosetta-extensions` host tooling (`stacksecrets` / `stacksnap` / `stackseed`), whose six
+        sections all declare `go 1.25.0` + `toolchain go1.25.12` and which build **on the host**.
+        ⚠️ **This said `v1.23+` until M257x harden pass 60**, two minor versions low, and it named
+        `cms` and `jobsimulation` as service code you compile — both are merged into `app` and neither
+        repo is in the clone set. The service repos themselves declare `go 1.26.x` but build **inside
+        Docker** on `golang:1.26-bookworm`, so they do not raise the host floor. Same derivation as
+        [`corpus/ops/setup_guide.md`](../ops/setup_guide.md), which M257x iter-240 repaired; this
+        fourth statement of the floor sat outside that iter's subject and stayed wrong.
 
 *   **Make**
     *   *Function*: Task Runner & Build Automation.
@@ -56,10 +64,13 @@ Tools specific to developing, building, and running the Go-based microservices.
 ## 3. Web Development (Frontend)
 Tools specific to the Next.js monorepo and web applications.
 
-*   **Node.js** (v20+)
+*   **Node.js** (**v24+**)
     *   *Function*: JavaScript Runtime.
     *   *User*: Frontend Engineers.
-    *   *Context*: Executing the dev server and build scripts.
+    *   *Context*: Executing the dev server and build scripts. Derived from the highest
+        `engines.node` in the clone set — `next-web-app` declares `">=24.0.0"`; `ant-academy` declares
+        `">=22"`, which the higher floor already covers. ⚠️ **This said `v20+` until M257x harden pass
+        60** — four major versions low, and low enough that `next-web-app` refuses to install.
 
 *   **pnpm**
     *   *Function*: Package Manager.
