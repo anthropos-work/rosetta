@@ -5441,7 +5441,44 @@ the share's denominator.
 |---|---|---|---|---|
 | flake gate, the **24 net-new** tests | pytest 8.4.2 / CPython 3.9.6 | `stack-core` | Python | **24 passed ×3 consecutive** |
 | `guard_family --platform stack-demo/platform` | `guard_family.py` | `stack-core` | Python | **24 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
-| whole section | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | recorded in the pass-59 verification note below |
+| whole section, **first** reading at the final tree | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | **1,977 passed · 8 FAILED · 3 skipped** (24 m 48 s) |
+| whole section, **after the repair below** | pytest 8.4.2 / CPython 3.9.6 | **`stack-core` only** | Python | **1,985 passed · 0 failed · 3 skipped** (24 m 50 s) |
+| `derivation_registry.py --ceilings` | `derivation_registry.py` | `stack-core` | Python | **3 ratchets exact +0, exit 0** |
+
+> **THE 8 WERE THIS SESSION'S OWN, AND THE FENCE CAUGHT ALL OF THEM.** Every failure was in
+> `test_frozen_expectation_census_m257x.py` — the milestone's frozen-expectation census — and every one
+> was a literal ratchet breached by passes 57–59's own prose. Repaired, not accepted; **`1,977 + 8 =
+> 1,985`**, so the re-read is the same population with the 8 flipped and nothing lost.
+>
+> **Repaired in the order the ratchets require, because the first step moves the population the other
+> three bound.** The residual arm went first: `refs?` added to `_MEASURED_NOUNS`, because pass 58's
+> `guard_family` fix wrote *"all 281 refs under the bundle"* into an advice string and `refs` is
+> unambiguously a count this repo had never written after a number. **Seventh consecutive time the
+> vocabulary's reach has closed on the sentence that widened it**, and the seventh time the residual arm
+> surfaced it rather than anyone reading the list.
+>
+> Then the three ceilings, each isolated **the iter-223 way — tree held fixed, matcher varied** — so each
+> arrow states which half is prose and which is reach, which is what its own message means by *"never a
+> blind bump"*:
+>
+> | ratchet | arrow | prose | reach |
+> |---|---|---|---|
+> | `DOCSTRING_LITERAL_CEILING` | **219 → 221** | +1 — `_print_range_disclosure` / `_rext_authoring` docstrings state the measurements that motivate them | +1 — the `refs?` widening (pre-widening matcher on this tree returns 220, post 221) |
+> | `COMMENT_LITERAL_CEILING` | **190 → 196** | +6 — the counting-site block, then **the recorded reasons themselves** | 0 (pre == post both times) |
+> | `TEST_MODULE_LITERAL_CEILING` | **597 → 601** | +4 — the measurements the new tests exist to pin | 0 (pre == post) |
+>
+> **The comment ceiling's +5 second arrow is the fixpoint this ceiling's own top paragraph describes,
+> hit for the THIRD consecutive harden session**: re-pinning a ratchet demands a recorded reason, a
+> recorded reason is made of figures, and those figures live in `#:` comments — which is that ratchet's
+> population. It converged in one iteration only because the matcher requires *number + measurement
+> noun*, and an arrow like `191 → 196` is followed by no noun. `derivation_registry.py` is now the
+> heaviest contributor at **63** for exactly this reason and will be for every future re-pinning pass.
+>
+> **Grade this as a finding, not as friction.** The section reading was taken **once, after the last
+> edit** — the §9 corrective — and it is the only thing in this session that caught these 8. Three green
+> per-file runs, three green `guard_family` runs, a green pre-commit hook and a passing flake gate all
+> preceded it and none of them saw the breach: **the ratchets are repo-wide, and nothing scoped to the
+> files a pass touched can read them.**
 
 **NOT COVERED, stated rather than implied (`§5` rule 60):** the four non-`stack-core` **Python** sections
 were last read at pass 51 (1,824 passed · 9 failed, all declared ENV_GATED) and are **not** re-claimed
@@ -5465,7 +5502,10 @@ members had no input supplied.
   `README.md` paths. A rext edit that rots corpus anchors fires **nothing, anywhere, by construction** —
   which is the enabler behind finding (2) and behind iter-229's 19 silent.
 
-**Flakes stabilized:** none surfaced; the 24 net-new tests passed 3×3 consecutive.
+**Flakes stabilized:** none surfaced; the 24 net-new tests passed 3×3 consecutive. **And the flake gate is
+exactly what did NOT catch the 8 ratchet breaches** — it is scoped to the new tests by construction, so it
+is structurally incapable of reading a repo-wide ceiling. Recorded because a green flake gate beside a RED
+section is otherwise read as a contradiction rather than as two instruments with different reaches.
 
 **Stop condition:** cap reached without stabilization — three passes, **7 defects fixed inline** and
 **2 routed**, and the third pass found the largest reach gap of the session rather than going quiet.
