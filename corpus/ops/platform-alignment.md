@@ -2801,6 +2801,43 @@ defect, it was arguing for it.*
     partition). It reports its shape, its denominator and its reach on every run, and it refuses the
     shape it has not implemented.
 
+79. **AN ANCHOR CARRIES THE REF OF THE TOOL THAT DERIVED IT — so a resolver with a ref LADDER makes
+    the corpus a TWO-CLOCK document.** M257x iter-256. `anchor_construct_guard`'s default
+    `CITE_REF=auto` tries `origin/main` **before** the checkout. That is the right default for
+    *grading* — the exit gate names origin HEAD — and it has a consequence nobody wrote down: every
+    anchor derived or verified **through the guard** is an `origin/main` line number, while every
+    anchor derived by **reading a clone** is a checkout line number. Both end up in the corpus,
+    adjacent, unmarked, and **no fence can tell them apart** because both land on real lines — this is
+    precisely the wrong-construct floor the guard discloses on every run.
+
+    Measured on 33 impacted citations (118 under the wider partition) when three clones sat 28/12/10
+    commits behind:
+
+    | site | frame | how it shows |
+    |---|---|---|
+    | `platform-migration-status.md:121` | `origin/main` | 7 anchors exact at `3eaadae68`; in the checkout its two `MESSENGER_ENABLED` reads are 14 and 24 lines earlier |
+    | `observability.md:28` | `origin/main` | `WithLoggingTracing` one line later than the checkout has it |
+    | `observability.md:29` | **checkout** | quotes `SentryDSN: os.Getenv("SENTRY_DSN")`, exact in the checkout — **the row directly below its `origin/main`-framed sibling** |
+
+    **The rule that follows, and it is a rule about REPAIRS, not about reading.** A diff of a cited
+    line's text across two refs is a **text delta**. It says the line moved; it does **not** say which
+    ref the citation was written against, and therefore it is **not a repair instruction**. iter-256
+    built the obvious renumbering applier, ran it over 27 citations, and reverted every one — seven of
+    them had been *correct* and were moved onto comments. So:
+
+    - **State the direction of a delta as a claim separate from its size.** The size was right in every
+      one of those 27; the attribution was a guess wearing a measurement's clothes.
+    - **Never auto-apply a ref-delta.** `D-M257x-122-5`'s bare-basename rule transfers unchanged:
+      guessing between two candidates that equally satisfy a citation is the wrong-construct error the
+      instrument exists to find. `advance_impact_census.py --apply` refuses without `--adjudicated`.
+    - **The refusing buckets are the valuable ones.** `moved-ambiguous` and `changed` exist to say *a
+      human must read this*, and three of six refusals overturned the premise the other 27 ran under.
+    - **Taking the advance is the cure, not the risk.** Once the clones sit at `origin/main`, the two
+      clocks collapse into one and the mis-framed residual becomes measurable at a single ref for the
+      first time. Do it deliberately, advance **`demo-stack/clones.pin.json` with the checkouts** (§7
+      rule 4 — the pin is what a cold bring-up reads; a checkout-only advance is undone by the next
+      `ensure-clones.sh`), and book the bring-up as **unproven** until a quiet host runs it.
+
 ### A corpus QUOTES source by paraphrase — so containment cannot grade a citation (M257x iter-234)
 
 **REFUSED INSTRUMENT. Do not rebuild it.** The obvious next rung after *"the sha resolves"* (iter-230),

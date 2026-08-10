@@ -520,6 +520,34 @@ d2, non-fatal); for **dev**, it's a manual `git clone` — not `make init`.
 
 If you ever need to add a Docker profile (e.g. for an integration-test harness), follow studio-desk's containerized variant as the template.
 
+### The clone advanced to `249430c39` — what moved, and the inference that does NOT follow (M257x iter-256)
+
+Every ref-pinned claim above is measured at `ant-academy` **`22df69dd8`** and stays true at that ref
+(§5 rules 41/44). On **2026-08-10** the clone and the canonical demo pin were advanced to
+`origin/main` = **`249430c39`**, **10 commits** on, under the user's closing condition that the
+milestone may only close against the *current* branches. What that advance contains, measured with
+`git show <ref>:code/ucourses/catalog.js` at both refs rather than read from the commit subjects:
+
+| | `22df69dd8` | `249430c39` | delta |
+|---|---|---|---|
+| `PUBLIC_CHAPTERS` entries | **499** | **554** | **+55** |
+| skill-path keys (the catalog's course objects) | **92** | **92** | **0** |
+
+The 55 are two content families — **open-source/open-weights models** (`kimi-*`, `glm-*`,
+`open-source-*`, `coding-open-models-intro`, …) and **finance back-office** (`excel-copilot-*`,
+`excel-claude-code-*`, `excel-chatgpt-*`, `finance-back-office-*`) — each shipped EN+IT, plus
+`benchmark-it-yourself`.
+
+⚠️ **The tempting inference is wrong and is recorded here so nobody re-derives it:** *"the catalog
+grew by 55, therefore the demo's `65 course cards` observation is stale."* It is **not**. The 65 is a
+render-time count over a filtered subset of the **skill-path** objects, and that population is
+**unchanged at 92**. The advance moved chapters, not cards. See
+[`../ops/demo/frontend-tier.md`](../ops/demo/frontend-tier.md) for what the 65 was measured on.
+
+**Not proven here:** that a demo built at `249430c39` comes up. The advance is a source-and-pin
+change; gate clause 1 (a cold `demo-down --purge` + `demo-up`, 3 consecutive green cycles) has **not**
+been re-run against it and needs a quiet host.
+
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) — where Ant Academy sits in the three-tier model
 - [Architecture Overview](../architecture/architecture_overview.md) — overall platform diagram

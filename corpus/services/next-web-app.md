@@ -180,6 +180,29 @@ that is filed in `knowledge/plan/platform-defect-register.md`, not asserted here
 * Frontend data layer is `graphql-request` + React Query, **not Apollo Client**.
 * `npm`/`yarn` are blocked (`engines` + `please-use-pnpm`); conventional commits enforced (commitlint + Husky + cocogitto).
 
+## The clone advanced to `19423a1fb` — what the 12 commits contain (M257x iter-256)
+
+Every ref-pinned claim above is measured at `next-web-app` **`8297c684c`** (`v2.137.0`) and stays true
+at that ref. On **2026-08-10** the clone and the canonical demo pin were advanced to `origin/main` =
+**`19423a1fb`** (`v2.137.3`), **12 commits** on, under the user's closing condition that the milestone
+may only close against the *current* branches.
+
+The advance is **one product theme plus one bug pair**, and it is worth naming because both land on
+surfaces this corpus already documents:
+
+* **AI-Readiness ⇄ assignments** — the upskilling-plan tab is reworked around course progress, the
+  launch modal leads with the assessment deadline, the auto-assign study window defaults to 3 months,
+  and auto-assigned plans fold into a **per-cycle folder** in the assignments list. This is the
+  frontend half of the `app` change landing in the same window (`source_ref airx:*` grouping and the
+  weekly assignment-reminder cadence), so the two repos moved **together** — the coordinated
+  multi-repo shape [`../ops/platform-alignment.md`](../ops/platform-alignment.md) § Trap D warns about.
+* **Hiring `/start-sim`** — two fixes keep the invitation token across Clerk auth and set the fallback
+  redirect pair on the `SignIn`. Relevant to the hiring Playthrough vantage.
+
+**Not proven here:** that a demo built at `19423a1fb` comes up, or that the AI-Readiness demo surfaces
+still render as the seeders expect. The advance is a source-and-pin change; gate clause 1 has **not**
+been re-run against it.
+
 ## Related Documentation
 
 * [Frontend Architecture](../architecture/frontend_architecture.md) — monorepo deep dive, packages, codegen, recent UX work
