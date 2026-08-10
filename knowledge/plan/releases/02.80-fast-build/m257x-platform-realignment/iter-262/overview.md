@@ -2,8 +2,9 @@
 iter: 262
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T15:04:00Z
+closed: 2026-08-10T15:26:00Z
 ---
 
 # iter-262 — the DEV half, on the documented path, now that the user has authorised the workspace

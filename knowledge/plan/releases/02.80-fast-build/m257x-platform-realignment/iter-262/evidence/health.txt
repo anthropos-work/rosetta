@@ -1,0 +1,12 @@
+=== backend /api/health on :8082 ===
+HTTP 200
+=== GraphQL endpoint :8082/graphql/query ===
+HTTP 200
+=== sentinel.casbin_rules ===
+68
+=== public tables created by migrate ===
+137
+=== decommissioned schemas present? (should be none) ===
+NONE
+=== containers ===
+5
