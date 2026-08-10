@@ -62,7 +62,8 @@ It is the **first mirror produced by the M0 alignment process** (not a hand-buil
 > than **omit the field and keep a clean 100%**, the divergence was named in the report on **every single
 > run** until it landed. **It has landed:** `clerk-backend/store.go:138` (`SeedOrgIdentity`) and `:151`
 > (`LookupOrgEid`) ship the real roster org UUID, and the DNA records it —
-> `alignment/dna/clerk-2.6.0.json:131`: *"M219 landed the fix … taking the Go surface 97.2% -> 100%."*
+> `clerkenstein/alignment/dna/clerk-2.6.0.json:131`: *"M219 landed the fix … taking the Go surface
+> 97.2% -> 100%."*
 > The Go surface is **27/27**. `FIX-M219-bapi-org-eid` is CLOSED.
 >
 > **Why this matters more than the number.** Before M218, Clerkenstein scored **100% critical / 100%
@@ -146,7 +147,8 @@ It is *not* a hard gate requirement: studio-desk's `STUDIO_ACCESS_ROLES` accepts
 `app/services/userService.ts:16`, each carrying the comment "Both the prefixed (`org:*`) and bare role keys
 are accepted"), so an unprefixed `admin` would pass too.
 
-> **Not yet a measured gene.** `alignment/dna/clerk-js-5.json` has a `Me` capability for `GET /v1/me` but
+> **Not yet a measured gene.** `clerkenstein/alignment/dna/clerk-js-5.json` has a `Me` capability for
+> `GET /v1/me` but
 > **no** gene for this route, so alignment scoring does not cover it — the unit tests do. Adding one needs a
 > real-Clerk golden capture (`/align-dna`), i.e. a milestone, not a patch. Tracked as a known DNA gap.
 

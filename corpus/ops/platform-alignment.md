@@ -3098,6 +3098,53 @@ and no guard edited.
 3. **Grade the direction of a new RED.** A guard that reddens after a fetch has not regressed; it has
    *stopped being blind*. The finding belongs to the corpus, dated to the ref that disclosed it.
 
+### "Cannot resolve" and "resolves to nothing" are different verdicts — merging them hides the wrong one (M257x iter-244)
+
+A citation guard has three possible outcomes, not two: it **resolves and is good**, it **resolves and is
+bad**, or **it cannot be resolved at all**. The third is not a shade of the first two, and a guard that
+files it as *out of reach* is doing the honest thing **only if it genuinely cannot tell why**.
+
+`anchor_construct_guard` files 599 of 1,481 anchors that way and exits 0 — correctly, because it does not
+know whether the clone a path names is present on this box. But that bucket held a citation of
+`clerkenstein/alignment/dna/clerk-2.6.0.json:131` **written without its `clerkenstein/` prefix** — a
+citation whose **quote was verbatim, whose line number was exact, and whose path could not be opened**.
+**A path that is WRONG and a path we cannot CHECK produced the identical record.**
+
+*(The defective spelling is described here rather than reproduced, for the reason `retracted_pin_guard`
+exists: a note about a bad citation that reprints the bad citation adds an instance of it. Measured — the
+first draft of this very section re-introduced it, and `rext_path_guard` went RED on the paragraph that
+announces `rext_path_guard`.)*
+
+The corollary is the operative part, and it is a rule about *instrument design*, not about citations:
+
+> **Do not widen the first instrument. Build a second one whose preconditions make the distinction
+> decidable, and leave the first one's honest could-not-reach count alone.**
+
+`rext_path_guard` (FENCE-M257x-iter244) is that second instrument for the rosetta-extensions slice: it
+runs **only when the rext tree is present**, so for its subject "unresolvable" collapses to "wrong" and
+becomes a finding. Where the precondition cannot be met it exits **2**, never 0. The platform slice —
+`main.go` ×33, `infrastructure` ×18, `studioManager.go` ×9 in the same bucket — has the identical shape
+and is still ungraded.
+
+**And the reason a reading will never close this class:** that one citation was verified by **13 distinct
+iters across 20 graded seat files**, each recording it *"ENUMERATED"*, *"is **exact**"*, *"✔"*. Every pass
+graded what the citation **said**. None graded whether it could be **opened**. A reading samples MEANING;
+only a fence censuses RESOLUTION — and the two are independent, so a hundred correct readings of the
+content tell you nothing about the address.
+
+**Three sub-rules, each of which cost this iter a full re-derivation:**
+
+1. **Order an extension alternation longest-first, and anchor its right edge.** `(?:…|js|json|…)` matched
+   `data-dna.json` as `data-dna.js` — a file that does not exist — and **6 of the first pass's 10 findings
+   were that artifact alone.** Both halves are needed: the ordering *and* a trailing `(?![A-Za-z0-9])`.
+2. **A path preceded by another segment is not a reference to your tree.** Without `/` and `.` in the left
+   lookbehind, `app/knowledge/architecture.md` and `.claude/skills/stack-secrets/SKILL.md` matched on their
+   **tails**.
+3. **Deriving a subject from the tree is right, and is not sufficient.** A directory that *exists* is not
+   therefore a *referenced section*: including rext's real `knowledge/` produced **26 findings, 23 of them
+   false**, because `knowledge/…` in this corpus is overwhelmingly a platform path. The class had already
+   been measured and written into a sibling guard's docstring — and was re-derived from scratch anyway.
+
 ### A fence's REACH is a property of the CLONE SET, and the clone set is not the same on two boxes (M257x iter-241)
 
 The clone set is an **instrument**, and like every instrument in this milestone it was trusted before it
