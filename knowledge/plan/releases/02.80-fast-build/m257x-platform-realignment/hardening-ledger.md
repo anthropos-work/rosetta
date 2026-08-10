@@ -6165,20 +6165,28 @@ counted:** normalising the class segment out of the pytest node-ids, **0 undecla
 declared entries that failed to fire** — all 9 are exactly the 9 declared entries. Same reading pass 62
 took, re-taken rather than carried.
 
-> **⚠️ THE WHOLE-SECTION `stack-core` RUN DID NOT LAND INSIDE THIS PASS, AND NO NUMBER IS CLAIMED FOR
-> IT.** It was started at **13:05:04Z** and was still executing at **13:40:08Z** — **35 minutes**, at a
-> measured **≈9 % CPU utilisation** (tree CPU +3.94 s over a 45 s wall sample). It is not wedged: it has
-> live `unittest` children shelling out to `git`, i.e. it is in the subprocess-bound modules. The host is
-> under permanent third-party load (VS Code helpers and an unrelated `cart-runner` were both resident
-> during the sample), so **every duration in this entry is CONTENDED wall-clock and none of it is a
-> baseline** — the same identical 6-module set varied 10 s → 21 s between flake-gate repetitions.
+**THE WHOLE-SECTION `stack-core` RUN LANDED: 2,191 passed · 0 failed · 3 skipped, in 2,234.93 s
+(37 m 14 s).** Started 13:05:04Z, finished 13:42:19Z. Executed population **2,194**, against pass 62's
+**2,099** (2,096 passed + 3 skipped) — the growth is iters 249–257's own additions plus this pass's
+**+27** stack-core arms.
+
+> **⚠️ ONE COMMIT IS OUTSIDE THAT RUN'S COLLECTED TREE, and the boundary is stated rather than
+> smoothed over.** pytest imports at collection, so the run reflects the tree at **13:05:04Z**.
+> `99c4872` (the three ratchet re-pins) landed at **13:04:59Z — five seconds before**, so it IS covered.
+> `669ce4e` (the `dev-stack` arm's `assertEqual` → `assertGreaterEqual` floor fix) landed at
+> **13:16:44Z**, eleven minutes *after*, so it is **NOT**. That one module was therefore re-run at
+> current HEAD, **3× consecutive: 35 passed each**. Nothing else in the pass falls outside the window.
 >
-> What stands in its place is **not** an assumption that it would have been green. It is the
-> **import-derived consumer sweep** in the first row: the only stack-core-wide regression surface this
-> pass created is the two shared modules it edited, every module importing either was enumerated by grep
-> and run, and all 542 passed. The residual gap is the ~66 stack-core modules that import neither — real,
-> and stated rather than implied. **The run was left alive rather than killed**, so its verdict is
-> readable from `tasks/bpryd62zp.output` by whoever next needs it.
+> An earlier draft of this entry recorded the run as *"did not land, no number claimed"* and offered the
+> import-derived consumer sweep in its place. The run then completed. **The sweep is kept below rather
+> than deleted** — it was the right instrument for the question *"what could these two shared-module
+> edits break?"*, it is derived rather than chosen, and a whole-section green does not retroactively make
+> a scoped reading worthless. What is withdrawn is only the *caveat*, not the evidence.
+>
+> **Timing remains CONTENDED and is not a baseline.** 37 m 14 s against pass 62's 28 m 41 s for the same
+> section, at a measured ≈9 % CPU utilisation under permanent third-party host load (VS Code helpers and
+> an unrelated `cart-runner` were resident throughout). The gap is contention, not a regression, and the
+> same 6-module set varied 10 s → 21 s between flake-gate repetitions.
 
 **Knowledge backfill** (`corpus/ops/platform-alignment.md`, this milestone's `iteration_protocol_ref`) —
 one rule, and it earned its place by firing three times inside one pass:
