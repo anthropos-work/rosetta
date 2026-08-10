@@ -5625,3 +5625,112 @@ was wrong about anything it graded. **Grade a new fence on its DENOMINATOR befor
 modified guards (`platform_alignment_guard`, `guard_family`, `anchor_construct_guard`), the remaining
 new ones (`toolchain_floor_guard`, `fence_command_guard`, `env_absence_guard`) and the batch's single
 Go production fix (`--reload-sentinel`, iter-243) are unscanned.
+
+## Pass 61 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-239 … iter-248 (second pass over the batch).
+
+**Tiks covered since prior pass:** 10 (one batch, second of the session's passes).
+
+**Bugs surfaced + fixed inline: 7.** Enumerated below, and the enumeration is the source — the total is
+its derivative (the rule this ledger has broken twice and near-missed a third time). **All seven
+pre-date this harden pass**; none was introduced by pass 60.
+
+> **The finding that frames the other six: pass 59 predicted this in the words it is now recorded in.**
+> *"The ratchets are repo-wide, and nothing scoped to the files a pass touched can read them."* It routed
+> the cause as `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` — `.agentspace/` is git-ignored by
+> rosetta and `rext` has no hooks and no CI, so a rext edit that rots a repo-wide ratchet **fires
+> nothing, anywhere, by construction**. Ten iters later the prediction had come true five times over.
+> **A whole-section run over the tree iters 239–248 shipped reports `11 failed / 2,073 passed / 3
+> skipped`** (`stack-core`, pytest 8.4.2 / CPython 3.9.6, Python — 27 m 43 s), and every one of the 11
+> was RED at HEAD while each of those ten iters closed on a green per-file run **and** a green
+> `guard_family` line, neither of which reaches those files. iter-248's own scope disclaimer — *"this
+> runs the GUARDS, not their test suite"* — is the correct diagnosis, written by the batch that was
+> demonstrating it.
+
+| # | what | why it survived |
+|---|---|---|
+| 1 | **NINE unregistered derivations** across all five new guards — `env_absence_guard::live_markdown`, `fence_command_guard::{live_markdown,make_targets,package_scripts}`, `rext_path_guard::{live_markdown,sections}`, `skill_invocation_guard::live_markdown`, `toolchain_floor_guard::{required_go,required_node}` | the classification arm is repo-wide; **RED at HEAD for all ten iters** |
+| 2 | **`DOCSTRING_LITERAL_CEILING` 221 → 234** | same |
+| 3 | **`COMMENT_LITERAL_CEILING` 196 → 213** | same |
+| 4 | **`TEST_MODULE_LITERAL_CEILING` 601 → 622** | same |
+| 5 | **three undecided measurement nouns** — `variables`, `skills`, `series` | same |
+| 6 | **`basename_index`'s docstring rotted in BOTH grains** — `293 of 706` / `410 of 981` stated, `291 of 706` / `407 of 981` live | see the note below |
+| 7 | **`sentinelContainerStack` guessed `demo-N` for any unrecognised family** + the doc comment the same insertion orphaned | inside the batch's only production fix; the gate was tested, the *general case* was not |
+
+**(1) is a RE-FRAGMENTATION, not an omission, and that is the part worth reading.** Four of the nine are
+`live_markdown`. **iter-212 DELETED four per-guard tree-scan declines** and consolidated them into ONE
+shared derivation (`fence_provenance::corpus_sources`) under its own rule — *two readers of one construct
+must SHARE the derivation*. Iters **239, 244, 246 and 247** then each wrote a private `live_markdown`
+with **byte-identical** `LIVE_PREFIXES`/`LIVE_FILES` — the exact shape iter-212 removed, re-grown one
+guard at a time — while the registry that exists to notice it was RED and therefore silent. All four
+report the same **114** documents today. All nine are now registered; **no `RELATION:` clause**, for the
+reason `claude_docs_outside_skills` already records (the grammar's `_resolve_operand` hands each operand
+the GUARD DIR, so both would resolve empty against a repo root they never receive). **The consolidation
+itself is a five-module refactor and is ROUTED, not smuggled into a harden pass.**
+
+**(6) is a test that hid what it had not yet checked.** `test_the_docstring_carries_the_numbers_this_tree
+_derives` asserts the *distinct* grain first and the *pair* grain second. The distinct grain failed, so
+the pair assertion never ran — and it was **also** stale. Both are now current and the docstring says so
+in place. Recorded because "1 failing assertion" and "1 stale figure" are not the same claim.
+
+**(7) is the same lesson learned twice in one batch, three iters apart.** iter-243 fixed
+`--reload-sentinel` restarting `demo-N-sentinel-1` on every `dev-N` stack — then collapsed *"carries no
+family"* and *"carries a family I do not recognise"* into a single `demo-N` default, which leaves the
+**general form of the bug it just fixed**: `--stack devv-2` (a typo) or `--stack stage-2` (CLAUDE.md
+declares `stack-stage/` and `stack-tests/` as future members of this family) restarts
+`demo-2-sentinel-1` — **a container belonging to a different stack**. Nothing upstream rejects those
+names: `ParseStackN` accepts every one of them. Now **three** cases — known family → the name; **no**
+family (`""`, `anthropos`, a bare offset) → the historical `demo-N`, **byte-identical**; unrecognised
+family → `""` and the caller skips the restart **loudly**. This is precisely the
+pardon-that-travels-with-the-name that **iter-246's `fence_command_guard::workspace_substitute` already
+refuses**, in the same batch, three iters later.
+
+**Plus the reach defect this pass's scan was looking for, the THIRD of the session** (the first two are
+pass 60's): **`toolchain_floor_guard` graded `corpus/ops/setup_guide.md` and nothing else.** The corpus
+states the same floors a **fourth** time in **`corpus/tools/toolchain_overview.md`** — the *Development
+tools registry*, the document whose entire job is to say what you must install — where they read
+**`Go (v1.23+)`** (the identical defect iter-240 repaired, still live) and **`Node.js (v20+)`** (four
+major versions low; a v20 host cannot install `next-web-app`, which declares `">=24.0.0"`). Both
+repaired, with the derivation stated in place; the Go bullet also named `cms` and `jobsimulation` as
+service code you compile locally — both merged into `app`, neither repo in the clone set — corrected in
+the same line rather than left as a second wrong claim inside a repaired sentence.
+
+> **The subject was widened to a NAMED PAIR, deliberately not to a sweep.** Measured: **13** further
+> live-corpus sites match the floor patterns and **11 are correct**. The two classes a sweep would
+> falsely redden are stated in the guard: **per-app floors** (`frontend-tier.md:149` — *"ant-academy
+> needs Node ≥ 22"*, true of ant-academy, which the global floor of 24 already covers) and **narrative
+> quotes** (`frontend-tier.md:155`, `tailscale-serve.md:168` — a document reporting that ANOTHER
+> document claims Go 1.26). *A fence that cannot tell a claim from a quotation of a claim manufactures
+> findings.* The guard now reads **4** Go floors and **3** Node floors across the two documents and
+> names them in its verdict.
+
+**Tests added: 3 Python + 4 Go table cases.** `test_toolchain_floor_guard.py` **14 → 17** (the registry
+graded ALONE against a correct guide, so a green guide cannot mask it; a missing subject document failing
+CLOSED; and an answer key running the REAL pre-repair registry from `8a9b321`). `main_test.go`'s
+`TestSentinelContainerStack` table **5 → 9** cases (`anthropos`, surrounding whitespace, and the two
+unrecognised-family refusals). Both new Python tests were **mutation-controlled** against the pre-fix
+guard at `7d75c52` and go RED there. The three-file total for the session is **59 passed**
+(`test_skill_invocation_guard` 17 → 22, `test_rext_path_guard` 17 → 20, `test_toolchain_floor_guard`
+14 → 17).
+
+**The ceiling fixpoint fired for the FOURTH consecutive harden session, exactly as its own prose
+predicted** — re-pinning a ceiling needs a recorded reason, a recorded reason is made of figures, and
+those figures live in `#:` comments, which is the comment ceiling's own population. It converged in one
+step here because `derivation_registry.py --ceilings` (the one-command form pass 59 built for this) was
+read *after* the reason prose was written rather than before. **`TheCeilingProseDoesNotContradictTheCeiling`
+still caught a defect in this pass's own repair:** all three re-pin blocks opened *"196 → re-pinned at
+harden pass 61"* with no arrow TARGET, and the arm parses the last arrow and compares it to the constant.
+A recorded reason that does not state the number it justifies is not a recorded reason.
+
+**Knowledge backfill:** the pass-60 rule, now with its counterexample. *A fence inherits the reach of the
+iter that wrote it* — three instances this session (`skill_invocation_guard`, `rext_path_guard`,
+`toolchain_floor_guard`). The counterexample is `fence_command_guard`: its fenced-block scope is
+**correct**, because a `make` target needs a directory context and prose does not establish one. **The
+test is not "is the scope narrow" but "is the narrowness a property of the CLAIM or of the iter".**
+
+**Flakes stabilized:** none surfaced.
+
+**Stop condition:** continue-to-next-pass — `guard_family` and `anchor_construct_guard` (iters 242, 245,
+248) have not been dimension-scanned, `fence_command_guard` and `env_absence_guard` were scanned but not
+fuzzed, and the whole-section re-run proving the 11 closed is still in flight.
