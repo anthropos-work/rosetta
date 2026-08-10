@@ -2747,6 +2747,60 @@ defect, it was arguing for it.*
     about the **toolchain**, and the cheap dismissal — "that mutation just doesn't fire" — is the one
     reading that guarantees a vacuous proof gets recorded as a real one.
 
+78. **THE SUITE READS A BOX, NOT A REPO — and on a fresh checkout its failures ACCUSE THE CORPUS.**
+    M257x iters 249–253. Run this repo's `stack-core` section against a git-bearing clone of **both**
+    repos and tests fail that pass here. They do not report a missing precondition; they print
+    *"a fenced command names a target that does not exist"* and *"the live corpus must resolve every
+    rext path"* — **both false about the corpus and true about the machine.** The person who meets
+    them first is the one the corpus most needs to keep: someone who has just cloned it.
+
+    | reading | frozen pair | live tree |
+    |---|---|---|
+    | iter-249, rosetta `971cdc4` / rext `dfb3fb6` | **29 failed** / 2,052 passed / 18 skipped | the same 29 node-ids: **29 passed** |
+    | iter-253, rosetta `1f1e0be` / rext `d739952` | **27 failed** / 2,060 passed / 27 skipped | the same 27: **22 passed, 5 failed** |
+
+    Four things this class taught, each of which cost an iter:
+
+    **(a) A frozen subject must be a CLONE, never an export.** iter-249's first attempt used
+    `git archive`, which has no `.git`; this suite reads history, so it returned **68 failures of which
+    none was about the corpus** — the guards were correctly refusing to grade what they could not read,
+    and the instrument had refuted itself before publishing a number. `git clone --local --shared`
+    costs **0.33 s and 54 MB** against 172 MB of history. It is also why the run is *cheaper* on a clean
+    tree — **12 m 06 s vs 27 m 34 s** — the cost being the walk over an operator's workspaces: this box
+    carries **180,835** files and **15,258** markdown files under the repo root, against **4,222** and
+    **2,879** in a clean clone.
+
+    **(b) "A fresh checkout" is TWO trees, and they give opposite answers.** iter-251 measured
+    `corpus_citation_guard` **`RED — 21 of 1808`** on a clone of `rosetta` *alone* and clean on the
+    frozen **pair**. Every reading names its shape or it is not comparable to the next one.
+
+    **(c) The predicate is dynamic. A static text scan is the wrong instrument, and here is the
+    measurement:** *a test file that names operator-local state and carries no skip idiom* selects
+    **8 files (6 in `stack-core`)** against a dynamic class of **13**. `test_toolchain_floor_guard`
+    decides it — it **carried** a `skipUnless` and failed anyway, having declared **half** a
+    precondition. The defect is at the **test-function** grain and conditional on state, so it is
+    decidable only by running it with that state absent.
+
+    **(d) The live CONTROL is not optional — it is the half that separates a real defect from the
+    environment.** Of iter-253's 27, **22 were environmental and 5 were genuine REDs at HEAD**: a
+    literal ratchet (`TEST_MODULE_LITERAL_CEILING`, pinned 622) breached at **624 on the frozen tree —
+    before this iter touched anything** — invisible for four iters because nothing in the iter loop runs
+    the module that asserts it. Publishing the frozen list unclassified would have filed five real
+    failures as machine noise. **Report the REAL findings first; a genuine defect must not be read
+    after an environmental list.**
+
+    **The repair is a `skipUnless` in the test, naming the precondition — never a declared-exemption
+    entry in the census.** An exemption turns the *instrument* green in one edit and leaves every one of
+    those tests still failing for the reader. Skip beats fail here because a skip states what is missing;
+    a failure states that the corpus is wrong. **And the declaration is per CLASS, not per file:**
+    `test_frozen_expectation_census_m257x.py` was repaired at iter-249 with a class-level
+    `skipUnless` that works, and returned the same count of hostile tests from **four sibling classes
+    that do not inherit it**.
+
+    Instrument: `stack-core/suite_census.py --fresh-checkout` (freeze → census → live control →
+    partition). It reports its shape, its denominator and its reach on every run, and it refuses the
+    shape it has not implemented.
+
 ### A corpus QUOTES source by paraphrase — so containment cannot grade a citation (M257x iter-234)
 
 **REFUSED INSTRUMENT. Do not rebuild it.** The obvious next rung after *"the sha resolves"* (iter-230),
