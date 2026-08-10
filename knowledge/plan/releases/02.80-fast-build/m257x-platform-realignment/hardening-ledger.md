@@ -5734,3 +5734,131 @@ test is not "is the scope narrow" but "is the narrowness a property of the CLAIM
 **Stop condition:** continue-to-next-pass — `guard_family` and `anchor_construct_guard` (iters 242, 245,
 248) have not been dimension-scanned, `fence_command_guard` and `env_absence_guard` were scanned but not
 fuzzed, and the whole-section re-run proving the 11 closed is still in flight.
+
+## Pass 62 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-239 … iter-248 (third and final pass over the batch).
+
+**Tiks covered since prior pass:** 10 (one batch, three passes).
+
+**Bugs surfaced + fixed inline: 3.** Enumerated; the total is the derivative of the list.
+
+**(1) `anchor_construct_guard`'s range accumulators never reset — while their two siblings, in the same
+function, do** (`rext` `1bf6fc6`). `run()` clears `RESOLVE_ROUTES` and `BARE_REFUSALS` at its top. It did
+not clear `RANGE_CITATIONS` (added by **harden pass 59**) nor iter-245's three range buckets. Measured on
+the live tree, in one process:
+
+| call | RANGE_CITATIONS | RANGE_RESOLVED | RANGE_UNRESOLVED |
+|---|---|---|---|
+| 1 | **490** | 349 | 141 |
+| 2 | **980** | 698 | 282 |
+| 3 | **1,470** | 1,047 | 423 |
+
+**The disclosure line pass 59 built specifically to make the ungraded range population VISIBLE published
+a number that doubles on every repeat invocation**, and `RANGE_FINDINGS` — a *list* — would report a real
+out-of-bounds range N times with the RED message's own `len()` N× the truth.
+
+> **Invisible from two directions at once, which is why nine iters did not see it.** The **shipped** path
+> was never wrong: `guard_family` runs each member as a **subprocess**, so every published verdict came
+> from a fresh interpreter. The **tests** worked around it — four `.clear()` calls in their own `setUp`.
+> *A test that compensates for a defect cannot detect it.* This is `§5` rule 77's second clause
+> (in-process state defeating a control) with the roles reversed: the state did not defeat a mutation
+> control, it was *hidden by* a fixture that tidied up after it.
+
+Fixed where the siblings already reset. The fence is a test that runs the guard **twice in-process
+without clearing between** — clearing there would reproduce the workaround — asserting an identical
+census, plus an anti-vacuity pin on the exact tuple so equal-and-empty cannot pass for the right answer.
+Mutation-controlled: `(3,2,1,1)` becomes `(6,4,2,2)` at `7d75c52`.
+
+**(2) `env_absence_guard` sized its own reach with a quantifier it does not ship** (`rext` `7276c97`).
+Every figure in two of its docstring sections — *41* family-absence sites, *23* naming a platform file,
+*18* not, *15* documents, `*_RPC_ADDR` at *23* sites — is exactly what the draft measured while
+`ABSENCE_RE` still admitted a bare `no`. That admission was then **removed**, and the comment on
+`ABSENCE_RE` records why (it produced the guard's only two findings and **both were false**, one on a
+sentence asserting the exact opposite). Narrowing the instrument moved the population; the census was
+never re-taken. Measured on one tree with the guard's own shipped constants:
+
+| quantifier | sites | name a platform file | name none | documents |
+|---|---|---|---|---|
+| **shipped** (`zero`/`nowhere`/`none`/…) | **18** | **17** | **1** | **11** |
+| pre-narrowing draft (+ bare `no`) | 41 | 23 | 18 | 15 |
+
+So the docstring sized the reach at **more than twice** what the guard holds, and its **printed** refusal
+count (**1**) contradicted its **stated** one (**18**) on every run. **The number was right about a
+population the code no longer has** — this milestone's most-repeated defect, turned on one of its own
+guards. Both readings are now stated and labelled. The single-variable figures are pre-narrowing too and
+are **left unreplaced rather than re-derived**: reproducing them needs iter-247's own `UPPER_SNAKE`
+selector, which is not a shipped constant of that module, and a number derived with a different
+instrument is not the same measurement. *Stated, not carried.*
+
+**(3) this pass's own two defects, both caught by fences this milestone built.**
+`TheCeilingProseDoesNotContradictTheCeiling` went RED because all three of pass 61's re-pin blocks opened
+*"196 → re-pinned at harden pass 61"* with **no arrow target** — *a recorded reason that does not state
+the number it justifies is not a recorded reason*. And `TheNounVocabularyIsMeasuredNotAssumed` went RED
+on this pass's **own comment** (*"call 1 reports 490 … and call 2 reports 980"*), where `reports` is a
+verb; rephrased so no number precedes it, rather than forcing an ambiguous word into a vocabulary bucket
+other sites use the other way. Separately, `DOCSTRING_LITERAL_CEILING` was re-pinned **DOWN 234 → 232**:
+replacing five prose figures with a two-row table took the live count below the ceiling set earlier in
+the session, and two numbers of slack is room for two undocumented literals. **A ratchet that only ever
+moves up stops bounding anything.** *(And this ledger's own attribution was wrong before it was written:
+the toolchain-registry repair was captioned "harden pass 60" in five places across the corpus and the
+guard; it landed in **61**. Corrected — `49b167c`, `dfb3fb6`.)*
+
+**Also scanned, and clean — recorded because a scan that finds nothing is only evidence if it is stated:**
+* **Dimension 5, fuzzing** — 4,000 random printable inputs × **12** regexes / pure functions across the
+  five new guards, plus 6 family-glob shapes through `glob_to_re`: **0 exceptions**.
+* `fence_command_guard`'s `--report` returns 0 on findings **by design**; `guard_family` invokes it
+  **without** that flag, so a RED cannot be masked there.
+* iter-242's symlink-disclosure condition read correct against four resolution cases (relative-real,
+  absolute-real, symlinked-leaf, symlinked-parent).
+* iter-248's SCOPE line: the **84** is `len(_test_files())`, derived from disk, and matches; and
+  `_print_scope_disclosure()` is called **above every terminating branch**, so it rides a RED summary
+  too — the rule pass-23 already established for the dirty-tree caveat.
+* **Two pre-registrations on `env_absence_guard` REFUTED**, both optimistic: **0** live sites name
+  `.env_example` without also naming compose (so grading against all three platform files is never wrong
+  today), and compose carries **0** pass-through `- NAME` env entries (so requiring `=`/`:` misses
+  nothing). Recorded per run-29's caution to predict honestly in both directions.
+* **Dimension 6, benchmarks: no-op, stated.** The batch made nothing performance-sensitive.
+
+**Tests added: 1 Python** (the repeat-run census pin; `test_anchor_construct_denominator.py` **45 → 46**).
+**Session total: 12 Python test methods + 4 Go table cases.**
+
+**VERIFICATION — runner, section scope and language on every figure.**
+* **`stack-core`** (pytest 8.4.2 / CPython 3.9.6, **Python**): **2,096 passed · 0 failed · 3 skipped**
+  (28 m 41 s) on the final tree — from **2,073 passed · 11 failed · 3 skipped** at session open. All 11
+  closed; the arithmetic reconciles exactly (2,084 collected + 12 net-new = 2,096).
+* **Four non-core Python sections**, re-measured rather than carried: `demo-stack` 1,063 passed / **9
+  failed** / 2 skipped, `dev-stack` 151, `stack-injection` 335, `stack-verify` 275 → **1,824 passed · 9
+  failed · 2 skipped**. The 9 were checked **name-for-name** against `suite_census.ENV_GATED` and are
+  **all 9 of the 9 declared entries** — not "9 failures that resemble the declared ones".
+* **Go**: `stack-seeding` **16 packages ok**, `go build ./...` + `go vet ./cmd/...` clean.
+* **`guard_family`** (`--platform`, repo root): **29 GREEN · 0 RED · 0 could-not-check · 5 not-run** on
+  the final tree. **Not a whole-family green** — it says so itself, and 5 members had no input supplied.
+* **Flake gate**: the four touched Python test files **3× consecutive** (105 passed each) and the Go
+  `TestSentinel*` **3× consecutive**. Clean.
+* **NOT COVERED, stated rather than implied:** the **424 TypeScript tests** remain enumerated and never
+  executed. No live stack was brought up, so gate clause 1 is untouched by this pass.
+
+**Knowledge backfill:** one rule, and it is the session's. *A fence inherits the reach of the iter that
+wrote it* — **four** instances across three passes (`skill_invocation_guard` fenced-only,
+`rext_path_guard` bare-paths-only, `toolchain_floor_guard` one-document, `env_absence_guard`'s
+superseded census). The counterexample keeps it honest: `fence_command_guard`'s fenced-block scope is
+**correct**, because a `make` target needs a directory context and prose does not establish one. **The
+test is not "is the scope narrow" but "is the narrowness a property of the CLAIM or of the iter."**
+
+**Flakes stabilized:** none surfaced.
+
+**Stop condition:** cap reached without stabilization — three passes, **12 defects fixed inline** (2 + 7
++ 3), and the third pass found the session's fourth instance of its own headline class rather than going
+quiet. Per the user's standing ruling the routes below are recorded and NOT met with new machinery; the
+**fifteenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50,
+53, 56, 59, 62).
+
+**Routes carried forward:**
+- `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` → **re-affirmed, and now with a measured cost.**
+  Pass 59 routed it; ten iters later it had produced **11 repo-wide RED assertions** nobody could see.
+  It is the single highest-leverage open item in this milestone's tooling.
+- `ROUTE-M257x-h62-live-markdown-refragmented` → **new.** Four private `live_markdown` copies re-grew
+  the derivation iter-212 consolidated. Registered, not consolidated — the refactor spans five modules.
+- `ROUTE-M257x-h59-range-anchors-are-ungraded` → **still open on its undecidable half** (which line of a
+  range carries the claim); iter-245 closed the decidable half and pass 62 fixed its accounting.
