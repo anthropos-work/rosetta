@@ -2,8 +2,9 @@
 iter: 258
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T13:50:17Z
+closed: 2026-08-10T14:08:12Z
 ---
 
 # iter-258 — prove the advance BUILDS: a cold `demo-2` on the advanced refs

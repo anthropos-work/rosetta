@@ -41,3 +41,35 @@ Only the second decides whether an N is free. The first is what a reader finds w
 inverted from the truth**. Recorded rather than repaired: the legacy file has a declared purpose, and
 its content is provenance, not allocation. What was missing is the sentence saying so where a reader
 looks.
+
+## `D-M257x-258-3`: the demopatch drift measures BASELINE STALENESS, not the advance — corrected in-iter
+
+This iter's own first draft of `progress.md` wrote that the six drifted demopatches drifted *"because of
+the advance — these files moved between `ad9f3c498` and `3eaadae68`."* **The manifests refute it**, and
+the refutation was taken before the claim reached a commit:
+
+| patch | pinned baseline | clone actually at |
+|---|---|---|
+| `app-targetrole-authz-skip` | v1.295.0 | v1.371.1 |
+| `app-aireadiness-snapshot-loadmembers` | `app@3df8536` (v2.7 pin) | v1.371.1 |
+| `next-web-ssr-graphql-origin` | v2.108.0 | v2.137.3 |
+| `next-web-studio-url` | v2.106.1 | v2.137.3 |
+
+Every baseline predates iter-256's advance by tens of minor versions, so the drift cannot be attributed
+to it. **The withdrawn claim was the convenient one** — it would have made the advance look consequential
+in a section where the iter's whole job is to characterise the advance.
+
+Two rules fall out, and the second is the general one:
+
+1. **The corrected reading is stronger than the withdrawn one.** The anchors held across a ~76-minor
+   gap, which says more for the anchor design than a 28-commit gap ever could. A correction is not
+   automatically a downgrade.
+2. **A drift signal names the distance between a PIN and a TREE — it never names the last thing that
+   moved the tree.** Reading it as "the most recent change did this" is the same error class as reading
+   a service repo's `service_desired_count` as production state: an input mistaken for an outcome.
+
+Chain-rule sub-finding, confirmed by direct manifest read rather than by citing the spec:
+`next-web-studio-url.post_sha256` **==** `next-web-public-website-url.pre_sha256` (`fe15aa715a17…`), both
+on `packages/core-js/src/constants/urls.ts`. The second chains on the first, so its DRIFTED line is
+**by design** and inherits the first's drift. Counting it as an independent stale baseline would
+double-count a declared dependency — so the honest tally is **5 stale baselines + 1 chained**, not 6.
