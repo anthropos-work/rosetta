@@ -1051,7 +1051,7 @@ Rules, in order of how often they actually catch something:
     left `repos.yml`, and every corpus claim naming it became unreadable **at exactly the moment it
     became false** — the worst possible instant for an instrument to stop looking.
 
-    Live, not theoretical: `setup_guide.md:504` enumerated the `migrations: true` repos as
+    Live, not theoretical: `setup_guide.md:514` enumerated the `migrations: true` repos as
     *"(currently: app, cms, jobsimulation …)"*; the name-resolver dropped `cms` and `jobsimulation`
     as unknown tokens, compared `{'app'} == {'app'}` and **passed a false claim.** The one migration
     claim of 24 the fence could reach was the one it read wrong: *effective reach 0, reported as 1.*

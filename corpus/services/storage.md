@@ -71,10 +71,10 @@ Each manager falls back to local filesystem only when ITS bucket env var is empt
 > local FS while only the public one talks to real S3; that is RETRACTED.**
 >
 > The credentials are there by design, not by accident: `backend` mounts `$HOME/.aws/credentials` read-only
-> (`docker-compose.yml:100`) and platform's own `README.md:81-87` instructs you to put a live
+> (`docker-compose.yml:100`) and platform's own `platform/README.md:81-87` instructs you to put a live
 > `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in `.env`. **So a local stack with
 > working AWS credentials writes its private uploads into the production private bucket.** Nothing warns:
-> app's two boot guards (`main.go:518-523` empty-bucket fatal, `:529-535` `verifyBucketAccess`) both run
+> app's two boot guards (`app/main.go:518-523` empty-bucket fatal, `:529-535` `verifyBucketAccess`) both run
 > only `if deployedEnvironment()`, and `deployedEnvironment()` returns **false** for
 > `ENVIRONMENT=development` (`app/env_guards.go:37-44`). **All three of those anchors are at `app`
 > `ad9f3c49`** — `origin/main` and the demo's build pin on 2026-08-06, and byte-identical at `2035f9a4`.
@@ -189,7 +189,7 @@ make up                       # the `core` profile — and there is no storage c
 # Asking for the retired `storage` token does NOT fail: it exits 0 and starts only the floor.
 ```
 
-**What the container used to do with its buckets, and what the binary still does with them.** With `STORAGE_S3_BUCKET` empty the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically, and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is not sandboxed by that fallback — the deleted `storage` compose block hardcoded `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and failed without AWS credentials. (That parenthetical used to say none were set in `platform/.env` — **no longer true**: platform `README.md:81-87` @ `0c91421` instructs you to put live `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in `.env`, and `docker-compose.yml:100` mounts `$HOME/.aws/credentials` into `backend`, so on a current stack the credentials are generally present and the write **succeeds**.) Running the binary by hand, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
+**What the container used to do with its buckets, and what the binary still does with them.** With `STORAGE_S3_BUCKET` empty the PRIVATE manager falls back to `/tmp/anthropos-storage/` automatically, and its presigned URLs return empty strings in that mode (`storage.go:122`). FOOTGUN: the PUBLIC manager is not sandboxed by that fallback — the deleted `storage` compose block hardcoded `STORAGE_S3_PUBLIC_BUCKET` to the production public bucket, so `PutPublicObject`/`GetPublicObject` hit real S3 and failed without AWS credentials. (That parenthetical used to say none were set in `platform/.env` — **no longer true**: platform `platform/README.md:81-87` @ `0c91421` instructs you to put live `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in `.env`, and `docker-compose.yml:100` mounts `$HOME/.aws/credentials` into `backend`, so on a current stack the credentials are generally present and the write **succeeds**.) Running the binary by hand, override `STORAGE_S3_PUBLIC_BUCKET` to empty; it then falls back to `/tmp/anthropos-public-storage/` (a separate path from the private fallback).
 
 ### Run natively
 
