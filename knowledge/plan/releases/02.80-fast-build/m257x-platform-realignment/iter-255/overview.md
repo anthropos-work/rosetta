@@ -2,8 +2,9 @@
 iter: 255
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10
+closed: 2026-08-10
 active_strategy: TOK-08
 route: ROUTE-M257x-249-fresh-checkout-hostile-tests
 ---
