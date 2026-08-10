@@ -34,7 +34,7 @@ Tools specific to developing, building, and running the Go-based microservices.
     *   *Context*: Compiling and running service code locally, and — the binding constraint — the
         `rosetta-extensions` host tooling (`stacksecrets` / `stacksnap` / `stackseed`), whose six
         sections all declare `go 1.25.0` + `toolchain go1.25.12` and which build **on the host**.
-        ⚠️ **This said `v1.23+` until M257x harden pass 60**, two minor versions low, and it named
+        ⚠️ **This said `v1.23+` until M257x harden pass 61**, two minor versions low, and it named
         `cms` and `jobsimulation` as service code you compile — both are merged into `app` and neither
         repo is in the clone set. The service repos themselves declare `go 1.26.x` but build **inside
         Docker** on `golang:1.26-bookworm`, so they do not raise the host floor. Same derivation as
@@ -70,7 +70,7 @@ Tools specific to the Next.js monorepo and web applications.
     *   *Context*: Executing the dev server and build scripts. Derived from the highest
         `engines.node` in the clone set — `next-web-app` declares `">=24.0.0"`; `ant-academy` declares
         `">=22"`, which the higher floor already covers. ⚠️ **This said `v20+` until M257x harden pass
-        60** — four major versions low, and low enough that `next-web-app` refuses to install.
+        61** — four major versions low, and low enough that `next-web-app` refuses to install.
 
 *   **pnpm**
     *   *Function*: Package Manager.
