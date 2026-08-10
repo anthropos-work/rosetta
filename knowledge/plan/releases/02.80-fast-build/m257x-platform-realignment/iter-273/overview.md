@@ -2,7 +2,7 @@
 iter: 273
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10
 active_strategy: TOK-08
 route: gate-clause-2 — establish the TRUE failure set at the shipping pin
