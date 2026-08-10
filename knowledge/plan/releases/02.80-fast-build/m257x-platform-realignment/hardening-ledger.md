@@ -5862,3 +5862,381 @@ quiet. Per the user's standing ruling the routes below are recorded and NOT met 
   the derivation iter-212 consolidated. Registered, not consolidated — the refactor spans five modules.
 - `ROUTE-M257x-h59-range-anchors-are-ungraded` → **still open on its undecidable half** (which line of a
   range carries the claim); iter-245 closed the decidable half and pass 62 fixed its accounting.
+
+## Pass 63 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-249 … iter-257 (first pass over the batch).
+
+**Tiks covered since prior pass:** 9 — the threshold is 10; run at 9 on the user's explicit go-ahead,
+recorded as a deviation rather than a defect.
+
+### ⚠️ TWO RECORDS THIS PASS CORRECTS — read these before quoting any prior figure
+
+**(a) THE FRESH-CHECKOUT CLASS WAS NEVER ZERO. IT IS 3, AND THE `0` WAS WRONG WHEN IT WAS WRITTEN.**
+
+iter-255's close and the pass-62 ledger both record the fresh-checkout-hostility class closing at
+**zero**, and that figure was relayed onward as a closed class. Measured this pass on a frozen clone
+pair — `suite_census.py --fresh-checkout --runner pytest`, **138 modules censused**, live control
+re-running the failing modules — the class is **3**:
+
+* `stack-verify/tests/test_e2e_collection_integrity.py::test_collection_succeeds_at_all`
+* `stack-verify/tests/test_e2e_collection_integrity.py::test_every_spec_file_still_registers`
+* `stack-verify/tests/test_e2e_collection_integrity.py::test_the_suite_collects_a_real_number_of_tests`
+
+**This is NOT a regression.** Nothing broke after iter-255. The module was authored at v2.5 (M236
+close), it predates the whole 249→255 repair, and it was never among the 22 tests that repair declared.
+The class had a live residue of 3 on the day the `0` was published, and the `0` was **wrong when
+written** — it was a statement about the 22 members that had been enumerated, published as a statement
+about the class.
+
+That is exactly what this pass's knowledge backfill says: **a repair closes its MEMBERS, not its
+class.** iters 249–255 closed 22 named failures, correctly and well. Only a *derived* census can say
+whether the class is closed, and the census had not been re-run since the repair — because it freezes a
+clone pair and runs the whole suite twice, so nobody runs it.
+
+Why the three matter rather than being a technicality: they shell out to `npx playwright test --list`,
+which needs an installed dependency tree. On a clean clone they do not say *"this box has no
+`node_modules`"* — they say **a spec is throwing at module scope** and **the suite has collapsed below
+its floor.** Both sentences accuse THE CORPUS. A new reader cloning both repos is told the corpus is
+broken, which is the precise failure mode the whole 249→255 arc existed to eliminate.
+
+Now declared with the canonical mechanism (imported from `suite_census`, never re-spelled, so it cannot
+drift from the other 20), raised in `setUpClass` so one statement covers all three arms.
+
+**(b) THE COLLECTION FENCE GOVERNED SIX OF ELEVEN REXT SECTIONS — AND MISSED ONE OF THE FIVE THAT
+`D-M257x-145-3` CALLS "THE SUITE".**
+
+`tests/test_test_collection_fence.py` enforces *no test module may hide tests from the runner that reads
+it*. Its `_SECTIONS` tuple is **enumerated, not globbed** — for a good reason, preserved: a glob from the
+repo root would sweep in the vendored platform clones under `demo-stack/stacks/*/clones/**`, and a fence
+that starts failing because someone brought a demo up gets turned off rather than fixed.
+
+Measured at this pass, the three declared section populations in this repo do not agree:
+
+| declaration | n | members |
+|---|---|---|
+| `claim_census_guard.REXT_SECTION_NAMES` | 11 | every non-`knowledge` dir |
+| `suite_census.SECTIONS` (the "five sections" of `D-M257x-145-3`) | 5 | demo-stack · **dev-stack** · stack-core · stack-injection · stack-verify |
+| `test_test_collection_fence._SECTIONS` **before this pass** | 6 | clerkenstein · demo-stack · stack-core · stack-injection · stack-seeding · stack-verify |
+
+**The five sections the fence did NOT govern were `dev-stack`, `stack-secrets`, `stack-snapshot`,
+`alignment` and `playthroughs`.** Four of those hold zero Python test files, so their absence cost
+nothing today. **`dev-stack` is the exception: 5 modules, 146 `TestCase` tests, 151 collected by
+pytest** — and it is a *member of the five*. So the fence covered **4 of the 5** sections that
+`D-M257x-145-3` defines as "the suite", while including two (`clerkenstein`, `stack-seeding`) that carry
+no Python tests at all and are outside that five.
+
+The hole was **LATENT, not live** — all 5 `dev-stack` modules read clean on all three of the fence's
+predicates when found, and the section's own suite is green at 151. It is recorded because it is the
+same shape as the two defects the in-scope iters actually hit (iter-255's unreadable mutation battery;
+iter-257's six tests below the `__main__` guard), one level up: **the fence that exists to catch tests no
+runner reaches was itself unable to reach a whole section.**
+
+Fixed by governing `dev-stack` — `_SECTIONS` is now **7**, a superset of the five — and by fencing the
+enumeration in **both directions** (`TheSectionListReachesEveryRextSection`), so a section that grows its
+first Python test can no longer stay ungoverned in silence.
+
+> **⚠️ THE DISAGREEMENT IS RECORDED, NOT RESOLVED.** `D-M257x-145-3` — *"the suite" means all five
+> sections* — **remains the user's to rule**, exactly as iter-186 left it. This pass adds one fact that
+> ruling did not have: a **third** declared population existed alongside the other two, it disagreed with
+> both, and it omitted a member of the very five the assumption names. Nothing here decides what "the
+> suite" means; `_SECTIONS` was widened to cover the five **and** the two extras it already had, which is
+> a superset under either reading and therefore does not pre-empt the call.
+
+**Scope.** 30 files in `rosetta-extensions` (10 source modules + 20 test modules, +2,370 lines) and 11
+corpus files. All nine are tiks; no tok in the batch.
+
+**Bugs surfaced + fixed inline: 2.**
+
+**(1) The test-collection fence governed SIX of ELEVEN rext sections, and `dev-stack` — 5 modules,
+146 tests — was in neither the list nor any exclusion** (`rext` `bc2d5c6`). `_SECTIONS` is *enumerated*
+rather than globbed, and the reason at its definition is good: a glob from the repo root would sweep in
+the vendored platform clones under `demo-stack/stacks/*/clones/**`, and a fence that starts failing
+because someone brought a demo up gets turned off rather than fixed. What the enumeration lacked was a
+reader that notices when it rots. Every arm of that file — the `__main__`-guard arm, the 3.9-syntax arm,
+the pytest-only arm — was structurally unable to reach `dev-stack`.
+
+The hole was **LATENT, not live**: all 5 modules read clean on all three predicates when found, and
+`dev-stack`'s own suite is green at 151. That is *why* it was worth catching rather than a reason to
+shrug — it is the same shape as the two defects the in-scope iters actually hit, one level up:
+
+* **iter-255** — the mutation battery carrying ~30 of this milestone's mutation proofs raised
+  `ModuleNotFoundError` under `suite_census.collected_by_pytest`'s own invocation and was recorded
+  `UNREADABLE (-1)` for **four iters**.
+* **iter-257** — arm D's six tests were appended BELOW the `__main__` guard, so direct execution skipped
+  them and printed OK. Caught by this very file, in a section it does govern.
+
+Fixed by governing `dev-stack` **and** by fencing the enumeration in both directions
+(`TheSectionListReachesEveryRextSection`): a section holding python tests must be in `_SECTIONS` or
+declared in `UNGOVERNED_SECTIONS` with a reason, and a declaration that outlives its subject fails. The
+original reason for enumerating is preserved and separately pinned.
+
+**Watched RED → GREEN, on the real tree:** appending a 2-test class below the guard in
+`dev-stack/tests/test_aws_heal.py` now names the file, line, class and test count. Before the fix that
+mutation was invisible. Applied and reverted atomically; the file is byte-identical afterwards.
+
+**(2) The fresh-checkout repair had NO watcher.** iters 249–255 drove the class 29 → 0, and the repair
+is not one code change — it is **20 declaration sites over 12 modules**. The census that measured the
+class freezes a clone pair and runs the whole suite twice, so nobody runs it, and both silent failure
+modes were therefore unobserved: a declaration **deleted** (the arm goes back to reporting the CORPUS as
+wrong on a clean clone), or a declaration that **keeps its guard and loses its REASON** — which still
+skips, so the suite stays green and the census still reads zero while the operator loses the one
+sentence naming what to provision. The second is what `D-M257x-249-2` is actually about, and it is how a
+repair degrades into its own cargo cult with every automated reading saying fine.
+
+`TheREPAIRIsRatcheted` watches the **repair** rather than re-measuring the class: pure AST, no
+subprocess, every invocation. Floor on the site count; every site must skip AND cite
+`census.CLONE_SET_REASON` / `NODE_MODULES_REASON`; both predicates must stay in use (the `node_modules`
+half is what refuted iter-254's `PR-1`). It does **not** catch a brand-new hostile test — that still
+needs `suite_census.py --fresh-checkout`, and the docstring says so.
+
+**Also scanned, and clean — recorded because a scan that finds nothing is only evidence if it is stated:**
+* The **mutation battery's iter-255 fix HOLDS**: 6 tests collected under *both* the rext-root invocation
+  (the census's own) and the `stack-core` invocation, re-verified again at the end of the session after
+  `suite_census` had been modified.
+* **Dimension 3, error paths** on the two most-reworked in-scope guards: `rext_path_guard`'s four
+  refusal paths and `corpus_citation_guard`'s two are **all pinned by exit code**. An initial reading
+  that called them untested was grepping message TEXT rather than behaviour, and was wrong in the
+  optimistic direction — recorded because the optimistic direction is the one worth confessing.
+
+**Tests added: 12** (`test_test_collection_fence.py` 44 → 50; `test_fresh_checkout_census_m257x.py`
+24 → 30 at this pass).
+
+**Stop condition:** continue-to-next-pass — the reach question this pass opened (does an enumerated
+repair close its class?) is measurable and was not yet measured.
+
+## Pass 64 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-249 … iter-257 (second pass over the batch).
+
+**Dimensions:** 2 (edge cases), 3 (error paths), 5 (fuzzing), against the iter-diff scope.
+
+**Bugs surfaced + fixed inline: 4.** One theme found three times independently, plus a grading gap.
+
+**(1)+(2) `test_fence_command_guard`, TWO fail-OPEN rungs** (`rext` `ffa4238`). Both live arms skipped on
+`code == 2` / `total == 0` with the reason *"no clone set on this host"* — a condition the
+`census.clone_set_present` guard **four lines above** has already excluded (iter-254 added it). Exit 2 has
+three causes (`fence_command_guard.py:351/359/364`): no `CLAUDE.md`, ZERO fenced blocks, or zero gradeable
+commands. Past that guard the clone-set explanation is gone, so what remains is **the fence regex or the
+corpus scope having drifted — i.e. the guard itself being broken.** That is the one outcome meaning *this
+fence stopped working*, and it was reported as a benign environmental skip with a reason that was
+definitionally false. Now an `assertNotEqual`, so it is a RED. iter-254's own comment three lines up
+already recorded that a bare checkout grades **1** command and not 0, so `total == 0` was
+documented-unreachable on the very tree the rung claimed to excuse.
+
+**(3) `advance_impact_census.classify_pair` reported a non-positive line number as an over-run.** `n < 1`
+shared a branch with `n > len(old)` and inherited its message, so `classify_pair(["a","b"], …, -1)`
+returned *"line -1 > 2 at old ref"* — arithmetically false. Surfaced by a **6,000-input fuzz** (None /
+empty / short line lists, `n` drawn from -3..9): **0 exceptions, 0 out-of-vocabulary buckets.** The logic
+was never in doubt; the SENTENCE was. It matters because this census exists to tell a reader why a
+citation did not survive an advance — that message names a truncation, and the reader goes looking at the
+new ref for a file that got shorter, when the real condition is a malformed anchor that never had a valid
+line number at either ref. Split, with the genuine over-run message kept exact.
+
+**(4) `clone_pin_guard` arm D read the workspace copy's EXTRA keys and its differing VALUES, and was
+SILENT on its MISSING ones.** Not symmetry-bookkeeping: **arm B already treats a hole in the canonical as
+a finding**, on the stated ground that `pinned` *"leaves an unpinned repo UNTOUCHED, so the reproducibility
+barrier silently does not cover it"* — and arm D's entire premise is that the mechanism reads the **COPY**,
+not the canonical. So the sentence justifying arm B applies with more force one file over, and nothing was
+checking it.
+
+The direction is the one that will occur. iter-257 found the copy as a **SUPERSET** (11 names to the
+canonical's 6) because entries had been REMOVED. The mirror arrives the first time the canonical **GAINS**
+one: `ensure-clones.sh` seeds the copy copy-if-absent (`:204`) and never reconciles, so every workspace
+that already exists keeps the shorter file indefinitely — the new repo is unpinned on precisely the
+longest-lived stacks, which are the ones a presenter is most likely to be holding.
+
+**DISCLOSED, not failed**, and that is a deliberate limit rather than timidity: a missing key is the one
+divergence an operator could plausibly mean (*"do not touch this repo on this stack"*). Ruling it a finding
+would answer a question iter-257 did not ask; ending the silence needs no ruling. The summary noun moved
+`value drift` → `divergence` so a reader of that line alone cannot miss the second shape.
+
+**Tests added: 10** (`test_advance_impact_census.py` 24 → 29, incl. the fuzz + unicode/oversized grid;
+`test_clone_pin_guard.py` 29 → 34, incl. `D11`, a mutation control proving the pre-pass reading sees
+NOTHING on a holed copy).
+
+**Stop condition:** continue-to-next-pass — the class-closure question was still unmeasured, and the
+integration reading (guard family + whole suite) had not been taken.
+
+## Pass 65 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-249 … iter-257 (third and final pass over the batch).
+
+**The pass that measured the batch's headline claim, and refuted it.**
+
+**Bugs surfaced + fixed inline: 4** (plus 3 ratchet re-pins and one self-review correction).
+
+**(1) THE FRESH-CHECKOUT CLASS WAS NOT ZERO. IT WAS 3.** (`rext` `adc2848`.) iter-255 and the pass-62
+ledger both record the class closing at **zero**. Measured this pass with the tool built for it —
+`suite_census.py --fresh-checkout --runner pytest`, a frozen clone pair, **138 modules censused**, live
+control re-running the failing modules — the reading is:
+
+| bucket | n | node-ids |
+|---|---|---|
+| DECLARED (already honest) | 3 | `demo-stack/tests/test_migrate_race_live.py` ×3 |
+| **BOX (fresh-checkout-hostile)** | **3** | `stack-verify/tests/test_e2e_collection_integrity.py` ×3 |
+| REAL | 0 | — |
+
+All three shell out to `npx playwright test --list`, which needs an installed dependency tree. On a clean
+clone they do not report a missing precondition — they report **that a spec is throwing at module scope
+and that the suite has collapsed below its floor.** Both sentences accuse THE CORPUS. The module predates
+iters 249–255 and was simply not among the 22 they declared.
+
+Nothing was wrong with the repair; the error is in what was concluded from it. Declared with the canonical
+mechanism (imported, never re-spelled, so it cannot drift from the other 20), raised in `setUpClass` so one
+statement covers all three arms and a bare box pays none of the 300 s timeout.
+
+**(2) `node_modules_present` could not see `root/node_modules`.** The glob ran depth 1..5, so the one tree
+invisible to it was the one whose own child is `node_modules` — what a caller gets passing a project
+directory rather than a root above it. The first cut of the declaration above passed `E2E` and **got a SKIP
+on a box with a fully installed e2e tree.** This is the **second** time this one function has answered
+False on a machine that plainly has one, and the second time a live control caught it rather than review —
+so depth 0 is now covered and the boundary is pinned by 5 arms, including a file-named-`node_modules` case.
+
+**(3) The iter-257 divergence disclosure fired UNCONDITIONALLY.** `ensure-clones.sh` compared with
+`! cmp -s`, and `cmp` is not a bash builtin. Absent from `PATH` it exits 127; `!` inverts that to TRUE; the
+disclosure fires on **every** run with both files present, including byte-identical ones. A warning that
+always fires is not a weaker warning — it is one an operator learns to scroll past, which returns the seam
+to **the exact silence iter-257 fixed**. Now `[ "$(<a)" != "$(<b)" ]`, bash's own redirection, with no
+subprocess to be missing. Found by the **pass-direction** test written for the disclosure — the test that
+had no reason to exist except that a disclosure needs one.
+
+The disclosure had also landed with **no assertion of its own**: it executes inside
+`test_canonical_pin_never_clobbers_operator_workspace_pin`, whose fixture already differs, so the branch was
+run by the suite and read by nothing. That is the weaker half of this milestone's defect class — not a check
+that never runs, a check nobody reads.
+
+**(4) THIS PASS'S OWN RATCHET HAD THE DEFECT IT WAS WRITTEN TO PREVENT.** `TheREPAIRIsRatcheted` (pass 63)
+globbed `stack-core/tests/` and matched only `if not <pred>(...)` + `self.skipTest`. The **twenty-first**
+declaration site — added by this same pass, in `stack-verify`, spelled
+`if census is not None and not …: raise SkipTest(…)` inside a `setUpClass` where `self` does not exist —
+was structurally invisible to it. It would have reported *"20, unchanged"* while the repair grew underneath
+it. Now repo-wide, condition searched as a **subtree**, both skip spellings recognised: **21 sites over 13
+modules**, floor re-pinned 20 → 21.
+
+**Self-review correction** (`rext` `669ce4e`): pass 63's `dev-stack` arm asserted `len(swept) == 5` two
+lines below a docstring explaining why the test count is a FLOOR — *"a ratchet that fights growth gets
+deleted rather than fixed."* A sixth module would have turned it RED and printed a message reading as a
+defect. Now a floor.
+
+**Integration reading — the guard family, and §7 rule 4 applied to our own repo.** The 8-line
+`ensure-clones.sh` fix moved cited lines and turned **three** guards RED from one cause — the identical
+side effect iter-257 recorded from the identical file:
+
+| | before | after |
+|---|---|---|
+| `guard_family --platform` | 26 GREEN · **3 RED** · 0 could-not-check · 5 not-run | **29 GREEN · 0 RED** · 0 could-not-check · 5 not-run |
+
+RED: `anchor_construct_guard`, `demo_knob_guard`, `repair_postcondition`. Re-pointed in
+`corpus/ops/demo/demo-up-defaults.md`: `DEMO_ADVANCE_CLONES` `ensure-clones.sh:220 → :228`,
+`DEMO_FRESHNESS_STRICT` `:475 → :483`. **Read off the file, not derived by adding 8** — the arithmetic
+happened to agree, but a shift is not a guarantee and the guard exists precisely because nobody should
+trust arithmetic here. Only the LIVE corpus doc was re-pointed; the `knowledge/` hits are dated statements
+by closed iters, and re-pointing those would falsify a record rather than repair a reference. The family was
+re-run **again** after the knowledge backfill, because that append adds numeric claims and numeric claims are
+what `claim_census_guard` and `derived_count_guard` grade: still 29 GREEN / 0 RED.
+
+**Three literal ratchets re-pinned** (`rext` `99c4872`): `DOCSTRING` 238 → 238 (untouched), `COMMENT`
+222 → 226, `TEST_MODULE` **637 → 648** — the largest single move that block has taken. The size is the
+point rather than an apology: the pass added 31 arms and the ones that moved it are the ones whose reach is
+a NUMBER. `_MEASURED_NOUNS` also widened by `exceptions`, surfaced by the residual arm and not by reading
+the list — the **sixth** time the vocabulary's reach has closed on the sentence that widened it. All three
+ceilings now sit at **slack 0**. The two-pass convergence iters 254–255 recorded was, this time,
+**anticipated in advance rather than discovered by a second RED**.
+
+**VERIFICATION — runner, scope and language on every figure.** pytest 8.4.2 / CPython 3.9.6
+(`/usr/bin/python3`, the only interpreter on this host carrying pytest — `§9`'s measurement-preconditions
+block).
+
+| section | result |
+|---|---|
+| `stack-core` — **the 17 consumers of the two shared modules this pass changed** (`suite_census.py`, `derivation_registry.py`), derived by import-grep, not chosen | **542 passed · 0 failed · 1 skipped** (420 s) |
+| `stack-core` — the 6 modules this pass touched, **3× consecutive** (flake gate) | **163 passed** each run |
+| `stack-core` — `test_frozen_expectation_census_m257x` (the three literal ratchets) | **99 passed** |
+| `demo-stack` | **1,067 passed · 9 failed · 2 skipped** (254 s) |
+| `dev-stack` — newly governed by the collection fence this pass | **151 passed** (99 s) |
+| `stack-injection` | **335 passed** (7 s) |
+| `stack-verify` — includes the module this pass declared | **275 passed** (420 s) |
+| Go (`stack-seeding`) | `go build ./...` **rc=0**, `go vet ./cmd/...` **rc=0** |
+| `guard_family --platform` | **29 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+
+**The 9 `demo-stack` failures were checked NAME-FOR-NAME against `suite_census.ENV_GATED`, not merely
+counted:** normalising the class segment out of the pytest node-ids, **0 undeclared failures and 0
+declared entries that failed to fire** — all 9 are exactly the 9 declared entries. Same reading pass 62
+took, re-taken rather than carried.
+
+> **⚠️ THE WHOLE-SECTION `stack-core` RUN DID NOT LAND INSIDE THIS PASS, AND NO NUMBER IS CLAIMED FOR
+> IT.** It was started at **13:05:04Z** and was still executing at **13:40:08Z** — **35 minutes**, at a
+> measured **≈9 % CPU utilisation** (tree CPU +3.94 s over a 45 s wall sample). It is not wedged: it has
+> live `unittest` children shelling out to `git`, i.e. it is in the subprocess-bound modules. The host is
+> under permanent third-party load (VS Code helpers and an unrelated `cart-runner` were both resident
+> during the sample), so **every duration in this entry is CONTENDED wall-clock and none of it is a
+> baseline** — the same identical 6-module set varied 10 s → 21 s between flake-gate repetitions.
+>
+> What stands in its place is **not** an assumption that it would have been green. It is the
+> **import-derived consumer sweep** in the first row: the only stack-core-wide regression surface this
+> pass created is the two shared modules it edited, every module importing either was enumerated by grep
+> and run, and all 542 passed. The residual gap is the ~66 stack-core modules that import neither — real,
+> and stated rather than implied. **The run was left alive rather than killed**, so its verdict is
+> readable from `tasks/bpryd62zp.output` by whoever next needs it.
+
+**Knowledge backfill** (`corpus/ops/platform-alignment.md`, this milestone's `iteration_protocol_ref`) —
+one rule, and it earned its place by firing three times inside one pass:
+
+> **A repair CLOSES ITS MEMBERS, not its class — and the watcher inherits the same limit.**
+> An enumerated repair closes the members you enumerated; only a **derived** census can say whether it
+> closed the class, and a class measured once, at the moment it was closed, is a dated reading rather
+> than a property.
+
+The three instances: the collection fence governing 6 of 11 sections; the fresh-checkout repair closing
+22 named tests while the class kept a residue of 3; and this pass's own ratchet, blind to the site the
+same pass created. That is **pass 62's own rule — *a fence inherits the reach of the iter that wrote
+it*** — one level up, and the sharper form is the test to apply: **ask whether the narrowness is a
+property of the CLAIM or of where its author was standing.**
+
+The entry also records *why* the watcher ratchets the repair rather than re-running the census: the
+census freezes a clone pair and runs the whole suite twice, so nobody runs it — and a watcher nobody
+runs is the thing being guarded against.
+
+**Flakes stabilized:** none surfaced. **Flake gate clean:** the six touched modules **3× consecutive**
+(163 passed each) and the four new shell-driven divergence tests **3× consecutive** (6 passed each).
+Wall-clock on identical sets varied 10 s → 21 s, which is the contention disclosure below, not a signal.
+
+**Timing is CONTENDED and is not a baseline.** The host runs other work permanently and this session ran
+up to four suites concurrently; every duration here is wall-clock under contention and must not be quoted
+as a measurement.
+
+**NOT COVERED, stated rather than implied:**
+* The **TypeScript** suites remain enumerated and never executed; no live stack was brought up, so gate
+  clause 1 is untouched by this pass.
+* The **mutation battery was collect-verified, not executed** (6 tests under both invocations, twice —
+  once at session open and again after `suite_census` was modified). It was deliberately NOT run: it
+  mutates source files in place, and the whole-section suite was in flight, so executing it would have
+  corrupted the very reading this pass depends on.
+* `guard_family` reports **29 of 34** members; **5 are NOT-RUN** for want of `--range`/`--ledger`. That is
+  not a whole-family green and the runner says so itself.
+
+**Routes carried forward:**
+- `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` → **re-affirmed, and this pass paid its cost in
+  cash.** Pass 59 routed it; pass 62 measured 11 repo-wide RED assertions nobody could see. This pass
+  added the direct evidence: an 8-line edit to `ensure-clones.sh` turned **three** guards RED, and the
+  only reason it was caught is that a human-driven harden pass happened to run `guard_family` by hand.
+  Still the single highest-leverage open item in this milestone's tooling.
+- `ROUTE-M257x-h62-live-markdown-refragmented` → **still open**, untouched by this pass.
+- `ROUTE-M257x-h59-range-anchors-are-ungraded` → **still open on its undecidable half** (which line of a
+  range carries the claim). `anchor_construct_guard` continues to report 490 range citations, 349
+  bounds-checked, 141 refused.
+- `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` → **NEW, and it is the honest
+  residue of this pass's headline finding.** The pass-63 ratchet watches the *repair* (cheap, every
+  invocation) and provably does **not** catch a brand-new hostile test written from scratch — which is
+  exactly how the residue of 3 arose in the first place, from a module that predated the repair. Closing
+  that needs `suite_census.py --fresh-checkout` on a cadence, and the census costs a frozen clone pair
+  plus two whole-suite runs. Registered rather than solved: making it cheap enough to run per-batch is a
+  tooling change, not a harden-pass change, and the standing ruling is to route rather than build new
+  machinery inside a harden pass.
+
+**Stop condition:** cap reached without stabilization — three passes, **10 defects fixed inline**
+(2 + 4 + 4), three literal ratchets re-pinned, one self-review correction, and the third pass **refuted
+the batch's own headline claim** rather than going quiet. Per the user's standing ruling the routes above
+are recorded and NOT met with new machinery; the **sixteenth** cap-without-stabilization in this
+milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59, 62, 65).
