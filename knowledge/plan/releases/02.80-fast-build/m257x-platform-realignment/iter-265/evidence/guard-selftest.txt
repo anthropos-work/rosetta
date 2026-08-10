@@ -1,0 +1,6 @@
+selftest A — 17 enumerated site(s) resolve: OK
+selftest B — staged UNMARKED instruction detected: OK
+selftest C — the marker is what is graded: OK
+selftest D — deletion of a LIVE line detected (1 block(s)): OK
+selftest D' — the same instruction is SILENT when nothing is live: OK
+decommissioned-instruction-guard selftest: OK (A, B, C, D, D')

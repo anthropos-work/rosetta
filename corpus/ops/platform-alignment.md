@@ -4823,6 +4823,46 @@ under `unittest`; the **decorators** are what change collection. Keyed on `impor
 reads as a fleet-wide crisis instead of one open member — so the control asserts that more modules import
 pytest than are blocked by it, keeping the distinction load-bearing rather than editorial.
 
+### A marker fence can be GREEN because of the DEFECT's own words (M257x iter-265)
+
+The cheapest fence over a stale-documentation class asserts a **presence**: *any instruction naming a
+decommissioned service must carry a historical marker nearby* — `HISTORICAL`, `decommissioned`, `legacy`,
+`removed from`, `no longer`. It is mechanical, it enumerates, and iter-265 shipped one.
+
+**Then it was controlled against the tree it was built from, and it had been green over the defect.**
+
+Of 17 enumerated instructions, the marker assertion fired on **one** — and on none of the three that
+mattered. The three were troubleshooting entries telling an operator to delete
+`RUN pip install --no-cache-dir -r studio/requirements.txt`, a line that is **live** at
+`app/Dockerfile:46`. They passed because the obsolete remedy's own sentence is *"the `studio/` submodule
+**has been removed from** `cms/main`"* — and `removed from` is marker vocabulary. **The defect's phrasing
+and the retraction's phrasing are the same phrasing.**
+
+> **Rule.** A fence that grades the **presence of a word** grades whatever vocabulary the defect happens to
+> share with the repair. Where the class permits it, grade a **relation between two artifacts** instead:
+> iter-265's assertion D is *no corpus instruction to DELETE code may name a line that is LIVE in the clone
+> set* — two files, one join, no vocabulary. It fired where the marker assertion could not.
+
+Three riders, each of which cost something to learn:
+
+1. **A new enumeration must be graded against the instances you already hold.** Assertion D's first regex
+   required the sentence to name what it deletes (*"remove these two lines"*) and so reached **1 of the 3
+   known** instances. With no known set in hand, `1 finding, 0 remaining` reads as a complete sweep. The
+   colon form (*"and remove:"*) was added and pinned by its own test.
+2. **State the reach; the residue is repaired by hand, not assumed away.** D reads only deletion
+   instructions that *quote* the code. A prose-only one (*"comment them out"*) is out of reach, and saying
+   so is what stops the next reader treating green as coverage.
+3. **Pin the weakness as a test, do not fix it silently.** A future reader finding assertions A–C
+   redundant beside D will delete them unless something records that A–C were *measured* to miss this
+   class — so the characterisation ships as
+   `test_marker_assertion_is_satisfied_by_the_defects_own_words`.
+
+And the reason the class exists at all is worth naming separately, because it predicts *where* to look:
+**a troubleshooting entry is indexed by its SYMPTOM, and a symptom outlives the fold that moved its
+cause.** `COPY … studio` still fails; it just fails in a different repo now. An operator greps the error
+text, never the service name — so an obsolete remedy stays reachable for exactly as long as the error
+message is stable, which is the one thing a fold does not change.
+
 ---
 
 ## 9. Cadence

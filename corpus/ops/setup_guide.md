@@ -768,13 +768,33 @@ sudo mkdir -p platform/data/postgresql && sudo chown -R 1001:1001 platform/data/
 docker compose up -d postgresql
 ```
 
-### CMS image build fails on `COPY studio/` / `pip install studio/requirements.txt`
-The `studio/` submodule has been removed from `cms/main` but `cms/Dockerfile.dev` still references it. Edit `cms/Dockerfile.dev` and remove these two lines:
+### Image build fails on `COPY … studio` / `pip install … studio/requirements.txt`
+**On a current stack this is the `backend` (`app`) build, and the fix is to ACQUIRE the tree, never to delete
+the lines** — go to [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails).
+`app/Dockerfile:45-46` declares the dependency and `make up` cannot complete without it:
 ```dockerfile
-COPY studio/ ./studio/
+COPY --from=build /build/studio ./studio
 RUN pip install --no-cache-dir -r studio/requirements.txt
 ```
-The Go binary runs without the Python studio runner.
+
+> **⚠️ This entry said the opposite until M257x iter-265, and it is the entry a stuck operator lands on** —
+> it is titled by the *symptom*, and the symptom (`COPY … studio` failing) is now produced by a **different
+> repo** than the one it named. It read *"the `studio/` submodule has been removed from `cms/main` … Edit
+> `cms/Dockerfile.dev` and remove these two lines … the Go binary runs without the Python studio runner."*
+> Every clause of that is wrong for a stack built today: the failing image is **`app`**, not `cms`; deleting
+> the lines would be a **platform-repo edit** (forbidden — v2.8 ships `demopatch` or rext-owned files only);
+> and the Go binary does **not** run without the Python runtime, because `app/internal/cms/` hosts the
+> embedded studio-room generation pipeline that `cms` used to own.
+>
+> `RUN pip install --no-cache-dir -r studio/requirements.txt` is **byte-identical** in the old remedy and in
+> live `app/Dockerfile:46` — so an operator grepping their build error found a page telling them to delete
+> the very line the build requires. **The requirement migrated when cms folded into `app`; three copies of
+> its troubleshooting entry did not** (`D-M257x-265-1`).
+>
+> *Historical, and true only of the frozen `cms` repo:* `cms/Dockerfile.dev` also referenced a `studio/`
+> submodule that was removed from `cms/main`, and there the removal was the right fix. `cms` is
+> decommissioned — no container, no `repos.yml` entry, ECS destroyed — so that remedy applies to nothing a
+> current setup builds. See [`corpus/services/cms.md`](../services/cms.md) § the studio submodule.
 
 ### `studio-desk` fails to bind host port 9100
 Conflicts with `node_exporter` (Prometheus monitoring) if you have any observability stack running on the box. Edit `platform/docker-compose.yml`:

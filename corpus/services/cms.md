@@ -268,7 +268,14 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 > doc (**named, not pinned:** it carried a line range until M257x iter-120, by then the **Events** bullet). Work on this domain in **`app`**, not in the
 > frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
 
-The Python studio submodule had to be cloned **before** any docker build, otherwise `make up` failed with `"/studio": not found`:
+**⚠️ Read the tense.** The Python studio tree had to be cloned **before** any docker build, or `make up`
+failed with `"/studio": not found` — and **that is still true today, of `app`, not of `cms`.** The
+requirement did not die with the service; `fdb8034a` moved it, and `app/Dockerfile:45-46` hard-COPYs
+`/build/studio` on every `make up`. The past tense below is scoped to the **`cms` targets**, never to the
+dependency. The live procedure is [`setup_guide.md` § Acquire the Studio
+runtime](../ops/setup_guide.md#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails);
+three troubleshooting entries told operators to *delete* the COPY lines until M257x iter-265 corrected them
+(`D-M257x-265-1`). The `cms`-side history:
 
 ```bash
 cd cms

@@ -235,6 +235,10 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 ## Testing
 
 ```bash
+# HISTORICAL — the `storage` service is merged into `app` and its compose service was deleted at
+# platform `838d907`; the repo left `repos.yml` with it, so `make init` never clones it and
+# `cd storage` assumes a hand-clone. NB the Go MODULE is NOT dead — `app/go.mod:17` still
+# requires `storage v0.15.2` as a type shim, so the repo is frozen as a service, live as a library.
 cd storage
 go test -v ./...
 ```

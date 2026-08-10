@@ -246,6 +246,10 @@ buf curl http://localhost:8081/roadrunner.v1.RoadRunnerService/SubmissionResult 
 Roadrunner currently has NO test suite — there are zero `*_test.go` files, so `go test ./...` (also run at Docker build time, `Dockerfile` line 18) is a no-op that passes vacuously.
 
 ```bash
+# HISTORICAL — `roadrunner` is DECOMMISSIONED and is not in `repos.yml`, so `make init` never
+# clones it; `cd roadrunner` assumes a hand-clone of a frozen repo. Nothing migrated: the
+# Judge0 edge was DELETED and re-implemented in-process inside app's jobsimulation domain
+# (`app/internal/jobsimwiring/wiring.go:123`), which is where any live test would go.
 cd roadrunner
 go test ./...   # currently no tests defined
 ```

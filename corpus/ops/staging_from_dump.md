@@ -471,13 +471,18 @@ studio-desk:
     - "9101:9100"   # was 9100:9100
 ```
 
-### CMS image build fails on `COPY studio/`
-The `studio/` submodule was removed from `cms/main`. Edit `cms/Dockerfile.dev` and remove:
-```dockerfile
-COPY studio/ ./studio/
-RUN pip install --no-cache-dir -r studio/requirements.txt
-```
-The Go binary runs without the Python studio runner.
+### Image build fails on `COPY … studio` — ACQUIRE the tree, do not delete the lines
+On a current stack the failing image is **`backend` (`app`)**, not `cms`: `app/Dockerfile:45-46` hard-COPYs
+`/build/studio`, nothing in the documented flow puts that tree on disk, and `make up` cannot complete
+without it. Clone it — [`setup_guide.md` § Acquire the Studio
+runtime](setup_guide.md#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails).
+
+> **⚠️ Corrected M257x iter-265.** This entry read *"the `studio/` submodule was removed from `cms/main`.
+> Edit `cms/Dockerfile.dev` and remove … The Go binary runs without the Python studio runner."* That was
+> true of the frozen `cms` repo and is **false for every image a current staging builds** — `cms` is
+> decommissioned, and `app` needs the Python runtime because it now hosts the embedded studio-room
+> pipeline. **The requirement migrated with the fold; this troubleshooting entry did not**
+> (`D-M257x-265-1`; two sibling copies in `setup_guide.md` and `staging-bringup.md` carried the same text).
 
 ### Next.js build crashes with "STRIPE_SECRET_KEY is not configured"
 Next.js statically evaluates server routes at build time and reads from `process.env`. Compose `env_file` is runtime-only. Drop a gitignored `next-web-app/apps/web/.env.production` containing the keys the routes need (Stripe, OpenAI, Azure OpenAI, Clerk publishable, Wundergraph endpoint, etc.) before `docker compose build`.

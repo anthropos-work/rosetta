@@ -1,0 +1,173 @@
+{
+  "source": "corpus/architecture/platform-migration-status.md",
+  "services": [
+    "chromedp",
+    "chronos",
+    "cms",
+    "customerio-sync",
+    "graphql-wundergraph",
+    "intelligence",
+    "jobsimulation",
+    "messenger",
+    "nats",
+    "realtime",
+    "roadrunner",
+    "simulator",
+    "skiller",
+    "skillpath",
+    "storage",
+    "web-app"
+  ],
+  "population": 17,
+  "unmarked": 0,
+  "sites": [
+    {
+      "file": "corpus/architecture/external_services.md",
+      "line": 463,
+      "service": "graphql-wundergraph",
+      "kind": "fence",
+      "marked": true,
+      "text": "COPY graphql-wundergraph/supergraph-config-${ENVIRONMENT_CONFIG}.yaml ./supergraph-config.yaml"
+    },
+    {
+      "file": "corpus/architecture/external_services.md",
+      "line": 464,
+      "service": "graphql-wundergraph",
+      "kind": "fence",
+      "marked": true,
+      "text": "COPY graphql-wundergraph/config.${ENVIRONMENT}.yaml ./config.yaml"
+    },
+    {
+      "file": "corpus/ops/setup_guide.md",
+      "line": 782,
+      "service": "cms",
+      "kind": "imperative",
+      "marked": true,
+      "text": "> repo** than the one it named. It read *\"the `studio/` submodule has been removed from `cms/main` \u2026 Edit"
+    },
+    {
+      "file": "corpus/ops/staging-bringup.md",
+      "line": 430,
+      "service": "cms",
+      "kind": "imperative",
+      "marked": true,
+      "text": "> *What this quirk said, and why it is kept rather than deleted (M257x iter-265, `D-M257x-265-1`):* it described `cms/Dockerfile.dev`'s removed `studio/` submod"
+    },
+    {
+      "file": "corpus/ops/staging_from_dump.md",
+      "line": 481,
+      "service": "cms",
+      "kind": "imperative",
+      "marked": true,
+      "text": "> Edit `cms/Dockerfile.dev` and remove \u2026 The Go binary runs without the Python studio runner.\"* That was"
+    },
+    {
+      "file": "corpus/services/cms.md",
+      "line": 281,
+      "service": "cms",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd cms"
+    },
+    {
+      "file": "corpus/services/cms.md",
+      "line": 282,
+      "service": "cms",
+      "kind": "fence",
+      "marked": true,
+      "text": "make init-studio   # HISTORICAL \u2014 clones anthropos-studio-room into cms/studio/"
+    },
+    {
+      "file": "corpus/services/cms.md",
+      "line": 311,
+      "service": "cms",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd app/studio          # was: cms/studio"
+    },
+    {
+      "file": "corpus/services/cms.md",
+      "line": 354,
+      "service": "cms",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd cms"
+    },
+    {
+      "file": "corpus/services/graphql-wundergraph.md",
+      "line": 261,
+      "service": "graphql-wundergraph",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd graphql-wundergraph"
+    },
+    {
+      "file": "corpus/services/jobsimulation.md",
+      "line": 302,
+      "service": "jobsimulation",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd jobsimulation"
+    },
+    {
+      "file": "corpus/services/messenger.md",
+      "line": 166,
+      "service": "messenger",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd messenger"
+    },
+    {
+      "file": "corpus/services/messenger.md",
+      "line": 208,
+      "service": "messenger",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd messenger"
+    },
+    {
+      "file": "corpus/services/roadrunner.md",
+      "line": 197,
+      "service": "roadrunner",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd roadrunner"
+    },
+    {
+      "file": "corpus/services/roadrunner.md",
+      "line": 253,
+      "service": "roadrunner",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd roadrunner"
+    },
+    {
+      "file": "corpus/services/storage.md",
+      "line": 197,
+      "service": "storage",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd storage"
+    },
+    {
+      "file": "corpus/services/storage.md",
+      "line": 242,
+      "service": "storage",
+      "kind": "fence",
+      "marked": true,
+      "text": "cd storage"
+    }
+  ],
+  "refused": {
+    "prose mention carries no imperative": 111,
+    "excluded: the map that defines the set": 2,
+    "fence is a listing, not a command block": 2
+  },
+  "deletion_blocks_scanned": 1,
+  "deletion_targets_live": [],
+  "assertion_d_reach": "430 build-input line(s) from 2 clone root(s)"
+}
+decommissioned-instruction-guard: OK — 17 instruction(s) naming a decommissioned service, all marked historical.
+decommissioned-instruction-guard: population 17 across 10 file(s); decommissioned set = 16 service(s) derived from corpus/architecture/platform-migration-status.md
+decommissioned-instruction-guard: assertion D — 1 deletion-instruction block(s) scanned, 3 candidate line(s), 0 live; reach = 430 build-input line(s) from 2 clone root(s)
+decommissioned-instruction-guard: refused (counted, never guessed): excluded: the map that defines the set x2, fence is a listing, not a command block x2, prose mention carries no imperative x111
