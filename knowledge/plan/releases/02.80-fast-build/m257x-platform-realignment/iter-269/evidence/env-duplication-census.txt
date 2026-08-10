@@ -1,0 +1,8 @@
+VALUES-BLIND CENSUS of stack-demo/platform/.env (no value is printed; only hashes/blank flags)
+total lines 471 | distinct keys 18
+occurrence-count histogram: {31: 13, 1: 5}
+keys whose VALUE VARIES across occurrences: 0
+keys blank in EVERY occurrence: ['DIRECTUS_TOKEN']
+
+fingerprint of the repeated block (sha256 of sorted key names, values excluded):
+  69f1548d3e197465 (13 keys)

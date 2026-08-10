@@ -256,6 +256,32 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
   resolution and prints the per-file plan (write / blank / skip / missing key NAMES) **without writing** —
   an honest preview.
 
+> **⚠️ The demo bring-up ALWAYS passes `--force`, so on that path a re-run is NOT idempotent — it appends a
+> full block every time, without bound** (measured M257x iter-269). `up-injected.sh:1538` runs
+> `provision … --force` unconditionally, and `--force` skips the copy-if-absent check above while the merge
+> stays **append-only** — so each bring-up adds one block. Measured on this box's `stack-demo/platform/.env`
+> after 31 bring-ups: **471 lines · 18 distinct keys · 13 of them present 31 times · 0 keys whose value
+> varies · `DIRECTUS_TOKEN` blank in all 31.** There is no reaper and no upper bound.
+>
+> **It is not a bug in either half, and that is why it survived.** Append-only is what makes the tool
+> values-blind — `provision/io.go:173-175`: *"an existing line is never re-read for its value or rewritten,
+> so provision can never corrupt or echo a value already in the target."* And `--force` is deliberate:
+> `up-injected.sh:1522` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
+> last-wins** (the strip-on-non-prod class)."* **Compose's last-wins resolution is therefore LOAD-BEARING,
+> not incidental** — the blank is delivered *by being appended last*.
+>
+> **Which is why "make the writer replace-or-skip" is the wrong fix, and it was the routed one**
+> (`FIX-M257x-262-demo-env-append-is-not-idempotent`). Replace-in-place would either re-read an existing
+> value (breaking values-blindness) or drop the trailing blank (re-arming `DIRECTUS_TOKEN` on a demo — the
+> fix16/17 class this spec exists to prevent). Any real repair must keep **both** properties and prune
+> **older** duplicates rather than stop appending. Re-routed as
+> `FIX-M257x-269-force-append-grows-the-demo-env-without-bound`.
+>
+> **The live hazard to know about:** with N copies of a key, the **last** one wins. Today all 31 agree, so
+> nothing is wrong. The moment one writer appends a *differing* value — a stale source, a partial run, a
+> hand-edit — the file silently prefers whichever landed last, and the classic symptom is *stack boots,
+> catalog empty*. **Diagnose a suspect `.env` by reading the LAST occurrence of a key, never the first.**
+
 ### The demo-aware coverage check (`check` / `measure`)
 
 `check` (`secretdna.MeasureForStack`) scores a source against the DNA and exits 1 if **critical coverage <
