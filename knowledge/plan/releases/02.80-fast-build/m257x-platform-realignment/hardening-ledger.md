@@ -6248,3 +6248,179 @@ as a measurement.
 the batch's own headline claim** rather than going quiet. Per the user's standing ruling the routes above
 are recorded and NOT met with new machinery; the **sixteenth** cap-without-stabilization in this
 milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59, 62, 65).
+
+## Pass 66 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-258 … iter-269 (12 tiks, the milestone's payload range — the demo and
+dev halves of the closing condition, then the corpus-accuracy limb). The production-code footprint of
+that range is small and concentrated: **one new 508-line guard plus its registry enrolments** (rext
+`25cdb84`, `450c57d`, `cf4da42`) and **nine corpus documents**. Everything else is milestone artifacts.
+
+> **Pass-numbering disclosure.** This session ran passes **66, 67, 68**. In-code annotations from passes
+> 66 and 67 are labelled *"harden pass 66"* uniformly: they were one contiguous stream of work over one
+> batch, sharing a ratchet re-pin, and the 66/67 split is a **ledger-level grading of stop conditions**,
+> not two code epochs. Recorded rather than tidied, because a reader grepping `pass 67` in rext will
+> find nothing and should know why.
+
+**Subject:** `decommissioned_instruction_guard.py` — iter-265's fence, and specifically its **assertion
+D**. The orchestrator's stress note was exact: iter-265 *measured* that its own assertions A–C miss the
+defect the guard exists for (they fired on **1 site of 17**, and on **none of the 3 that mattered**,
+because the obsolete remedy's own words — *"has been removed from"* — are marker vocabulary). D is the
+only assertion that hits, so D is the guard.
+
+**Bugs surfaced + fixed inline (3, all in D, commit `b2a0c74`):**
+
+1. **D FAILED OPEN — `run()` returned 0, a full GREEN, on any tree with no clone set**, while printing
+   `assertion D could not run` four lines above the verdict. So a fresh checkout — the exact class
+   passes 63–65 spent three passes on — ran only the assertions *known to miss*, skipped the one that
+   hits, and reported OK. Now exits **2** (could-not-check).
+   **The convention was already written down twice, in the `INVOCATIONS` entries either side of this
+   guard's own**: `rext_path_guard` and `toolchain_floor_guard` each *"exit 2 (never 0) when [the tree]
+   is absent, so a host without the clone reports could-not-check rather than an unearned green."* This
+   member was enrolled **between them** and did not do it. **Printing your reach is not the same as
+   refusing a verdict you did not earn.**
+2. **A true outcome published with a reason that can be false.** `NO clone root provisioned` was printed
+   for *both* empty-index states — roots absent, and roots present carrying no build input, which is
+   what a half-cloned stack actually produces. Three states now, named apart. Same class harden pass 64
+   fixed in three sibling checks.
+3. **An undisclosed reach floor.** The 20-char index minimum was an unnamed literal in two places and
+   disclosed in neither. A live line below it is invisible to D — `COPY studio /build` (18 chars)
+   indexes as nothing, so a page telling an operator to delete it reads green. Named `MIN_LIVE_LINE`
+   and printed on every run.
+
+**The test that had the finding in its own docstring.** `test_reach_is_a_property_of_the_clone_set` is
+documented *"with no clone root, D cannot run, and must say so rather than pass quietly"* — and graded
+only that the **index** was empty, which is a fact about the indexer, not about the verdict. It measured
+green while `run()` returned 0 on the same input. **A test can state the property it does not assert**,
+and this is the second time in three passes that the docstring was ahead of the body.
+
+**Tests added:** `tests/test_decommissioned_instruction_guard.py` **12 → 17** — the could-not-check exit
+(both reach states), the reason-not-just-outcome arm, A–C-RED-outranks-could-not-check precedence, and
+the `MIN_LIVE_LINE` disclosure (which names the 18-char line, because a test asserting "D has a floor"
+would pass against a floor that reaches nothing).
+
+**Coverage delta on touched files:** `decommissioned_instruction_guard.py` — the three `run()` exit
+branches were **1 of 3** covered (only the RED path); now **3 of 3**. The `d_reach` message had **1 of
+2** states reachable by any test; now **3 of 3**.
+
+**Literal ratchets re-pinned, with recorded reasons:** `COMMENT` 228 → 233, `TEST_MODULE` 648 → 650;
+`DOCSTRING` 239, untouched. **The comment ratchet converged in two passes and the ANTICIPATION WAS STILL
+SHORT** — 231 was pinned on the arithmetic *"the reason adds about one"* and re-measured at **233**,
+because this block's reason-comment is the densest carrier of numbers in the file. The 231 is left
+standing in the prose as the record of a bump that was **reasoned rather than read**, and the block now
+says: **budget the second pass, do not predict its size.**
+
+**Flakes stabilized:** none surfaced. **Flake gate:** the touched module **3× consecutive**, 22 passed
+each (12.62 s / 12.11 s / 12.17 s).
+
+**Stop condition:** continue-to-next-pass — the guard is repaired but the enrolment shape that let
+iter-265 ship it half-wired is untouched, and iters 267/268/269's stress targets are not yet reached.
+
+## Pass 67 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-265, iter-268, iter-269 (three arms, one per stress target).
+Commit `abadff7`; the stack-secrets arm in the same commit.
+
+### Arm 1 — make the enrolment omission IMPOSSIBLE, not detectable
+
+iter-265 shipped a guard without enrolling it; iter-269 found it by a **37-minute whole-suite run, four
+iters late** — 24 tests RED across four registry fences. The author had run the guard, its own 12 tests,
+and the four fences they believed adjacent, all green. *A new member is not tested by the tests it ships
+with.* This is the **second** time in the milestone a new fence was not wired into the family.
+
+**Measured what is UNIVERSAL before building anything, and only two of the four surfaces are.**
+`derivation_registry.DECISIONS` is keyed per *derivation function* (a guard with none needs no entry) and
+the literal ratchets are measured counts enrolled by nothing — **a blanket "must appear in all four"
+would be false for most members**, and would have been the obvious wrong arm.
+
+Of the two universal surfaces, **`INVOCATIONS` was already fail-closed**: `reconcile()` refuses a family
+verdict outright (EXIT 2, *"a guard that cannot be selected is not a guard"*). **The provenance stamp was
+not** — its predicate lived in `tests/test_fence_provenance.py`, so it could only be found by whoever ran
+the suite, which for four iters was nobody. That is the whole difference between *detectable* and
+*impossible*, and it is why the two omissions travelled together.
+
+**Fix:** promoted `stamps_on_direct_execution()` out of the test into `fence_provenance` itself and read
+it from `guard_family.reconcile()`. Both universal surfaces now fail closed at the moment anyone runs the
+runner. Proven by **mutation against a real member with its stamp stripped**, not a synthetic stub.
+
+**What the arm then cost, and why the fixtures were fixed rather than the arm narrowed:** six staged
+fixtures across two modules stopped looking like real members and the family exited 2 before reaching the
+behaviour they test. **A fixture that a real fence's requirement would reject cannot stand in for a real
+fence** — so they were made compliant, through **one shared `stamped()` helper** reused by the sibling
+module. That is the same cure iter-175's note on that very fixture already prescribed for the same shape;
+its comment calls itself *"the SIXTH fixture of this shape."* It is now the seventh occasion, and the
+seventh was avoided by reusing the one definition instead of growing a local copy.
+
+**One branch of the new arm is UNREACHABLE and is pinned as such rather than deleted.** An unparseable
+member is fail-closed *harder* one layer up: `repair_postcondition.declared_kind` raises `CouldNotRun`
+before `reconcile()` is reached. The test was rewritten to assert the property that actually holds, and
+says why the unreachable `except SyntaxError` stays (defence in depth for a direct `reconcile()` call —
+which is how this pass's own mutation control invoked it).
+
+### Arm 2 — what else is a list nobody fenced? (iter-268)
+
+iter-268 found **one** named-consumer list hardcoding a decommissioned repo (`_studio_repos="cms"`,
+dormant on a fresh box and live on any box carrying the fossil), closed that member, routed the fix, and
+recorded that **nothing derived the SET of registries**. Asked the generalising question. **There are
+three more, in two files, two of them on the demo bring-up path:**
+
+| site | corpses named | disposition |
+|---|---|---|
+| `demo-stack/up-injected.sh:216` `INJECT_CANDIDATES` | `cms`, `jobsimulation` | disclosed **and filtered** — but the filter **FAILS OPEN** |
+| `stack-injection/gen_injected_override.py:52` `INJECTED` | `cms`, `jobsimulation` | its own comment still asserts a live set of 3 that `ef32d4c` falsified |
+| `stack-injection/gen_injected_override.py:153` `REUSE_DEV` | `storage`, `roadrunner` | dormant (opt-in `--reuse-dev-images`, default off) |
+
+**The dispositions differ and that is the point — this is not three copies of one bug.** The sharpest is
+the first: `derive_inject_svcs` filters the candidates against the platform compose's own build set, but
+on an empty derivation it logs a warning, `return 0`s, and **leaves `INJECT_SVCS` holding the unfiltered
+list** (`up-injected.sh:1691-1694`). So the derivation's failure mode is to inject two decommissioned
+services. **That is the same shape as this session's assertion-D finding, one directory over**: a check
+that could not run, reporting as though it had. Two independent instances in one pass is what makes it a
+class rather than a coincidence.
+
+**Pinned as a CHARACTERISATION with a disclosed reach.** The predicate reads assignments enumerating
+**≥2** repo-ish tokens, so **iter-268's own one-token `_studio_repos` is NOT reached by it** — stated in
+the test rather than papered over by widening the predicate until the known answer appears, because *a
+predicate tuned until it returns what you already knew measures nothing*. **Known population 4, graded
+3.** Fixing any of them needs a tag + pin bump (spending `D-M257x-258-1`'s frozen-pin control) → routed.
+
+### Arm 3 — the safety property iter-269 refuted a routed fix with
+
+iter-269 rejected iter-262's *"make the writer replace-or-skip"* because replace-in-place would break one
+of two properties: **values-blindness** (*"an existing line is never re-read for its value or rewritten"*)
+or the **trailing blank** that disarms `DIRECTUS_TOKEN` by last-wins. Checked whether those are
+**asserted** or only reasoned about:
+
+* the blanking half **is** asserted, and well — `TestProvision_PreexistingArmedDirectus_ForceBlanks`
+  explicitly reads the **last** occurrence;
+* **the values-blindness half lived in a comment at `io.go:173-175` and nothing else.**
+  `TestProvision_Idempotent` covers only the **non-force** path; `TestProvision_Force` asserts the new
+  line arrives, never that the old one survives.
+* and **no test applied `--force` more than once**, while the behaviour the demo depends on is what
+  happens on the **31st** bring-up.
+
+So a refutation that decided the shape of a routed fix rested, in half, on unasserted reasoning.
+`TestProvision_RepeatedForce_PreservesEveryPriorLineAndKeepsTheBlankWinning` now pins both halves under
+repetition: prior content must remain a literal **prefix** (which catches rewrite, reorder and deletion
+alike, where *"the old line is still in there somewhere"* would pass over all three), the last
+`DIRECTUS_TOKEN` must still be blank after **every** run, and the per-run growth is pinned as a
+characterisation so a future pruning fix cannot land without confronting both properties. Anti-vacuity
+counter on the prefix check (it is skipped on run 1 by construction); **mutation-controlled** — a
+`writeTargetFile` that rewrites instead of appending fails it at run 1.
+
+**Tests added:** +5 `test_decommissioned_instruction_guard.py` (17 → 22, the rext named-consumer census)
+· +3 `test_guard_family.py` (fire / accept / reach-boundary) · 1 Go test in `stack-secrets/provision`.
+
+**Coverage delta on touched files:** `guard_family.reconcile()` — **4 → 6** complaint branches, all
+covered in both directions. `fence_provenance.stamps_on_direct_execution` — unchanged coverage, **two**
+call sites instead of one (test-time *and* run-time).
+
+**Ratchets re-pinned:** `COMMENT` 233 → 236, `TEST_MODULE` 650 → 653. **The comment ratchet converged in
+two passes for the third time in its history**, so the block stopped calling it a surprise.
+
+**Flakes stabilized:** none surfaced. **Flake gate:** `stack-secrets/provision` **3× consecutive**
+(`-count=1`, no cache); `test_decommissioned_instruction_guard.py` **3× consecutive**, 22 passed each.
+
+**Stop condition:** continue-to-next-pass — the arms are landed and verified against their own modules,
+but iter-269's lesson is precisely that *targeted modules are not the instrument that catches this
+class*, so the whole-section run and the knowledge backfill are still owed.
