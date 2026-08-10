@@ -41,7 +41,7 @@ auto-pass skipped. The snapshot is **stack-global** public reference data — re
 independent of which org you then `/stack-seed`.
 
 ```bash
-/stack-snapshot replay 1                         # taxonomy (lands) + directus (exits 0 on --local-content; else skips exit 4)
+/stack-snapshot demo-1 replay                    # taxonomy (lands) + directus (exits 0 on --local-content; else skips exit 4)
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
@@ -58,7 +58,7 @@ a diverged stack schema).
 
 **Then seed + log in.** With the library in place, seed an org and the seeded sessions link to the real templates:
 ```bash
-/stack-seed 1 --preset mid-500
+/stack-seed demo-1 --preset mid-500
 # log in per recipe-browser-login.md → the catalog + assigned content are real, not placeholder.
 ```
 

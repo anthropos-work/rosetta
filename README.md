@@ -64,8 +64,8 @@ Automate the setup process:
 /dev-up              # First time / daily: build + start the dev environment (one skill — was setup + start)
 /dev-up N            # When needed: an additional isolated dev-N stack, set-dressed by default
 /demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
-/stack-snapshot N    # Set-dress any stack: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
-/stack-seed N        # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
+/stack-snapshot demo-N   # Set-dress any stack (name it dev-N or demo-N): replay the real public taxonomy + Directus content
+/stack-seed demo-N       # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
 /demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data); /dev-down N for dev
 /stack-list          # Check: list the live dev + demo stacks, their offset ports, and health
 ```

@@ -18,7 +18,7 @@ org looks like in Anthropos" demo.
 
 2. **Set-dress the stack** — replay the real public library so the catalog is real:
    ```bash
-   /stack-snapshot replay 1            # taxonomy → the real public catalog, ≥42,790 skills (+ directus content on a --local-content stack)
+   /stack-snapshot demo-1 replay       # taxonomy → the real public catalog, ≥42,790 skills (+ directus content on a --local-content stack)
    ```
    This stamps the real **public** taxonomy into the stack (almost always a cache-hit → zero prod read). The
    **Directus content** surface replays too **on a `--local-content` stack** (demo default-on; dev opt-in) —
@@ -30,7 +30,7 @@ org looks like in Anthropos" demo.
 
 3. **Seed the org** with a curated preset:
    ```bash
-   /stack-seed 1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
+   /stack-seed demo-1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
    # or --preset large-1k for a 1,000-member scale demo
    ```
    The seeder backfills, in dependency order: the org → 500 users → memberships (with the role mix) → the real

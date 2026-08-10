@@ -25,7 +25,7 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
    instead of placeholder ids. Use the `large-1k` preset (9 months) or author your own:
    ```bash
    /demo-up 1
-   /stack-snapshot replay 1            # taxonomy → the real catalog (+ directus content self-contained on a --local-content stack, demo default; else read live from prod)
+   /stack-snapshot demo-1 replay       # taxonomy → the real catalog (+ directus content self-contained on a --local-content stack, demo default; else read live from prod)
    cat > /tmp/progression.seed.yaml <<'YAML'
    stack: demo-1
    org: { name: Stark Industries, slug: stark }
@@ -35,7 +35,7 @@ All of it is time-distributed across `activity.months`, so the growth charts sho
    content_pack: standard
    activity: { months: 12, pass_rate: 0.62 }   # a full year; ~62% pass so there's a real fail tail
    YAML
-   /stack-seed 1 --seed /tmp/progression.seed.yaml
+   /stack-seed demo-1 --seed /tmp/progression.seed.yaml   # the same `demo-1` the YAML's own `stack:` key names
    ```
 
 2. **Confirm the activity landed** (the seed output shows the row counts):
