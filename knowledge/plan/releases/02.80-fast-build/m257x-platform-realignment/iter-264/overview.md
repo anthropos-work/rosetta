@@ -2,8 +2,9 @@
 iter: 264
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T15:31:00Z
+closed: 2026-08-10T15:34:00Z
 ---
 
 # iter-264 — the corpus half of `D-M257x-262-2`: the guide calls a build dependency optional

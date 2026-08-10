@@ -305,14 +305,52 @@ This clones the repos declared in `platform/repos.yml` as siblings of `platform/
 
 > **Note**: the clone set has shrunk repeatedly as services were folded into `app`. Removed from `repos.yml`: `intelligence` (`fdfa189`) and `chronos` (`045857c`); `skiller` (`21429b7` — merged into `app` in July 2026, its taxonomy tables now in `app`'s `public` schema); `skillpath` (`a4db680` — "skillpath-in-app", M502→M507, session state now in `public.skill_path_sessions`); `graphql-wundergraph` (`360efd4`); `cms`, `jobsimulation` and `roadrunner` (`d11a403`); and `storage` + `messenger` (`838d907`). **None of those repos were deleted from GitHub** — `make init` simply no longer clones them, and none of them owns a local schema; clone one by hand if you need to read the pre-merge source. `customerio-sync` was never a `repos.yml` entry (it built straight from a GitHub URL) and **is no longer a compose service either** — `838d907` deleted that container too, so it cannot be started locally at all. `ant-academy` is likewise not a `repos.yml` entry (by design) and has no compose service — clone it by hand and run it natively (see the Ant Academy section below). See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
-### Initialize CMS Studio Submodule
+### Acquire the Studio runtime — REQUIRED before `make up`, or the `backend` build fails
 
-Since **cms-in-app**, the Studio-Room Python project rides in the **`app`** image and CI pulls it
-in (`additional_repo`, app v1.360.1) — there is no `make init-studio` step for a local stack any
-more. To run the pipeline by hand, clone `anthropos-studio-room` yourself and run it directly.
+> **⚠️ This step is NOT optional, and this section said it was until M257x iter-264.** It read *"To run
+> the pipeline by hand, clone `anthropos-studio-room` yourself"* — true, and it framed the clone as a
+> convenience for someone who wanted the generation pipeline. **`make up` cannot build the `backend`
+> image without it.** A reader following this guide top-to-bottom hit:
+>
+> ```
+> #50 [backend stage-1 5/6] COPY --from=build /build/studio ./studio
+> #50 ERROR: failed to calculate checksum of ref …: "/build/studio": not found
+> make: *** [up] Error 1
+> ```
+>
+> Measured on a cold `stack-dev/` at platform `0c91421` / app `3eaadae68` (M257x iter-262).
 
-*(Historical: this used to be `cd ../cms && make init-studio`, which cloned the project into
-`cms/studio/` for the cms image build.)*
+Since **cms-in-app**, the Studio-Room Python runtime rides inside the **`app`** image, and `app`'s
+Dockerfile **hard-COPYs** it:
+
+```
+app/Dockerfile:45   COPY --from=build /build/studio ./studio
+app/Dockerfile:46   RUN pip install --no-cache-dir -r studio/requirements.txt
+```
+
+**Nothing in the documented flow puts that tree on disk.** `app/.gitignore:79` ignores `studio/*`
+(*"pulled at build via additional_repo, like cms"*), so no clone carries it; it is not in `repos.yml`, so
+`make init` does not fetch it; and since app `851cf3fb` (2026-07-29) there is **no `.gitmodules` and no
+gitlink** either — that commit removed both while **keeping** the Dockerfile COPY. `app` has no
+`init-studio` target (that was always a **cms** target). In CI the gap is filled by
+`additional_repo: "anthropos-studio-room:studio"`; locally you must do it yourself:
+
+```bash
+# from the stack workspace root (e.g. stack-dev/), BEFORE `make up`
+git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
+```
+
+The path is gitignored, so this does not dirty `app`'s tracked state. **Derive the need rather than
+memorising this list** — any service whose `Dockerfile`/`Dockerfile.dev` contains a `COPY … studio`
+line needs the same tree, which is how the demo tooling decides
+(`rosetta-extensions/demo-stack/lib/studio.sh`, `studio_required`).
+
+*(Historical: this used to be `cd ../cms && make init-studio`, which cloned the same project into
+`cms/studio/` for the cms image build. **The dependency did not go away when cms did — it moved to
+`app`**, and the corpus recorded it only in past tense under the decommissioned service
+([`corpus/services/cms.md`](../services/cms.md) § the studio submodule), which is why a live requirement
+read as dead history. Same class as `platform-alignment.md` §5's "a named-consumer list survives the
+merge that moved the consumer".)*
 
 ### How Local Builds Work
 
@@ -320,7 +358,7 @@ more. To run the pipeline by hand, clone `anthropos-studio-room` yourself and ru
 
 This means:
 - Every service **requires a local clone** to build
-- `make init` handles cloning everything (except CMS studio submodule — see above)
+- `make init` handles cloning everything **except the Studio runtime** — `app/studio` must be cloned by hand before `make up` (see [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails)); it is an **`app`** dependency now, not a cms one
 - Changes to local code are picked up on `make up` (which runs `--build`)
 
 ### Optional Repos
@@ -462,7 +500,9 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     cd platform
     ```
 
-2.  **Start the backend tier** (default `core` profile):
+2.  **Start the backend tier** (default `core` profile). ⚠️ **`app/studio` must already exist** or this
+    step fails with `"/build/studio": not found` — see [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails)
+    above; it is one `git clone` and it is not optional:
     ```bash
     make up
     ```

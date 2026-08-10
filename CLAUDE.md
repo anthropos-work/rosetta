@@ -572,8 +572,21 @@ npm run dev    # frontend 9100 (vite.config.ts:10), backend 9000 (.env.example:4
 > is what the Tier-2 entry means by *"never a standalone deployment."* Its root **is `app/studio/`**, and
 > that path is **`.gitignore`d in `app` itself** (`app/.gitignore:78-79`, *"pulled at build via
 > additional_repo"*) — so it is absent from a fresh `make init` clone and present only on a box where a
-> build or a hand-clone populated it. `cd app/studio` is the real path when it is there; see
+> **hand-clone** populated it. `cd app/studio` is the real path when it is there; see
 > `corpus/services/studio-room.md`.
+>
+> **⚠️ And it is a HARD BUILD DEPENDENCY, not just a missing directory — corrected M257x iter-264.** This
+> block said the tree is present *"on a box where a **build** or a hand-clone populated it"*, which
+> inverts the causality: **a local build cannot populate it — it FAILS on its absence.** `app/Dockerfile:45`
+> `COPY --from=build /build/studio ./studio` (then `:46` `pip install -r studio/requirements.txt`), so a
+> documented `make init` + `make up` on a clean box dies with `"/build/studio": not found` and
+> `make: *** [up] Error 1` (measured, M257x iter-262, platform `0c91421` / app `3eaadae68`). CI fills the
+> gap with `additional_repo: "anthropos-studio-room:studio"`; **locally you must
+> `git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio` BEFORE `make up`** —
+> `corpus/ops/setup_guide.md` § *Acquire the Studio runtime*. There is no `.gitmodules` since app
+> `851cf3fb`, and `init-studio` was always a **cms** target. The demo path has hidden this since
+> 2026-07-27 because `rosetta-extensions/demo-stack/lib/studio.sh` acquires it automatically; the **dev
+> path has no such step**.
 
 ```bash
 cd app/studio          # NOT `cd studio-room` — see the warning above

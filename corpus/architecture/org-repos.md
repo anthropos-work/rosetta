@@ -414,7 +414,7 @@ files.** Of this corpus's 27 service docs: **18 have a full counterpart, 6 produ
 **How the two relate, stated so a reader can choose.** This corpus is authoritative for **measured
 local/runtime state and ops**; AKB is better positioned on **`infrastructure`-derived production state**
 and on product/GTM. **Neither cites the other.** This corpus already names AKB in five places
-(`setup_guide.md:322`, `staging-bringup.md:125`, `:151`, `staging-sync.md:112`,
+(`setup_guide.md:370`, `staging-bringup.md:125`, `:151`, `staging-sync.md:112`,
 `toolchain_overview.md:91`) — **every one of them as a repo to clone or sync, never as a documentation
 source** — while `toolchain_overview.md:92-94` records that its plugin injects *"full Anthropos context
 (product details, **architecture**…)"* into every engineer's editor. **So a reader following this
