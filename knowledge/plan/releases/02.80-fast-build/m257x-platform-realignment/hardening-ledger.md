@@ -6424,3 +6424,133 @@ two passes for the third time in its history**, so the block stopped calling it 
 **Stop condition:** continue-to-next-pass — the arms are landed and verified against their own modules,
 but iter-269's lesson is precisely that *targeted modules are not the instrument that catches this
 class*, so the whole-section run and the knowledge backfill are still owed.
+
+## Pass 68 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** the batch's verification pass — knowledge backfill + the whole-section
+run, plus the precondition this session's own fix created.
+
+**Knowledge backfill** (`corpus/ops/platform-alignment.md`, this milestone's `iteration_protocol_ref`),
+from iter-267 — commit `68329a3`:
+
+> **A disjunction is a FRAMING until something makes it an ENUMERATION.** iter-261 named two candidate
+> causes and chose neither; iter-267 measured both and **refuted both**, so the fault was somewhere the
+> list never mentioned. The failure is not the wrong guess, it is the **silent quantifier** — and it is
+> invisible precisely because the not-guessing half is so obviously disciplined. A candidate list is
+> either *derived* (name the derivation, state its reach — then "neither" is a real result) or *thought
+> of* (then it needs an explicit residual, even one as crude as *"or something else entirely"*).
+
+The asymmetry it closes is worth stating: this milestone fences enumerations of **things** in both
+directions with half a dozen guards, and enumerations of **possible causes** with nothing. **⚠️ The rule
+is recorded as protocol and is NOT fenced — at the grain of its claim it is not fenceable**, since a
+guard flagging *"two options and a conclusion"* would fire on every correct binary decision in the
+corpus. That limit is written into the section itself rather than left for a reader to discover.
+
+It went into the protocol doc because it existed only in **iter-267's `progress.md`** — a closed iter's
+dated record, which the next iter does not read. That is the whole reason the section exists.
+
+### The fresh-checkout precondition THIS session's own fix created (`1bb9d16`)
+
+Pass 66's repair — assertion D exits 2 rather than 0 when it cannot run — is correct, **and it moved two
+arms into the fresh-checkout-hostile class iters 249–255 drove from 29 to 0.** Before it,
+`test_the_live_corpus_is_green` passed on any box; after it, the same test reads *could-not-check* as a
+**corpus failure**, which is the precise inversion `CLONE_SET_REASON` exists to name.
+
+Declared at the moment the hostility was introduced, with a REASON naming what to provision (the
+`D-M257x-249-2` shape — *skip beats fail*), rather than left for the watcher. **Harden pass 65 routed
+`ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` on exactly the finding that the
+class's ratchet watches the REPAIR and provably cannot see a brand-new hostile test.** A pass that adds
+one and waits to be caught by the instrument it just proved blind has understood neither half.
+
+### The whole-section run — 2,212 passed · 4 failed · 3 skipped, 39 m 10 s
+
+Started 17:25:42Z, finished 18:04:52Z. Against pass 65's **2,191 passed / 0 failed / 3 skipped** in
+37 m 14 s. **Every one of the four is the fence family working as specified, and THREE were caused by
+this pass's own additions** — which is iter-269's *"a new member is not tested by the tests it ships
+with"* applying to a harden pass rather than to an iter. Fixed at `e137cc9` (rext) + `a9d3e10` (corpus):
+
+1. **`_MEASURED_NOUNS` / `_NOT_NOUNS` — `its`.** A number followed by `its` in this pass's own prose,
+   in neither list. **Classified rather than reworded around**: a **possessive pronoun**, the first
+   non-verb/non-noun part of speech the list has taken, and — unlike `series`/`iters`, excluded for what
+   they would do to one construction — excluded **categorically**. Surfaced by the residual arm on a
+   whole-section run, never by anyone reading the list: **the eighth consecutive time** the vocabulary's
+   reach has closed on the very sentence that widened it.
+2. **`claim_census_guard`'s basename-share docstring — BOTH denominators moved**, and the pass was
+   caught by that docstring's own warning (*"a test that fails early hides what it has not yet
+   checked"*) **one line below where it is written**: the distinct grain was repaired 706 → 707, the arm
+   failed **again** on the pair grain 981 → 982, and only then was the second visible. The numerators did
+   not move, so this is growth in the citation population, not drift.
+3. **The ceiling-prose sub-fence, TWICE, from opposite directions.** First the COMMENT block handed off
+   **235** while the constant read **236** — *the identical defect iter-269 had just fixed in the same
+   block*, because re-pinning the constant and updating the sentence are two steps and **only the first
+   is forced by a failing test**. Then, once the DOCSTRING reason was written, its worked example
+   `981→982` became the block's **last arrow** and the handoff read 982. **New rule recorded in the
+   block: the handoff arrow must be the last one, so nothing that is not the ceiling may be written as
+   an arrow after it** — this pass's worked denominators are now spelled as words for that reason.
+4. **NOT this pass's — a real find in the hardened range.**
+   `platform-migration-status.md:188` cites `secrets-spec.md` for hyper-studio's `.env.example` borrow.
+   The anchor said **`:344`**; **iters 262–269 added 26 lines to that file and pushed the site to
+   `:370`**, while `:344` is now a sentence about the waived class carrying no `.env.example` at all.
+   **Read off the file, not derived by adding 26** — the arithmetic happens to agree, and the guard
+   exists because nobody should trust that it will. Only the live corpus doc was re-pointed; the
+   `knowledge/` hits are dated statements by closed iters.
+
+> **⚠️ THREE COMMITS ARE OUTSIDE THAT RUN'S COLLECTED TREE**, stated rather than smoothed over. pytest
+> imports at collection, so the run reflects the tree at **17:25:42Z**. `1bb9d16` (17:33), `e137cc9` and
+> `a9d3e10` all landed after it. The five affected modules were therefore re-run at current HEAD —
+> **243 passed** — and the two this pass authored were run **3× consecutive, 83 passed each**.
+
+**Ratchets:** `DOCSTRING` 239 → **240**; `COMMENT` **net ZERO** (up one for the docstring reason, down
+one for spelling its arrows as words); `TEST_MODULE` **653**, unchanged. All three at **slack 0**. The
+block now states the **coupling** behind the repeated two-pass convergence: the two ceilings share this
+file, so *every reason written for one is counted by the other*.
+
+**Cost of the new fail-closed arm, measured:** `stamps_on_direct_execution` over **35 members** costs
+**168 ms**, inside a `reconcile()` of 349 ms, against a family run measured in minutes. CONTENDED.
+
+**VERIFICATION.** pytest 8.4.2 / CPython 3.9.6 (`/usr/bin/python3`), go1.26.5 darwin/arm64.
+
+| scope | result |
+|---|---|
+| `stack-core` whole section | **2,212 passed · 4 failed · 3 skipped** (2,350 s) → all 4 repaired |
+| the 5 modules the repairs touched, at current HEAD | **243 passed** (79 s) |
+| the 2 modules this pass authored, **3× consecutive** | **83 passed** each (26.5 / 26.1 / 25.8 s) |
+| `stack-secrets` (Go), **3× consecutive** `-count=1` | **ok** each |
+| `go vet ./provision/` | rc=0 |
+| `guard_family --repo-root . --platform stack-demo/platform` | **30 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+
+**The family grew by one and that is the enrolment landing:** pass 65 recorded **29 GREEN / 5 not-run**;
+it now reads **30 GREEN / 5 not-run**, the extra member being iter-265's guard, which was on disk and
+unselectable for four iters.
+
+**Flakes stabilized:** none surfaced. **Timing is CONTENDED and is not a baseline** — 39 m 10 s against
+pass 65's 37 m 14 s for the same section, on a host carrying permanent third-party load; the same
+83-test set varied 25.8 s → 26.5 s between flake-gate repetitions.
+
+**NOT COVERED, stated rather than implied:**
+* The **TypeScript** suites remain enumerated and never executed; no live stack was brought up, so gate
+  clause 1 is untouched by this pass. `demo-1` and `demo-2` were not stopped, restarted or re-seeded.
+* The **mutation battery** was not executed (it mutates source in place, and a whole-section run was in
+  flight for most of this pass).
+* `guard_family` reports **30 of 35** members; **5 are NOT-RUN** for want of `--range`/`--ledger`, and
+  the runner says so itself. That is not a whole-family green.
+* The other rext sections (`demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`) were **not**
+  re-run: this session touched `stack-core` and `stack-secrets` only, and both were run in full.
+
+**Routes carried forward:**
+- `ROUTE-M257x-h68-rext-hardcodes-3-more-decommissioned-consumer-lists` → **NEW, and the highest-value
+  item this pass produced.** `INJECT_CANDIDATES`, `INJECTED`, `REUSE_DEV` — and `derive_inject_svcs`
+  **fails open** to the unfiltered list, so a failed derivation injects two decommissioned services.
+  Pinned as a characterisation with a disclosed reach (population 4, graded 3). Needs a tag + pin bump.
+- `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` → **still open, and re-confirmed a third time.**
+- `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` → **still open, and this pass paid
+  its cost in cash**: it *added* a member to the class, and only knew because it wrote the guard itself.
+- `ROUTE-M257x-h62-live-markdown-refragmented`, `ROUTE-M257x-h59-range-anchors-are-ungraded` → open.
+- `FIX-M257x-265-prose-deletion-instructions-are-out-of-D-reach` → open (iter-265's own).
+
+**Stop condition:** cap reached without stabilization — three passes, **10 defects fixed inline**
+(3 + 3 + 4), two enrolment surfaces now fail-closed instead of one, one safety property promoted from a
+comment to an assertion, three literal ratchets re-pinned across five convergence rounds, and the pass
+**caught three defects of its own making** before closing. Per the user's standing ruling the routes
+above are recorded and NOT met with new machinery; the **seventeenth** cap-without-stabilization in this
+milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59, 62, 65, 68).
