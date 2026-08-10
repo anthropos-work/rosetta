@@ -1,0 +1,2 @@
+/Users/marco/workspace/anthropos/rosetta/stack-dev/studio-desk                                  795a411d [main]
+/Users/marco/workspace/anthropos/rosetta/stack-dev/.worktrees/studio-desk-feat-stack-migration  411a3c15 [release/3.2-full-frame]

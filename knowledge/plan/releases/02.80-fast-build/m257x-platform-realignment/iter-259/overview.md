@@ -2,8 +2,9 @@
 iter: 259
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T14:12:42Z
+closed: 2026-08-10T14:15:20Z
 ---
 
 # iter-259 — the DEV half: can it be built here at all, and at whose expense?
