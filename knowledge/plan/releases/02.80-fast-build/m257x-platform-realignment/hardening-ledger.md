@@ -5533,3 +5533,95 @@ section is otherwise read as a contradiction rather than as two instruments with
 > Per the user's standing ruling the two routes are recorded and NOT met with new machinery; the
 > **fourteenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50,
 > 53, 56, 59).
+
+## Pass 60 — 2026-08-10 — incremental
+
+**Iters hardened this pass:** iter-239 … iter-248 (first pass over the batch).
+
+**Tiks covered since prior pass:** 10.
+
+**Scope manifest.** 20 `rosetta-extensions` files (5 net-new guards — `skill_invocation_guard`,
+`toolchain_floor_guard`, `rext_path_guard`, `fence_command_guard`, `env_absence_guard`; 3 modified —
+`platform_alignment_guard`, `guard_family`, `anchor_construct_guard`; 1 Go working-stack fix —
+`stack-seeding/cmd/stackseed/main.go`) + 10 corpus files, across 30 commits (`907cbc3..8a9b321`).
+`rext` `17e0795..7d75c52`, 3,324 insertions. No iter declares an `iter_shape`; the batch reads as 9
+tooling-iters + 1 production fix, so dimensions 1 (test depth) and 5 (input fuzzing) carry the weight.
+
+**Bugs surfaced + fixed inline: 2.** Both are the same defect in two iters, and it is the defect this
+milestone keeps re-finding: **a fence whose denominator is drawn around the spelling that happened to be
+in front of the iter that wrote it.**
+
+**(1) `skill_invocation_guard` graded FENCED lines; the corpus writes invocations in PROSE**
+(`rext` `cca7938`, corpus `c61c2c5`). iter-239's headline was **8 of 8 target-bearing invocations
+wrong**. It repaired those 8 and shipped a fence scoped to fenced blocks. Measured on the tree it
+shipped: **14 inline backticked invocations name a target for one of the 3 slot skills, and 12 disagree
+with that skill's own contract** — 10 a bare `N`/`1`, 2 inverting the order — while the fenced arm read
+a confident green. *The repair went to the instances, not to the class* — which is the pathology
+`fence_command_guard`'s own docstring names one file over, committed six iters later.
+
+> **The control that settles the obvious objection.** *Is a bare `N` inline just a placeholder
+> convention?* No: **2 inline sites already spelled it qualified** — `.claude/skills/dev-up/reference.md:146`
+> (`/stack-snapshot dev-N …`) and `corpus/ops/demo/tailscale-serve.md:252` (`/stack-secrets demo-1 …`).
+> The corpus is inconsistent inline, not conventional.
+
+Three of the 12 are worth naming rather than counting:
+
+| site | what it is |
+|---|---|
+| `.claude/skills/stack-snapshot/SKILL.md:32` | **the contract document.** The skill's own flow line — the one iter-239 *quoted as evidence* for target-then-verb — while its target was spelled `N`. The line carries four invocations and a bare `N` is **right for two** (`/dev-up N`, `/demo-up N` declare `[N]`) and **wrong for two**. That is iter-239's own `P-239-5` refutation, sitting in the document that declares the split |
+| `corpus/ops/demo/recipe-enterprise-onboarding.md:73` | a **literal `/stack-seed 1`**, not a placeholder. `dev-1` and `demo-1` are both real stacks. iter-239 repaired the identical shape in the sibling `recipe-skill-progression.md` and missed this one |
+| `corpus/ops/demo/recipe-snapshot-world.md:38` | the document whose `:28` states replay works on `dev-N\|demo-N`. iter-239 **recorded this document's `:28`-vs-`:44` self-contradiction** and repaired `:44` only |
+
+Arm D now grades both populations, tagged by surface (`(inline, in prose)`). **Arm A deliberately does
+NOT reach inline text** and the refusal is tested: `` `/profile` ``, `` `/home` ``,
+`` `/sim/<slug>/result/<sessionId>` `` are backticked slash-tokens and none is an invocation — that is
+the **152-URL-path instrument** the guard's own denominator section measures. Arm D cannot reach them
+because it never asks *"is this a skill?"*, only *"given that this IS one of the 3 slot skills, how is
+its target spelled?"*.
+
+**(2) `rext_path_guard` excluded the most EXPLICIT spelling of a rext path** — the one that names the
+repo outright: `.agentspace/rosetta-extensions/…`, `stack-dev/rosetta-extensions/…`. iter-244's
+tail-match boundary (*"a path preceded by any path segment is not a reference to rext"*) was written
+against `app/knowledge/…` and swept this up by accident. Measured: **27 occurrences of 25 distinct
+paths, 16 of them in NO other spelling** — including two operator-facing
+`stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh` sites, in `setup_guide.md` and the `/dev-up`
+skill. Reach **301 → 329** occurrences, **145 → 161** distinct. **All 16 resolve**, so the gap hid no
+live defect on this tree — it would have hidden the next one silently. The allowance is keyed on the
+**literal `rosetta-extensions` token**, never on "any leading segment": `some-repo/stack-core/nope.py`
+and `.claude/skills/stack-secrets/SKILL.md` stay excluded and a test pins that, because widening it
+further would re-open the class iter-244 measured at **23 false findings**.
+
+**Tests added: 8** (`stack-core`, Python/unittest-under-pytest) — 5 on `skill_invocation_guard` (inline
+bare-`N`, inline verb-first, inline qualified accepted, fenced-is-not-double-counted, and the arm-A
+refusal over URL paths), 3 on `rext_path_guard` (prefixed-path RED, prefixed-path reverts GREEN, and
+the token-keyed boundary preservation). The `test_rext_path_guard.py` file goes 17 → 20 and
+`test_skill_invocation_guard.py` 17 → 22; both files green, **42 passed** together.
+
+**Mutation control on this pass's OWN new arms** (`§5`, and pass 54's caution that a new arm can be a
+self-matching identity): each new test was re-run against the **pre-fix guards at `7d75c52`** in a temp
+checkout. **4 of 5** inline tests and **2 of 3** reach tests go RED there and GREEN here. The 2 that
+pass on both are the two that assert an **exclusion** both versions honour — recorded as passing-on-both
+rather than counted as controls.
+
+**Answer key repartitioned rather than re-baselined.** iter-239's `test_answer_key_…_eight_findings`
+reconstructs the whole live tree at `2a0a939` and asserted a flat 8. The widened arm reports **15**
+there. The assertion is now **partitioned by surface** — 8 fenced (5 bare + 3 verb, iter-239's published
+number, **unchanged**) and 7 inline (5 bare + 2 verb). **7, not 12**, and the difference is a property
+of that reconstruction, not a disagreement: the test overwrites `.claude/skills/*/SKILL.md` from the
+LIVE tree, so the 5 inline defects in `demo-up/SKILL.md` (3) and `stack-snapshot/SKILL.md` (2) arrive
+already repaired. **7 + 5 = 12**, and the test says so in place rather than leaving two numbers in one
+ledger to look like a contradiction.
+
+**Knowledge backfill:** one rule, stated where it is enforced (both guard docstrings) rather than only
+here. *A fence inherits the reach of the iter that wrote it.* An iter censuses the surface it can see,
+repairs what it finds, and then draws the fence around **that same selector** — so the fence is green by
+construction over exactly the population already repaired, and blind to the rest of the class by the
+same construction. Both of this pass's findings have that shape, three iters apart, and neither guard
+was wrong about anything it graded. **Grade a new fence on its DENOMINATOR before its verdict.**
+
+**Flakes stabilized:** none surfaced.
+
+**Stop condition:** continue-to-next-pass — the dimension scan covered 2 of the 5 net-new guards; the 3
+modified guards (`platform_alignment_guard`, `guard_family`, `anchor_construct_guard`), the remaining
+new ones (`toolchain_floor_guard`, `fence_command_guard`, `env_absence_guard`) and the batch's single
+Go production fix (`--reload-sentinel`, iter-243) are unscanned.
