@@ -91,7 +91,8 @@ into a skip (`PR-5` refuted).
 **Type:** tik
 **Status:** closed-fixed-partial
 **Gate:** NOT MET
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: y — Outcome: exit-7
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: continue
+*(Corrected in place before the next iter opened. This first read `budget-exhausted: y / exit-7`, and it was wrong: 56 minutes had elapsed across two tiks. "This iter felt large" is the named anti-pattern, not an exit condition — the same self-audit this milestone applies to its instruments applies to its own grading.)*
 **Decisions:** `D-M257x-254-1` (the excusing predicate lives with the censusing one) · `D-M257x-254-2`
 (two preconditions, and the second was written down only inside a failure message) · `D-M257x-254-3`
 (`PR-5` refuted by my own depth bug — a test that stops running looks like a test that passed) ·
