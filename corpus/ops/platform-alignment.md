@@ -3333,6 +3333,39 @@ repos is not, and its verifiability likewise depends on which box asks.
 The repair is disclosure, not a bigger clone set: cloning six frozen repos to make a number look better
 would be measuring the memory again (§8's fetch rule, one level out).
 
+### A "cold" cycle is only as cold as what the TEARDOWN actually removes (M257x iter-271)
+
+The sibling of the rule above, on the lifecycle rather than the fence: the clone set decides a fence's
+reach, and it also decides **which code paths a cold cycle can possibly execute.**
+
+`demo-down --purge` is the strongest teardown the tooling has, and the gate's three-consecutive-cycles
+clause is built on it. It removes the stack's containers, network, volumes, data and images. **It does not
+remove the clone set** — `stack-demo/app`, `stack-demo/cms` and their pulled `studio/` trees survive every
+purge. So an acquisition step that is *idempotent by design* prints
+
+```
+[ensure-clones] app: studio/ already populated — reusing (idempotent)
+```
+
+and **its fetch arm never runs**, on any number of consecutive cycles.
+
+That matters because the acquisition arm is exactly the kind of code this milestone keeps finding broken:
+M257 iter-03 found `app`/studio had **no acquisition path at all**, broken for four days and *"invisible
+because nobody ran a cold cycle"* — and iter-270 rewrote the same code to stop sourcing from a
+decommissioned clone. Three green cycles say nothing about either repair. Reporting *"the cold cycle
+proves the studio fix"* would be the scoped-green error (r60/66) with an extra step.
+
+**The rule:** before claiming a cold cycle exercised a path, ask **what the teardown removed** and check
+the log for the reuse-arm line. Where the arm is short-circuited, grade the function **directly, with its
+precondition removed** — a missing input and a vacuous one are two different absences and both must go
+RED. iter-271 graded `studio_consumer_names` that way (rc 1 + a diagnosis on a missing `repos.yml`, rc 1 on
+one declaring no repo, the four live repos when present) because the bring-up could not.
+
+**Do not "fix" this by purging harder.** A teardown that deleted the clone set would turn every cycle into
+a full re-clone of the platform — minutes of network for a path that changes rarely — and the gate would
+measure GitHub's availability as much as ours. The purge boundary is correct; what was missing is saying
+where it falls. State the scope with the green.
+
 ### Before comparing a DECLARED number to an OBSERVED one, ask what the declared number is a number OF (M257x iter-229)
 
 The sibling of the fetch rule above, on the other operand. That one is about a reference that is stale;

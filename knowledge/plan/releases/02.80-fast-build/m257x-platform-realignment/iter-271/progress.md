@@ -132,3 +132,89 @@ a log line rather than an `rc`. Cycles 2–4 are therefore run through a fixed r
 (`.agentspace/scratch/work-m257x/iter271/cycle.sh`) that records `DOWN_RC`/`UP_RC` and real UTC timestamps
 around both halves — giving **three consecutive fully-instrumented cycles**, with cycle 1 as corroboration
 rather than as one of the three.
+
+## Phase 4 — cycles 2, 3, 4 (fully instrumented)
+
+Driven by the fixed runner, back-to-back with no gap — each cycle's teardown starts at the same second the
+previous cycle's bring-up ended. No flags, no retries, no intervention.
+
+| cycle | `DOWN_RC` | teardown | `UP_RC` | bring-up | total | `autoverify` |
+|---|---|---|---|---|---|---|
+| 1 (corroborating) | 0 | 20:02:02→20:02:18 (16 s) | *not captured* | 20:02:22→20:08:56 (~394 s) | ~414 s | `green:true` · `warnings:0` · ts 20:08:53Z |
+| **2** | **0** | 20:09:46→20:10:00 (14 s) | **0** | 20:10:00→20:16:18 (378 s) | **392 s** | `green:true` · `warnings:0` · ts 20:16:18Z |
+| **3** | **0** | 20:16:18→20:16:28 (10 s) | **0** | 20:16:28→20:23:07 (399 s) | **409 s** | `green:true` · `warnings:0` · ts 20:23:07Z |
+| **4** | **0** | 20:23:07→20:23:19 (12 s) | **0** | 20:23:19→20:31:00 (461 s) | **473 s** | `green:true` · `warnings:0` · ts 20:31:00Z |
+
+**Every duration is CONTENDED and none is a baseline** — shared 12-CPU / 24 GiB host, load 2.66–4.35,
+third-party processes outside our control. The 392→473 s spread across three identical invocations is
+itself the reason: a boolean survives contention, a timing does not. `build-budget.md`'s `billion` figures
+(666.29 s p50, the 46.2 % export/unpack leg) **do not transfer** — this host is arm64/overlayfs and pays no
+unpack leg.
+
+**`demo-1` untouched throughout** — 11 containers, `Up 4 days`, asserted after every cycle. It is not ours.
+
+### Gate clause 1 — RE-ESTABLISHED at the shipping pin
+
+**Three consecutive cycles (2, 3, 4), `DOWN_RC=0` and `UP_RC=0` on both halves, `autoverify green:true /
+warnings:0` on all three**, at rext `fast-build-m257x-iter-270` — the pin that will ship. Cycle 1 is a
+fourth green, held out of the three only because its `rc` was not captured.
+
+This does **not** widen the clause; it re-earns it. iter-260's three cycles were run at
+`fast-build-m257x-iter-101`, which iter-270 superseded by 206 commits — so the clause was, briefly, a claim
+about tooling a cold bring-up no longer consumes.
+
+## Phase 5 — pre-registrations graded
+
+| PR | verdict | evidence |
+|---|---|---|
+| **PR-1** — green first attempt | **HOLDS** | cycle 1 `green:true / warnings:0`, first attempt, no retry, no intervention |
+| **PR-2** — new studio acquisition runs, no longer sources from `cms` | **HOLDS as stated — and the statement is weaker than it reads** | `cms/studio` had **0** files written in the cycle window; `app/studio/requirements.txt` present. But the **fetch arm never ran** (idempotent reuse), so the cycle could not have graded the repair either way. Graded directly instead — see the three-arm table above |
+| **PR-3** — fail-CLOSED arm never fires; no `cms`/`jobsimulation` injected | **HOLDS** | identical line in **4 of 4** cycles: `injecting: app (derived from the platform compose's build set: sentinel app)`. **0** occurrences of either `die` message across all four logs |
+| **PR-4** — no decommissioned name reaches the override | **HOLDS** | 11 service keys, ∩ decommissioned set = **∅** — and the 11 keys are **exactly** the 11 running containers |
+| **PR-5** — the three cycles are not independent draws | **HOLDS** | 4 green / 0 red. No split |
+
+Five stated, five held — which is worth naming as a weak result in one respect: **a pre-registration set
+that all holds discriminated nothing.** The two findings this iter actually produced (the purge boundary,
+and cycle 1's uncaptured `rc`) came from *watching the run*, not from the predictions. The predictions were
+still worth sealing — they are what makes "it went green" checkable — but the yield was in the margins.
+
+## Close — 2026-08-10
+
+**Outcome:** Gate clause 1 is **re-established at the shipping pin** — 3 consecutive fully-instrumented
+`down --purge` + `up` cycles, `rc=0` on both halves, `autoverify green:true / warnings:0`, plus a fourth
+green. The repairs iter-270 shipped hold under a cold run. The iter's real yield is two scope corrections:
+a purge cycle **cannot** exercise the studio acquisition arm, and `warnings: 0` grades the probe registry's
+set, not the stack.
+**Type:** tik
+**Status:** closed-fixed
+**Gate:** NOT MET
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: continue
+
+**Decisions:** `D-M257x-271-1` (clause 1 is re-earned, not widened — and what "cold" excludes),
+`D-M257x-271-2` (a detached launch costs an `rc`; instrument the runner, not the operator).
+
+**Side-deliverables:** none. The protocol-doc section is the iter's own Lessons line generalized, committed
+with it as the protocol-evolution rule requires — not a side-fix.
+
+**Routes carried forward:**
+- `FIX-M257x-267-capture-the-succession-RESPONSE` — **gate clause 2**, and now unblocked twice over: the
+  frozen pin is spent and there is a green stack up to run against. The natural next iter.
+- Gate **clause 5** — the documentation-accuracy reading, unmeasured since iter-131 (`P = 29 / N = 47`).
+- `FIX-M257x-269-force-append-grows-the-demo-env-without-bound` — rides a later tag.
+- `ROUTE-M257x-270-directus-consumer-cms-key-outlived-its-rollback-path`.
+- `FIX-M257x-266-manual-path-drops-gates-the-automated-path-enforces`,
+  `FIX-M257x-265-prose-deletion-instructions-are-out-of-D-reach`,
+  `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere`,
+  `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` → open.
+- `ROUTE-M257x-270-prove-the-spent-pin-cold` → **CLOSED** by this iter.
+
+**Lessons:**
+1. **A cold cycle is only as cold as what the teardown removes.** Generalized into
+   `corpus/ops/platform-alignment.md` §8, adjacent to iter-241's clone-set rule, because it is the same
+   instrument seen from the lifecycle side.
+2. **Instrument the runner, not the operator.** Cycle 1 was launched detached to keep the session
+   responsive and lost its exit code — half of `READY`'s definition — for no gain. A three-line runner
+   recovered it for cycles 2–4. Convenience at the call site is where evidence quietly goes missing.
+3. **Spending a control invalidates what was proven under it.** iter-270 spent the frozen pin knowingly;
+   the cost was one iter of re-proving, and it was worth naming *in the same close that spent it* so the
+   next run started by paying it rather than discovering it.
