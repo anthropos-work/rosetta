@@ -33,8 +33,16 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `docker --version && docker compose version`
 3.  **Visual Studio Code**: [Install VS Code](https://code.visualstudio.com/).
     *   *Verification*: `code --version`
-4.  **Go** (v1.23+): `brew install go`
+4.  **Go** (**v1.25+**): `brew install go`
     *   *Verification*: `go version`.
+    *   **Why 1.25 and not 1.23** (corrected M257x iter-240 — this line read `v1.23+` while
+        [the remote-VM block below](#) said `Go 1.25.x`, in the same document): the host Go builds the
+        **rext tools**, and all six `rosetta-extensions` sections with a `go.mod` declare `go 1.25.0` +
+        `toolchain go1.25.12`. On Go 1.23 the build does not simply work — it either downloads a 1.25
+        toolchain (default `GOTOOLCHAIN=auto`, so it needs network) or hard-fails with
+        `go.mod requires go >= 1.25.0` under `GOTOOLCHAIN=local`. **`app` and `sentinel` do not constrain
+        this number** — they declare `go 1.26.x` but build *inside Docker* on `golang:1.26-bookworm`, so
+        the host never compiles them.
 5.  **Node.js** (v24+ required) & **pnpm**:
     *   `next-web-app/package.json` declares `"engines": { "node": ">=24.0.0" }`. Older Node versions will fail `pnpm install` with `WARN  Unsupported engine`.
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
@@ -83,7 +91,9 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
         ```
     *   *Verification*: `docker ps`.
 3.  **Visual Studio Code**: [Install VS Code](https://code.visualstudio.com/docs/setup/linux).
-4.  **Go** (v1.23+):
+4.  **Go** (**v1.25+** — same derivation as the macOS block above: the rext sections declare
+    `go 1.25.0` + `toolchain go1.25.12` and run on the host; `app`/`sentinel` build inside Docker and do
+    not constrain it):
     *   [Official Install](https://go.dev/doc/install) is recommended to get the latest version, as apt repos are often outdated.
     *   *Verification*: `go version`.
 5.  **Node.js** (v24+ required) & **pnpm**:
