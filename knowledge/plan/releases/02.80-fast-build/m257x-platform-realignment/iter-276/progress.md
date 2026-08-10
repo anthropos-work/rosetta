@@ -151,7 +151,9 @@ role reads 1 and that is the spec).
 **Side-deliverables:** none.
 
 **Routes carried forward:**
-- **`FIX-M257x-275-...-exactly-one-peer` is CLOSED** — landed, proven offline and live.
+- **`FIX-M257x-275-bound-hero-role-occupancy-to-exactly-one-peer` is CLOSED** — landed, proven offline
+  and live. (Written in full deliberately: iter-277's census caught the elided form `FIX-M257x-275-…`
+  here as a **truncated stem** that `route_disposition_guard` reads as live backlog — `§5` rule 73.)
 - **Gate clause 5 remains the last open clause**, unmeasured since iter-131 (`P = 29 / N = 47`, a floor).
   iter-277 measures it under `TOK-08`. **This is now the only thing between the milestone and its gate.**
 - Still open, none absorbed into this green: `ROUTE-M257x-274-successor-half-is-uncovered`
