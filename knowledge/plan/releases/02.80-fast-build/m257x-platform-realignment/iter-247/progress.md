@@ -102,7 +102,7 @@ false**; the corpus was right and undefended.
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: y — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: exit-5
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: continue
 **Decisions:** `D-M257x-247-1` (invert the polarity — fence absence, not presence) · `D-M257x-247-2`
 (grade FAMILY globs, not single variables, on the 6-of-12 mis-attachment measurement) · `D-M257x-247-3`
 (a claim must name its own file, and a read-axis claim is a category error) · `D-M257x-247-4` (a bare `no`
