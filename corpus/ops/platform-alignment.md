@@ -5580,3 +5580,45 @@ third worked example: **an instrument that could not run its subject must record
 zero.** iter-191's refusal gate keyed on the wrong unit, iter-195's `go test` on a non-compiling module
 tallying 0 pass / 0 fail, and iter-196's missing Playwright summary line are one defect in three
 costumes. `0 pass / 0 fail` and `could not run` are opposite claims that print almost identically.
+
+### A repair CLOSES ITS MEMBERS, not its class — and the watcher inherits the same limit (M257x harden pass 63)
+
+Iters 249–255 drove the fresh-checkout-hostility class from 29 to 0 by declaring preconditions on 22
+named tests. The ledger recorded **zero**. Pass 63 ran the tool built for it —
+`suite_census.py --fresh-checkout`, a frozen clone pair, 138 modules, live control — and the class was
+**3**: `stack-verify/tests/test_e2e_collection_integrity.py`, which shells out to `npx playwright test
+--list` and, on a clean clone, does not report a missing `node_modules` but reports **that a spec is
+throwing at module scope and the suite has collapsed below its floor**. Both sentences accuse the
+corpus. The module simply was not among the 22.
+
+Nothing was wrong with the repair. The error is in what was concluded from it: **an enumerated repair
+closes the members you enumerated. Only a derived census can tell you whether it closed the class** —
+and a class measured once, at the moment it was closed, is a dated reading, not a property.
+
+The same limit then appeared twice more in the same pass, which is why it is a rule and not an anecdote:
+
+- **The collection fence governed 6 of 11 rext sections.** `_SECTIONS` is enumerated (correctly — a
+  glob would sweep in the vendored platform clones under `demo-stack/stacks/*/clones/**`), and
+  `dev-stack/tests` — 5 modules, **146 tests** — was in neither the list nor any exclusion. Every arm
+  of the file that exists to catch *tests no runner reaches* was itself unable to reach them.
+- **The ratchet written THIS pass to watch the fresh-checkout repair had the defect it was written to
+  prevent.** It globbed `stack-core/tests/` and matched only `if not <pred>(...)` + `self.skipTest`.
+  The twenty-first declaration site, added by the same pass, lives in `stack-verify` and is spelled
+  `raise SkipTest(...)` inside a `setUpClass` — where `self` does not exist. It would have reported
+  "20, unchanged" while the repair grew underneath it.
+
+This is pass 62's *a fence inherits the reach of the iter that wrote it* one level up, and the sharper
+form is the test to apply: **ask whether the narrowness is a property of the CLAIM or of where its
+author was standing.** A fence written from inside `stack-core` will see `stack-core`. A repair driven
+by a list of 22 failures will close 22 failures. Neither is wrong; both are smaller than the sentence
+that gets written about them.
+
+The practical consequence for this milestone's cadence: a class-closure claim needs **a derived
+denominator and a re-measurement**, and the re-measurement must be cheap enough to actually happen.
+That is why pass 63's watcher does not re-run the census (which freezes a clone pair and runs the whole
+suite twice, so nobody runs it) but ratchets **the repair** — pure AST, every invocation, failing in the
+two directions that matter: a declaration deleted, and a declaration that keeps its guard but loses its
+`REASON`. The second is the one `D-M257x-249-2` is actually about, because a bare `skipTest("no clone
+set")` still skips — the suite stays green, the census still reads zero, and the operator loses the one
+sentence naming what to provision. The repair degrades into its own cargo cult and every automated
+reading says fine.
