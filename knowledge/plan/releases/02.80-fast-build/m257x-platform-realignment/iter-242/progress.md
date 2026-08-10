@@ -74,7 +74,7 @@ defect was the runner silently substituting a symlinked clone set, which is now 
 **Type:** tik
 **Status:** closed-fixed
 **Gate:** NOT MET
-**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: y — Outcome: exit-7
+**Phase 5 grading:** (1) gate-met: n — (2) triggered-tok: n — (3) re-scope: n — (4) user-blocker: n — (5) cap-reached: n — (6) protocol-stop: n — (7) budget-exhausted: n — Outcome: continue
 **Decisions:** `D-M257x-242-1` (the substitution note is non-fatal, because symlinked workspaces are
 legitimate and the defect was the silence) · `D-M257x-242-2` (`service_registry_guard`'s CANNOT-RUN on a
 restricted set is CORRECT behaviour and is not "fixed").
