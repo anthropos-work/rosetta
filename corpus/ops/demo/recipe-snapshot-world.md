@@ -35,7 +35,7 @@ replay **skips with `stacksnap` exit 4** and the taxonomy surface lands as norma
 prod — see the
 [known-state](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16). Note
 **both** `/dev-up N` (M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the
-auto-set-dress pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a
+auto-set-dress pass) — you only call `/stack-snapshot demo-N replay` explicitly to **re-run** it (e.g. after filling a
 cold cache — [`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
 auto-pass skipped. The snapshot is **stack-global** public reference data — replay it once per stack,
 independent of which org you then `/stack-seed`.

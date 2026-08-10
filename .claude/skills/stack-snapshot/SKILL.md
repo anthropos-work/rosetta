@@ -29,7 +29,8 @@ per-stack), `capture` (the rare prod-read maintenance op), `status` (list the ca
 > the cache with `stacksnap status` rather than assuming either state.)
 
 ## Where this sits in the flow
-`/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,
+`/dev-up N` or `/demo-up N` → **`/stack-snapshot demo-N replay`** (name the stack you brought up — `dev-N`
+or `demo-N`; the target comes FIRST, the verb second) → `/stack-seed demo-N` → log in. (For a `dev-N`,
 `/dev-up` already runs this set-dress pass by default — use this skill to re-run or refresh it.) The snapshot
 is **stack-global** public reference data (independent of which org you seed), it is **optional** (skip it for
 a quick structural-only world — the seeder degrades gracefully to an empty catalog + free content refs), and

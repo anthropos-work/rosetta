@@ -70,5 +70,5 @@ org looks like in Anthropos" demo.
 
 ## Tuning the org
 Copy a preset and edit it (it's a `stack.seed.yaml`): `org.name`, `size`, `role_mix`/`tier_mix`,
-`activity.months` / `activity.pass_rate`. Re-seed with `/stack-seed 1 --seed my.seed.yaml` (run `--reset` first
+`activity.months` / `activity.pass_rate`. Re-seed with `/stack-seed demo-1 --seed my.seed.yaml` (run `--reset` first
 to clear the prior data). Schema reference: [`../seeding-spec.md`](../seeding-spec.md).

@@ -212,10 +212,10 @@ on the demo's offset **`:7700+`** port to walk the seeded stories. (`DEMO_NO_STO
 (M31: minted via `mkcert` at bring-up), so a fresh browser renders the signed-in app with **no proceed-anyway**
 — it falls back to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`
 (see [`corpus/ops/demo/recipe-browser-login.md`](../../../corpus/ops/demo/recipe-browser-login.md) §B). To customize: re-run the generic stack-ops
-(they accept `demo-N` or `dev-N`) — `/stack-snapshot N` (re-replay), `/stack-seed N --preset mid-500` (a fuller
+(they accept `demo-N` or `dev-N`) — `/stack-snapshot demo-N` (re-replay), `/stack-seed demo-N --preset mid-500` (a fuller
 org / a custom `stack.seed.yaml`). List live stacks with `/stack-list`. If the catalog came up empty (a cold
 snapshot cache), fill it once per [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md),
-then re-run `/stack-snapshot N`.
+then re-run `/stack-snapshot demo-N`.
 
 ## Related skills
 

@@ -7,7 +7,7 @@ real Clerk — a compose network alias, *not* a cert-redirect; see §A's retract
 walk-through** (the frontend points at the fake FAPI via a minted publishable key). **TLS belongs to the
 browser-facing FAPI seam only** (§B step 2), not to the BAPI one.
 
-**Prerequisite.** A stack up (`/demo-up N`) and seeded (`/stack-seed N`) — the demo identity
+**Prerequisite.** A stack up (`/demo-up N`) and seeded (`/stack-seed demo-N`) — the demo identity
 `user_clerkenstein` must exist as a member (otherwise login authenticates but org-gated routes 403). See
 [`recipe-enterprise-onboarding.md`](recipe-enterprise-onboarding.md).
 
