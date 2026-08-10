@@ -146,3 +146,65 @@ its substance held). Nothing under `stack-dev/` was written.
 3. **An escalation is a deliverable when the alternatives are all irreversible or unsanctioned.** The
    three-fate rule asks whether the item can land now; here the honest answer was no, and inventing a
    fourth path to avoid asking would have been the failure, not the diligence.
+
+---
+
+## ⚠️ RETRACTION — appended by iter-260, 2026-08-10
+
+**`367` is WRONG, and it was wrong when it was written — not overtaken by events.** So is the `803`
+that a later orchestrator brief carried, and so is the reading both were used to support.
+
+### What the instrument actually measured
+
+iter-259 ran `git log --all --not --remotes` in `stack-dev/studio-desk` and published the result as
+*"commits on **no remote ref**."* Measured at iter-260:
+
+| | |
+|---|---|
+| `origin/*` remote-tracking refs in that clone | **ZERO** |
+| remote-tracking refs that DO exist | **11, all `bundle/*`** — from `/Users/marco/transfer/studio-desk.bundle` |
+| does the clone hold origin's `main` object `41ee3575`? | **NO** — `git cat-file -e` → *"Not a valid object name"* |
+
+`--not --remotes` therefore subtracted **the bundle and nothing else**. `367` is *"commits not in a local
+courier file"*, published under a heading that says *"no remote ref."* The `803` in the brief is the same
+family — `bundle/main..release/3.2-full-frame`, i.e. ordinary branch divergence from a bundle's `main`.
+
+### What is true, by the one instrument this clone supports
+
+`git ls-remote --heads origin` is a **live read of the remote's tips** and needs no local objects:
+
+> **`refs/heads/release/3.2-full-frame` = `411a3c15` on origin — byte-identical to the local tip and to
+> the active worktree's checkout.** The branch the alarm was about is **published**. Nothing on it is at
+> risk, and no figure of unpushed commits on it was ever defensible.
+
+### And what remains UNMEASURABLE — which is not the same as zero
+
+iter-260 first computed *"0 commits absent from origin"* and **withdrew it before publishing**: the
+anti-vacuity control did not fire (dropping a head from the `--not` set still returned 0), because the
+command was failing outright against shas the clone does not have. Per §9's *a census that returns ZERO
+must prove its instrument*, that zero is void.
+
+**The publication state of the other four local branches cannot be determined from this clone at all** —
+it has no origin objects and no origin remote-tracking refs. `fix/guided-mode` `829a3bd5`,
+`release/3.1-open-frame` `5c2fc53a`, `release/3.0-ground-works` `ad435cb7` (origin carries that *name* at
+a **different** sha, `ddcb3455`) and `main` `795a411d` are **UNMEASURABLE-FROM-HERE**, not *"at risk"* and
+not *"safe"* — the iter-123 `infrastructure` distinction and the iter-244 *cannot-resolve ≠ resolves-to-
+nothing* rule, both already in this milestone's protocol.
+
+### The defective inference, stated so it generalises
+
+> **"Cannot push from here" is not "exists only here."** `pushurl = no-push://demo-clone-never-pushes`
+> proves this clone cannot push. It says nothing about whether the commits reached origin **from
+> somewhere else** — and they had.
+
+This is the milestone's own standing rule (`§8` — *a remote-tracking ref is a CACHE, not a remote*)
+applied to a case it did not yet name. iter-259 graded a **remote** question with **local** refs. Widened
+into the protocol by iter-260.
+
+### What survives
+
+**The conclusion stands; its reason changes.** `stack-dev/` remains off-limits — not because work would
+be lost, but because `stack-dev/studio-desk` sits on `main` @ `795a411d` (2026-07-30) while origin's
+`main` is `41ee3575`. A dev bring-up rooted there would build studio-desk from a **stale** tree, which is
+the exact stale-source failure this milestone exists to eliminate. `D-M257x-259-1`'s escalation was the
+right call on a wrong number.

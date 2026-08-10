@@ -50,3 +50,12 @@ two things and scoring a hold when one is wrong is a prediction that cannot fail
 This is `D-M257x-258-3`'s class arriving **one iter later, in my own grading rather than in my own
 prose** — the convenient reading of my own evidence. The risk it describes is unchanged; only the score
 is. Rule: **write pre-registrations as single claims; if one bundles, grade the bundle down.**
+
+---
+
+**⚠️ CORRECTED by iter-260 (2026-08-10).** The `367 commits on no remote ref` figure above is
+**retracted** — the clone has **zero `origin/*` remote-tracking refs**, so `--not --remotes` subtracted a
+local **bundle** and the number is *"commits not in a courier file."* The active worktree's branch
+`release/3.2-full-frame` @ `411a3c15` **is on origin** (`ls-remote`, exact sha match); nothing on it is at
+risk. The escalation's **conclusion survives on correctness grounds** — local `main` `795a411d` is stale
+against origin `41ee3575`. Full retraction: `iter-259/progress.md` § RETRACTION.

@@ -3198,6 +3198,49 @@ and no guard edited.
 3. **Grade the direction of a new RED.** A guard that reddens after a fetch has not regressed; it has
    *stopped being blind*. The finding belongs to the corpus, dated to the ref that disclosed it.
 
+#### The same rule, one step further: "cannot push from here" is not "exists only here" (M257x iter-260)
+
+The rule above is about a **stale** cache. This is about a cache that is **not of the remote you named** —
+and it cost a milestone-blocking escalation its stated reason.
+
+iter-259 measured another project's clone with `git log --all --not --remotes` and published the result as
+*"**367** commits on **no remote ref**"*, reading it, together with a `pushurl = no-push://...`, as
+*"this work exists only on this machine."* iter-260 re-measured:
+
+| | |
+|---|---|
+| `origin/*` remote-tracking refs in that clone | **ZERO** |
+| refs `--remotes` actually expanded to | **11, all `bundle/*`** — a local `.bundle` courier file |
+| origin's `main` object present locally? | **no** |
+| the branch the alarm was about, by `git ls-remote` | **on origin, exact sha match** |
+
+`--not --remotes` subtracted *whatever remote-tracking refs happen to exist*. There were none for origin,
+so the number measured **"commits not in a local courier file"** under a heading that said *"no remote
+ref."* Both figures the escalation quoted (`367`, and a later `803` from `bundle/main..<branch>`) are
+bundle-relative and neither was ever a push-state measurement.
+
+> **A push URL describes THIS clone's capability, not the commits' history.** `no-push://` proves you
+> cannot push from here. Commits reach a remote from wherever someone pushed them — usually not the box
+> you are standing on.
+
+**Four consequences:**
+
+1. **`--not --remotes` is only a push-state instrument if `origin/*` refs exist and are fresh.** Check that
+   they exist *before* reading the number — `git for-each-ref refs/remotes/` is one command, and a clone
+   whose only remote is a bundle will answer confidently and wrongly.
+2. **`git ls-remote` is the instrument that needs no local objects.** It reads the remote's **tips** live.
+   It cannot tell you about non-tip commits — and that limit is a *third* verdict, not a zero.
+3. **A clone that has never fetched a remote cannot compute reachability against it — that is
+   UNMEASURABLE, not clean.** iter-260 first produced *"0 commits absent from origin"* and withdrew it:
+   the anti-vacuity control did not fire, because the command was erroring against shas the clone does not
+   have, and `2>/dev/null | wc -l` rendered the failure as `0`. §9's *a census that returns ZERO must prove
+   its instrument* caught it; without that control the corrected claim would have been wrong in the
+   opposite direction, which is the worse failure because it reassures.
+4. **When a wrong number is corrected, re-derive the CONCLUSION separately.** Here the conclusion held —
+   `stack-dev/` stays off-limits — but on a *different* ground: the clone's `main` is **stale** against
+   origin, so building from it would ship a five-week-old tree. A conclusion that survives its evidence
+   needs new evidence, not inherited confidence (§5's *re-derive the CORRECTION, not just the anchor*).
+
 ### "Cannot resolve" and "resolves to nothing" are different verdicts — merging them hides the wrong one (M257x iter-244)
 
 A citation guard has three possible outcomes, not two: it **resolves and is good**, it **resolves and is
