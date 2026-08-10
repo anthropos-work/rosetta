@@ -3098,6 +3098,47 @@ and no guard edited.
 3. **Grade the direction of a new RED.** A guard that reddens after a fetch has not regressed; it has
    *stopped being blind*. The finding belongs to the corpus, dated to the ref that disclosed it.
 
+### A fence's REACH is a property of the CLONE SET, and the clone set is not the same on two boxes (M257x iter-241)
+
+The clone set is an **instrument**, and like every instrument in this milestone it was trusted before it
+was measured. `platform_alignment_guard` derives its unclonable set from disk presence —
+`not (clones_root / head).is_dir()` — so *"the repos no stack clones"* is a fact about **the machine that
+ran it**, not about the corpus.
+
+**Measured against the same corpus, on two clone sets, the same afternoon:**
+
+| clone set | citations NOT checked | repos excused | exit |
+|---|---|---|---|
+| this laptop — **13** clones | **11 of 109** | 2 (`db-backup`, `infrastructure`) | **0** |
+| a fresh bring-up's set — **7** clones | **27 of 109** | 7 (+ `cms`, `jobsimulation`, `messenger`, `roadrunner`, `storage`) | **0** |
+
+**Both green.** The guard checked **16 fewer citations** on the fresh box and nothing in its verdict said
+so except a number nobody was comparing.
+
+**Why the two boxes differ, and why the laptop is the anomaly.** `repos.yml` names four repos and its own
+header comment says the frozen-legacy set is *"clone them by hand if you need to read the pre-merge
+source"* — `make init` does not, and `ensure-clones.sh` adds only `ant-academy` and `platform`. The six
+extra clones on a long-lived workspace (`cms`, `graphql-wundergraph`, `jobsimulation`, `messenger`,
+`roadrunner`, `storage`) are **leftovers from before `838d907`**. So the box that has been used the
+longest verifies the most, and a clean machine — the one the exit gate actually describes — verifies the
+least. **Seniority of a workspace reads as coverage.**
+
+**The general rule, and it applies to every guard here, not just this one:**
+
+> A verdict that reports what it did NOT check must report the **denominator** and the **instrument** —
+> here, the citation total and the clone-set roster. A bare *"N were not checked"* is
+> `§5` iter-181's un-denominated coverage claim and `§9` iter-208's NOT-COVERED clause that names a run
+> and gets read as a property, in one sentence.
+
+**And a second, sharper consequence for gate clause 3.** The clause asks for claims *"each cited to
+platform source"* and *"machine-fenced"*. The fence's subject is **one file** — the migration map, 109
+citations. **The corpus cites those same six uncloned-on-a-fresh-box repos 107 times outside it**, and
+nothing grades those at all. The map is fenced; the corpus's wider citation surface into frozen-legacy
+repos is not, and its verifiability likewise depends on which box asks.
+
+The repair is disclosure, not a bigger clone set: cloning six frozen repos to make a number look better
+would be measuring the memory again (§8's fetch rule, one level out).
+
 ### Before comparing a DECLARED number to an OBSERVED one, ask what the declared number is a number OF (M257x iter-229)
 
 The sibling of the fetch rule above, on the other operand. That one is about a reference that is stale;
