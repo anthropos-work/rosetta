@@ -5709,3 +5709,50 @@ two directions that matter: a declaration deleted, and a declaration that keeps 
 set")` still skips — the suite stays green, the census still reads zero, and the operator loses the one
 sentence naming what to provision. The repair degrades into its own cargo cult and every automated
 reading says fine.
+
+### A disjunction is a FRAMING until something makes it an enumeration (M257x harden pass 66)
+
+iter-261 could not explain one failing Playthrough and named two candidate causes — *product change*
+and *seed-contract drift* — choosing neither. That restraint was correct and it is not the part that
+went wrong. iter-267 then measured both, verbatim, against a live stack: all six `GetSuccession`
+sub-queries return rows, no query errors, reader and writer agree on the one rename inside the window.
+**Both candidates are refuted, and the disjunction with them.** The fault is somewhere the list never
+mentioned — above the data layer.
+
+The failure is not the wrong guess; it is the **silent quantifier**. *"Two candidate causes are named
+and neither is chosen"* is scrupulous about not guessing and quietly exhaustive about the list, and the
+second half is invisible precisely because the first half is so obviously disciplined. A reader — and
+the next iter, which spends itself on the list it was handed — cannot tell a list that was *derived*
+from one that was *thought of*.
+
+**So state which one it is, every time.** A candidate list is one of:
+
+- **an ENUMERATION** — derived from something (a registry, a census, a code path), where the derivation
+  is named and its reach stated. Then "neither" is a real result and the residual is empty by
+  construction.
+- **a FRAMING** — the causes that came to mind. Then it needs an explicit residual term, even one as
+  crude as *"or something else entirely."* Naming the residual costs four words and is the difference
+  between relocating a fault and proving a false dichotomy.
+
+The corpus already forbids the same move in its census work — a verdict without its reach is not a
+verdict (§5), a repair closes its members and not its class (pass 63). This is that rule applied to
+**hypotheses** rather than to sites, and it is the one place the milestone had been exempting itself:
+enumerations of *things* are fenced in both directions by half a dozen guards, while enumerations of
+*possible causes* are prose and are graded by nobody.
+
+Two corollaries worth keeping:
+
+- **A refutation that removes BOTH options is a stronger result than picking one** — but only if the
+  disjunction was honest about not being exhaustive. iter-267's pre-registration is what forced this:
+  it forbade re-describing a refuted drift hypothesis as a regression, so *"then it must be the other
+  one"* was unavailable as a fallback and the residual had to be named.
+- **Agreement between two sides of a handshake is evidence the fault is elsewhere — use it that way.**
+  Finding the seeder's comment naming the exact rename, *intact*, is what let iter-267 stop looking at
+  the data layer rather than keep re-reading it.
+
+⚠️ **This rule is not fenced and, at the grain of its claim, is not fenceable.** A guard that flagged
+"two options and a conclusion" would fire on every correct binary decision in the corpus; the defect is
+the *unstated quantifier*, not the arity. It is recorded here — the doc every iter of this milestone
+reads — rather than left in iter-267's `progress.md`, because a lesson that lives only in a closed
+iter's dated record is a lesson the next iter does not receive. That is the whole reason this section
+exists.
