@@ -268,6 +268,22 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 > doc (**named, not pinned:** it carried a line range until M257x iter-120, by then the **Events** bullet). Work on this domain in **`app`**, not in the
 > frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
 
+> **⚠️ AND the demo tooling still ENTERS this repo — measured M257x iter-268, not inferred.**
+> `rosetta-extensions/demo-stack/ensure-clones.sh:310` opens its studio-consumer list with a **hardcoded**
+> `_studio_repos="cms"` and derives the rest from `repos.yml` (which has not listed `cms` since `d11a403`).
+> Its own comment states the intent: *"cms goes first so the sanctioned `make init-studio` stays the fetch
+> that actually happens."* The entry is guarded only by `[ -d "$_sdir" ] || continue`, so it is **dormant on
+> a fresh box and LIVE on any box that still carries a `stack-demo/cms/`** — and on this one it is live:
+> `stack-demo/cms/studio` is populated, i.e. the studio runtime `app` builds with was fetched **by a
+> decommissioned repo's Makefile** and copied across as the donor.
+> Nothing is broken by it (the six dead clones carry **no compose service and no build context**), and the
+> clone *set* is correctly fenced — `clone_pin_guard.py` removed five phantom pin keys at iter-222,
+> `cms` among them. **The studio-consumer list is a SECOND registry, one over, and that sweep did not reach
+> it** — `platform-alignment.md` §5's *"a named-consumer list survives the merge that moved the consumer"*
+> occurring inside the repo that wrote the rule down. Routed as
+> `FIX-M257x-268-ensure-clones-hardcodes-cms-as-studio-fetcher` (a tag + pin bump this iter is forbidden to
+> spend). **Do not read a `stack-demo/cms/` as inert.**
+
 **⚠️ Read the tense.** The Python studio tree had to be cloned **before** any docker build, or `make up`
 failed with `"/studio": not found` — and **that is still true today, of `app`, not of `cms`.** The
 requirement did not die with the service; `fdb8034a` moved it, and `app/Dockerfile:45-46` hard-COPYs

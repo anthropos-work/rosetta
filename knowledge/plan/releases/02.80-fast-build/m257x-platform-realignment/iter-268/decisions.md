@@ -33,3 +33,33 @@ newer, something fetched it *after* the removal, which points at a live code pat
 **Nothing is deleted in this iter, whatever the outcome.** A stale clone is the evidence; tidying it
 destroys the measurement, mutates a workspace nobody asked to change, and would make PR-5 unre-runnable.
 If a repair requires removing a directory, it is described and routed, never performed.
+
+## D-M257x-268-1 — a sibling registry survived the sweep that fixed its twin
+
+`demo-stack/ensure-clones.sh:310` opens its studio-consumer list with a **hardcoded**
+`_studio_repos="cms"` and derives every other member from `repos.yml`. Its comment states the intent —
+*"cms goes first so the sanctioned `make init-studio` stays the fetch that actually happens"* — which was
+true while `cms` was a live service and has not been since `d11a403`. Guarded only by
+`[ -d "$_sdir" ] || continue`, so it is **dormant on a fresh box and live on any box carrying a
+`stack-demo/cms/`**. On this box it is live: `stack-demo/cms/studio` is populated, i.e. the studio runtime
+`app` builds with was fetched by a decommissioned repo's Makefile and copied across as the donor.
+
+**The clone SET was already fenced, and correctly.** `clone_pin_guard.py` derives the allowed key set from
+`repos.yml` and asserts both directions; **iter-222 used it to delete five phantom pin keys, `cms` among
+them.** That repair was complete for the registry it covered. The studio-consumer list is a **second
+registry, one file over**, and the sweep did not reach it — `platform-alignment.md` §5's *"a named-consumer
+list survives the merge that moved the consumer"* (iter-23), occurring inside the repo that wrote the rule
+down, against a file a sibling registry's repair had already been run over (§10 iter-194: *a registry that
+supersedes a list must reach everything the list does*).
+
+**Why it survived four releases:** it is a **preference, not a dependency**, and preferences do not fail.
+On a fresh box the `[ -d ]` guard skips it and the correct branch runs; on a stale box it silently wins.
+Both outcomes look like success, and neither produces a log line an operator would question.
+
+Corpus repaired at `corpus/services/cms.md` (the measurement, the asymmetry, and *"do not read a
+`stack-demo/cms/` as inert"*). The tooling fix — derive the whole list from `repos.yml`, letting the
+`git clone $STUDIO_REPO` branch that mirrors `app`'s CI `additional_repo` be the fetch — needs a tag **and
+a pin bump**, so it is routed rather than spent: `FIX-M257x-268-ensure-clones-hardcodes-cms-as-studio-fetcher`.
+It should land in the same tag as `FIX-M257x-262-dev-path-needs-the-studio-acquisition`, which is the same
+file and the same subject from the other side: **dev has no studio handling at all; demo has it anchored on
+a corpse.**
