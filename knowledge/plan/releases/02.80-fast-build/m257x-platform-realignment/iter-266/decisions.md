@@ -33,3 +33,27 @@ would spend `D-M257x-258-1`'s frozen-pin control; correcting the claim + documen
 Prediction: the iter lands the doc/skill half and routes the tooling half, mirroring iter-264's split of
 `FIX-M257x-262`. *Risk:* the dev path may consume rext from a path that needs no tag at all, in which case
 the whole fix lands here and the prediction is refuted.
+
+## D-M257x-266-1 — the gate was missing from the DOCUMENT, not from the tooling
+
+`dev-stack/dev-stack:241-247` runs `stack-secrets/preflight.sh` before any build and **`die`s** when a
+critical key is short. Same wrapper as the demo path (`up-injected.sh:1511`), opt-out
+`DEV_NO_SECRET_PREFLIGHT=1`, and the wiring is asserted by `dev-stack/tests/test_dev_stack.py:279-284`.
+Re-measured today: `preflight.sh --stack dev-0` → **rc 1**, with `INVITATION_HMAC_SECRET` among
+`platform 13/29 short`. So `/dev-up` would have refused iter-262's bring-up and named the key.
+
+`corpus/ops/setup_guide.md` — the by-hand path iter-262 actually followed — mentions `/stack-secrets`
+**eight times, all `--provision`, never the coverage `check`**, and at `:181-196` frames `/dev-up` as
+*"automate this entire setup process"*. The framing is the defect: it asserts **equivalence** between a
+path that carries a fatal gate and one that does not.
+
+**Why this is a sharper defect than a missing feature.** Nothing is broken, nothing is untested, and no
+instrument is wrong. The tooling's tests pin the gate; the skills document it accurately (all three
+assertions checked, all true). The single artifact that omits it is the one handed to a new engineer, and
+its omission is invisible from every other vantage — which is why three consecutive iters (262 hand-built,
+263 relocated the cause, 266 opened predicting a tooling gap) each carried the prior forward.
+
+Repaired at both sites: the equivalence claim now carries the disclaimer, and a new section gives the
+runnable check, its rc contract, how to read the verdict by class rather than by count, and the discipline
+that a critical miss is fixed in the **secret source** and re-provisioned — never by hand-editing `.env`,
+which is precisely how the gap survives the next `--provision`.

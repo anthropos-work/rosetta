@@ -1,0 +1,9 @@
+▶ secret-coverage pre-flight (stack=dev-0, source=/Users/marco/workspace/anthropos/rosetta/.agentspace/secrets)
+  ⚠   ant-academy    2/6 short: ANTHROPIC_API_KEY, FONTAWESOME_NPM_AUTH_TOKEN, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY
+  ⚠   app            5/9 short: AWS_SESSION_TOKEN, ELEVENLABS_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY
+  ⚠   next-web-app   4/6 short: AZURE_OPENAI_KEY, STRIPE_SECRET_KEY
+  ⚠   platform       13/29 short: ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, INVITATION_HMAC_SECRET, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, MISTRAL_API_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY, PUBLIC_HOST, SENTRY_DSN, SKILLER_AZURE_OPENAI_ENDPOINT_URL, SKILLER_AZURE_OPENAI_KEY, SKILLER_OPENAI_KEY, STRIPE_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY
+  ⚠   sentinel       0/1 short: SENTRY_DSN
+  ✗ secret-coverage: a CRITICAL secret key is missing — the stack would be broken without it.
+    Run: stacksecrets check --dna /Users/marco/workspace/anthropos/rosetta/.agentspace/rosetta-extensions/stack-secrets/secretdna/secret-dna.json --from /Users/marco/workspace/anthropos/rosetta/.agentspace/secrets   (to see which)
+rc=1

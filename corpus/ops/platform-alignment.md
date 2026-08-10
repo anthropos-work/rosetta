@@ -1051,7 +1051,11 @@ Rules, in order of how often they actually catch something:
     left `repos.yml`, and every corpus claim naming it became unreadable **at exactly the moment it
     became false** — the worst possible instant for an instrument to stop looking.
 
-    Live, not theoretical: `setup_guide.md:514` enumerated the `migrations: true` repos as
+    Live, not theoretical: the `migrations: true` enumeration in `setup_guide.md` — **`:598` today,
+    re-derived at M257x iter-266 from the pin `:514` this note carried, which iter-266's own +44-line
+    insert had shifted onto a fence delimiter** (§8: re-derive the CORRECTION, not just the anchor — and
+    note the pin was stale in *substance* before it was stale in *position*, since iter-77 had already
+    rewritten the line it named) — read
     *"(currently: app, cms, jobsimulation …)"*; the name-resolver dropped `cms` and `jobsimulation`
     as unknown tokens, compared `{'app'} == {'app'}` and **passed a false claim.** The one migration
     claim of 24 the fence could reach was the one it read wrong: *effective reach 0, reported as 1.*

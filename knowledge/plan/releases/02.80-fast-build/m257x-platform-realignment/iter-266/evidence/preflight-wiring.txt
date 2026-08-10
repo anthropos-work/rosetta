@@ -1,0 +1,4 @@
+.agentspace/rosetta-extensions/dev-stack/dev-stack:244:    "$HERE/../stack-secrets/preflight.sh" --stack "dev-${n:-auto}" || pf_rc=$?
+.agentspace/rosetta-extensions/demo-stack/up-injected.sh:1502:# the sibling preflight.sh), not a function definition, so it must not fire when the script is sourced
+.agentspace/rosetta-extensions/demo-stack/up-injected.sh:1510:  # independent of preflight.sh's own default-source resolution (the doubled-path bug class).
+.agentspace/rosetta-extensions/demo-stack/up-injected.sh:1511:  "$HERE/../stack-secrets/preflight.sh" --stack "demo-$N" --demo --from "$SECRET_SRC" || pf_rc=$?

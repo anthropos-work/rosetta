@@ -195,6 +195,19 @@ The skill will:
 
 See [`.claude/skills/dev-up/SKILL.md`](../../.claude/skills/dev-up/SKILL.md) for details.
 
+> **⚠️ The two paths are NOT equivalent, and this section implied they were until M257x iter-266.**
+> `/dev-up` runs a **fatal secret-coverage pre-flight before it builds anything** —
+> `dev-stack/dev-stack:244` calls `stack-secrets/preflight.sh --stack dev-N` and **`die`s at `:246`** when a
+> **critical** key is missing (a standard-missing key only warns; `DEV_NO_SECRET_PREFLIGHT=1` opts out).
+> **Nothing in the by-hand path below runs it**, so following this guide manually gives up a gate the
+> automated path enforces.
+>
+> That gate is not hypothetical: **it is the one that would have caught M257x iter-262's dev bring-up
+> failure.** A hand-built `.env` was missing `INVITATION_HMAC_SECRET`; `backend` refused to boot and
+> **returned exit code 0**, so it read as a graceful shutdown and `docker ps` showed an *absence* rather
+> than a crash. Run the check yourself before `make up` — see [Verify secret coverage before you
+> build](#verify-secret-coverage-before-you-build--the-gate-dev-up-enforces-and-this-guide-does-not).
+
 ---
 
 ## 2. GitHub SSH Access Setup
@@ -385,6 +398,37 @@ git clone git@github.com:anthropos-work/experiments.git
 > coverage against the secret-coverage DNA. The manual steps below remain as the reference for *what each key is
 > and where it comes from* — the skill automates the *copying*. See the [Secrets Spec](secrets-spec.md) +
 > [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md).
+
+### Verify secret coverage before you build — the gate `/dev-up` enforces and this guide does not
+
+**Run this after your `.env` files exist and before `make up`.** It is read-only and **values-blind** — it
+reports *which keys are short*, never a value:
+
+```bash
+# from the rosetta-extensions clone (the same wrapper `dev-stack up` and `up-injected.sh` both call)
+./stack-secrets/preflight.sh --stack dev-0
+#   rc 0 = covered · rc 1 = a CRITICAL key is missing (do not build) · rc 2 = could not check
+```
+
+Read the verdict by **class, not by count.** A `⚠ platform 13/29 short` line is *not* the failure — most of
+those are standard keys and the stack comes up degraded without them. The failure is the `✗` line:
+
+```
+✗ secret-coverage: a CRITICAL secret key is missing — the stack would be broken without it.
+```
+
+> **Why this step exists, and why it is not optional advice.** M257x iter-262 built a dev stack by
+> following this guide by hand, skipped this check because the guide did not have it, and lost the
+> bring-up to a missing **`INVITATION_HMAC_SECRET`** — `invitations.NewTokenManager` errors when it is
+> empty and `main` returns, so **`backend` exits with code 0**. A refusal that returns success reads as a
+> graceful shutdown: `docker ps` shows an absence, not a crash, and nothing in the logs says *secret*.
+> `/dev-up` would have refused to build at all and named the key. **The check was not missing from the
+> tooling — it was missing from this document** (`D-M257x-266-1`), which is a sharper defect, because the
+> tooling's own tests assert the gate is wired (`dev-stack/tests/test_dev_stack.py:279-284`) and were green
+> throughout.
+>
+> Fix a critical miss by adding the key to your **secret source** and re-running `/stack-secrets
+> --provision` — not by hand-editing `.env`, which is how the gap survives the next re-provision.
 
 ### The `.env` File
 All services share a **single centralized `.env` file** located in the `platform` directory.
