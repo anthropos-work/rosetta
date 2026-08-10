@@ -2,8 +2,9 @@
 iter: 260
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T14:23:27Z
+closed: 2026-08-10T14:54:31Z
 ---
 
 # iter-260 — clause 1 under its LITERAL unit: three consecutive `--purge` + `up` cycles
