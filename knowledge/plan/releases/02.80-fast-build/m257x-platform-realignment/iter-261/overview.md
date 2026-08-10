@@ -2,8 +2,9 @@
 iter: 261
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T14:56:02Z
+closed: 2026-08-10T15:02:00Z
 ---
 
 # iter-261 — clause 2: the Playthrough suite against the ADVANCED platform, for the first time
