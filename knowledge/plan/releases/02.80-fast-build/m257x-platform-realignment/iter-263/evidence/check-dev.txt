@@ -1,0 +1,25 @@
+       ok key-present    key NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY present in ant-academy source
+       ok nonempty       key NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY has a non-empty value
+  [FAIL] ant-academy/OPENAI_API_KEY               w2
+       XX key-present    key OPENAI_API_KEY absent from ant-academy source
+       XX nonempty       key OPENAI_API_KEY absent from ant-academy source
+  [FAIL] ant-academy/ANTHROPIC_API_KEY            w2
+       XX key-present    key ANTHROPIC_API_KEY absent from ant-academy source
+       XX nonempty       key ANTHROPIC_API_KEY absent from ant-academy source
+  [FAIL] ant-academy/NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT w2
+       XX format:url     key NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT absent from ant-academy source
+       XX key-present    key NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT absent from ant-academy source
+       XX nonempty       key NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT absent from ant-academy source
+  [FAIL] ant-academy/FONTAWESOME_NPM_AUTH_TOKEN   w1
+       XX key-present    key FONTAWESOME_NPM_AUTH_TOKEN absent from ant-academy source
+
+per-repo rollup:
+  ant-academy    2/6 short: ANTHROPIC_API_KEY, FONTAWESOME_NPM_AUTH_TOKEN, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY
+  app            5/9 short: AWS_SESSION_TOKEN, ELEVENLABS_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY
+  next-web-app   4/6 short: AZURE_OPENAI_KEY, STRIPE_SECRET_KEY
+  platform       13/29 short: ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, INVITATION_HMAC_SECRET, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, MISTRAL_API_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY, PUBLIC_HOST, SENTRY_DSN, SKILLER_AZURE_OPENAI_ENDPOINT_URL, SKILLER_AZURE_OPENAI_KEY, SKILLER_OPENAI_KEY, STRIPE_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY
+  sentinel       0/1 short: SENTRY_DSN
+  studio-desk    5/5
+
+Overall:  59.3%
+Critical: 92.3%

@@ -2,8 +2,9 @@
 iter: 263
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: closed-fixed
 opened: 2026-08-10T15:28:00Z
+closed: 2026-08-10T15:30:00Z
 ---
 
 # iter-263 — correcting iter-262's own `D-M257x-262-3`: the tooling already knew
