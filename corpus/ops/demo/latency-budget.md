@@ -400,7 +400,7 @@ Contract:
   > credential presented at any point**. That is not a regression to fix here: it is the *designed* behaviour
   > of a deliberately disarmed mock, and the control that makes it defensible is the one
   > [`../safety.md` §3](../safety.md) states — **there is nothing behind the door** (no customer data in a
-  > demo, no write path to prod) plus the VPN/tailnet exposure scope. `safety.md:576` already discloses the
+  > demo, no write path to prod) plus the VPN/tailnet exposure scope. `safety.md:627` already discloses the
   > password-free handshake as an exposure; **what was wrong was only this page's claim that a validation
   > step stands in front of it.** Do not re-add the claim, and do not treat the mock's `redirect_url` as
   > sanitised anywhere else.

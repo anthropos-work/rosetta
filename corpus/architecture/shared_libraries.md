@@ -137,7 +137,7 @@ The **single source of truth for RPC contracts**. Two layers:
 **At least 13** Connect-RPC services are defined — **this is a floor, not a count**: `proto` is a private Go
 module and **is in no clone set**, so the list below is hand-enumerated from consumers and cannot be
 verified against the source of truth. It omitted `StorageService` until M257x iter-98, which
-[`storage.md:129`](../services/storage.md) documents in full. The named ones:
+[`storage.md:133`](../services/storage.md) documents in full. The named ones:
 `UsersService`, `OrganizationsService`,
 `CMSService`, `JobSimulationService`, `SkillerService` (all served by app since the merges — one RPC mux),
 `SkillPathSessionService` (**contract still in `proto`, but NO LONGER SERVED** — like `ChronosService`. skillpath-in-app M506 *removed* the RPC rather than re-hosting it; `app/internal/skillpaths/skillpaths.go:27-31` calls its replacement "the drop-in for the **removed** skillpath RPC client". Likewise roadrunner: `backend` calls Judge0 over plain HTTP — `jsrunner.NewRunnerManager` at `app/internal/jobsimwiring/wiring.go:123` @ `app` `9d00a313` v1.367.0 — and `ROADRUNNER_RPC_ADDR` is read by no Go code in `app` **and is not in the platform compose at all** — 0 occurrences in either, at `app` `9d00a313` / platform `0dab54d`. (This line long cited `docker-compose.yml:118` for it; that line sets `AWS_REGION`.)),

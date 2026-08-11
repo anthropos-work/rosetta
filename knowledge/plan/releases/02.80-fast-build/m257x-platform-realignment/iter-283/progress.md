@@ -19,7 +19,14 @@ named product defects, then the dev setup guide's undocumented steps — under a
 **Decisions:** `TOK-09` (milestone-root `decisions.md`).
 
 **Routes carried forward:** every route iter-282 carried is now **out of scope** under `TOK-09` and stays
-recorded rather than worked. `ROUTE-M257x-282-*` likewise.
+recorded rather than worked. Likewise iter-282's own three, named individually rather than globbed —
+`ROUTE-M257x-282-prose-twin-REPORT-tier-residual`, `ROUTE-M257x-282-intra-tree-prose-twins` and
+`ROUTE-M257x-282-readme-does-not-index-13-of-37-fences`. (A wildcard *stood in for* those three ids here
+until M257x harden pass 72: `route_disposition_guard` parsed the truncated stem as an id and went RED, and
+the fence refuses multi-id forms by design, so a family of routes must be enumerated one per name. The
+wildcard form is deliberately **not reproduced in this note** — writing it out to explain it re-creates the
+finding, which is the failure `retracted_pin_guard` was built for. The third of the three was **closed** at
+that same pass: `stack-core/README.md` now indexes all 37 family members.)
 
 **Lessons:** the standard a milestone is graded against is the user's to set, and when it is narrowed the
 honest report says *"out of scope by ruling"* — never *"measured clean."*
