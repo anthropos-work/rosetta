@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M257
 title: "first-light build"
-status: paused
+status: in-progress
 release: v2.8 "fast build"
 exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **odysseus** (`devops@100.110.67.14` / `odysseus.taildc510.ts.net`) — the host CHANGED at D-v28-14 (billion is demo-only now), so **the baseline must be RE-MEASURED there (n >= 3) and an `odysseus.json` host profile checked in BEFORE any lever is priced**. billion's 666.29 s does not transfer: odysseus is a near-twin on paper (8 cores / 7 GiB / x86_64 vs 8 vCPU / 7.3 GiB / x86_64) and this release's own rule is *state the environment with every number*. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if odysseus's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
