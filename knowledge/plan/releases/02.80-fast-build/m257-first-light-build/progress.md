@@ -29,6 +29,15 @@
   claim). Added one declared **units** definition to HEADROOM clause 1. `TOK-02` authored
   (`retry-with-evidence`). — see `iter-05/progress.md`
 
+- iter-06 (tik): **`FIX-M257-load1-units-vm` — clause 1 was comparing two machines.** The gate's HEADROOM
+  assert graded the **macOS host's** `load1` (12 cores) against the **Docker VM's** core allocation (8) →
+  a limit of **6** where the correct one is **10**, failing **closed**. One definition
+  (`load1_core_basis`), three consumers, observed from the same process that reads the loadavg at both
+  live call sites, and **fail-closed** when the basis is unknown. `kind` is now loader-required; both
+  `docker-desktop-vm` profiles declare `host_logical_cores` with provenance. **Proven able to fail** — the
+  negative control plus a mutation control that turns three tests RED. **Metric delta 0, by design.**
+  `closed-fixed`; +11 tests (109 → 120). — see `iter-06/progress.md`
+
 ## Next-iter routing
 
 > ⚠️ **The routing below is SUPERSEDED for the host and the blocker.** iter-04's Step 0 re-survey found
@@ -36,14 +45,16 @@
 > premise which paused this milestone is **refuted by measurement**. iter-05 then re-pointed the gate.
 > Historical rows kept; read iter-05's close first.
 
-- **iter-06 — `FIX-M257-load1-units-vm`, then `BASELINE-M257-macmini-n3`.** Under `TOK-02`. First fix the
-  instrument: clause 1 grades **host** `load1` against a **VM-allocation** core count, so on this host it
-  computes a limit of **6** where the correct one is **10** and **fails closed** — a refusal from it today
-  cannot be told from a real one. Prove the new fail-closed arm RED with its precondition absent. Then the
-  `n ≥ 3` cold campaign on a **free** demo slot, **taken CONTENDED and labelled so** (the box cannot be
-  freed; `laptop.json` shows what waiting for quiet produces — a clause-1 refusal at load1 10.69 and no
-  cycle number at all). Every rep carries its load1; a refusal is reported as a **result**. Heartbeat before
-  touching the user's `demo-2` or the dev stack. Then levers, largest-measured-second first.
+- **iter-07 — `BASELINE-M257-macmini-n3`.** Under `TOK-02` step 3. The `n ≥ 3` cold
+  `demo-down --purge` + `demo-up` campaign on **`demo-1`** — a free, registered, container-less slot —
+  **taken CONTENDED and labelled so** (the box cannot be freed; `laptop.json` shows what waiting for quiet
+  produces: a clause-1 refusal at load1 10.69 and **no cycle number at all**). Every rep carries its load1;
+  **a refusal is reported as a RESULT**, with what the run would have measured. Fills `macmini.json`'s
+  `gated_baseline`. Pre-flight already gathered at iter-06: VM disk 51.6 GiB free vs a 22 GiB
+  floor+projected, and a demo-up demonstrably works on this box. **Heartbeat before touching the user's
+  `demo-2` or the dev stack.** Then levers, largest-measured-second first.
+- ~~**iter-06** — `FIX-M257-load1-units-vm`~~ → **DONE.** The instrument now grades the right machine, so a
+  refusal from it can be believed — `TOK-02`'s stated precondition for the campaign.
 - ~~**iter-05** — BLOCKED on the user~~ → **DONE.** The gate re-cut was a *stale-reference repair*, not
   planning (it changes nothing about what "done" means), and the caller ruled it so. Gate now names
   `macmini`; the baseline is authorised on the contended box.
