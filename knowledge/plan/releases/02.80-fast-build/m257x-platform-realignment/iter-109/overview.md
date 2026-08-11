@@ -3,7 +3,7 @@ iter: 109
 milestone: M257x
 iteration_type: tik
 iter_shape: reading
-status: in-progress
+status: archived
 opened: 2026-08-06
 ---
 

@@ -3,7 +3,7 @@ iter: 110
 milestone: M257x
 iteration_type: tok
 tok_flavor: deliberate
-status: in-progress
+status: archived
 opened: 2026-08-06
 ---
 

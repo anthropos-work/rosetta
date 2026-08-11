@@ -1,15 +1,16 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → **M257x** → M257 → M258, strictly serial; M257x was INSERTED 2026-07-31 and **M257 is PAUSED behind it**. Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → M257x → **M257** → M258, strictly serial. **3 of 5 closed.** Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257x — platform re-alignment (iterative), **259 iters** + 62 harden passes closed (m257x/platform-realignment). Re-align rosetta + rosetta-extensions to platform @ origin HEAD. **USER-SET binding closing condition 2026-08-10** (`D-M257x-256-1`) superseding gate-4-of-5: CURRENT `main` must assemble into a WORKING STACK, **demo AND dev**, deprecated repos no longer live. M257 PAUSED behind it."
-phase: "M257x iter loop, **259 iters** (+ 62 harden passes; 11 tiks unhardened). Clause 5 unmeasured since iter-131 (`P = 29` / `N = 47`, a FLOOR). **iter-258 PROVED THE DEMO HALF:** a cold `demo-2` on the advanced refs (`app 3eaadae68`) reached `green:true / 0 warnings`, `EXIT_CODE=0`, **first attempt** (717 s CONTENDED — not a baseline); `atlas … app:public` → `app ok`; cms/jobsimulation skipped, *derived from the platform compose*. **iter-259 USER-BLOCKED the DEV half** (`D-M257x-259-1`): the tooling puts a dev stack in `stack-dev/`, another project's ACTIVE workspace — **367 commits on no remote**, a live worktree — and `make init` is skip-if-present, so `/dev-up` would ADOPT their tree. Nothing there was touched. **Gate NOT met** — clause 1 wants **3 consecutive** cycles, this is **1**. **Detail: per-iter + milestone `progress.md`. POINTER (`context.md`); do not grow it back.**"
-last_updated: "2026-08-10"
+active_milestone: "(between milestones — M257 «first-light build» is next, UNPAUSED by M257x's close; see Next up)"
+last_closed: "M257x — 2026-08-11"
+phase: "Between milestones. M257x closed 2026-08-11 by USER RULING (`TOK-09`), NOT on gate — clauses 1–4 met and proven, **clause 5 OUT OF SCOPE by that ruling and never met**. M257 is next and its gate needs re-cutting before it starts (it names a retired host). Carry-forward from M257x → M258: 11 items / 5 clusters + 1 block fate."
+last_updated: "2026-08-11"
 ---
 
 # State
 
 **v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
-**2 of 4 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 — not here.
+**3 of 5 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 / § M257x — not here.
 
 ## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
@@ -24,60 +25,32 @@ last_updated: "2026-08-10"
   behind `main`, so `/demo-up` aborted there.)
 
 
-## Active milestone
+## Next up
 
-**M257x — platform re-alignment** (`iterative`, **IN PROGRESS**). Find how far the microservices→`app`
-consolidation has got, write it where it cannot rot, and make **both** repos work against the platform as it is.
-**Third occurrence of one class** (v2.1 skiller · v2.7 skillpath · now jobsimulation), each re-derived from
-scratch — so `corpus/ops/platform-alignment.md` is a deliverable, not a formality.
+**M257 — first-light build** (`iterative`), **UNPAUSED** by M257x's close. **Its exit gate must be re-cut
+before it starts:** it names `odysseus`, which `D-v28-15` retired from this project on 2026-07-31, and no
+host profile has ever been measured for the Mac that replaced it — so the gate is not gradeable as written.
+Banked from its 3 closed iters, not to be redone: both gate-honesty instruments landed with
+mutation-proven controls, B1+B2 fixed, the mirror fence parameterised by host. Still owed: a baseline on a
+host that exists, and `INVESTIGATE-M257-load1-48` (peak `load1` **48.7** vs HEADROOM clause 1's limit of
+**6**).
 
-**M257 — first-light build: PAUSED** behind it. Banked, not to be redone: odysseus provisioned (rc=0, 16/16),
-both gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed, mirror fence parameterised by
-host. Still owed: the odysseus baseline, and `INVESTIGATE-M257-load1-48` — peak `load1` **48.7** vs HEADROOM
-clause 1's limit of **6**.
+**M257x carry-forward lands in M258**, not M257 — 11 items in 5 root-cause clusters + 1 block fate. Owner:
+[`m257x…/carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md).
+The one with an operational deadline: **the tooling fixes from M257x's close are NOT on a pushed tag**, so
+no stack can obtain them until someone tags and `git push --tags`. *Tagging is not publishing.*
 
 ## Phase
 
-_Counts and the headline are in the frontmatter; this section is the clause-by-clause state only._
+Between milestones. **M257x closed 2026-08-11 by USER RULING (`TOK-09`) — not on gate.** Clauses 1–4 met
+and proven; **clause 5 is OUT OF SCOPE by that ruling, was never met, and must never be reported as
+"measured clean".** Full closure narrative: [`roadmap.md`](roadmap.md) § M257x. Clause-by-clause table,
+metrics and routing live in that milestone's own `carry-forward.md` / `metrics.json` / `retro.md`.
 
-- **Clauses 1–2 — CLOSED** at platform `0c91421`, **MET WITH DISCLOSURE that travels with them forever**:
-  a freshly built stack failed the first full run in 2 of 2 attempts, so never a clean pass.
-- **Clauses 3–4 — hold**, asserted by fences that are watched going RED, not by inspection.
-- **Clause 5 — the only open one**, met ONLY by a reading that returns zero. Five graded readings
-  (iters 98–119) established that **inflow ≈ outflow** — repair efficacy is confirmed, yet the residual
-  does not fall, because clone advance and the repair's own induction feed it. Each reading's arithmetic
-  is owned by its own `iter-NN/adjudication.md`; none is current.
-
-**There is NO active strategy, and that is the state — not an omission.** `TOK-07` was refuted at iter-116
-by its own pre-registration and `TOK-08` (the USER's re-scope) at iter-119 the same way; `TOK-08`'s sealed
-rule **bars a successor**, so there is **no `TOK-09`** (chain in `decisions.md`). **iter-122 added an
-INSTRUMENT, not a strategy** — `F4` books any sentence treating the census as clause 5's grader as a defect.
-
-**Chapman is RETIRED**; only floors survive (**≥ 46 at `194361e4`**). The residual stays unmeasured above
-a floor — **1,908** tier-1 pairs, **1,150** tier-2 (baseline 1,164; the ratchet holds — iter-128's
-repairs took it 1,160 → 1,150 by adding evidence). The two
-measurements that govern how any of it may be quoted are a standing rule now, below.
-
-**The live detail lives in the milestone's own docs — `state.md` is the index, not the narrative**
-(`context.md` § state.md contract). All paths below are under
-`releases/02.80-fast-build/m257x-platform-realignment/`:
-
-- [`progress.md`](releases/02.80-fast-build/m257x-platform-realignment/progress.md) — **authoritative live
-  status**: every iter's findings and the carried items
-- [`decisions.md`](releases/02.80-fast-build/m257x-platform-realignment/decisions.md) — `D-N` + the
-  `TOK-01…08` strategy chain
-- [`gate-clauses-1-2/README.md`](releases/02.80-fast-build/m257x-platform-realignment/gate-clauses-1-2/README.md)
-  — **owner of every clause 1 & 2 number**: the five cold-cycle timings, the reflog freeze-proof, the
-  disclosed first-run failure
-- [`iter-124/audit.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-124/audit.md) — **owner
-  of the under-cited reframe and of every corrected figure in `phase:`**: the seeded 30-of-344 hand audit,
-  R3 100 % / R4 66.7 %, both sealed branches checked
-- [`iter-123/progress.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-123/progress.md) —
-  the org census: 93 repos re-derived, five corrections, the `infrastructure` read, the 89-row re-pin
-- [`iter-122/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-122/adjudication.md)
-  — **the CLAIM CENSUS**: 525/525 adjudicated, two fired falsifications, its own three defects
-- [`iter-119/adjudication.md`](releases/02.80-fast-build/m257x-platform-realignment/iter-119/adjudication.md)
-  — the last graded reading (`P = 22`) + the test–retest that retired the series
+⚠️ **Open safety item, routed to M258 and not closed:** a demo reached the **production** S3 bucket and only
+an **IAM policy on an account we do not control** refused it. The containment is proven by a unit test on
+the emitter and **on no running stack**; both currently-running stacks still carry the pointer, and the
+dev-side strip is demo-only. Owner: `corpus/ops/safety.md` + M257x `carry-forward.md` cluster 1.
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 
@@ -89,9 +62,10 @@ numbered rules in full.
   nested untracked repos each blind a *different* instrument. Use the mechanized per-tree path
   (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where
   it publishes 22.**
-- **TWO INSTRUMENTS, and conflating them has cost this milestone repeatedly.** Clause 3's is the **guard
-  family**; clause 5's is the **graded read** (frozen, sha `3858ec53…`, one commit ever). A guard going
-  green says nothing about clause 5, and a reading says nothing about clause 3.
+- **TWO INSTRUMENTS, and conflating them cost M257x repeatedly.** The guard family and the graded read
+  measure different things: a guard going green says nothing about corpus sentence-level fidelity, and a
+  reading says nothing about the fences. (M257x's clause 5 — the graded read — was placed **out of scope
+  by the user**, `TOK-09`. It was never met. Do not resurrect it as a claim of cleanliness.)
 - **A guard's green is only as strong as its own load-bearing word** — when a guard qualifies its own
   claim, the qualifier IS the blind spot. `anchor_construct_guard` said *"every **resolvable** anchor"*
   while ≥7 upheld findings resolved to the wrong construct; it now PRINTS its floor (`KNOWN_WEAKNESS`),
@@ -116,7 +90,7 @@ numbered rules in full.
 ## v2.8 shape
 
 **M255 build-bench & host-headroom** (section, HARD barrier) ✅ **done 2026-07-28, VERDICT GO** →
-**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257 first-light build**
+**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257x platform re-alignment** ✅ **done 2026-08-11, `closed-incomplete` (user ruling, not gate)** → **M257 first-light build**
 (`billion` 666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
 user's order — *sharpen the detector before changing what it detects*.
 
@@ -129,11 +103,14 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 `HARDEN-CAP-ACCEPTED-D105` is in [`m256…/decisions.md`](releases/02.80-fast-build/m256-playthrough-sharpening/decisions.md).
 
 ## Recently closed milestones (max 5)
-- **M256 — 2026-07-30** · playthrough sharpening (iterative) · **`closed-on-gate`**, 32 iters / 3 harden
-  passes · 18 → **30 live Playthroughs** · **all three gate clauses proved unmeetable as first authored**
-  · full narrative: `roadmap.md` § M256.
-- **M255 — 2026-07-28** · build-bench & host-headroom (section, HARD barrier) · **VERDICT GO** · baseline
-  n=3 p50 666.29 s on `billion` · full narrative: `roadmap.md` § M255.
+
+_Trimmed to the last 3 days per the state.md contract; older entries live in `roadmap.md`'s `### M{N}` blocks._
+
+- **M257x — 2026-08-11** · platform re-alignment (iterative) · **`closed-incomplete` — CLOSED BY USER
+  RULING (`TOK-09`), NOT on gate.** Clauses 1–4 met and proven; **clause 5 out of scope by that ruling —
+  never met, never measured clean.** 288 iters / 73 harden passes. The microservices→`app` map is now
+  machine-fenced against `repos.yml` in both directions, all 93 org repos are enumerated, and the demo +
+  dev stacks both build from current `main`. Full narrative: `roadmap.md` § M257x.
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;

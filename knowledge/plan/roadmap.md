@@ -661,16 +661,69 @@ mutation classification, the batch-gate rule) **+ `corpus/services/clerkenstein.
 re-scoped)
 
 ### M257x: Platform re-alignment
-**Status:** `in-progress` — **AWAITING A USER SCOPE DECISION**, **119 iters + 26 harden passes closed**
-(branch `m257x/platform-realignment`).
-Gate **4 of 5**: clauses **1–2 PROVEN** at platform `0c91421` (clause 2 **MET WITH DISCLOSURE** — Lane B's
-`gate-clauses-1-2/` dossier), clauses **3–4 hold**, **clause 5 open** (`P = 22 / N = 28`, floor **≥ 46**).
-Both strategies refuted by their own pre-registered arithmetic — `TOK-07` at iter-116, `TOK-08` at
-iter-119 — and per `TOK-08`'s sealed rule **no `TOK-09` is authored**.
-*Was `planned` at 101 iters — corrected at iter-102 (deferral-audit F17). **F17 RE-ROTTED and is corrected
-again at iter-120**: this block still read "102 iters + 22 harden passes / Gate 2 of 5" seventeen iters
-later. A Fate-1 item that decays twice is a standing-maintenance item, not a one-time fix — see
+**Status:** `done` — **closed 2026-08-11**, **288 iters + 73 harden passes** (branch
+`m257x/platform-realignment`, merged into `release/02.80-fast-build`).
+
+> ### ⚠️ CLOSED BY USER RULING — **NOT** on gate. Do not restate this as a gate-met close.
+>
+> | clause | state |
+> |---|---|
+> | 1 — cold `--purge` + `up`, 3 consecutive green cycles | **MET** (re-proven at the shipping pin, iter-271) |
+> | 2 — full Playthrough suite on that stack | **MET** — 30 live / 0 failing / 0 error, twice cold (iter-276) |
+> | 3 — checked-in migration-status map, fenced against `repos.yml` | **MET** — fenced **both directions** |
+> | 4 — zero rext writes to a schema the platform no longer creates | **MET** — `REXT_TRANSITIONAL_SCHEMAS` is EMPTY |
+> | 5 — KB-fidelity GREEN/YELLOW-0-blockers over `corpus/{services,architecture}/**` | **OUT OF SCOPE BY USER RULING** |
+>
+> **Clause 5 was never met and is not being declared met.** Its last measurement is iter-131's
+> `P = 29 / N = 47`, and that `P` is a **FLOOR**, not a reading of the tree as it stands. `TOK-09`
+> (user, 2026-08-11) narrowed the definition of done to **architecture + repo/component register +
+> buildability** — all three proven, not asserted — and states in terms: *"This is a scope ruling, not a
+> declaration that the unmeasured reading came out clean, and it must never be reported as one."*
+>
+> The ruling chain: `D-M257x-256-1` (user, 2026-08-10) superseded the gate-4-of-5 framing with a
+> working-stack condition; **`TOK-09` superseded that in turn.** `TOK-07` (iter-116) and `TOK-08`
+> (iter-119) were each refuted by their own pre-registered arithmetic; `TOK-09` is **user-supplied**,
+> not triggered — which is why it exists despite `TOK-08`'s sealed rule barring an agent-authored
+> successor.
+
+**What it delivered.** The consolidation is a **5-service program**, mapped: `roadrunner` was **deleted and
+replaced in-process**, not merged into `app` (`git log --all --diff-filter=A -- internal/roadrunner` →
+**0 commits, ever**, in a 6,728-ref clone, with a positive control returning 3), and `cms`'s ECS service is
+**destroyed** — settled by cloning `infrastructure`, a repo that had never been in any clone set, which made
+the question look *unmeasurable* when it was only *uncloned*. **A clone-set limit is not a measurement
+limit.** All **93** `anthropos-work` repos are enumerated with a home and a verdict
+(`corpus/architecture/org-repos.md`) — a denominator this corpus never had. The recurring class now has a
+**written procedure** (`corpus/ops/platform-alignment.md`, authored by iter-01 because it did not exist) and
+a **machine fence** behind it. Zero platform-repo edits across 288 iterations; zero net-new dependencies.
+
+**Closing metrics.** 655 rosetta + 339 rext commits · 5,177 Python tests passed across 5 rext suites · 6 Go
+sections ok · guard family **31 GREEN / 0 RED / 0 could-not-check** at the merge sha · **0** escape-hatch
+deferrals. The close itself found 47 items and landed 31: the corpus **front door** (`corpus/README.md`,
+`README.md`, `corpus/ops/README.md`) was the one layer 288 iterations of per-service sweeps never reached —
+`corpus/README.md:48` still carried the exact *"8 Go microservices (Backend, CMS, Sentinel, etc.)"* phrase
+that harden pass 57 records as already hunted down and corrected in `CLAUDE.md`. Two gates that reported a
+pass they had not earned were fixed in the tooling that *measures* the gate. 15 drifted handbook test counts
+were reconciled, and 8 iterations that had closed with no ledger line were reconstructed.
+
+**Three facts that must survive this close.** (1) A demo attempted `s3:PutObject` against the **production**
+storage bucket and only an **IAM policy on an account we do not control** refused it; iter-284's containment
+is proven by a unit test **on the emitter and on no running stack**, `demo-2` predates it by nine hours, and
+the dev-side strip is demo-only — **routed to M258, not fixed**. (2) The final harden stopped at
+`cap reached without stabilization` because the whole-section instrument is **itself partially blind on this
+host** (one interpreter cause, eight symptoms) — that is the finding, not a gap in what was measured.
+(3) The tooling fixes landed at this close are in the rext **authoring copy** and are **not on a pushed
+tag**, so no stack can obtain them yet — *tagging is not publishing*.
+
+**Carry-forward → M258:** 11 items in 5 root-cause clusters + 1 block fate over the carried-token tail. See
+[`carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md). **Not routed to
+M257** — its own `exit_gate` still names `odysseus`, retired by `D-v28-15`.
+
+*Historical note on this block's own accuracy: it was `planned` at 101 iters (corrected at iter-102,
+deferral-audit F17), **re-rotted and was corrected again at iter-120** while reading "102 iters / Gate 2 of
+5" seventeen iters late, and at close it read "119 iters + 26 harden passes" — **169 iters and 47 harden
+passes stale**. A Fate-1 item that decays three times is a standing-maintenance item; see
 `deferrals-audit.md` §11.*
+
 **Shape:** `iterative`
 **Dir:** [`releases/02.80-fast-build/m257x-platform-realignment/`](releases/02.80-fast-build/m257x-platform-realignment/overview.md)
 **Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it

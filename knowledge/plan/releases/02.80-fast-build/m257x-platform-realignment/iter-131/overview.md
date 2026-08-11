@@ -1,7 +1,7 @@
 ---
 iteration_type: tik
 iter_shape: reading
-status: in-progress
+status: archived
 opened: 2026-08-07
 corpus_at_open: 60edbd8408711dc01b086701e25c5f5ae13cbce0
 rext_at_open: f2ea567b3

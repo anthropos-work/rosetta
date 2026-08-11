@@ -2,7 +2,7 @@
 iter: 240
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-08-10
 active_strategy: TOK-08
 ---

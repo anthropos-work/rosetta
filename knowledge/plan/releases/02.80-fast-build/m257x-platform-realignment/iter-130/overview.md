@@ -1,6 +1,6 @@
 ---
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-08-07
 corpus_at_open: bfb2660e48862890c1796cccdfd090c4e774b7ae
 rext_at_open: 415240f6f48baa816e473f6cf9a0e2320225c830

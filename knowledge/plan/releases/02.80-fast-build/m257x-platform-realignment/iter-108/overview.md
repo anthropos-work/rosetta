@@ -1,7 +1,7 @@
 ---
 iteration_type: tik
 iter_shape: repair
-status: in-progress
+status: archived
 opened: 2026-08-06
 active_strategy: "TOK-06 — fence the inflows before repairing again (step 3 of 5)"
 ---

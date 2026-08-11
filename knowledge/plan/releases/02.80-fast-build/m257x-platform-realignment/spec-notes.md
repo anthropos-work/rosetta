@@ -1,5 +1,7 @@
 ---
 milestone: M257x
+status: archived
+last_updated: 2026-08-11
 ---
 
 # M257x — spec notes

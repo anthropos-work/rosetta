@@ -2,7 +2,7 @@
 milestone: M257x
 iter: 02
 iteration_type: tik
-status: in-progress
+status: archived
 date: 2026-07-31
 ---
 

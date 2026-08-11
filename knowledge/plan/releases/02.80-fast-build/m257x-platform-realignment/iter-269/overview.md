@@ -2,7 +2,7 @@
 iter: 269
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-08-10
 active_strategy: TOK-08
 route: FIX-M257x-262-demo-env-append-is-not-idempotent

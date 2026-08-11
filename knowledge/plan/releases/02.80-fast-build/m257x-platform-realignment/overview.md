@@ -3,7 +3,11 @@ milestone: M257x
 title: "platform re-alignment"
 release: v2.8 "fast build"
 milestone_shape: iterative
-status: in-progress
+status: archived
+last_updated: 2026-08-11
+closed: 2026-08-11
+close_status: closed-incomplete
+close_authority: "USER RULING — TOK-09 (2026-08-11). NOT a gate-met close. Clauses 1-4 met; clause 5 OUT OF SCOPE by that ruling and never met."
 created: 2026-07-31
 iteration_protocol_ref: corpus/ops/platform-alignment.md
 exit_gate: "Against platform @ **origin HEAD** (never a pinned pre-drift commit): (1) a cold `demo-down --purge` + `demo-up` on the **dev host** (D-v28-15: local to the new Mac; odysseus retired, billion demo-only) reaches `autoverify green:true / 0 warnings` across **3 consecutive cycles**; (2) the **full Playthrough suite passes on that stack** (30 live / 0 failing / 0 error) — presence AND function, so a green bring-up cannot mean an empty world; (3) a **checked-in migration-status map** covering every service the platform has ever had — state ∈ {live-standalone, merged-into-app, decommissioned, net-new} — **each claim cited to platform source** (commit sha or file:line) and **machine-fenced against `repos.yml`** so it cannot silently drift; (4) **zero rext writes to a schema the platform no longer creates**, asserted by a FENCE that is watched going RED, not by inspection; (5) KB-fidelity audit **GREEN, or YELLOW with 0 blockers**, over `corpus/services/**` + `corpus/architecture/**`. Clauses 1/2/4 are rosetta-extensions; 3/5 are the rosetta corpus — both repos are in the gate by construction."

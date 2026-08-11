@@ -2,7 +2,7 @@
 iter: 144
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-08-08
 active_strategy: TOK-08
 route_closed: FIX-M257x-h30-crossline-repair

@@ -2,7 +2,7 @@
 iter: 57
 milestone: M257x
 iteration_type: tik
-status: in-progress
+status: archived
 opened: 2026-08-03
 active_strategy: TOK-04
 target_clause: 3
