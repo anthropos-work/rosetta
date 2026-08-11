@@ -38,6 +38,18 @@
   negative control plus a mutation control that turns three tests RED. **Metric delta 0, by design.**
   `closed-fixed`; +11 tests (109 → 120). — see `iter-06/progress.md`
 
+- iter-07 (tik): **the campaign RAN and the number is not a baseline — and the reason is the deliverable.**
+  3 complete cold cycles on `demo-1`, all `rc_up=0`, **p50 489.90 s** (min 472.82 / max 681.71), the user's
+  `demo-2` + dev stacks untouched throughout. **All three are disqualified by ONE root cause:** driven from
+  the **authoring copy**, `buildbench.rext_root()` makes every workspace-relative lookup resolve one
+  directory tree away from the stack → **17/17 demopatches REFUSED** (G6 arm 1) + the `postgres-schemas`
+  probe cannot find `repos.yml` → `autoverify green:False`. The remedy is **verified** (3 of 4 preconditions
+  already hold from a pinned `stack-demo` clone); the 4th is a **publish** — tag + `git push --tags` — which
+  this session does not take. `gated_baseline` deliberately left empty. As an *anchor*: this host needs a
+  **~27 %** cut to 360 s where billion needed 46 %, and iter-04's estimate was optimistic by ~8–16 %, not
+  the ~50 % rep-01 alone implied. **2 of 3 reps refused by HEADROOM** (peak load1 18.71 / 16.88 vs 10) —
+  reported as results. `closed-fixed-partial`; exits `user-blocker`. — see `iter-07/progress.md`
+
 ## Next-iter routing
 
 > ⚠️ **The routing below is SUPERSEDED for the host and the blocker.** iter-04's Step 0 re-survey found
@@ -45,14 +57,16 @@
 > premise which paused this milestone is **refuted by measurement**. iter-05 then re-pointed the gate.
 > Historical rows kept; read iter-05's close first.
 
-- **iter-07 — `BASELINE-M257-macmini-n3`.** Under `TOK-02` step 3. The `n ≥ 3` cold
-  `demo-down --purge` + `demo-up` campaign on **`demo-1`** — a free, registered, container-less slot —
-  **taken CONTENDED and labelled so** (the box cannot be freed; `laptop.json` shows what waiting for quiet
-  produces: a clause-1 refusal at load1 10.69 and **no cycle number at all**). Every rep carries its load1;
-  **a refusal is reported as a RESULT**, with what the run would have measured. Fills `macmini.json`'s
-  `gated_baseline`. Pre-flight already gathered at iter-06: VM disk 51.6 GiB free vs a 22 GiB
-  floor+projected, and a demo-up demonstrably works on this box. **Heartbeat before touching the user's
-  `demo-2` or the dev stack.** Then levers, largest-measured-second first.
+- **iter-08 — `BASELINE-M257-macmini-n3`, take two, from a PINNED clone.** Under `TOK-02` step 3. iter-07
+  proved the campaign cannot be driven from the authoring copy (17/17 demopatches refused; the whole run
+  disqualified by one root cause). **Blocked on a decision, not on evidence:** the fix needs
+  `rosetta-extensions` **tagged and pushed to origin**, `stack-demo/rosetta-extensions` re-pinned to it,
+  the authoring-copy `demo-1` torn down (same compose project name), and the campaign re-run from that
+  clone. Three of the four preconditions already hold — see `iter-07/progress.md` Line 10 for the verified
+  table. Everything else about `TOK-02` step 3 stands: contended and labelled, every rep carries its load1,
+  **a refusal is a RESULT**. Then levers, largest-measured-second first.
+- ~~**iter-07** — the campaign from the authoring copy~~ → **DONE, and it answered a different question
+  than the one it asked.** p50 489.90 s (n=3) is an *anchor*, not a baseline; `gated_baseline` stays empty.
 - ~~**iter-06** — `FIX-M257-load1-units-vm`~~ → **DONE.** The instrument now grades the right machine, so a
   refusal from it can be believed — `TOK-02`'s stated precondition for the campaign.
 - ~~**iter-05** — BLOCKED on the user~~ → **DONE.** The gate re-cut was a *stale-reference repair*, not
