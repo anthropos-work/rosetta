@@ -332,6 +332,21 @@ fenced twice over:
   > closed for demos. **Recorded, not fixed**: forcing it would cost dev uploads the same broken-thumbnail
   > trade a demo accepts, and that is a call for the operator, not for a harden pass
   > (`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket`).
+  >
+  > **Measured live, not inferred** (M257x harden pass 72, `docker inspect` on the running stacks):
+  > `anthropos-backend-1` carries `STORAGE_S3_BUCKET=production-storage…` **and**
+  > `STORAGE_S3_PUBLIC_BUCKET=production-storage-public…` right now. The same run confirmed three
+  > claims this corpus makes about that container — `AUTHORIZATION_ADDRESS=http://sentinel:8087`,
+  > `GOTENBERG_URL=http://gotenberg:3200`, and **zero** `*_RPC_ADDR` variables.
+
+  > **⚠️ THE STRIP TAKES EFFECT AT THE NEXT `/demo-up`, NOT ON A RUNNING DEMO — and this document said
+  > "now overridden" without saying when.** The override is written by the emitter at bring-up; a demo
+  > that was already up when iter-284 landed keeps the environment it booted with. Measured at harden
+  > pass 72: `demo-2`, up 17 h and brought up **before** iter-284 landed that morning, **still carries
+  > both production buckets on `backend`**. So the containment is proven **by the emitter's unit test,
+  > and on no running stack** — the first demo to actually carry it will be the next one built. Treat
+  > *"a demo cannot write the production bucket"* as true of demos brought up **after** iter-284 and
+  > false of any older one still running.
 
   > **How credentials actually reach a stack — the mount is no longer the vehicle.** The base compose does bind
   > `$HOME/.aws/credentials:/root/.aws/credentials:ro` onto `backend` (`docker-compose.yml:99-100` @ `0c91421df`;
