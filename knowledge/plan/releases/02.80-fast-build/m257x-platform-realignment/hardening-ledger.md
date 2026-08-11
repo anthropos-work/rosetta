@@ -6785,15 +6785,130 @@ iter-279's 35 m 05 s for the same section.
   followed the recorded precedent rather than deciding it.
 - `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks` → still open, now
   **discoverable from the corpus** rather than only from `knowledge/`.
-- `ROUTE-M257x-h68-rext-hardcodes-3-more-decommissioned-consumer-lists`,
-  `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere`,
-  `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` (**this pass is a worked example of
-  its cost — a class measured at 15 and never re-measured had reached 1**),
-  `ROUTE-M257x-h62-live-markdown-refragmented`, `ROUTE-M257x-h59-range-anchors-are-ungraded`,
-  `FIX-M257x-265-prose-deletion-instructions-are-out-of-D-reach` → all open.
+- `ROUTE-M257x-h68-rext-hardcodes-3-more-decommissioned-consumer-lists` → **CLOSED by iter-270, and
+  this entry published it as open backlog until pass 71 graded it.** ⚠️ Corrected in place. Pass 68
+  routed exactly four items and **iter-270's commit `2833a64` landed all four** — measured on disk:
+  `INJECTED = {"backend": "app"}` (`gen_injected_override.py:59`), `REUSE_DEV = {"sentinel":
+  "anthropos-sentinel"}` (`:175`), `INJECT_CANDIDATES="app"` (`up-injected.sh:222`), and
+  `derive_inject_svcs` now `die()`s with a message naming the exact hazard the route described
+  (*"refusing to inject the unfiltered candidate list … which names services the platform no longer
+  builds"*) instead of falling back to it. **This is the fourth instance of the class iter-279 named —
+  a landed fix published as open backlog — and the second in which the stale sentence was written by
+  the immediately preceding step of the same session.** The lesson is not "be careful": a
+  carried-forward route list is a set of CLAIMS and decays exactly like any other, so it must be
+  GRADED at each carry, never copied. Pass 71 graded it; passes 69 and 70 copied it.
+- `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere` → **still open, and this session is its sixth
+  confirmation with a fresh measured cost.** Re-verified at pass 69: `rosetta-extensions` has **no git
+  hooks and no CI workflows at all**. Pass 69 added one `*_test.go` file; that rotted a repo-wide
+  declared count, fired **nothing, anywhere**, and cost a **35 m 48 s** whole-section run to see.
+- `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` → **still open, and pass 70 is a
+  worked example of its cost**: a class measured once at 15 classes / 76 tests, never re-measured, had
+  reached **1** — and that 1 was created by the pass that finally re-measured it.
+- `ROUTE-M257x-h62-live-markdown-refragmented`, `ROUTE-M257x-h59-range-anchors-are-ungraded` (the
+  latter re-affirmed by `anchor_construct_guard`'s own scope line this pass, 141 of 496 range citations
+  refused), `ROUTE-M257x-270-directus-consumer-cms-key` (still open by design — `cms` is retained as an
+  inert rollback key and the source says so), `FIX-M257x-265-prose-deletion-instructions-are-out-of-D-reach`
+  → carried, **not re-graded this pass and not asserted as open on this pass's authority**.
 
 **Stop condition:** continue-to-next-pass — **9 defects fixed inline** across passes 69–70, three of
 them this session's own making and one of those created by the pass that came to re-measure its class.
 The incremental cap is **three** passes and this is the second, so the pass-loop continues; what is
 still uncovered is the iter-270/271/272 limb (the clone-set hardcodes, the cold-cycle proof and the
 succession disposition), untouched by either pass so far.
+
+## Pass 71 — 2026-08-11 — incremental
+
+**Iters hardened this pass:** the iter-270 limb (the clone-set / injected-service hardcodes)
+**Tiks covered since prior pass:** same batch as passes 69–70
+
+Started 02:23:28Z, finished 02:34:57Z. **One question, asked twice: is the class closed, or only its
+instances?**
+
+1. **A carried-forward route list is a set of CLAIMS and decays exactly like any other.**
+   `ROUTE-M257x-h68-rext-hardcodes-3-more-decommissioned-consumer-lists` — pass 68's own *"highest-value
+   item this pass produced"* — was **closed in full by iter-270**, and passes 69 and 70 both carried it
+   forward as open. Measured on disk: `INJECTED = {"backend": "app"}`, `REUSE_DEV = {"sentinel":
+   "anthropos-sentinel"}`, `INJECT_CANDIDATES="app"`, and `derive_inject_svcs` now `die()`s with a
+   message naming the exact hazard the route described instead of falling back to it — all four items,
+   all landed. **This is the fourth instance of the class iter-279 named (a landed fix published as open
+   backlog) and the second where the stale sentence was written by the immediately preceding step of the
+   same session.** Corrected in pass 70's entry in place. The remedy is not care: **grade the route at
+   each carry, never copy it.**
+2. **The hardcode class IS closed — and now with an enumeration rather than four repairs.** Swept the
+   whole repo for the shape (a live, non-test, non-comment literal collection naming a decommissioned
+   service): **5 survivors, 0 of them undisclosed.** `ARCHIVED_SERVICE_NAMES` and
+   `SERVICES_NOT_IN_PLATFORM_COMPOSE` are registries whose SUBJECT is the corpses; `DIRECTUS_DATA_CONSUMERS`
+   ×2 retain `cms` as a documented inert rollback key already carried as a route; `SOURCE_EXTS`'s
+   `graphql` is a file extension and is reported as an instrument false positive rather than quietly
+   dropped. **§5's rule holds: a repair closes an instance, an enumeration closes a class.**
+3. **And the sweep found a false FACT in the half of that registry nothing grades.**
+   `service_registry_guard` splits each entry into `<name>:<why>`, uses the NAME, and stores the WHY as
+   free prose it never reads again — so membership is fenced in both directions and the **reasons are
+   not fenced at all**. `roadrunner` was declared **`merged-into-app`**, four months after **M257x
+   iter-137 retracted exactly that phrase in `CLAUDE.md`**, and retracted it on a measurement
+   (`git log --all --diff-filter=A -- internal/roadrunner` → **0 commits, ever**, so the
+   `app/internal/roadrunner/` package the phrase predicts was never created; it was DELETED and its job
+   re-implemented in-process inside the jobsimulation domain). Deleted-and-replaced is not
+   merged-and-undeployed, and only one of the two predicts that package.
+   New reason kind **`deleted-not-merged`**, documented beside the other two.
+
+> **THE COUPLING RUNS BOTH WAYS, and pass 70 had only seen one of them.** iter-278/279 found the corpus
+> copying a stale claim **out of** a tooling docstring. This is the mirror: the corpus **corrected** a
+> claim and the correction never reached the tooling copy. Same coupling, opposite direction, and
+> **neither direction is fenced** — which is exactly what
+> `ROUTE-M257x-h70-corpus-and-code-prose-are-copies-with-no-fence` sizes at **172 (module, doc) pairs**.
+> A one-way reading of that route would have built a one-way fence.
+
+**Tests added:** 3 Python (`stack-core/tests/test_service_registry_guard.py`, class
+`TheABSENCE_REASONS_AreAVocabularyAndOneOfThemWasAFACTUALERROR`) — the array parses non-vacuously;
+every reason kind used is one the comment block defines (**both directions**, since an undocumented
+kind is a private convention that survives review by being invisible); and roadrunner specifically is
+not `merged-into-app`. That last is **narrow on purpose**: a vocabulary check cannot catch it, because
+`merged-into-app` is a perfectly well-documented kind — just the wrong one for that row. **Proven RED
+by flipping the value back** before being trusted green.
+
+**And pass 70's lesson was applied the same hour it was written:** the new class is defined **above**
+the `__main__` guard, and both runners answer **31**.
+
+**Coverage delta on touched files:** `stack-verify/lib/services.sh`'s absence-reason field goes from
+**0 graded** to **fully graded** (vocabulary closure both ways + 1 fact pin). No new production code.
+
+**Bugs surfaced + fixed inline:**
+- a route closed by iter-270 and re-published as open backlog by two consecutive harden passes
+  (corrected in pass 70's entry)
+- `roadrunner:merged-into-app`, false since iter-137 and unreachable by any fence (`9933b6a`)
+
+**Flakes stabilized:** none surfaced.
+
+**VERIFICATION.** pytest 8.4.2 / CPython 3.9.6 (`/usr/bin/python3`), go1.26.5 darwin/arm64.
+
+| scope | result |
+|---|---|
+| `stack-verify` whole section | **275 passed** (371.18 s = 6 m 11 s) |
+| `test_service_registry_guard.py`, **3× consecutive** | **31 passed** each (1.78 / 1.79 / 1.78 s) |
+| same module, **direct execution** (the pass-70 check) | **`Ran 31 tests … OK`** — both runners agree |
+| the roadrunner pin, with the value flipped back | **RED**, as designed |
+| `test_gofmt_clean_m257x.py` + `test_test_collection_fence.py` | **37 passed** |
+| `guard_family --repo-root . --platform stack-demo/platform` | **30 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+
+**NOT COVERED, stated rather than implied:**
+* `stack-core` was **not** re-run in full after pass 70's whole-section run; pass 71's edits are one
+  shell array and one test class, and the two modules that read them were run directly. The
+  35 m 48 s figure in pass 70's entry grades the tree as of **02:00Z**, not as of this pass's HEAD.
+* **No live stack was brought up** — gate clause 1 is untouched by all three passes. `demo-1` and
+  `demo-2` were not stopped, restarted or re-seeded.
+* `demo-stack`, `dev-stack` and `stack-injection` were **not** re-run this pass.
+* The rext commits are in the authoring copy only — not tagged, not pushed, consumed by no stack, and
+  `.agentspace/rext.tag` stays at `fast-build-m257x-iter-279`. That matches every prior harden pass.
+
+**Routes carried forward:** as graded in pass 70's entry above (which pass 71 corrected), plus
+`ROUTE-M257x-h70-corpus-and-code-prose-are-copies-with-no-fence` now known to be **bidirectional** —
+any fence built for it must grade both directions or it will close the half that happens to have been
+found first.
+
+**Stop condition:** cap reached without stabilization — three passes, **11 defects fixed inline**,
+**four of them this session's own making**: a file that was not gofmt-clean, three tests hidden from the
+direct runner, a declared count and the sum beside it, and four ambiguous anchors minted by a paragraph
+about ambiguous anchors. Per the user's standing ruling the routes above are recorded and NOT met with
+new machinery; the **eighteenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35,
+38, 41, 44, 47, 50, 53, 56, 59, 62, 65, 68, 71).
