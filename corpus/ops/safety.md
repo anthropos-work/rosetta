@@ -64,10 +64,20 @@ condition. It is source-pinned and auditable in one file, and it changes nothing
 §3.8.1** — and do not repeat the unqualified promise above without them.
 
 On the write side, a small
-set of stores are *shared* with the live product (the content system, one storage bucket, the login system);
+set of stores are *shared* with the live product (the content system, **two** storage buckets, the login system);
 the tooling **blocks every write to those from a non-production stack**, repairs the environment before it
 starts, and produces an **audit log that proves** nothing leaked. Neither promise depends on the operator
 remembering a flag — both are structural.
+
+> **⚠️ The write-side promise is a promise about what the TOOLING blocks, and it has been wrong once — read
+> it that way.** On 2026-08-11 a demo's studio-desk attempted an upload to the **production** private S3
+> bucket. It was refused **403**, nothing was written, and **the reason was an IAM policy on an account we do
+> not control** — not this design. The bucket was hardcoded in platform compose, this tooling overrode only
+> the *public* one, and the store was registered as per-stack-isolated when its default pointer was
+> production. All three are now fixed (§2.1 S3-private row, §2.2). What does not get fixed by that is the
+> shape of the failure: **every claim below of the form *"a demo cannot write prod"* is a claim about the set
+> of pointers this tooling knows to override.** A pointer the platform adds tomorrow is outside it until
+> someone notices, and *"nothing was written"* is the outcome, never the guarantee.
 
 A third write surface joined the family in v1.6: the **secret provisioner** moves secret *bytes*
 source→gitignored-target to fill each stack's `.env`. It is fenced the same way — **values-blind** (no verb
@@ -200,11 +210,11 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 |---|---|---|
 | **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points **`backend`'s** `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
-| **S3 PRIVATE bucket** | ⚠️ **unclassified — the guard does not cover it** | Since platform `0dab54d` (2026-08-03) compose also hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` on `backend` (`docker-compose.yml:82` @ `0c91421`). `PreflightEnv` forces the **public** bucket only (`stack-seeding/isolation/audit.go:146`) — there is **no** entry for the private one, so a stack with working AWS credentials writes private uploads into the **production** private bucket. This contract **names** that exposure; its disposition is an open escalated item (`DEF-M257x-iter80-storage-prod-bucket`, severity high) and is deliberately **not** resolved here. |
+| **S3 PRIVATE bucket** | `SharedPollutionRisk` | Since platform `0dab54d` (2026-08-03) compose hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` on `backend` (`docker-compose.yml:82` @ `0c91421`), and until **M257x iter-284** nothing overrode it: `PreflightEnv` forced the public bucket alone, so a stack with working AWS credentials wrote private uploads into the **production** private bucket. **That was not theoretical — it was exercised.** On `demo-2`, studio-desk's *"fine-tune in Advanced mode"* attempted `s3:PutObject` against `s3://production-storage…/cms/<uuid>` and was refused **403** by an IAM policy on an account we do not control. **Nothing was written, and nothing in this design was the reason.** Now overridden to `""` in **both** places a demo carries a pointer — the running container (the injected compose override strips `STORAGE_S3_BUCKET` and `STORAGE_S3_PUBLIC_BUCKET` on every emitted service, beside the `DIRECTUS_TOKEN` strip) and the seeder (`PreflightEnv`, every target). Empty is `app`'s own local-fallback value, not an invented sentinel (`app/internal/storage/storage.go`). **The cost, stated:** an upload then lands on the container's ephemeral disk and its presigned URL comes back empty, so a freshly uploaded asset renders as a broken image — the platform's own W2 behaviour, and the right trade for a demo. |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
 | **coresignal** | `External` | enrichment source — safe to read, **never write** on non-prod |
-| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and is removed FROM THIS TABLE** — it is not per-stack-isolated at platform `0c91421`; see its own row above. ⚠ **The CODE still classes it `PerStackIsolated`** (`stack-seeding/isolation/isolation.go:118`, *"falls back to local /tmp on demo"*). This row asserted the registry had been changed; **it has not been**, and M257x iter-98 withdraws that assertion rather than making it true — re-classing the store is part of the open escalation `DEF-M257x-iter80-storage-prod-bucket`, which is the user's call and is deliberately unresolved. **Until it is decided, the doc and the registry disagree, and that disagreement is stated here rather than hidden.** |
+| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and is not per-stack-isolated** — see its own row above. ⚠ For four months the CODE classed it `PerStackIsolated` (*"falls back to local /tmp on demo"*) while this table said otherwise, and iter-98 recorded the disagreement rather than resolving it, because re-classing was the user's call. **M257x iter-284 resolved it in the direction the evidence had always pointed:** the fallback the note described only happens when the bucket is EMPTY, and compose hardcoded a **production** bucket, so it never happened. The registry now classes the store `SharedPollutionRisk` and both pointers are forced empty. **A store whose default pointer is production was never per-stack-isolated by any reading, and a disagreement stated but left standing is still a document that is half wrong.** |
 
 > **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
 > `public.{job_simulation_sessions, validation_attempt_results, validation_attempt_skill_results,
@@ -233,10 +243,14 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
    **prod** target — **a non-prod stack can never write a shared store, regardless of opt-in.** This makes
    non-prod pollution impossible by construction, not by configuration.
 2. **`Guard.PreflightEnv(env, target)`** — *before* seeding begins, asserts and repairs the environment:
-   - **forces `STORAGE_S3_PUBLIC_BUCKET = ""`** (always, every target) so no storage write can reach the shared
-     public bucket — **and only that one.** `STORAGE_S3_BUCKET` (the PRIVATE bucket, hardcoded to a production
-     bucket in compose since `0dab54d`) is **not** in the forced set — `stack-seeding/isolation/audit.go:146` is
-     the whole of it. See the S3-private row above and `DEF-M257x-iter80-storage-prod-bucket`;
+   - **forces `STORAGE_S3_PUBLIC_BUCKET = ""` and `STORAGE_S3_BUCKET = ""`** (always, every target) so no
+     storage write can reach a shared production bucket, public or private. **Only the public one was forced
+     until M257x iter-284**, and the gap was closed by an incident rather than by review — see the S3-private
+     row above. **A second pointer needed the same fix and is NOT in this guard:** `PreflightEnv` repairs the
+     *seeder's* environment, while the write a user actually hit came from `backend`, which reads its **own
+     compose env** and never sees the seeder's. That one is stripped in the injected compose override
+     (`stack-injection/gen_injected_override.py`). Two pointers, two mechanisms — a fence over one of them
+     reads exactly like a fence over both;
    - on non-prod, **rejects a live-Clerk base URL** (any of `CLERK_API_URL`, `CLERK_FAPI_URL`, … pointing at
      `clerk.com` / `api.clerk.com` / `*.clerk.accounts.dev` / `*.clerk.services`) as a hard error — it must be a
      Clerkenstein/local host;
@@ -614,7 +628,9 @@ Recorded honestly, as the argument that actually carries the decision:
    mitigation when D-DESIGN-3 was taken (v2.3), and for the demo shape that existed then it is exactly what
    **Parts 1 and 2 guarantee, unchanged**: that demo's data is **synthetic + public-snapshot-only**. The
    tenant-data firewall means **no customer data can be in it** — not "should not", *cannot*, or the capture
-   aborts. The 3-layer write guard means a demo **cannot write prod**. An attacker who fully owns one obtains: a
+   aborts. The 3-layer write guard means a demo **cannot write prod** *through any pointer the guard covers* — see
+   the write-side caveat in "the two promises" above; the 2026-08-11 S3 incident is the one time that qualifier
+   was load-bearing. An attacker who fully owns one obtains: a
    generated population, the public skills taxonomy every customer already sees, public Directus content — **and
    the contents of the `backend` container's environment, which is not synthetic (§3.4 residual #4).**
    **The authz-weakening is only alarming if there is something to protect, and for the demo shape's DATA there
@@ -753,7 +769,8 @@ inherited. It is **strictly narrower**, and it should feel narrower:
 exposure. §3.1 shows it did not — the containers were world-published either way, so D-DESIGN-1 was buying less
 safety than it appeared to, at the cost of a demo that a presenter could not reach. What it *did* withhold was
 the trusted HTTPS origin. Meanwhile the thing that actually makes a demo safe to expose — **there is no customer
-data in it, and it cannot write prod** — is a *structural* property (Parts 1-2), not a consequence of the flag.
+data in it, and it cannot write prod** (over the covered pointers — see the write-side caveat in "the two
+promises") — is a *structural* property (Parts 1-2), not a consequence of the flag.
 D-DESIGN-3 therefore moves the default, keeps the escape hatch, and confines the change to the path whose entire
 purpose is to be shown to other people.
 
@@ -810,7 +827,8 @@ the single page not behind the trusted cert, while everything it links to was.
 `tailscale serve` puts it behind the tailnet's **TLS + authenticated device mesh** instead of cleartext HTTP. It
 does **not** password-protect it. Anyone who can reach the tailnet can still become any hero, exactly as before;
 they now do so over a trusted origin. The reason that is acceptable is unchanged and structural: **there is no
-customer data in a demo, and it cannot write prod** (Parts 1–2).
+customer data in a demo, and it cannot write prod** over the covered pointers (Parts 1–2, with the write-side
+caveat in "the two promises").
 
 #### 3.5.3 The DEV path — remote reach is now a real opt-in, where before it was a vacuous one (M220 S7)
 

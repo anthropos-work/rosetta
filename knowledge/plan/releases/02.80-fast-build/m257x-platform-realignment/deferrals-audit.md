@@ -78,7 +78,7 @@ These four cannot be fated by any lane. State them to the user as the questions 
 - id: DEF-M257x-iter80-storage-prod-bucket
   severity: HIGH
   origin: iter-80 (2026-08-04), escalated to the user 2026-08-05
-  status: OPEN — undecided. RE-DERIVED LIVE THIS PASS AND STILL TRUE.
+  status: CLOSED at iter-284 (2026-08-11) — DISCHARGED BY AN INCIDENT, not by a decision.
   re_derivation: |
     `stack-demo/platform` @ `0c91421d` (== `git ls-remote origin HEAD`), `docker-compose.yml:82`:
       - STORAGE_S3_BUCKET=production-storage20240826131618541000000005
@@ -87,12 +87,30 @@ These four cannot be fated by any lane. State them to the user as the questions 
     booking derived this at `0dab54d`; the line number and the block hold at the newer ref.
   what_was_done: the false present-tense corpus claim was WITHDRAWN (iter-98), not made true.
     `safety.md`/`seeding-spec.md` now state the doc-vs-registry disagreement openly.
-  what_is_still_open: |
-    `stack-seeding/isolation/isolation.go:106` still registers `s3-private` as `PerStackIsolated`.
-    Re-classing it IS the disposition of this item. iter-98 refused to do it: "fixing the doc is always
-    available; fixing the code is only available when the change is yours to make."
+  what_is_still_open: NOTHING. Closed at iter-284.
+  how_it_closed: |
+    It was never decided; it was EXERCISED. On 2026-08-11 a demo's studio-desk attempted `s3:PutObject`
+    against `s3://production-storage20240826131618541000000005/cms/<uuid>` and was refused **403** by an
+    IAM policy on `user/claude-code-bedrock`. Nothing was written, and nothing in our design was the
+    reason — the only thing between a demo and a production write was somebody else's permission
+    boundary. The user then ruled it the top-priority item, which is the decision this entry had been
+    waiting ten iters for.
+    Landed at iter-284, on BOTH pointers a demo carries, because only one of them was ever in scope here:
+      * the SEEDER's env — `PreflightEnv` now forces `STORAGE_S3_BUCKET` as well as the public bucket,
+        on every target;
+      * the RUNNING CONTAINER's env — the injected compose override strips both buckets on every emitted
+        service, beside the `DIRECTUS_TOKEN` strip. This is the one the incident actually came through:
+        `backend` reads its own compose env and never sees the seeder's.
+    And the registry was re-classed `s3-private: PerStackIsolated -> SharedPollutionRisk`. iter-98's
+    refusal ("fixing the code is only available when the change is yours to make") was right at the time
+    and is now spent.
+  what_this_entry_teaches: |
+    The item was flagged CHRONIC_DEFER for ten iters and every restatement was accurate. What none of
+    them did was make the hazard cheaper to hit or easier to see — it took a user clicking a button in a
+    demo. **A correctly-recorded open hazard is still an open hazard**, and a ledger that keeps its
+    entries honest is not the same as one that gets them closed.
   deferred_count: 10 iters restated it as held/undecided (80, 82, 83, 84, 85, 86, 87, 95, 96, 98, 100)
-  flags: [REPEAT, CHRONIC_DEFER, BLOCKING_ON_USER, HIGH]
+  flags: [WAS_REPEAT, WAS_CHRONIC_DEFER, CLOSED_AT_ITER_284, HIGH]
 
 - id: FIX-M257x-iter53-union-set   # user decision D-M257x-53-5
   origin: iter-53 (2026-08-03)
