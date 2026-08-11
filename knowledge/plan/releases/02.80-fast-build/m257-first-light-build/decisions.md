@@ -246,3 +246,82 @@ go RED** — a deliberate negative control (stop a service, confirm the verdict 
 this gate consumes that verdict directly. Expected lift on the primary metric: **zero, by design.** The
 iter grades on its planned deliverables — a host that can run a cycle and an instrument that can fail —
 per the Phase 4 Step 0 rule that *planned scope* is what the iter's `overview.md` committed to.
+
+---
+
+## TOK-02: same strategy, a host that exists — and take the number on the box we actually have — 2026-08-11
+
+**Tok type:** triggered (3-no-prog streak — iter-02, iter-03, iter-04 all closed *"metric delta 0, by design"*)
+
+**Prior strategy:** `TOK-01` — *instrument before baseline, baseline before levers*. Three preconditions in
+order: **(1)** the host can run a cycle at all, **(2)** the gate's own instrument is proven able to FAIL,
+**(3)** that host's own `n ≥ 3` p50 baseline is checked in. Then levers, largest-measured-second first, one
+per iter, each landing with the falsifiable assert that can trip it.
+
+**Why it stopped working:** *the shape was right and every reference in step 3 was dead.* Steps 1 and 2
+landed and are banked. Step 3 named `odysseus` three times over — the host, the profile filename
+`odysseus.json`, and the baseline itself — and **`D-v28-15` retired odysseus one day after `TOK-01` was
+written**. So did the exit gate, which is why iter-04 could not simply proceed: a gate naming a retired host
+is not merely inconvenient, it is **ungradeable**, and no measurement taken anywhere could have satisfied it.
+
+The three no-prog tiks were not idle. iter-02 proved the instrument falsifiable, iter-03 fixed the two
+blockers that made READY unsatisfiable **on every host**, iter-04 measured the host that exists. Each
+delivered a precondition; none could move a metric that did not exist yet. **A metric that cannot move for
+three iters is exactly the condition this mechanism exists to catch** — and what it caught here is that the
+strategy's *targets* had rotted, not its *logic*.
+
+**New strategy — `TOK-01` with its references repaired and one premise inverted:**
+
+1. **The gate names the machine that exists.** Re-pointed `odysseus` → **`macmini`** (this iter). Every
+   target survived verbatim in substance: p50 ≤ 360 s over 3 consecutive cold `--purge` + `demo-up` cycles at
+   `autoverify green:true / 0 warnings`, 0 platform-repo edits, all 7 demopatch guards, both falsifiable
+   asserts, the ≤ 300 s stretch, and the re_scope_trigger's semantics. `TOK-01`'s **step-3 discipline is
+   unchanged and re-pointed**: no lever may be priced until `macmini.json`'s `gated_baseline` is filled by a
+   real `n ≥ 3` campaign.
+2. **Fix the instrument's UNITS before trusting its refusal.** `buildbench.py` clause 1 grades **host**
+   `os.getloadavg()` against `profile["cores"]`, which for a `docker-desktop-vm` profile is the **VM
+   allocation**. Here that is a 12-core machine's load against an 8-core limit → a threshold of **6** where
+   the correct one is **10**. It **fails CLOSED**, so it would refuse cycles this host is fine to run, and a
+   refusal I could not tell from a real one is worse than no clause. `FIX-M257-load1-units-vm` comes *before*
+   the campaign, not after — this is `TOK-01`'s own *"prove the instrument before the measurement"* rule
+   applied to the clause `TOK-01` never got to exercise.
+3. **Take the baseline on a CONTENDED box, and label it.** The host is a permanently-busy workstation
+   (observed load1 ~2.9–13) and it cannot be freed; **waiting for quiet is waiting forever**, which is what
+   `laptop.json` did — it records a full cycle *refused by its own clause 1* at load1 10.69 and no cycle
+   number at all. The release's binding rule is *state the environment with every number*, and that rule is
+   satisfied by **labelling** a contended measurement, not by declining to take one. Every figure carries its
+   load1; none is published as a clean baseline. **A clause-1 refusal is a RESULT** — record it, with what
+   the run would have measured, rather than reporting a failure to measure.
+4. **Then levers, unchanged**: largest-measured-second first, one per iter, re-measured at `n ≥ 3`, each
+   landing together with the falsifiable assert that can trip it. **But re-priced for this host**, which is
+   where the premise inverted: L1 is worth ~136–152 s here (not the ~0 the pause assumed), and the derived
+   `max_parallel_ui_lanes` is **2** where billion's is 1, so L2 changes character rather than merely shrinking.
+
+**Strategy class:** `retry-with-evidence` — this is `TOK-01` retried against a host that can actually be
+measured, unblocked by evidence gathered since (iter-04's unpack probe and host profile, and M257x's
+`c0e075e`). It is deliberately **not** `new-direction`: the ordering discipline was never falsified, only its
+targets went stale, and discarding a sound strategy because its nouns rotted would lose the one thing three
+iters bought.
+
+**Distance-to-gate context:** **still formally UNKNOWN, and that is now the only thing between here and
+levers.** Gate: p50 ≤ 360 s on `macmini`. No cold cycle has ever been run on this host. iter-04's estimate —
+~420–455 s pre-lever, with L1 worth ~136–152 s → ~270–320 s post-L1 — is a **scaling of billion's phase table
+by one measured image** and must never be quoted as a baseline; this milestone's opening lesson is that a
+number scaled from another machine is not a measurement. What *has* changed is the sign of the estimate: the
+premise that paused this milestone predicted the gate was unreachable locally, and the measurement points the
+other way.
+
+**Cross-refs to prior TOKs:** `TOK-01` sequenced instrument → baseline → levers and **that ordering stands**;
+it stalled only because its host was retired between authoring and execution. This tok does not pivot away
+from it — it repairs its references, adds a step-1.5 (fix the clause's units before trusting the clause), and
+records that its central risk assessment was **inverted by measurement**: `TOK-01` reasoned that if odysseus
+had turned out *not* to pay the unpack leg, *"a re-scope signal would have been on the table before a single
+lever was touched."* That is precisely the reasoning `D-v28-15` then applied to the Mac — on a `docker info`
+string rather than a probe — and it was wrong.
+
+**Next-tik direction:** **iter-06** — land `FIX-M257-load1-units-vm` (clause 1 grades load1 against the core
+count of the machine the sample came FROM; fail-closed when that basis is unknown, and prove the new arm RED
+with the precondition absent), then open `BASELINE-M257-macmini-n3`: the `n ≥ 3` cold
+`demo-down --purge` + `demo-up` campaign on a **free** demo slot, every rep labelled with its load1, filling
+`macmini.json`'s `gated_baseline`. Heartbeat before disturbing the user's `demo-2` or the dev stack; prefer a
+slot that is already free.

@@ -313,6 +313,32 @@ and a simplification lens) ran against the first draft of this section. Its mate
   *(Odysseus was chosen one day earlier precisely because it was a containerd/x86_64 near-twin of billion. That
   property is what a Mac cannot supply.)*
 
+  > **⛔ THE COST PARAGRAPH ABOVE IS RETRACTED — measured false, 2026-08-11 (M257 iter-04; written down at
+  > iter-05, `DOC-M257-hostclass-retraction`). The DECISION itself stands unchanged**: billion is the official
+  > demo host, dev/test is local to the new Mac, odysseus and the old laptop are retired. Only its predicted
+  > *cost* was wrong — and it was wrong in the direction that paused a milestone for eleven days.
+  >
+  > **This Mac mini (M4 Pro) runs the CONTAINERD image store and PAYS a size-proportional unpack leg.**
+  > Controlled two-size probe: **0.8 s @ 256 MB → 3.0 s @ 1024 MB** (export 3.5 s → 14.3 s). The real
+  > `hiring.Dockerfile` image (4.12 GB) paid **56.6 s export + 19.3 s unpack**. So **L1 keeps a substantial
+  > price locally (~136–152 s)** and **M257's gate IS measurable here** — it was re-pointed from `odysseus` to
+  > `macmini` at M257 iter-05, targets untouched.
+  >
+  > **Two things this got wrong, both worth carrying:**
+  > 1. **`docker info` is not a measurement.** It prints `Storage Driver: overlayfs` on this host, which reads
+  >    at a glance like the laptop's classic `overlay2` graphdriver while the DriverStatus is
+  >    `io.containerd.snapshotter.v1`. `spec-notes.md` F1 had written that trap down *before* this decision was
+  >    made, and it was walked into anyway. **A documented trap does not stop being a trap once documented.**
+  > 2. **"A Mac" is not a host.** The reasoning generalised from the **retired M1 Pro laptop** (classic
+  >    overlay2, `unpack_s_observed: null`) to a *different machine*, on a property that is a per-machine
+  >    Docker Desktop toggle. The release's rule *state the environment with every number* needs its companion:
+  >    **name the machine, not the class.**
+  >
+  > What survives: billion x86_64 vs this host arm64, **4.84 GB vs 4.12 GB** for the identical Dockerfile — a
+  > **~15 %** gap, not the ~40 % the laptop comparison implied — and seconds measured here still do not
+  > transfer to billion. *(Same retraction landed at `state.md` § Hosts and at
+  > `m257-first-light-build/overview.md` § HOST CLASS.)*
+
   **M257x is less affected** — its gate is about *correctness against origin HEAD*, not seconds. Its cold-cycle
   and Playthrough clauses run anywhere Docker runs; only the "which host" wording changes.
 
@@ -716,7 +742,9 @@ tag**, so no stack can obtain them yet — *tagging is not publishing*.
 
 **Carry-forward → M258:** 11 items in 5 root-cause clusters + 1 block fate over the carried-token tail. See
 [`carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md). **Not routed to
-M257** — its own `exit_gate` still names `odysseus`, retired by `D-v28-15`.
+M257** — at the time of writing, its own `exit_gate` still named `odysseus`, retired by `D-v28-15`. *(That
+reason expired at **M257 iter-05**, which re-pointed the gate at `macmini`. The routing itself is unchanged —
+M258 remains the owner — but it can no longer be justified by an ungradeable M257 gate.)*
 
 *Historical note on this block's own accuracy: it was `planned` at 101 iters (corrected at iter-102,
 deferral-audit F17), **re-rotted and was corrected again at iter-120** while reading "102 iters / Gate 2 of
@@ -768,20 +796,34 @@ platform ships coordinated multi-repo changes — `repos.yml` moved **39 minutes
 
 ### M257: First-light build
 
-**Status:** `paused` (2026-07-31) · **Shape:** `iterative`
-> ⏸️ **PAUSED behind M257x**, after 3 closed iters, on the user's call. Its iter-03 exit blocker turned out to
-> be the visible edge of a platform-wide migration whose status nobody on our side knew. **BANKED and not to be
-> redone:** odysseus provisioned as a working bench (rc=0, 16/16, Go present at `go1.26.5` off PATH), both
-> gate-honesty instruments landed with mutation-proven controls, B1+B2 fixed, and the baseline mirror fence
-> parameterised by host (4 → 28 tests). **Still owed on resume:** the odysseus baseline itself, and
-> `INVESTIGATE-M257-load1-48` — peak `load1` **48.7** against HEADROOM clause 1's limit of **6** (billion read
-> 4.06–4.56); if real, **the gate's own clause cannot pass on this host**.
+**Status:** `in-progress` (resumed 2026-08-11 at iter-04) · **Shape:** `iterative`
+> ▶️ **RESUMED.** It was paused behind M257x after 3 closed iters; M257x's close unpaused it, and iter-04's
+> re-survey found **both** premises the pause rested on were **stale**. (1) iter-03's architectural blocker was
+> already fixed by M257x (`c0e075e`), verified by fence and live DB rather than by commit subject. (2) The
+> host-class premise — *"the Mac pays no unpack leg"* — is **measured false** (see the retraction under
+> `D-v28-15`): this Mac mini runs the containerd image store and pays a size-proportional unpack leg, so L1
+> keeps a substantial price locally and the gate is measurable here. **iter-05 re-pointed the `exit_gate` from
+> the retired `odysseus` to `macmini`, targets untouched** — a stale-reference repair, not a re-scope.
+> **BANKED and not to be redone:** both gate-honesty instruments landed with mutation-proven controls, B1+B2
+> fixed, the baseline mirror fence parameterised by host (4 → 28 tests), and `macmini.json` measured and
+> checked in (deliberately without a `gated_baseline`). *(The odysseus bring-up is banked history only — that
+> host is retired.)* **Still owed:** the `n ≥ 3` baseline on `macmini` — which will be taken on a
+> **permanently contended** box and labelled as such — and `FIX-M257-load1-units-vm`, the live form of
+> `INVESTIGATE-M257-load1-48`: clause 1 grades **host** load1 against a **VM-allocation** core count, so on
+> this host it computes a limit of **6** where the correct one is **10** and **fails closed**. *(The original
+> odysseus reading of `load1` **48.7** is now un-reproducible — that host is gone — and the units mismatch is
+> not its cause; odysseus was `native-linux`.)*
 **Goal:** Collapse the cold demo bring-up so going live is a coffee, not a lunch — spending the machine
 deliberately, never exhausting it, and without weakening a single safety guard.
 
 **Exit gate:** a cold-images `demo-down --purge` + `demo-up` reaches **`autoverify green:true / 0 warnings`**
-in **p50 ≤ 360 s across 3 consecutive cycles on `odysseus`** (host moved by **D-v28-14**; billion is demo-only, and **odysseus's own baseline is UNMEASURED** — M257 owes it) (from the **M255-measured n=3 p50 666.29 s** — a
-46 % cut), **0
+in **p50 ≤ 360 s across 3 consecutive cycles on `macmini`** — the local M4 Pro Mac mini, profile
+`stack-core/hostprofiles/macmini.json`. *(The host moved twice: **D-v28-14** took it off billion, **D-v28-15**
+retired `odysseus`, and this line named odysseus until **M257 iter-05** re-pointed it — a gate naming a retired
+host cannot be graded at all. **`macmini`'s own baseline is still UNMEASURED** — M257 owes it, and owes it
+labelled **contended**, because that box is a permanently-busy workstation and waiting for quiet is waiting
+forever.)* (the **46 % cut** below is against **billion's** M255-measured n=3 p50 of **666.29 s**, which
+**does not transfer** — re-derive it against `macmini`'s `gated_baseline` once that field is filled), **0
 platform-repo edits**, **all 7 demopatch guards (G1–G7) passing**, and two **falsifiable** asserts (D-v28-6,
 D-v28-11) — *the gate FAILS if either trips*:
 - **headroom:** peak load1 ≤ cores − 2 **and** peak summed heap commitment ≤ 80 % of the host budget **and**

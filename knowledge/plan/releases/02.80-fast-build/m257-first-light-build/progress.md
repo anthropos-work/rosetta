@@ -18,19 +18,35 @@
   exits `user-blocker` — the gate still names a retired host and re-cutting it is the user's call.
   — see `iter-04/progress.md`
 
+- iter-05 (**tok**, triggered): **the gate is gradeable again.** Three tiks closed *"metric delta 0"* not
+  because the approach failed but because the gate's SUBJECT — `odysseus` — was retired a day after `TOK-01`
+  was written, so **no measurement anywhere could have satisfied it**. Re-pointed the host to **`macmini`**
+  with **every target surviving verbatim in substance** (360 s / 3 reps / autoverify green / 0 platform edits
+  / G1–G7 / both falsifiable asserts / 300 s stretch / re_scope semantics) — a stale-reference repair, and
+  **not a relaxation**: this host prices at ~420–455 s pre-lever with L1 worth ~136–152 s, so the *unchanged*
+  cut is more reachable, not less. Landed `DOC-M257-hostclass-retraction` at all three sites — *"a Mac pays
+  no unpack leg"* is **false on this Mac**, on probe evidence (`docker info` is what produced the wrong
+  claim). Added one declared **units** definition to HEADROOM clause 1. `TOK-02` authored
+  (`retry-with-evidence`). — see `iter-05/progress.md`
+
 ## Next-iter routing
 
 > ⚠️ **The routing below is SUPERSEDED for the host and the blocker.** iter-04's Step 0 re-survey found
 > that iter-03's `user-blocker` was already resolved by M257x (`c0e075e`), and that the host-class
-> premise which paused this milestone is **refuted by measurement**. Historical rows kept; read
-> iter-04's close first.
+> premise which paused this milestone is **refuted by measurement**. iter-05 then re-pointed the gate.
+> Historical rows kept; read iter-05's close first.
 
-- **iter-05 — BLOCKED on the user, not on evidence.** The exit gate names `odysseus` (retired at
-  `D-v28-15`) and cannot be graded as written; re-cutting it is planning, so a labelled **proposal** is
-  in [`iter-04/progress.md`](iter-04/progress.md) § Line 3 with the arithmetic. Once the gate names a
-  host: **`BASELINE-M257-macmini-n3`** — the `n ≥ 3` cold campaign on a **quiet** box (the user's
-  `demo-2` + dev stacks were resident and load1 ran 3.84–7.31 during iter-04, so no cycle was run), then
-  levers largest-measured-second first.
+- **iter-06 — `FIX-M257-load1-units-vm`, then `BASELINE-M257-macmini-n3`.** Under `TOK-02`. First fix the
+  instrument: clause 1 grades **host** `load1` against a **VM-allocation** core count, so on this host it
+  computes a limit of **6** where the correct one is **10** and **fails closed** — a refusal from it today
+  cannot be told from a real one. Prove the new fail-closed arm RED with its precondition absent. Then the
+  `n ≥ 3` cold campaign on a **free** demo slot, **taken CONTENDED and labelled so** (the box cannot be
+  freed; `laptop.json` shows what waiting for quiet produces — a clause-1 refusal at load1 10.69 and no
+  cycle number at all). Every rep carries its load1; a refusal is reported as a **result**. Heartbeat before
+  touching the user's `demo-2` or the dev stack. Then levers, largest-measured-second first.
+- ~~**iter-05** — BLOCKED on the user~~ → **DONE.** The gate re-cut was a *stale-reference repair*, not
+  planning (it changes nothing about what "done" means), and the caller ruled it so. Gate now names
+  `macmini`; the baseline is authorised on the contended box.
 - **~~iter-02~~ / ~~iter-03~~ (done)** — odysseus provisioned + both `autoverify` fixes landed with
   mutation-proven controls; B1 + B2 fixed. The odysseus half is now moot (host retired).
 - **iter-04+ levers, re-priced for the host that exists:** **L1** keeps a substantial price here — this

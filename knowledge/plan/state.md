@@ -1,9 +1,9 @@
 ---
 active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → M257x → **M257** → M258, strictly serial. **3 of 5 closed.** Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "(between milestones — M257 «first-light build» is next, UNPAUSED by M257x's close; see Next up)"
+active_milestone: "M257 «first-light build» (`iterative`, branch m257/first-light-build) — RUNNING, 5 iters closed. Gate re-pointed at `macmini` at iter-05, targets unchanged."
 last_closed: "M257x — 2026-08-11"
-phase: "Between milestones. M257x closed 2026-08-11 by USER RULING (`TOK-09`), NOT on gate — clauses 1–4 met and proven, **clause 5 OUT OF SCOPE by that ruling and never met**. M257 is next and its gate needs re-cutting before it starts (it names a retired host). Carry-forward from M257x → M258: 11 items / 5 clusters + 1 block fate."
+phase: "M257 in progress. M257x closed 2026-08-11 by USER RULING (`TOK-09`), NOT on gate — clauses 1–4 met and proven, **clause 5 OUT OF SCOPE by that ruling and never met**. M257's gate named the retired `odysseus` and was ungradeable; iter-05 re-pointed it at `macmini` (a stale-reference repair — every target survived) and retracted the *'a Mac pays no unpack leg'* claim that paused the milestone. Next: `FIX-M257-load1-units-vm`, then the `n ≥ 3` **contended** baseline that fills `macmini.json`'s `gated_baseline`, then levers. Carry-forward from M257x → M258: 11 items / 5 clusters + 1 block fate."
 last_updated: "2026-08-11"
 ---
 
@@ -16,10 +16,18 @@ last_updated: "2026-08-11"
 
 - 🎬 **`billion` — the OFFICIAL host.** Demo deployment only. Not for development or testing.
 - 💻 **dev/test = LOCAL to the new Mac.** The old laptop and **`odysseus` are both retired** from this project.
-- ⚠️ **Host-class mismatch, and it blocks M257:** billion is **x86_64/containerd**, a Mac is **arm64/overlay2**.
-  M255 measured **4.84 GB vs 2.88 GB** for the same Dockerfile — **the Mac pays no unpack leg**, which is exactly
-  what M257's L1 (~200–250 s) optimises. **M257's speed gate is un-measurable on the sanctioned hosts as
-  written.** M257x is largely unaffected: its gate is correctness, not seconds.
+- ✅ **~~Host-class mismatch blocks M257~~ — RETRACTED 2026-08-11 (M257 iter-04 measured, iter-05 wrote it
+  down).** This bullet read: *"a Mac is **arm64/overlay2** … **the Mac pays no unpack leg**, which is exactly
+  what M257's L1 (~200–250 s) optimises. M257's speed gate is **un-measurable** on the sanctioned hosts as
+  written."* **False for this machine.** The Mac mini runs the **containerd image store** and pays a
+  size-proportional unpack leg — measured 0.8 s @ 256 MB → 3.0 s @ 1024 MB, and **56.6 s export + 19.3 s
+  unpack** on the real 4.12 GB hiring image. The generalisation came from the **retired M1 Pro laptop**, a
+  different machine; *"a Mac"* is a class, and the fact that mattered is a per-machine Docker Desktop toggle.
+  **Do not re-derive this from `docker info`** — it prints `Storage Driver: overlayfs` here, which is exactly
+  what made the wrong reading look right; grade it with a probe. So **L1 keeps a substantial price locally
+  (~136–152 s), and M257's gate IS measurable on the host that exists** — re-pointed at `macmini` at M257
+  iter-05. What still holds: billion is x86_64 and this host arm64 (**4.84 vs 4.12 GB**, a ~15 % gap, not the
+  ~40 % the laptop suggested), and **seconds measured here do not transfer to billion**.
 - 🔧 **New-Mac bootstrap:** `.agentspace/rext.tag` is **git-ignored** → a fresh clone has no pin, and a mismatch
   is **FATAL** in `ensure-clones.sh:94-101`. Create it deliberately. (On the old box the SoT was 63 commits
   behind `main`, so `/demo-up` aborted there.)
@@ -27,13 +35,17 @@ last_updated: "2026-08-11"
 
 ## Next up
 
-**M257 — first-light build** (`iterative`), **UNPAUSED** by M257x's close. **Its exit gate must be re-cut
-before it starts:** it names `odysseus`, which `D-v28-15` retired from this project on 2026-07-31, and no
-host profile has ever been measured for the Mac that replaced it — so the gate is not gradeable as written.
-Banked from its 3 closed iters, not to be redone: both gate-honesty instruments landed with
-mutation-proven controls, B1+B2 fixed, the mirror fence parameterised by host. Still owed: a baseline on a
-host that exists, and `INVESTIGATE-M257-load1-48` (peak `load1` **48.7** vs HEADROOM clause 1's limit of
-**6**).
+**M257 — first-light build** (`iterative`), **UNPAUSED** by M257x's close and **RUNNING** since iter-04.
+**Its exit gate has been re-cut** (iter-05): it named `odysseus`, retired by `D-v28-15` on 2026-07-31, so it
+could not be graded at all — the host reference now names **`macmini`**, the local M4 Pro Mac mini, whose
+profile *was* measured and checked in at iter-04 (`stack-core/hostprofiles/macmini.json`, deliberately
+without a `gated_baseline`). **Every target survived the re-cut unchanged** — p50 ≤ 360 s over 3 consecutive
+cold cycles, 0 platform-repo edits, G1–G7, both falsifiable asserts, the ≤ 300 s stretch. Banked from its
+closed iters, not to be redone: both gate-honesty instruments landed with mutation-proven controls, B1+B2
+fixed, the mirror fence parameterised by host, the host measured. Still owed: the `n ≥ 3` baseline —
+**taken on a permanently contended box and labelled so** — and `FIX-M257-load1-units-vm`, which is what
+`INVESTIGATE-M257-load1-48` became: clause 1 grades **host** `load1` against a **VM-allocation** core count,
+computing a limit of **6** here where the correct one is **10**, so it **fails closed**.
 
 **M257x carry-forward lands in M258**, not M257 — 11 items in 5 root-cause clusters + 1 block fate. Owner:
 [`m257x…/carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md).
