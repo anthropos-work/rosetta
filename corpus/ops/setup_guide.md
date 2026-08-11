@@ -306,6 +306,16 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
+> **⚠️ `make init` is SKIP-IF-PRESENT, and a skip is not a check.** It clones a repo only when the
+> sibling directory is absent; when one is already there it prints `<repo> already exists, skipping`
+> and **adopts that working tree at whatever ref it happens to hold** — a stale checkout, another
+> project's branch, a dirty tree. The line reads like progress and there is no ref comparison anywhere
+> in the step. M257x iter-262 hit exactly this on a bring-up that otherwise went to plan: `studio-desk`
+> was adopted **13 files / +97 / −46 behind** its own `main`, and nothing in `make init`'s output said
+> so. **`make status` is what tells you** — read it, do not skim it, and run
+> `git -C <repo> fetch && git -C <repo> status -sb` on anything that says "skipping" before you build
+> against it.
+
 This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. At platform
 `0c91421` (2026-08-05) that is **four** repos:
 
@@ -561,6 +571,23 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     This builds from local repos and starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath, skiller, storage, messenger and customerio-sync all run in-process inside Backend/`app` — not one of them is a compose service any more, the last three having been deleted at `838d907`; the GraphQL/Cosmo router was deleted at platform `2adcf71`.)
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
+
+    > **⚠️ `backend` can "start" and then EXIT 0 — the worst failure shape in this guide.** `app` refuses
+    > to boot when **`INVITATION_HMAC_SECRET`** is unset, and it refuses by **exiting successfully**. There
+    > is no crash, no restart loop, no non-zero code and nothing for a health check to catch: `make ps`
+    > simply shows four containers where you expected five, and `docker ps -a` shows `backend` as
+    > `Exited (0)`. Compare `sentinel`, which fails the honest way — `Restarting (2)` until its schema
+    > exists — and is far easier to diagnose as a result.
+    >
+    > **The variable is not declared in `.env_example`**, so a `.env` built by copying that file is
+    > missing it and nothing warns you. Add it before `make up`:
+    > ```bash
+    > printf 'INVITATION_HMAC_SECRET=%s\n' "$(openssl rand -hex 32)" >> .env
+    > ```
+    > Any high-entropy value works locally — it only has to stay stable, because it signs the invitation
+    > tokens in `app/internal/invitations/token.go`. `/stack-secrets` provisions it for you (it is in the
+    > demo-auto-generated family, `secretdna.DemoGeneratedKeys`), which is why the demo path never hits
+    > this and the hand-built dev path does. Measured at M257x iter-262 on a cold clone of current `main`.
 
 3.  **Verification**:
     ```bash

@@ -71,7 +71,7 @@ Example: `demo-2` → next-web on `:23000`, hiring on `:23001`, studio-desk on `
 >
 > **In a demo neither of those profiles is ever selected.** `up-injected.sh` derives the platform's default
 > profile from the platform's own compose and brings the stack up with **that one only**
-> (`demo-stack/up-injected.sh:2156` → `stack-injection/platform_topology.py profile`, then `:2179-2180`
+> (`demo-stack/up-injected.sh:2174` → `stack-injection/platform_topology.py profile`, then `:2179-2180`
 > `--profile "$COMPOSE_PROFILE"`). The two frontends reach it because the generated override **re-declares**
 > their profile: `stack-injection/gen_injected_override.py:425` emits
 > `profiles: !override [<derived-default>]` for **each** entry of `FRONTENDS`, which is why the generator's own
