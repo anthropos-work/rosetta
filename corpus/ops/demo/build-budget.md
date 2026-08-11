@@ -430,7 +430,7 @@ the M239-F1 ENOSPC walked past a GREEN pre-flight.
 ### Two contracts, deliberately different — D-M255-1
 
 `up-injected.sh`'s pre-flights are **advisory by design**: *"never block a genuinely good bring-up on a soft
-heuristic"* (`:280`, `:320`). M255 does **not** retract that, and the retraction it *does* make is narrower
+heuristic"* (`:280`, `:335`). M255 does **not** retract that, and the retraction it *does* make is narrower
 and different: `preflight_vm_ram()` declares its variables `local`, assigns no global and returns no verdict,
 so **nothing branches on it** — it is advisory in the sense of *inert*, which is not the same as *tolerant*.
 

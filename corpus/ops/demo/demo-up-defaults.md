@@ -112,7 +112,7 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 > **Any failed rung ⇒ an EMPTY `STACK_PUBLIC_HOST` ⇒ byte-identical to a v2.2 localhost demo**, plus **one loud
 > line** naming the exact fix command. Never a *partial* public path.
 >
-> This is a correctness requirement, not caution. `SCHEME` (`up-injected.sh:120`) and `BIND_HOST` (`:118`) both
+> This is a correctness requirement, not caution. `SCHEME` (`up-injected.sh:154`) and `BIND_HOST` (`:146`) both
 > derive from the **same `-n $STACK_PUBLIC_HOST` predicate** — so a **half-satisfied** public path is **strictly
 > worse than localhost**: every baked browser URL flips to `https://` while the listeners are still plain HTTP,
 > and the demo **does not load at all**. A localhost demo always works. **A laptop with no Tailscale must stay
