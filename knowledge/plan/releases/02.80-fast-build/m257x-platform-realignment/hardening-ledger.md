@@ -6912,3 +6912,121 @@ direct runner, a declared count and the sum beside it, and four ambiguous anchor
 about ambiguous anchors. Per the user's standing ruling the routes above are recorded and NOT met with
 new machinery; the **eighteenth** cap-without-stabilization in this milestone (22, 25, 26, 29, 32, 35,
 38, 41, 44, 47, 50, 53, 56, 59, 62, 65, 68, 71).
+
+## Pass 72 — 2026-08-11 — final
+
+**FIRST FINAL-MODE PASS OF THE MILESTONE.** `--final` was passed **explicitly**; it did **not**
+auto-enable. There is no `**Gate:** MET` line and none was manufactured. Clauses 1–4 are met; **clause 5
+is out of scope by USER RULING** (`TOK-09`, iter-283) — the milestone closes because the user narrowed the
+definition of done and the narrowed definition was met, **not** because the original gate was satisfied.
+`TOK-09`'s own words are preserved: *"This is a scope ruling, not a declaration that the unmeasured
+reading came out clean, and it must never be reported as one."*
+
+**Scope:** cumulative — the whole milestone footprint. `rosetta` **1,626** files changed over 716 commits
+(1,525 of them `knowledge/plan` bookkeeping; **83** published corpus/skill/root files); `rosetta-extensions`
+**443** files over 335 commits, dominated by `stack-core` (303).
+
+**Iters hardened this pass:** all milestone-touched code (final mode).
+
+### Bugs surfaced + fixed inline
+
+1. **The private-bucket retraction was fenced in one file and rotted in three.** iter-284 forced both
+   production S3 buckets and pinned three phrasings FORBIDDEN in `safety.md`. **Four other sites in three
+   documents still asserted the pre-284 state** — including `safety.md`'s own §3.4 bullet, ~100 lines below
+   the row that retracts it, saying in full sentences that the private bucket *"is not in the
+   forced-override set"* and that *"a stack's private uploads land in production."* The guard was **GREEN
+   throughout**, for **two independent reasons**: the pin said *"forced set"* where the text said
+   *"forced-override set"* (**missed by one hyphenated word**), and the text **wrapped across a line**
+   between *"in the"* and *"forced-override"*, so **no flat literal could have matched it at all**.
+   Corrected at all five sites; fence rewritten (`normalizeProse` folds emphasis, whitespace and case on
+   both sides; seven short fragments instead of three sentences; reach 1 → 2 files; unreachable doc is now
+   an ERROR not a silent skip; graded-count assert). Commits `159deca` (rext) + `77e7524` (rosetta).
+   **The pass's own first repair reproduced the bug** — a replacement pin written with `**not**` inline
+   matched nothing — and the RED-proof is what caught it.
+2. **`gofmt` regression from iter-284**, four iters after pass 69 built the fence that catches it.
+   `isolation_test.go` had an unformatted line; the fence was RED and nothing had run it since. Whitespace
+   only — no doc-comment text transform. `159deca`.
+3. **An inverted citation range**: `recipe-browser-login.md:67` cited `up-injected.sh:2197-2180`, a range
+   that runs **backwards**, so the sentence's evidence had been unreadable for as long as it existed. Real
+   invocation is `:2217-2219`. `498e6a09`.
+4. **A malformed route id**: iter-283 carried iter-282's routes as a **wildcard**; `route_disposition_guard`
+   parsed the truncated stem as an id and went RED. Enumerated one per name. **Second-order trap, one
+   cycle:** the first repair *explained* the wildcard **by quoting it**, and the fence went RED on the
+   explanation — a retraction that reproduces its pin is not a retraction, which is the fence
+   `retracted_pin_guard` exists to be. `498e6a09`.
+5. **Two citations rotted by this pass's own ten inserted lines**, caught by `anchor_offset_guard`
+   run over `453d1201..HEAD`. **One of the two fence answers was a hypothesis, not a repair:**
+   `latency-budget.md:403` cited `safety.md:576`, and line 576 **never held what the sentence claims** —
+   the password-free-handshake disclosure is the §3.2 table row at `:627`. Applying the fence's mechanical
+   `+12` would have moved a **wrong** pin to a new wrong number **and turned it green**. The other
+   (`storage.md:129 → :133`) was mechanical and correct. `498e6a09`.
+6. **`stack-core/README.md` indexed 24 of the 37 family members.** The family is **derived from disk**
+   (`guard_family.union()`); the write-ups are hand-authored and had fallen thirteen behind.
+   `corpus_index_guard.py` — *listed in that very table* — enforces this property **on the corpus**; the
+   tooling had exempted itself from its own rule. Closed with rows quoting each module's **own docstring
+   summary line** (a quoted summary rots only if the module's docstring does) and **no hardcoded total**,
+   which is what `derived_count_guard` exists to catch. `ae6c099`. Closes
+   `ROUTE-M257x-282-readme-does-not-index-13-of-37-fences`.
+
+### Censuses run — including the ones that found nothing
+
+* **Declared-but-never-passed CLI flags** (the iter-285 *written-but-never-invoked* class, generalized):
+  **226** argparse flags across 44 tools; **31** never referenced outside their declaring file. **None
+  carries a safety or correctness claim** — every one has a working default or is an operator-facing
+  analysis knob. **The iter-285 class is contained.** ⚠ The first run of this census reported **48**, and
+  was wrong: its haystack globbed `*.sh`/`*.py` and **missed the extensionless entry points**
+  (`dev-stack`, `rosetta-demo`) that pass `--profiles`. The instrument was measuring itself again.
+* **Fail-open prose pins.** The negative direction (must-be-absent) is the dangerous one; a positive pin
+  fails CLOSED under wrapping. Censused both languages: the fixed fence was **the only fail-open
+  multi-word markdown pin in the tree**. Every other Go prose pin is `!Contains`; the Python corpus fences
+  already normalize (`retracted_pin_guard` collapses `\s+`, `decommissioned_instruction_guard` strips
+  emphasis). **The lesson had been learned on the Python side and never carried to the Go side.**
+* **The hottest file in the milestone**, `stack-core/derivation_registry.py` (**47** commits), is healthy:
+  **0 unclassified** over an AST-derived population of **189**, 108 explicit decisions. Its churn is the
+  designed cost of a registry that cannot silently fall behind the tree.
+
+### A structural limit worth carrying to close
+
+`guard_family` over the corpus: **29 GREEN · 2 RED · 0 could-not-check · 5 not-run**. The five not-runs
+are honest and named (`--range` / `--ledger` a tree-scoped run cannot supply) — but they mean a
+tree-scoped family run **structurally cannot catch line-shift rot**. `anchor_offset_guard` is one of the
+five, and it is the fence that found finding 5 above. **"29 GREEN" is not a statement about the
+moved-line property**, and a closing agent who reads it as one is reading five fences as green that did
+not run.
+
+### Precondition behaviour, verified rather than assumed
+
+The safety-doc fence `t.Skip`s when the sibling corpus is unreachable, and a skipped Go test prints `ok`.
+Verified by running the package from a copy **outside** the rosetta tree: the doc arms skip and the run
+reports `ok` — indistinguishable from a pass. **This is correct here and was checked, not assumed**: the
+behavioural arms that need no document (`PreflightEnv` forces both buckets on every target) live in
+`isolation_test.go` and **run corpus-free** — confirmed in that same out-of-tree copy, 7 passed. The
+fail-open skip is confined to the arms that genuinely cannot run without the document.
+
+**Flakes stabilized:** none found. Flake gate: the changed Go fence **3× consecutive clean**; the four
+corpus fences the edits touch **3× consecutive exit 0** each.
+
+**Knowledge backfill:** `corpus/ops/safety.md` (§2.3 rewritten + a Part 3 correction),
+`corpus/ops/seeding-spec.md` (two store-table rows), `corpus/services/storage.md`,
+`corpus/ops/demo/latency-budget.md`, `corpus/architecture/shared_libraries.md`,
+`corpus/ops/demo/recipe-browser-login.md`, `stack-core/README.md`.
+
+**Routes recorded, not worked** (per `TOK-09`: found outside the closed list ⇒ recorded and routed, never
+absorbed):
+
+* **`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket`** — **the container-side bucket strip is DEMO-only.**
+  It lives in the *injected* override, which `/dev-up` does not apply; a `dev-N` stack gets only the shared
+  base override (`stack-core/gen_override.py`), which emits no strip. A dev `backend` therefore still holds
+  `STORAGE_S3_BUCKET=production-storage…`, bounded only by the **absence of credentials** (the dev emitter
+  clears the `~/.aws` bind; there is no M239 env bridge on that path) — so an operator whose `platform/.env`
+  carries AWS keys re-opens on dev exactly what iter-284 closed for demos. **Not fixed deliberately:**
+  forcing it costs dev uploads the same broken-thumbnail trade a demo accepts, which is an operator's call
+  and not a harden pass's, and the user is running a dev stack right now. **Documented in `safety.md` §2.3
+  rather than left silent.**
+* **`ROUTE-M257x-h72-gen-injected-override-cites-81-82`** — `gen_injected_override.py`'s own comment cites
+  `docker-compose.yml:81-82` for the two buckets; measured in both platform clones at `0c91421` they are
+  `:82` (private) and `:83` (public). Off by one, in a safety-critical comment.
+
+**Stop condition:** `continue-to-next-pass` — six defects fixed inline and the whole-section `stack-core`
+suite (94 files) was still running when this entry was written; the coverage delta cannot be computed
+against it yet.
