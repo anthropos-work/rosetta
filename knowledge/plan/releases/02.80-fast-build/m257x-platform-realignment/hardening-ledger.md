@@ -7030,3 +7030,95 @@ absorbed):
 **Stop condition:** `continue-to-next-pass` — six defects fixed inline and the whole-section `stack-core`
 suite (94 files) was still running when this entry was written; the coverage delta cannot be computed
 against it yet.
+
+## Pass 73 — 2026-08-11 — final
+
+**The whole-section run pass 71 could not make, made.** Pass 71's entry stated plainly that
+`stack-core` had *"not been re-run in full"* and that its 35 m 48 s figure graded the tree as of
+**02:00Z** — before iters 280–288 landed. This pass ran it: **2,248 passed · 18 failed · 1 skipped ·
+606 subtests · 58 m 05 s** (94 files). It is the first whole-section reading of the milestone's final
+iters, and it found something no other instrument could have.
+
+### Every other suite in the repo, GREEN
+
+| section | result |
+|---|---|
+| `stack-injection` | **329 passed**, 8 skipped (10.88 s) |
+| `dev-stack` | **155 passed**, 10 subtests (149.70 s) |
+| `stack-verify` | **275 passed**, 4 subtests (430.36 s) — the same 275 as pass 71 |
+| `demo-stack` | **1,085 passed**, 1 skipped, 14 subtests (318.70 s) |
+| `stack-seeding` (Go) | 16 packages `ok`, 0 fail |
+| `alignment` · `clerkenstein` · `playthroughs` · `stack-secrets` · `stack-snapshot` (Go) | all `ok`, exit 0 |
+| `guard_family` over the corpus, re-run after every edit | **31 GREEN · 0 RED · 0 could-not-check · 5 not-run** (was 29 / 2 before this pass) |
+
+⚠️ **No duration above is a baseline.** Host load ran **18.8 → 40.4** across the window, with two live
+stacks and concurrent suites. Booleans only; a duration delta here is not a regression signal.
+
+### The one real defect, and it is the iter-285 class one level up
+
+**Four classes / thirteen tests, written by iters 285–288, were defined AFTER their module's
+`if __name__ == "__main__"` guard** — so `python3 test_cockpit.py`, the runner those modules' own
+headers invite, did not collect them and printed **OK**:
+
+* `test_back_to_cockpit_m249.py` — `TheDesktopDropdownSwapsLogOutForBackToCockpit` (3),
+  `TheCockpitItemRowCarriesItsOwnNavigation` (3), `TheLogOutSwapCoversEveryAppThatGotTheCockpitItem` (3)
+* `test_cockpit.py` — `TheCockpitRosterCrossCheckIsACTUALLYWIRED` (4)
+
+Two things make it more than a mechanical repair. **`test_cockpit.py` carries a comment three lines
+above its own misplaced guard explaining this exact failure and naming the fence that catches it** —
+the explanation was already there and the appending happened anyway. And **the hidden class is
+`TheCockpitRosterCrossCheckIsACTUALLYWIRED`**: iter-285 existed because `cockpit.py --roster` was
+built, documented as failing closed, and never passed by the bring-up. The test it wrote to prove that
+safeguard is now invoked **was itself not invoked** under direct execution. Written-but-never-invoked,
+recursively. Fixed at `ddbe5a8`; **the proof is the count, not the exit code** — direct execution now
+reports `Ran 43` + `Ran 211` = **254**, exactly the pytest total for the same two files, where it
+previously saw 241 and said OK.
+
+### The other 17 failures are the INTERPRETER, not the code — and none is from this pass
+
+Re-run at a different load, **7 of the 18 did not reproduce** (`test_fence_provenance`,
+`test_anchor_construct_denominator` ×2, `test_repair_leak_guard_mutation_battery` ×4) — subprocess-
+spawning batteries under load 40. **A failure count is not a defect count.** The remaining 11 reproduce
+deterministically and every one traces to the Python interpreter:
+
+* **8 failures — `suite_census`'s `unittest` runner cannot run ANY module in this repo.**
+  `run_one` shells `python -m unittest <section-relative.dotted.name>`; **none of the five rext
+  `tests/` directories has an `__init__.py`**, and on `python3.12` unittest's loader cannot import a
+  namespace-package submodule by dotted name. Measured both ways in a scratch tree: identical module,
+  **`FAILED (errors=1)` without `__init__.py`, `OK` with it.** Every real module reproduces it
+  (`tests.test_gofmt_clean_m257x` → `FAILED (errors=1)`). The census reads the resulting `_FailedTest`
+  as *"Ran 1 test"* + RED, which is why the population arm cascades. **1 defect, 8 symptoms.**
+* **1 failure — `test_battery_stage`'s stdlib derivation** misses `spwd`, `msilib`, `_msi`,
+  `ossaudiodev`: the **PEP 594 removals**. It cross-checks `sys.stdlib_module_names`, which is a
+  property of the interpreter, not of this tree.
+* **2 failures — `test_test_collection_fence`**, which is the real defect above, now fixed.
+
+**Attribution, stated because it is the question a closing agent will ask:** neither
+`suite_census.py` nor `test_suite_census.py` was touched by this pass, and `suite_census.py`'s last
+change (iter-281) was **docstring-only** — checked, not assumed. What changed is the box:
+**`python3` here is now 3.14.6** (and has **no pytest at all** — `stack-core/README.md:185` documents
+`python3 -m pytest stack-core/tests`, which on this host exits *"No module named pytest"*), while the
+suite runs under **3.12.13**. The milestone's own rule — *state the environment with every number* —
+has come for its own fences.
+
+**Flakes stabilized:** none *fixed*; **7 identified and named** (above) by re-running at a different
+load rather than by re-running the same one. Flake gate on this pass's own changes: the changed Go
+fence **3× consecutive clean**; the four corpus fences the edits touch **3× consecutive exit 0**;
+`demo-stack` re-run whole after the guard move.
+
+**Routes recorded, not worked:**
+
+* **`ROUTE-M257x-h73-suite-census-unittest-path-is-dead-on-this-interpreter`** — the census's second
+  runner grades nothing on `python3.12`. The fix is a contract change to `run_one` (or five
+  `__init__.py` files that would change pytest's import semantics tree-wide), which is a design
+  decision and not a harden pass's to make. **Its consequence is precise and worth stating: the
+  two-runner cross-check — the thing that makes `both_runners_report_the_same_executed_count`
+  meaningful — is currently a one-runner check that reports RED.**
+* **`ROUTE-M257x-h73-battery-stage-stdlib-set-is-interpreter-versioned`** — widen the derivation or
+  name an allowance class for the PEP 594 removals; the fence's own message asks for exactly that.
+* **`ROUTE-M257x-h73-readme-documents-a-python3-that-has-no-pytest`** — `stack-core/README.md:185`.
+
+**Stop condition:** `cap reached without stabilization` — the pass closes with **one defect fixed
+inline** and **three interpreter-level routes recorded**. Coverage did not stabilize in the
+delta-<2 % sense and could not: the whole-section instrument itself is partially blind on this host,
+and that blindness is the pass's most important finding, not a gap in the tests it was measuring.
