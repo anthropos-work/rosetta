@@ -86,7 +86,11 @@ Each manager falls back to local filesystem only when ITS bucket env var is empt
 > `- ENVIRONMENT=development` on the `backend` block, `docker-compose.yml:56` @ platform `0c91421`.
 >
 > The empty-env escape still works — set the variable to empty **explicitly** and that manager falls back to
-> its `/tmp` root. **Disposition of this hazard is an open escalated item
+> its `/tmp` root, and **since M257x iter-284 the demo tooling takes exactly that escape**: `PreflightEnv`
+> blanks both buckets for the seeder (`isolation/audit.go:153-154`) and the injected compose override blanks
+> them on every emitted demo container (`stack-injection/gen_injected_override.py:771-772`). That closes the
+> hazard for a **demo**; it does not close it for a `dev-N` stack, and it cannot close the platform fact below.
+> **Disposition of the underlying platform hazard remains an escalated item
 > (`DEF-M257x-iter80-storage-prod-bucket`, severity high), FILED at M257x iter-102 as
 > `PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets` in
 > [`knowledge/plan/platform-defect-register.md`](../../knowledge/plan/platform-defect-register.md).** It is a

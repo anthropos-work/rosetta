@@ -311,15 +311,27 @@ fenced twice over:
   header; prod serves only the public predicate). The earlier "every stack keeps
   `DIRECTUS_BASE_ADDR=content.anthropos.work`" state (the M10 collection-schema gap) is **retired** — the gap
   is closed (M21 structure capture + auto-provision) and the per-stack Directus is booted (M22) + cut over (M23).
-- **Prod S3 buckets — the PUBLIC one is covered, the PRIVATE one is NOT.** `STORAGE_S3_PUBLIC_BUCKET` is
-  hardcoded to the prod bucket in the platform compose; `PreflightEnv` **unconditionally** overrides it to `""`,
-  so public storage writes fall back to the per-stack local store. (Snapshot media is carried as **refs only**
-  today — the byte payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
-  **`STORAGE_S3_BUCKET` — the PRIVATE bucket — is hardcoded to a production bucket too**, since platform
-  `0dab54d` (`docker-compose.yml:82` @ `0c91421`, on the `backend` block), and it is **not** in the
-  forced-override set. With AWS credentials present, a stack's private uploads land in production. This contract
-  **names** that exposure; its disposition is an open escalated item
-  (`DEF-M257x-iter80-storage-prod-bucket`, severity high) and is deliberately not resolved here.
+- **Prod S3 buckets — BOTH are covered, and the PRIVATE one only since M257x iter-284.** Both are hardcoded
+  to production buckets in the platform compose (`docker-compose.yml:82` private / `:83` public @ `0c91421`,
+  on the `backend` block), so neither is settable from `.env`. **Two pointers** carry a bucket into a stack and
+  both are now forced to `""`: `PreflightEnv` blanks **both** on every target
+  (`isolation/audit.go:153-154`) — that is the **seeder's** environment — and the demo's injected compose
+  override strips both on every emitted service (`stack-injection/gen_injected_override.py:771-772`, emitted
+  by `demo-stack/up-injected.sh:1969`) — that is the **running container's**. The seeder pointer alone was
+  never enough, and the incident proved it: the `s3:PutObject` came from `backend`, which reads its own
+  compose env and never sees the seeder's. (Snapshot media is carried as **refs only** today — the byte
+  payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
+
+  > **⚠️ The container-side strip is on the DEMO path only — measured at M257x harden pass 72.** It lives in
+  > the *injected* override, and `/dev-up` does not apply that layer: a `dev-N` stack gets only the shared base
+  > override (`stack-core/gen_override.py`), which repoints ports and volumes and emits **no** bucket strip. A
+  > dev stack's `backend` therefore still holds `STORAGE_S3_BUCKET=production-storage…`. What bounds it there
+  > is the **absence of credentials, not a pointer override** — the dev emitter clears the
+  > `$HOME/.aws/credentials` bind (`gen_override.py:195-196`) and there is no M239 env bridge on the dev path
+  > — so an operator whose `platform/.env` carries AWS keys re-opens on dev exactly the exposure iter-284
+  > closed for demos. **Recorded, not fixed**: forcing it would cost dev uploads the same broken-thumbnail
+  > trade a demo accepts, and that is a call for the operator, not for a harden pass
+  > (`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket`).
 
   > **How credentials actually reach a stack — the mount is no longer the vehicle.** The base compose does bind
   > `$HOME/.aws/credentials:/root/.aws/credentials:ro` onto `backend` (`docker-compose.yml:99-100` @ `0c91421df`;
@@ -746,9 +758,12 @@ inherited. It is **strictly narrower**, and it should feel narrower:
    - **The environment they sit next to names production buckets.** The same block pins
      `STORAGE_S3_BUCKET=production-storage…` and `STORAGE_S3_PUBLIC_BUCKET=production-storage-public…`
      (`docker-compose.yml:82-83`) plus `CHIME_RECORDINGS_BUCKET_NAME=ant-prod-chime-demo` (`:50`) in
-     `eu-west-1` (`:80-81`). §2.3 already fences the **public** bucket (`PreflightEnv` blanks it) and already
-     names the **private** one as an open escalated item (`DEF-M257x-iter80-storage-prod-bucket`). The Part 3
-     consequence is the pairing: an attacker gets credentials *and* the bucket names in one env dump.
+     `eu-west-1` (`:80-81`). §2.3 fences **both** buckets since M257x iter-284 — `PreflightEnv` blanks each on
+     every target and the injected override strips each on every emitted demo service — which closes
+     `DEF-M257x-iter80-storage-prod-bucket` for the **demo** path; the platform-compose fact itself is not ours
+     to change and stays filed. The Part 3 consequence is unchanged and is about the *credentials*, not the
+     pointers: an attacker gets credentials **and** the bucket names in one env dump, and a name blanked in the
+     container is still printed in the repo's compose.
 
    **What bounds it is the same thing §2.10 names, and it is an operator control, not a tooling guarantee:** the
    credential carries whatever its IAM principal was granted. A minimally-scoped inference-only principal makes
