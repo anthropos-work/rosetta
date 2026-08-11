@@ -35,9 +35,19 @@
     },
     "clause_5_kb_fidelity": {
       "status": "OUT OF SCOPE BY USER RULING",
-      "MUST_NOT_BE_REPORTED_AS": ["met", "measured clean", "green", "satisfied"],
+      "MUST_NOT_BE_REPORTED_AS": [
+        "met",
+        "measured clean",
+        "green",
+        "satisfied"
+      ],
       "ruling": "TOK-09 — the user narrowed the definition of done on 2026-08-11 to architecture + repo/component register + buildability, and the narrowed definition was met",
-      "last_measurement": {"iter": 131, "P": 29, "N": 47, "note": "P is a FLOOR, not a reading of the tree as it stands. Unmeasured since."},
+      "last_measurement": {
+        "iter": 131,
+        "P": 29,
+        "N": 47,
+        "note": "P is a FLOOR, not a reading of the tree as it stands. Unmeasured since."
+      },
       "verbatim_from_TOK_09": "This is a scope ruling, not a declaration that the unmeasured reading came out clean, and it must never be reported as one."
     },
     "clauses_met": 4,
@@ -72,7 +82,11 @@
       "sections_ok": 6,
       "failing": 0,
       "detail": "stack-seeding 16 packages ok; alignment, clerkenstein, playthroughs, stack-secrets, stack-snapshot all ok, exit 0",
-      "test_func_counts_reconciled_at_close": {"stack-seeding": 1095, "stack-secrets": 166, "clerkenstein": 315}
+      "test_func_counts_reconciled_at_close": {
+        "stack-seeding": 1095,
+        "stack-secrets": 166,
+        "clerkenstein": 315
+      }
     },
     "guard_family": {
       "green": 31,
@@ -80,7 +94,12 @@
       "could_not_check": 0,
       "not_run": 5,
       "not_run_reason": "commit-scoped or ledger-scoped members with no --range / --ledger supplied; reported rather than hidden (the runner refuses to call a not-run member green)",
-      "with_platform_and_range": {"green": 32, "red": 0, "could_not_check": 2, "note": "the 2 are fallback-rung members whose subject was empty for the chosen range — CANNOT-RUN, explicitly not GREEN"}
+      "with_platform_and_range": {
+        "green": 32,
+        "red": 0,
+        "could_not_check": 2,
+        "note": "the 2 are fallback-rung members whose subject was empty for the chosen range — CANNOT-RUN, explicitly not GREEN"
+      }
     },
     "handbook_reconciliation": {
       "drifted_figures_found": 15,
@@ -89,6 +108,52 @@
       "files": 7,
       "largest_single_drift": "demo-stack/README.md — '663 total' against an actual 1,095",
       "most_structural": "demo-stack/README.md's parenthetical EXPLAINING why it had drifted had itself drifted (306 -> 365); and stack-core/README.md's '## Tests' section described a TWO-file suite that is 94 files, while instructing a `python3 -m pytest` invocation that cannot run on this host at all"
+    },
+    "close_verification_pass": {
+      "guard_family": {
+        "green": 30,
+        "red": 0,
+        "could_not_check": 1,
+        "not_run": 5,
+        "could_not_check_is_correct": "blocking_state_guard, between milestones: it resolves the next milestone, finds no deferrals-audit.md there yet, and REFUSES to certify rather than reporting an unearned green. That refusal is the behaviour this close fixed it to have."
+      },
+      "stack_injection_plus_dev_stack": {
+        "passed": 492,
+        "failed": 0,
+        "scope": "both sections whole",
+        "seconds": 107.9
+      },
+      "demo_stack": {
+        "passed": 1085,
+        "failed": 9,
+        "skipped": 1,
+        "runs": 2,
+        "note": "run WHOLE twice, byte-identical both times — which is what makes the 9 attributable to the live demo holding the clones rather than to nondeterminism. All 9 are live-clone/live-container arms."
+      },
+      "stack_core_targeted": {
+        "passed": 177,
+        "skipped": 2,
+        "failed": 0,
+        "scope": "the 7 files covering every module this close touched: blocking_state_guard, demo_knob_guard, derived_count_guard, retracted_pin_guard, service_registry_guard, readme_file_citations, fence_registry_population"
+      },
+      "stack_core_whole": {
+        "completed": false,
+        "reached": "~52% on two separate attempts (38 min and 34 min), then stopped BY THIS CLOSE — not crashed",
+        "cause": "suite_census spawns one interpreter per module. MEASURED at the close: `python3 -m unittest -v tests.test_iter45_mechanical_fences` = 84.003 s for one module, and there are 90 modules under stack-core/tests/ -> ~2.1 hours inside a single pytest test.",
+        "interpreter_split": "pass 73 measured this arm BROKEN on python3.12 (namespace-package import). The close measured it WORKING on the system python3.9.6 and unaffordably slow. Neither configuration is survivable in a gate anyone will run.",
+        "honest_reading": "THIS IS NOT A GREEN AND IS NOT REPORTED AS ONE. The last COMPLETE whole-section reading is harden pass 73's, taken 2 h before close: 2,248 passed / 18 failed / 1 skipped, with all 18 triaged to interpreter causes, non-reproducing load flakes, or a defect fixed at ddbe5a8.",
+        "corrects": "ROUTE-M257x-280-the-31-minute-gate-is-skipped-because-it-is-31-minutes — the gate is not 31 minutes; on the interpreter where it functions it is over two hours."
+      },
+      "go": {
+        "sections_built": 6,
+        "build_failures": 0,
+        "gofmt_unformatted": 0
+      },
+      "shell": {
+        "bash_n": "clean",
+        "shellcheck_S_error": "clean"
+      },
+      "defect_found_by_this_pass": "test_fence_registry_population went RED and was right to. The blind-spot triple is 37/37 · 36/36 · 36/36 (CLOSED), not the 24/37 · 23/36 · 23/36 published in both of the test's docstrings — and an earlier commit of THIS CLOSE had 'corrected' the README to that stale pair by copying the docstring instead of running the derivation. Verified at ddbe5a8 and at this tree: identical, so the test was already RED pre-close and no close edit moved coverage by a member."
     }
   },
   "flake_count": 0,

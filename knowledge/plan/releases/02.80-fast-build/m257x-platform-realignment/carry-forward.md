@@ -115,7 +115,35 @@ correctly declined to make it.
 **Fate:** **LAND-NEXT → M258.** M258's gate is *"UP, and every journey verified"*; a census that cannot
 run one of its two runners is squarely in its path.
 
-**Provenance:** hardening-ledger pass 73.
+**Provenance:** hardening-ledger pass 73, **plus a second measurement taken at the close that changes the
+shape of the problem.**
+
+### Measured at the close: the census arm is not only broken, it is unaffordable
+
+Pass 73 measured this on `python3.12` and found the unittest arm **broken** (the namespace-package import).
+The close ran the whole `stack-core` suite on the **system `python3.9.6`** and found the opposite failure
+mode: **it WORKS there and costs ~84 s per module.**
+
+    $ time python3 -m unittest -v tests.test_iter45_mechanical_fences
+      Ran 83 tests in 84.003s -- OK          <- works on 3.9, unlike 3.12
+      1:24.10 total
+
+`suite_census` spawns one such interpreter **per module**, and there are **90 modules** under
+`stack-core/tests/`. That is **~2.1 hours inside a single pytest test.** The close's own whole-section run
+sat at 50 % for 38 minutes in exactly that test and was stopped; the section was then re-measured with the
+three census-driving tests deselected.
+
+**So the two-runner cross-check has no working configuration on this box.** On 3.12 the second runner
+cannot import; on 3.9 it can, but the check costs more than two hours. Those are not two separate problems
+to triage — they are one design question (`run_one`'s contract) with two different symptoms depending on
+which interpreter you reach for, and neither symptom is survivable in a gate anyone will actually run.
+
+**This is the mechanism behind `ROUTE-M257x-280-the-31-minute-gate-is-skipped-because-it-is-31-minutes`,
+and it corrects that route's own premise:** the gate is not 31 minutes. On the interpreter where it
+functions, it is over two hours — which is why it is skipped, and why the deferral audit found the same
+`user-blocker` shape reaching the audit file ten iters late and then one iter late. **A gate nobody can
+afford to run is not a gate.** M258 should treat making this affordable as a precondition of its own
+"UP, and every journey verified" claim, not as cleanup.
 
 ---
 
