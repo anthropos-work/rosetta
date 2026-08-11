@@ -2818,3 +2818,72 @@ one that gets skipped. It is recorded here rather than silently backfilled.
   streak did not fire; iter-282 closed `closed-fixed` with a measured lift). Recorded in full at
   `decisions.md` § `TOK-09`. The user's alignment standard is **architecture + repo/component register +
   buildability**; **clause 5 is placed OUT OF SCOPE by that ruling — never declared met.**
+
+## M257x: Final Review (close, 2026-08-11)
+
+47 findings across 4 parallel scans + the adversarial pass. **31 landed here, 16 routed to M258** under
+`TOK-09`'s closed-list rule (*recorded and routed, never absorbed*). Zero escape-hatch deferrals.
+
+### Scope
+- [x] Gate distance measured: clauses 1–4 MET; **clause 5 OUT OF SCOPE by user ruling, never met**
+- [x] Iter-ledger audit both directions: 286 dirs vs 280 lines → **8 iters unrepresented** (81, 96, 97,
+      120, 121, 122, 123, 283; two with no directory at all). All reconstructed; ledger now 288
+- [x] Orphan commits: **0** — all 655 attributable by subject prefix
+- [x] TODO/FIXME/HACK sweep: **0** genuine deferred-work markers in the published surface
+- [x] Deferral re-audit (blocking gate): **YELLOW**, 0 escape-hatch, condition met by the block fate
+- [x] `blocking_state_guard` run at close: **10 blocking gradings, 10 represented, 0 unrepresented**
+
+### Code Quality
+- [x] [must-fix] `up-injected.sh` preflight declared success over patches it never classified
+- [x] [must-fix] `blocking_state_guard` turned an unreadable `state.md` into a false **RED**
+- [x] [should-fix] `test_reap.py`'s opt-out fence scoped by a magic character count → derived
+- [x] [nice-to-have] dead `_OUTCOMES` + dead `clause_of()` removed (0 refs repo-wide)
+- [x] [nice-to-have] 3 bare `read_text()` in `service_registry_guard` given a decode contract
+- [x] Static checks: `gofmt` 0 unformatted · `py_compile` 0 errors · `shellcheck -S error` clean
+- [x] Family reconciliation verified sound both directions — 36 members, 0 stale, 0 unplaced
+- [ ] → **M258**: 22 of 28 new fences not RED-proven · 2 fences in no census · `run_one` has no timeout ·
+      `buildbench`'s `Popen` unprotected · 21 test files exit 0 running nothing · root discovery
+      duplicated 4× with a divergent copy · the app-patch tuple is still hand-maintained · rc=1/rc=2
+      split on the same condition
+
+### Documentation
+- [x] [must-fix] `corpus/README.md:48` — *"8 Go microservices (Backend, CMS, Sentinel, etc.)"* → TWO
+- [x] [must-fix] `corpus/README.md:50` — the deleted router indexed as a live gateway
+- [x] [must-fix] `safety.md:17` — guarantee 2 labelled *"(no exception — this one is unqualified)"* 55
+      lines above the doc's own retraction of it; header + exposure rationale corrected with it
+- [x] [must-fix] 5 sites repeating the unqualified promise `safety.md:15-16` forbids citing
+- [x] [must-fix] `README.md:85` — pre-iter-133 shared-libraries set (`ai`, `authn`)
+- [x] [should-fix] `run_guide.md:232` — an "academy subgraph" 4 sibling docs say does not exist
+- [x] [should-fix] `CLAUDE.md` structure omitted `knowledge/` (3,048 TRACKED files) + `CHANGELOG.md`
+- [x] [should-fix] 2 `CLAUDE.md` fenced blocks violating its own Critical Rule 1
+- [x] [should-fix] `org-repos.md` promised a row for every one of 93 repos and had none for `db-backup`
+- [x] [should-fix] `corpus/README.md:56` — studio-room "embedded in CMS"; it is embedded in `app`
+- [x] [nice-to-have] `corpus/README.md:47` redirect list missing `skillpath`
+- [x] 2 stale `buildbench.py` citations in `build-budget.md` re-derived; 10 more repaired by the fence
+- [x] Cross-references: **0 broken in the live corpus**; 2 planning links fixed; 405 in sealed iter
+      evidence deliberately untouched (verbatim grader records)
+- [x] Discoverability: all 4 net-new corpus docs indexed from ≥1 parent
+
+### Tests & Benchmarks
+- [x] Handbook reconciliation — **15 drifted figures across 5 sections / 7 files**, all fixed
+- [x] `stack-core/README.md` "## Tests" described a 2-file suite that is 94 files, and documented a
+      `python3 -m pytest` that cannot run on this host
+- [x] demo-stack re-run **whole, twice**: 1,085 passed / 9 failed / 1 skipped — byte-identical, which is
+      what makes the 9 attributable to the live demo rather than to nondeterminism
+- [ ] → **M258**: no wall-clock threshold in `buildbench` (the release is *"fast build"*) · no host
+      profile for the host that replaced `odysseus` · the cross-section fence hardcodes `billion.json`
+
+### Adversarial review (Phase 2c)
+- [x] 8 probes on `active_milestone()` → **1 hit (A3)**, fixed: the front-matter break was backwards
+- [x] preflight branch matrix — all-opted-out path reviewed and **kept** deliberately
+- [x] `OnTheRealTree` asserted a legitimate between-milestones state away → refusal-shape assertion,
+      mutation-verified so the skip is not a blanket
+- [x] 2 scenarios considered and **routed rather than silently patched** (timeouts), with the reason
+
+### Decision Triage
+- [x] The milestone's decisions ARE the corpus edits — verified the headline findings reached the live
+      corpus (`roadrunner` 34 sites · `platform-alignment.md` 13 · `org-repos` 17 ·
+      `platform-migration-status` 19 · `content-capture` 6 · `SharedPollutionRisk` 2)
+- [x] 4 net-new corpus deliverables exist and are indexed
+- [x] `TOK-09` / `D-M257x-256-1` correctly stay **plan-side** — 1 corpus reference, and it is a citation
+      of the decision that prompted a safety finding, not a leak of planning state into the corpus

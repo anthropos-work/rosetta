@@ -2197,3 +2197,74 @@ six other sites in the same document assert *"cannot write prod"* with no such q
 them saying the demo *"never uploads a byte anywhere."* The document contradicts itself, and the live 403
 is the first time the contradiction was exercised. The seam for a zero-platform-edit containment is the
 generated `docker-compose.demo.yml` override the bring-up already writes.
+
+---
+
+## Adversarial review — M257x close (2026-08-11)
+
+**Phase 2c of the close.** Self-review by the reasoning that wrote the code shares its blind spots. These
+are scenarios constructed to break the two modules this close changed, run rather than argued. Recorded
+as **scenarios**, not fixes, so a future reviewer sees what was considered — including the ones that held.
+
+### `blocking_state_guard.active_milestone()` — 8 probes, 1 hit
+
+The function that decides **which milestone a close gate audits**. Probed in a scratch tree with a real
+`state.md` at each shape:
+
+| # | scenario | result |
+|---|---|---|
+| A1 | an **undecodable byte** in the field | HELD (this is the bug the close had just fixed; the probe confirms the fix rather than assuming it) |
+| A2 | **no front matter at all**, the field in the body | HELD — scans the whole file, which is the right reading when there is no front matter to be bounded by |
+| A3 | **front matter closes BEFORE the field**, a same-named line further down the body | 🔴 **HIT** |
+| A4 | empty file | HELD |
+| A5 | field present, **no M-id in it** (the real between-milestones shape) | HELD — returns `None` |
+| A6 | **CRLF** line endings | HELD |
+| A7 | id with a letter suffix (`M257x` itself) | HELD |
+| A8 | **no `state.md` at all** | HELD |
+
+**A3 is a real defect and was fixed.** The old break condition was
+`line.strip() == "---" and <the file does not start with --->` — which is **backwards**: on a file *with*
+front matter the break could **never fire**, so the scan ran on into the body and a document whose front
+matter omits `active_milestone:` would resolve an M-id from a body line that merely starts with the same
+token. It was reaching for *"skip the OPENING fence"* and implemented *"never stop at any fence."* Now it
+continues past the opening fence at index 0 and breaks at the closing one. **Pre-existing, not introduced
+by this close** — but it lives in the fence a close gate runs, and this close is what ran it.
+
+### `up-injected.sh` patch-freshness preflight — the branch matrix
+
+The close changed this gate from *"print success unconditionally"* to a three-way report. The scenario
+worth constructing is the one that looks like a false alarm: **both patches opted out** via their
+`DEMO_NO_*` flags. That path now logs `NOT RUN — ZERO app demo-patches were classified …
+(all opted out)`. **Kept deliberately as-is.** Zero patches *were* verified, which is the true statement;
+the `(all opted out)` clause is what tells the reader it was a decision rather than a blind spot, and the
+per-patch `opted out by its DEMO_NO_* flag` lines above it name which. A deliberate no-patch run is still
+never *blocked* — nothing on this path exits non-zero, which is the contract the block's own comment sets.
+
+### `tests/test_reap.py` — a fence that failed for a reason unrelated to what it fences
+
+Adding the comment above pushed `DEMO_NO_AUTHZ_SKIP` past a hand-written `src[i:i + 2200]` slice and the
+opt-out fence went RED over a change that touched **no opt-out**. Fixed at the derivation — the next test
+in the same class already computed the block boundary from the file — and **re-proven RED under mutation**
+(removing an opt-out still fails it). The scenario generalises: **a fence whose scope is a character count
+is a fence that fails on unrelated edits**, which trains a reader to dismiss it.
+
+### `OnTheRealTree` (the guard's own suite) — a legitimate state asserted away
+
+Both tests went RED the moment Phase 10 set `active_milestone:` to the **next** milestone, which has no
+`deferrals-audit.md` yet: the guard correctly returned **could-not-check**, and the tests read that as a
+failure. **A test that cannot tell *"the fence refused to certify"* from *"the fence found a violation"*
+is asserting on the wrong thing** — that distinction is the whole contract of an `rc=2`. They now assert
+the refusal is **well-formed** (it must name a *missing subject*; any other rc=2 reason still fails) and
+skip the ok-path assertions that have no subject. **Mutation-verified:** a different rc=2 reason fails
+rather than skips, so the skip is not a blanket.
+
+### Considered and NOT fixed — recorded so the next reviewer does not re-derive them
+
+* `guard_family.run_one` invokes all 36 members with **no `timeout=`**, and two members make network
+  calls. One member blocking on a network stall wedges the whole gate with no bound and no diagnostic.
+  **Routed** (`carry-forward.md` cluster 3) — the fix is a family-wide contract decision about what a
+  timed-out member reports, and picking that value silently at a close is exactly the kind of unreviewed
+  constant this milestone spent 288 iters removing.
+* `buildbench`'s single `Popen` has no timeout and no `try/finally`; it is the call most likely to hang
+  (docker) and the only one in that file unprotected by `_run()`'s explicit timeouts. **Routed**, same
+  cluster, same reason.
