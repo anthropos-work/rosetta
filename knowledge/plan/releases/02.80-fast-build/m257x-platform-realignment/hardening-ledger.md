@@ -7046,13 +7046,35 @@ iters, and it found something no other instrument could have.
 | `stack-injection` | **329 passed**, 8 skipped (10.88 s) |
 | `dev-stack` | **155 passed**, 10 subtests (149.70 s) |
 | `stack-verify` | **275 passed**, 4 subtests (430.36 s) — the same 275 as pass 71 |
-| `demo-stack` | **1,085 passed**, 1 skipped, 14 subtests (318.70 s) |
+| `demo-stack` | **1,085 passed · 9 FAILED**, 1 skipped, 14 subtests (318.70 s) — see the correction below |
 | `stack-seeding` (Go) | 16 packages `ok`, 0 fail |
 | `alignment` · `clerkenstein` · `playthroughs` · `stack-secrets` · `stack-snapshot` (Go) | all `ok`, exit 0 |
 | `guard_family` over the corpus, re-run after every edit | **31 GREEN · 0 RED · 0 could-not-check · 5 not-run** (was 29 / 2 before this pass) |
 
 ⚠️ **No duration above is a baseline.** Host load ran **18.8 → 40.4** across the window, with two live
 stacks and concurrent suites. Booleans only; a duration delta here is not a regression signal.
+
+> **⚠️ SELF-CORRECTION — this pass reported `demo-stack` GREEN and it was not.** The first reading was
+> taken from a truncated tail that began *"1085 passed, 1 skipped, 14 subtests passed in 318.70 s"*; the
+> **`9 failed,`** was the clause immediately before it and was cut off. It was written into this table,
+> and said out loud, as a green. **A truncated tail is not a result** — the same defect this milestone
+> books against prose, committed against a test summary, by the pass auditing for it.
+>
+> Re-run whole after the `__main__` guard move: **9 failed / 1,085 passed — byte-identical to the run
+> before it**, which is the useful fact, because it proves the guard move changed nothing. All nine are
+> **live-clone / live-container** tests, and they are failing for a disclosed reason: **`demo-2` is up
+> and the user is validating on it**, so the `stack-demo` clones carry APPLIED demo-patches and are not
+> pristine, and the live-container arm wants a database state a validating demo does not hold.
+>
+> `test_ssr_origin_chain.py::TestSSRManifestAgainstLiveClone` ×3 · `test_demopatch.py::TestRealManifest`
+> ×2 · `test_migrate_race_live.py::TestMigrateRaceLive` ×3 · `test_ant_academy.py::…round_trip_on_the_real_next_config` ×1.
+>
+> **Deliberately not "fixed":** every remedy runs through `demo-2`'s clones or its database, and this
+> pass does not touch the stack the user is validating on. Recorded as
+> **`ROUTE-M257x-h73-demo-stack-live-arms-red-while-a-demo-is-up`** — and note it is arguably not a
+> defect at all but the live arms working: they assert against a real clone, and the real clone is in
+> use. What IS a defect is that nothing in the suite's output says so, so a reader sees nine reds and
+> cannot tell an in-use clone from a broken patch chain.
 
 ### The one real defect, and it is the iter-285 class one level up
 
