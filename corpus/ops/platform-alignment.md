@@ -5926,3 +5926,112 @@ so if the filter ever drops something the number moves.
 fixture declaring **four** services the compose had deleted, with tests asserting they receive injected
 images. A fixture is a registry; a summary is a claim; both rot toward whatever was true when they were
 written, and neither errors while doing it.
+
+### An instrument that names an ABSOLUTE root does not crash elsewhere — it reports on the wrong tree (M257x iter-281)
+
+`FIX-M257x-278` sat open for three iters described as *"the census substrate hardcodes an absolute
+`ROOT`"*, with the predicted symptom *"it does not survive cloning."* Both halves were wrong, and the
+second one is the reusable part.
+
+**The size.** The route named two files. Censused across every `.py`, `.sh` and `.go` in the tooling
+repo, the population was **six sites in three files** — the third a near-copy of the first that no route
+mentioned. A route names the site it tripped over; only a census names the class.
+
+**The symptom, inverted.** A control clone at `/private/tmp/…/rosetta` ran the module and reported
+**every arm GREEN**, because `/Users/<name>/…/rosetta` still exists on the authoring box. The test read
+the ORIGINAL tree from inside the clone and graded a subject nobody had selected.
+
+> An instrument that names one machine's absolute root **does not break on another tree; it reports on a
+> tree it was not pointed at.** That is strictly worse than a crash, because a crash is triaged and a
+> green is filed.
+
+Two consequences that outlive the fix:
+
+* **A control-tree reading is only evidence if the control tree is what was read.** iter-280 could not
+  attribute a RED section suite and correctly said so; the attribution it wanted would have been
+  *unsound* even where it collected, because the substrate resolved past the control.
+* **Deriving the root turns silent false greens into honest reds, and the reds are the point.** The
+  same iter's derivation immediately exposed two arms asserting figures over a census whose population
+  includes the git-ignored clone set. They had never failed because they had never read the clone-less
+  tree. The repair is a **declared precondition**, not a weaker assertion.
+
+The fence grades a **parsed construct**: a user-home literal is a finding only where it RESOLVES — a path
+call, or a path-named binding, directly or through a list. Its own line-grained first draft flagged a
+comment about another host, a fixture string, and **line 15 of its own docstring** — a fence for
+instrument-inside-its-subject committing that defect while being written. **Quotation is not coupling**,
+and a predicate that cannot tell them apart would forbid citing a path on another machine at all.
+
+### A PRECONDITION must ask the question its MEASUREMENT asks (M257x iter-281)
+
+`suite_census.node_modules_present` was written — and twice repaired — to find an installed dependency
+tree **anywhere** within depth 5, its docstring naming `.agentspace/…/e2e/node_modules` as the case it was
+fixed to reach. It guarded an assertion over `claim_census_guard.prune_census`, whose walk prunes
+`not d.startswith(".")` and therefore **can never see that tree**.
+
+So on a clean checkout the guard said *"present, proceed"*, the derivation legitimately pruned nothing,
+and the arm failed with *"the derivation indexed nothing at all — it is broken, not the tree"* about a
+derivation that was fine. The site **was** declared, and the declaration **was** right; the *predicate*
+was one scope too wide, so the repair looked complete for two iters.
+
+> A declared precondition is only honest if its reason is TRUE. `skip beats fail` (`D-M257x-249-2`)
+> assumes the skip names what is actually missing — a probe that reaches where its subject cannot turns
+> that discipline into a differently-worded false verdict.
+
+Censused rather than repaired at the site: **1 of 4** call sites was mismatched; the other three pass a
+root where probe and walk agree. And the live green was never about the repository — the only qualifying
+trees on the authoring box were under `stack-demo/`, a **git-ignored stack workspace**.
+
+> **A green that a fresh checkout cannot reproduce is a green about the author's machine.**
+
+The repair pairs a scope-correct predicate with a **staged** anti-vacuity control that owes nothing to the
+box, so the *"it can return non-zero"* proof travels to any clone. That control's own first staging put
+every file behind the dot parent, read `files_kept == 0`, and reported a working derivation as broken —
+**the fixture as the defect, for the third time in this milestone** (§8 iter-166, iter-280's arm F). At a
+console, a control failing about its own fixture is indistinguishable from the defect it exists to catch.
+
+### A FAILURE COUNT is not a DEFECT COUNT — grade the cascade before you spend an iter on it (M257x iter-281)
+
+A whole-section run closed **7 failed**. The seven were **two** root causes: a RED `blocking_state_guard`
+(its own arm, plus `test_fence_provenance`'s family arm, which runs every guard and expects rc 0), and a
+literal-ratchet breach worth five arms in one module.
+
+Neither multiplier is a bug. A family runner *should* fail when a member is RED; a ratchet *should* be
+asserted from several angles. But the arithmetic makes a two-defect tree look like a seven-defect one,
+and the second-order cost is worse than the arithmetic: **the cascaded arm names a fence that is working
+perfectly**, so an iter that triages by failure name goes after the wrong subject.
+
+Before attributing, collapse the count: group failures by the assertion that actually fired, and check
+whether any of them merely *aggregate* another. Report the root-cause count and the arm count as two
+different numbers — the same discipline §5 applies to reach metrics, applied to REDs.
+
+⚠️ And note what this rule does NOT license. The same run **refuted** a standing hypothesis: a
+13-failure residual, described as a test-isolation defect, did not reproduce at all — three independent
+measurements disagreed with it. The honest report separates *"it is not a standing isolation defect"*
+(established) from *"here is what it was"* (not established, and contention is a guess until measured).
+
+### A mid-iter GREEN expires the moment you keep editing (M257x iter-281)
+
+iter-281 breached `TEST_MODULE_LITERAL_CEILING` by +2, repaired it by **deleting the growth**, and ran the
+ratchet module to green. It then kept editing the same files — and the final
+whole-section run came back RED on the ratchet again: `DOCSTRING_LITERAL_CEILING` +1, from a docstring
+written *after* the verification, restating a figure the sibling function two definitions above already
+carried.
+
+Nothing was wrong with the fence and nothing was wrong with the repair. **The verification was correct
+about a tree that no longer existed by the time it was cited.** This is the milestone's own staleness
+class — a measurement quoted past the edit that invalidated it — committed against a fence rather than a
+document, by the iter that had just repaired that fence.
+
+Two operational consequences, and the second is the cheap one:
+
+* **A ratchet is a CLOSING gate, not a mid-iter one.** Run it as the last thing before the close, after
+  the final edit, or the number cited in the close section is about an earlier tree.
+* **The +1 was a duplicated number, which is the shape to watch.** A figure restated in a second
+  docstring cannot be maintained in both — the repair is to point at the definition that owns it, never
+  to repeat it. `A number a comment does not carry cannot go stale` (§8 iter-206) applies to the comment
+  you are writing right now, not only to the ones you are auditing.
+
+⚠️ Pairs with the concurrency rule: the same iter wrote its own iter-dir files while a whole-section run
+was mid-flight, so that run's guard-family reading is not clean evidence about the tree it was started
+on. **A measurement and an edit must not overlap** — and when they do, say so and re-run, rather than
+quote the number and hope the overlap was harmless.

@@ -561,7 +561,7 @@ Nothing in this file was executed. These are handoffs, each with its owner.
 | **the corpus lane** (owns `corpus/**`) | RF-13 (`security_compliance.md`'s `Derivation:` block ends in a hand subtraction); the ~320 minors; the three `*-ops-collateral` sets; `DOC-M257x-iter22-ops-guides-5050`. **Do not start until the blind reading in flight has closed** |
 | **the rext lane** (owns rext code + tags + `.agentspace/rext.tag`) | F1–F11. ~~**F18 is the urgent one**~~ — **F18 is STRUCK as a false positive** (§7 #3, `D-M257x-102-6`): re-derived at iter-102, there is **exactly one** `iter-101` tag on origin, the pin matches it, and it contains `7844e97`. **Nothing is urgent for this lane.** **F1 (`FIX-M257x-iter100-suite-stall`) is the highest-value item** — until it lands, no whole-suite claim in this milestone is defensible, which is the close's own evidence |
 | ~~**the lane that owns `knowledge/plan/**`**~~ **DONE at iter-102** | ✅ F16 — `platform-defect-register.md` has its first M257x entry (`PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`). ✅ F17 — `roadmap.md` § M257x status and the retired-`odysseus` clause both corrected |
-| ~~**the user**~~ **DONE at iter-102** | ✅ Q1–Q4 all decided or withdrawn — **zero open user questions**. See the resolution block at the head of §8 |
+| **the user** | ✅ Q1–Q4 all decided or withdrawn at iter-102 — see the resolution block at the head of §8. **🔴 Q5 IS OPEN** (the iter-119 `re-scope`; [§12](#12--the-blocking-state-sweep-derived-over-every-field-that-can-block)). **⚠️ This row read *"DONE at iter-102 — zero open user questions"* until M257x iter-281.** §8's banner was corrected at iter-121 and this row was not, so the file asserted the claim in one section and retracted it in another — repair the site, leave the class, the same shape this milestone keeps paying for. It is not a harmless duplicate: §10 is the hand-off table a close gate reads to decide whether a lane is finished |
 
 ---
 
@@ -746,11 +746,21 @@ audit has ever run — including §11's, which found one of the five by reading 
 | iter-119 | `re-scope` | `TOK-08` refuted the same way (`P = 22` vs `P ≥ 19`); no successor strategy is permitted | **🔴 OPEN — this is Q5.** The milestone is holding on it |
 | iter-259 | `user-blocker` | the `/dev-up` tooling puts a dev stack in `stack-dev/`, **another project's ACTIVE workspace** (367 commits on no remote, a live worktree) and `make init` is skip-if-present, so the bring-up would ADOPT their tree. Nothing there was touched; the dev half of clause 1 could not be proven | **CLOSED — the user LIFTED the prohibition mid-iter-261** (*"don't bother me and use that repo… don't search for exceptions"*), and iter-262 proved the dev half on the sanctioned path: 5/5 `core` containers from current `main`, `/api/health` 200, 172 migrations, 137 `public` tables, zero decommissioned schemas. **Recorded at M257x iter-269, and only because `blocking_state_guard` was RED on it** — the resolution happened in the iter stream and never reached the file a close gate reads, which is precisely the gap this table exists to close |
 
-**What the enumeration says that the count does not.** Seven of the eight are closed, and closing them is
-not the finding. The finding is that **five of eight were unrepresented in the file a close gate reads**,
+| iter-280 | `user-blocker` | the whole-section suite closed **RED (13 failed)**; everything attributable to that iter was found and fixed (22 → 13) and the residual sat in four files that pass standalone on both trees. The decision routed out was *spend an iter on the test-isolation defect plus `FIX-M257x-278`, or accept a RED section gate at close* | **CLOSED — ruled at build-iter run 42: we fix it.** A RED section gate at close is not acceptable, and the residual was not even attributable, because the control-tree full run aborted on the open `FIX-M257x-278`. iter-281 closed that fix **as a class** (6 sites in 3 files, fenced) and re-measured on both trees. **Recorded here at iter-281 — and again only because `blocking_state_guard` was RED on it.** That is the SECOND consecutive occurrence of this exact shape after iter-259, which was recorded ten iters late. The fence catches it every time; nothing runs the fence at close, which is what `ROUTE-M257x-280-the-31-minute-gate-is-skipped-because-it-is-31-minutes` is about |
+
+**What the enumeration says that the count does not.** Eight of the nine are closed, and closing them is
+not the finding. The finding is that **six of nine were unrepresented in the file a close gate reads**,
 and that the one that is genuinely open is the one a `user-blocker`-keyed sweep is structurally least able
 to see — because a *scope* decision is graded `re-scope`, and scope decisions are the ones that reach the
 user latest and matter most.
+
+**And the shape now has a rate, which is the part worth acting on (M257x iter-281).** Both of the last two
+`user-blocker` gradings reached this table **only** because the fence went RED in a *later* iter — iter-259
+ten iters late, iter-280 one iter late. The mechanism is structural, not carelessness: the grading is
+written in the iter's `## Close` section, and the audit is a different file in a different lane, so the
+write that creates the finding and the write that would represent it are never the same edit. **The fence
+is not the gap; running it is.** A close that costs half an hour of whole-section suite gets skipped, so
+the fence that would have caught this in the same iter is exactly the one nobody can afford to run.
 
 **The class, named:** this is *green over something never checked* — the same class as the twelve
 instruments harden pass 26 counted — landing in the milestone's **own close gate**. The audit was not
