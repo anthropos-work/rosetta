@@ -1,6 +1,6 @@
 # GraphQL Gateway (`graphql-wundergraph`)
 
-> ## ⚠️ THE ROUTER IS GONE FROM LOCAL DEV — and its two states differ
+> ## ⚠️ THE ROUTER IS DECOMMISSIONED — destroyed in production, archived as a repo, gone from local dev
 >
 > | | production | a fresh local stack @ platform origin HEAD |
 > |---|---|---|
