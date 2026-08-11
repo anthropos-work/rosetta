@@ -685,8 +685,10 @@ inherited. It is **strictly narrower**, and it should feel narrower:
    **content** bound is what keeps the *data* blast radius finite once *cannot* is gone; it is a bound on content,
    so it does not bound the credential surface, and the earlier wording *"and nothing else"* over-claimed by
    quietly extending a content bound over an env one.
-4. **Part 2 is untouched.** No demo — content-story or not — can write production. The write-side guarantee
-   carries exactly as much weight here as it does anywhere else in this document.
+4. **Part 2 is untouched.** No demo — content-story or not — can write production **over the pointers the
+   guard covers**. The write-side guarantee carries exactly as much weight here as it does anywhere else in
+   this document — **and no more**: it is a claim about a *covered set*, and §2.3 records that the set was
+   incomplete until M257x iter-284 (the production private bucket sat outside it, and was reached).
 
 > ⚠️ **The consequence for §3.1's already-world-published ports, stated plainly.** For a synthetic demo, the
 > LAN/host-IP exposure §3.1 documents is near-harmless *because* there is nothing behind the door — that is why
@@ -1115,7 +1117,12 @@ and no `chime_status` is flipped in a demo until this amendment and the 2026-07-
 section IS that gate; it landed before the seeder's media-exhibit code did.
 
 **Part 2 (never-write-prod) is untouched.** The reference-port writes only the **per-stack demo Postgres**
-(`PerStackIsolated`) — the demo never writes prod, never writes Bunny, and never uploads a byte anywhere — and the
+(`PerStackIsolated`) — **the reference-port** never writes prod, never writes Bunny, and never uploads a byte
+anywhere. ⚠️ That sentence said *"the demo"*, not *"the reference-port"*, until M257x harden pass 72, and the
+demo-wide form was **false**: `TOK-09` named this exact site, and iter-284 then measured a demo container
+holding a **production** S3 bucket pointer that its own studio-desk tried to `PutObject` against. The scoped
+claim here is true and is the one this section can make; the demo-wide one belongs to §2.3, with its
+covered-set qualifier. And the
 authoring-time read stays read-only. The recording signing keys are **read-only Bunny CDN-token keys** — they would
 grant the demo server only the ability to *sign a fetch* of an existing recording, never to write, replace, or
 delete one. The extension is entirely on the read side, bounded by the (text-only) scrub + the VPN scope; for the
