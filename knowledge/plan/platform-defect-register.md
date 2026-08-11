@@ -447,3 +447,46 @@ on the install line**, because that recommendation is what puts the refuted figu
 **Not measurable from here:** which of the four comparison tables have been published externally, and to
 whom. That governs whether this is a documentation defect or a customer-communication one, and it is not
 in any clone.
+
+---
+
+## `studio-desk` — the copilot's user avatar can never load (M257x iter-286, 2026-08-11)
+
+**Reported by the user against a live demo:** *"in the right panel (studio copilot) we use avatar to
+represent the user and the bot. The very first avatar shown there before the 'Assisting with: Scenario
+design' is a not loaded image, tho the other one gets loaded properly."*
+
+**Two independent defects in three lines of `app/sim-advanced-builder/builderAssistant.js`**, and either
+alone is sufficient to produce a broken image:
+
+```js
+let userAvatarUrl = '/default_avatar.png';   // Default avatar
+try {
+  userAvatarUrl = userService.getUserPicture();
+} catch (error) { console.error('Error getting user picture:', error); }
+```
+
+1. **The fallback is overwritten by a getter that can legitimately return nothing.**
+   `userService.getUserPicture()` is `return this.clerk?.user?.imageUrl` — an optional chain, so a user
+   with no image yields `undefined` **without throwing**. The assignment is unconditional and the `catch`
+   never runs, so `avatar.src = undefined` and the browser requests a nonexistent path. This is the
+   *"a check that skips reads exactly like a check that passes"* shape in assignment form: the error path
+   is guarded, the **empty-success** path is not.
+2. **The declared fallback asset does not exist.** `/default_avatar.png` appears **once** in the repo — at
+   the line above — and there is no such file in `app/public/`, whose only avatar assets are
+   `avatar_bot.png`, `avatar_bot_nobg.png` and the `avatar_traits/` directory. So even with defect 1
+   fixed, the fallback lands on a 404.
+
+**Why the bot avatar loads and the user's does not**, which is exactly what the user observed: the bot
+image is a literal — `<img class="bot-avatar" src="/avatar_bot_nobg.png">` — and that file **is** in
+`app/public/`.
+
+**Not fixed here, and the reason is the constraint, not the difficulty.** This is `studio-desk` platform
+source, and v2.8 holds 0 platform edits. It is **not demo-only** either: any user without a Clerk image
+hits it in production, so a demo-patch would hide the symptom on the one surface where it does not
+matter. **The fix belongs in the platform repo** — guard the assignment (`const url =
+userService.getUserPicture() || FALLBACK`) *and* add the missing asset, or drop the fallback and render
+initials.
+
+**Measured at** `stack-demo/studio-desk`, `app/sim-advanced-builder/builderAssistant.js:741-754` and
+`app/services/userService.ts:204-206`.
