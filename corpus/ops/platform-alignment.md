@@ -2851,6 +2851,31 @@ defect, it was arguing for it.*
       reconciles. Advance the canonical pin so `pinned` means the new refs, and check the workspace
       copy, or `pinned` will quietly restore the old ones. Fenced by `clone_pin_guard` **arm D**.
 
+80. **THE RUNNER MUST NOT LIVE INSIDE ITS OWN SUBJECT — put the venv OUTSIDE the tree.** M257x iter-277
+    read **12** census failures and **ten were the measurement apparatus**. `stack-core` ships no Python
+    environment, so the natural move is `python3 -m venv .venv` in the section directory — and the
+    section directory is *inside the tree the census scans*. pip's vendored `site-packages` then breached
+    two literal ratchets, and the tell was that **both sat EXACTLY at their ceilings** beforehand: a
+    suspiciously round coincidence that meant the ratchets were fine and something new had been added
+    underneath them. Proven by the same counter over `git archive` extractions of both commits —
+    236/240 → 236/240, i.e. the iter added **zero**, while the working tree with the venv read 279/282.
+
+    **The rule:** create the interpreter somewhere the corpus counters cannot see, and invoke the suite
+    by absolute path from the section directory:
+
+    ```bash
+    python3 -m venv /tmp/rosetta-pytest && /tmp/rosetta-pytest/bin/pip install -q pytest
+    cd .agentspace/rosetta-extensions/stack-core
+    ROSETTA_ROOT=/path/to/rosetta /tmp/rosetta-pytest/bin/python -m pytest tests/ -q
+    ```
+
+    `ROSETTA_ROOT` is not optional — rule 78's fresh-checkout class is the other half of this: the suite
+    reads a **box**, and an unset root makes its failures accuse the corpus. **Costs 53 minutes to
+    rediscover**, every time, because the failures are real assertions about real files. Closes the
+    runbook half of `ROUTE-M257x-277-the-census-cannot-be-run-from-inside-its-own-tree`; the *"or the
+    counters exclude virtualenvs"* half stays open and is the better fix, because a rule can be
+    forgotten and an exclusion cannot.
+
 ### A corpus QUOTES source by paraphrase — so containment cannot grade a citation (M257x iter-234)
 
 **REFUSED INSTRUMENT. Do not rebuild it.** The obvious next rung after *"the sha resolves"* (iter-230),
@@ -3131,10 +3156,20 @@ it *checked*.
 Layer 1 fences the corpus's **map** against `repos.yml`. Nothing fenced the **tooling's** copy of the same
 claim — and the tooling has one, load-bearing and shipped.
 
-`rosetta-extensions/demo-stack/clones.pin.json` is the **canonical clone pin**: `ensure-clones.sh` seeds it
-into every fresh `stack-demo/` workspace copy-if-absent (M246), and `DEMO_ADVANCE_CLONES=pinned` checks each
-clone out at the ref it names. It is the artifact a cold bring-up on a fresh box reads to decide **what
-topology to build** — i.e. the tooling's answer to *"which repos are still part of the platform?"*
+`rosetta-extensions/demo-stack/clones.pin.json` is the **canonical clone pin**, shipped inside the consumed
+rext clone (`ensure-clones.sh:206`, `CANONICAL_PIN="$HERE/clones.pin.json"`). It is the artifact a cold
+bring-up on a fresh box reads to decide **what topology to build** — i.e. the tooling's answer to *"which
+repos are still part of the platform?"*
+
+> **⚠️ But it is NOT the file the advance mechanism reads, and this paragraph said it was until M257x
+> iter-278.** `DEMO_ADVANCE_CLONES=pinned` checks each clone out at the ref named by
+> **`$DEMO/clones.pin.json`** — the **workspace copy** (`ensure-clones.sh:184`, `PIN_FILE="$DEMO/clones.pin.json"`)
+> — which `ensure-clones.sh` seeds from the canonical **copy-if-ABSENT** (`:207-210`) and, until iter-257,
+> never reconciled. The gap is not theoretical: **measured at iter-257, this box's workspace copy named 11
+> repos to the canonical's 6** — the five phantom keys iter-222 had removed, every one of them with a
+> directory on disk carrying a git checkout. **The fence that cleaned the canonical did not reach the file
+> the mechanism reads**, which is the same *"second registry one file over"* shape as the studio-consumer
+> list (`services/cms.md`). Arm **D** below closes it. Read at rext **`8e2974f47`**.
 
 Measured at iter-222: the pin declared **11 keys**; `repos.yml` @ platform `origin/main` (`0c91421`)
 names **4** (`app`, `sentinel`, `next-web-app`, `studio-desk`), and with the two sanctioned extras the
@@ -3154,7 +3189,15 @@ behaviour. The real file's contents were asserted by nothing, in either repo.
 
 | layer | asserts | lives in |
 |---|---|---|
-| canonical clone pin ↔ `repos.yml`, both ways | (A) no pin key outside `repos.yml` + the two sanctioned extras; (B) no `repos.yml` repo the pin omits — `pinned` leaves an unpinned repo **untouched**, so a hole is silent; (C) no pin value is a moving branch, because a barrier pinned to a branch names a different tree every day | `stack-core/clone_pin_guard.py` (M257x iter-222), with `tests/test_clone_pin_guard.py` — 16 tests, a per-phantom mutation battery and four anti-vacuity controls |
+| canonical clone pin ↔ `repos.yml`, both ways | (A) no pin key outside `repos.yml` + the two sanctioned extras; (B) no `repos.yml` repo the pin omits — `pinned` leaves an unpinned repo **untouched**, so a hole is silent; (C) no pin value RESOLVES to a moving branch, because a barrier pinned to a branch names a different tree every day; **(D)** *(net-new, M257x iter-257)* every `stack-*/clones.pin.json` **workspace copy** graded against the canonical — a phantom key is a **finding** (no operator declaration can make a removed repo legitimate), a value difference is a **disclosure** (printed, never failed), and a workspace with no copy is **NOT-RUN with its reason printed**, never a silent pass | `stack-core/clone_pin_guard.py` (M257x iter-222, arm D iter-257), with `tests/test_clone_pin_guard.py` — **34** test functions at rext `8e2974f47` (16 at iter-222 `cdb87a1`, the figure this row carried until iter-278), a per-phantom mutation battery and four anti-vacuity controls |
+
+> **Four arms, and the guard's own docstring still says three.** `clone_pin_guard.py`'s header enumerates
+> A/B/C and repeats this section's superseded *"`DEMO_ADVANCE_CLONES=pinned` checks each clone out at the
+> ref it names"* framing of the canonical file — the sentence the corpus copied from it and the retraction
+> above corrects. The **code** is right (arm D runs, and the family wires it through its own `--repo-root`);
+> only the docstring is behind. Routed as `FIX-M257x-278-clone-pin-guard-docstring-says-three-arms` —
+> a rext edit, deliberately not spent here, because taking it would advance the clone past the sha this
+> very section has just been reconciled to.
 
 **The two design decisions worth carrying:**
 

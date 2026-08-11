@@ -268,21 +268,40 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 > doc (**named, not pinned:** it carried a line range until M257x iter-120, by then the **Events** bullet). Work on this domain in **`app`**, not in the
 > frozen `cms` repo. The block below is kept only because the legacy repo still carries these targets.
 
-> **⚠️ AND the demo tooling still ENTERS this repo — measured M257x iter-268, not inferred.**
-> `rosetta-extensions/demo-stack/ensure-clones.sh:310` opens its studio-consumer list with a **hardcoded**
-> `_studio_repos="cms"` and derives the rest from `repos.yml` (which has not listed `cms` since `d11a403`).
-> Its own comment states the intent: *"cms goes first so the sanctioned `make init-studio` stays the fetch
-> that actually happens."* The entry is guarded only by `[ -d "$_sdir" ] || continue`, so it is **dormant on
-> a fresh box and LIVE on any box that still carries a `stack-demo/cms/`** — and on this one it is live:
-> `stack-demo/cms/studio` is populated, i.e. the studio runtime `app` builds with was fetched **by a
-> decommissioned repo's Makefile** and copied across as the donor.
-> Nothing is broken by it (the six dead clones carry **no compose service and no build context**), and the
-> clone *set* is correctly fenced — `clone_pin_guard.py` removed five phantom pin keys at iter-222,
-> `cms` among them. **The studio-consumer list is a SECOND registry, one over, and that sweep did not reach
-> it** — `platform-alignment.md` §5's *"a named-consumer list survives the merge that moved the consumer"*
-> occurring inside the repo that wrote the rule down. Routed as
-> `FIX-M257x-268-ensure-clones-hardcodes-cms-as-studio-fetcher` (a tag + pin bump this iter is forbidden to
-> spend). **Do not read a `stack-demo/cms/` as inert.**
+> **⚠️ The demo tooling used to ENTER this repo to fetch Studio. It does not any more — FIXED at M257x
+> iter-270, and this block is the retraction.** Until then `demo-stack/ensure-clones.sh` opened its
+> studio-consumer list with a **hardcoded** `_studio_repos="cms"`, deriving only the rest from `repos.yml`
+> (which has not listed `cms` since `d11a403`) — so the decommissioned repo was the *preferred* fetcher, and
+> on any box still carrying a populated `stack-demo/cms/studio` it was the branch that actually ran.
+> At rext **`8e2974f47`** the hardcode, the `make init-studio` special case, and the preference are all
+> **gone**: `demo-stack/ensure-clones.sh:314` derives the set by calling `studio_consumer_names`
+> (`stack-core/lib/studio.sh:121`) against the platform clone's `repos.yml`, and **refuses the
+> bring-up** if it cannot be derived, and
+> acquisition is a plain `git clone` for every consumer — `init-studio` was literally that same clone, so
+> the special case bought nothing and cost a hardcoded corpse.
+>
+> **Two things iter-268 got wrong, and the second is the one worth carrying.** *"Nothing is broken by
+> it"* was true only of the branch iter-268 looked at. iter-270 graded all **8** platform-topology
+> derivations in the demo bring-up path and found this one **failed OPEN**: an unreadable `repos.yml`
+> collapsed the consumer set to **`cms` alone**, dropping every live consumer and re-arming the
+> `/build/studio: not found` failure the phase exists to pre-empt. **Neither arm errored, which is why it
+> survived four releases** — a preference does not fail; on a fresh box the guard skips it, on a stale box
+> it silently wins, and both look like success.
+>
+> **The structural lesson stands and is now paid**: the clone *set* was correctly fenced —
+> `clone_pin_guard.py` removed five phantom pin keys at iter-222, `cms` among them — but **the
+> studio-consumer list was a SECOND registry one file over, and that sweep did not reach it**
+> (`platform-alignment.md` §5's *"a named-consumer list survives the merge that moved the consumer"*,
+> occurring inside the repo that wrote the rule down). `FIX-M257x-268-ensure-clones-hardcodes-cms-as-studio-fetcher`
+> is **CLOSED**; this block asserted it open until M257x iter-278.
+>
+> **What is still true:** `stack-demo/` on a long-lived box carries **6** clones `repos.yml` does not name
+> (`cms`, `graphql-wundergraph`, `jobsimulation`, `messenger`, `roadrunner`, `storage`), and
+> `stack-demo/cms/studio` stays populated where it already was. They carry **no compose service and no
+> build context**, and nothing fetches through them any more. That they remain on disk is a **measured
+> and accepted** state, not backlog: `ROUTE-M257x-265-stack-demo-carries-six-dead-clones` was **closed
+> at M257x iter-268**, whose deliverable was the census itself — *nothing is deleted in this iter* was
+> one of its sealed pre-registrations, because a stale clone is the evidence.
 
 **⚠️ Read the tense.** The Python studio tree had to be cloned **before** any docker build, or `make up`
 failed with `"/studio": not found` — and **that is still true today, of `app`, not of `cms`.** The
