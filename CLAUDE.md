@@ -532,6 +532,9 @@ go run . && go test ./...
 ### Frontend (Next.js Monorepo)
 
 ```bash
+cd stack-dev/next-web-app   # this block had NO `cd` until M257x close, so every command below
+                            # ran in the corpus root — against Critical Rule 1
+
 # Install dependencies
 pnpm install
 
@@ -549,7 +552,7 @@ pnpm test
 
 **Studio-Desk** (TypeScript):
 ```bash
-cd studio-desk
+cd stack-dev/studio-desk   # NOT `cd studio-desk` — the repo is cloned into the stack workspace
 cp .env.example .env   # REQUIRED — see the port note below
 npm install
 npm run dev    # frontend 9100 (vite.config.ts:10), backend 9000 (.env.example:4)
@@ -672,10 +675,15 @@ rosetta/
 │   ├── services/              # Per-service documentation
 │   ├── ops/                   # Operations guides (setup, run, update)
 │   └── tools/                 # Development tools registry
+├── knowledge/                 # TRACKED planning ledger — 3,048 files (plan/{state,roadmap,context}.md +
+│                              #   releases/{VV.VV}-{codename}/m{N}-{slug}/, plus journal/). The second-largest
+│                              #   tracked tree after corpus/. ⚠️ ABSENT from this block until M257x close,
+│                              #   so an agent reading it concluded the roadmap lived in another repo.
 ├── stack-dev/                 # Git-ignored DEV-stack workspace (one of the stack-*/ family)
 ├── stack-demo/                # Git-ignored DEMO-stack workspace (+ its rosetta-extensions clone)
 ├── .agentspace/               # Git-ignored: skill output + the rosetta-extensions authoring copy
 ├── .claude/skills/            # Claude Code automation skills
+├── CHANGELOG.md               # Release history
 └── README.md                  # Project overview and status
 ```
 

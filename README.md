@@ -7,11 +7,17 @@
 > framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run stacks Clerk-free
 > with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
 > stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
-> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. In v1.3
+> Directus content library at **100% data-DNA coverage** — captured read-only. (**Snapshot** copies no customer
+> data; since v2.5 a *second*, deliberately customer-scoped prod read exists — `cmd/content-capture` — outside
+> that firewall by design. *"Customer data never copied"* was flat here until M257x close and is not true of the
+> tooling as a whole.) In v1.3
 > **dev and demo stacks converged** — a unified first-available-N registry, dev as a full-fidelity peer (local
 > Directus + auto-snapshot + light seed), and one generic `/dev-up` + `/stack-*` skill set. The
-> tooling's two safety guarantees — **never reads private/customer data, never touches prod** — are stated
-> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). See also
+> tooling's two safety guarantees — *never reads private/customer data, never touches prod* — are stated
+> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). **Read them there, not here:
+> neither is unqualified.** The first carries the v2.5 content-story exception; the second is a claim about the
+> set of pointers the tooling knows to override, and on 2026-08-11 a demo reached a production bucket that was
+> outside it (refused by IAM, not by design). See also
 > [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
 > [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
 > [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
@@ -82,7 +88,8 @@ corpus/
 │   ├── frontend_architecture.md    # Next.js monorepo details
 │   ├── external_services.md        # Clerk, Directus, GraphQL
 │   ├── dependency_map.md           # Service inter-dependencies
-│   ├── shared_libraries.md         # colony, proto, ai, authn, taxonomy
+│   ├── shared_libraries.md         # analytics-go, colony, proto, storage, taxonomy (app's real go.mod set;
+│   │                               #   `ai` folded INTO app, `authn` ships inside colony)
 │   └── alignment_testing.md        # The alignment test class + framework (rosetta-extensions/alignment/)
 │
 ├── services/              # Individual service documentation
@@ -96,7 +103,7 @@ corpus/
 │   ├── setup_guide.md     # Build local development environment
 │   ├── run_guide.md       # Start services locally
 │   ├── update_guide.md    # Sync code and dependencies
-│   ├── safety.md          # The tooling safety contract (never reads customer data / touches prod)
+│   ├── safety.md          # The tooling safety contract — BOTH guarantees are qualified; read the doc
 │   ├── snapshot-spec.md   # Capture+replay the public reference library (read-side)
 │   ├── seeding-spec.md    # Declarative stack seeding (write-side isolation boundary)
 │   └── demo/              # Demo-environment family index + recipes

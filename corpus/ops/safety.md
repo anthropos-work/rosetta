@@ -1,8 +1,10 @@
 # Rosetta Tooling — Safety & Security Contract
 
 **The authoritative statement of how the `rosetta-extensions` stack tooling stays safe.** Two structural
-guarantees, proven in code and tested — the first of which, **since v2.5, carries one bounded, disclosed
-exception**:
+guarantees, proven in code and tested — and **neither is unqualified**. The first carries one bounded,
+disclosed exception **since v2.5** (the content-story prod read); the second is a promise about **the set of
+pointers this tooling knows to override**, and **it has been wrong once, on 2026-08-11** — see the ⚠️ box in
+§1 below, which is the binding reading of guarantee 2.
 
 1. **The snapshot path never reads private/customer data.** Anything that *leaves* production through a
    **snapshot capture** is **public reference data only** — enforced by a tenant-data firewall that hard-fails on
@@ -14,9 +16,16 @@ exception**:
    > transcript). It is read-only, authoring-time, source-pinned, and disclosed — but it is **not** covered by
    > the sentence above. **§3.8 is its contract.** Read it before citing any unqualified *"the tooling never
    > reads customer data"* claim from this corpus — including older sentences in this file.
-2. **It never touches production data or services** *(no exception — this one is unqualified)*. Anything a non-prod stack *writes* is confined to that
+2. **It never touches production data or services** — *a claim about the set of pointers this tooling knows
+   to override, **not** an absolute*. Anything a non-prod stack *writes* is confined to that
    stack's own isolated stores — enforced by a 3-layer write-isolation guard that makes a shared/prod write
    **structurally impossible** on a non-prod target, and an audit log that *proves* nothing leaked.
+   > 🔴 **This sentence read *"(no exception — this one is unqualified)"* until M257x close, and that was
+   > false.** On **2026-08-11** a demo's studio-desk attempted an upload to the **production** private S3
+   > bucket; the bucket was hardcoded in platform compose, this tooling overrode only the *public* one, and
+   > **the only thing that stopped the write was an IAM policy on an account we do not control.** A pointer
+   > the platform adds tomorrow is outside the override set until someone notices. **Read the ⚠️ box in §1
+   > before citing this guarantee** — *"nothing was written"* is the outcome, never the guarantee.
 
 …and, since v2.3, a third axis that is **a disclosure, not a guarantee**:
 
@@ -90,7 +99,8 @@ is instantly "signed in" as that person. It also means **anyone who can reach a 
 can do the same**, with no password. The tooling does **not** claim otherwise, and — contrary to what one of our
 own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
 machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
-data and cannot write to production.** There is nothing behind the door — **with one bounded, disclosed
+data and cannot write to production** — reading the second at its true strength (*the pointers this tooling
+knows to override*, per guarantee 2's 🔴 box, **not** an absolute). There is nothing behind the door — **with one bounded, disclosed
 exception (v2.5, WIDENED v2.6): a "content-story" demo carries the REAL content of production sessions, COPIED and scrubbed of
 detectable PII best-effort (not guaranteed clean — residual re-identification risk is accepted, VPN/tailnet-scoped,
 a data-controller decision; §3.8) — and since v2.6 also the REAL recorded interview VIDEO (streamed by reference

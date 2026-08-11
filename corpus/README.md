@@ -44,16 +44,16 @@ Registry of development tools and toolchains.
 ### [Services](./services/)
 Individual service documentation and developer maps.
 
-*   **[Services Index](./services/README.md): every service doc, enumerated and grouped — start here rather than guessing a filename.** Covers the core backend tier, the gateway + frontends, the cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and the archived/merged redirects (`skiller`, `chronos`, `intelligence`).
-*   **Core Backend Services**: 8 Go microservices (Backend, CMS, Sentinel, etc. — skiller was merged into Backend, July 2026)
+*   **[Services Index](./services/README.md): every service doc, enumerated and grouped — start here rather than guessing a filename.** Covers the core backend tier, the gateway + frontends, the cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and the archived/merged redirects (`skiller`, `skillpath`, `chronos`, `intelligence`).
+*   **Core Backend Services**: **TWO** Go services — `app` (backend) and `sentinel`, and no others. **This line read *"8 Go microservices (Backend, CMS, Sentinel, etc.)"* until M257x close**; seven services were folded into `app`, `cms` among them, and the `core` profile starts **five** containers of which two are ours. See [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md) — the fenced map, one row per service.
 *   **Gateway & Frontend**:
-    *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
+    *   ~~[GraphQL Gateway](./services/graphql-wundergraph.md)~~: **DELETED from the platform** at `2adcf71` (2026-07-31) — no `graphql` container, no federation, no supergraph. GraphQL is served directly by `backend` at `:8082/graphql/query`. The doc survives as the decommission record.
     *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)
 *   **Integrations**:
     *   [Clerk Integration](./services/clerk-integration.md): Identity / authentication / organizations — what it's used for, dependent repos, SDKs
 *   **Studio Services & Standalone Internal Apps**:
     *   [Studio-Desk](./services/studio-desk.md): Content design tool
-    *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
+    *   [Studio-Room](./services/studio-room.md): AI generation pipeline — **embedded in the `app` (backend) image** since cms-in-app, pulled in by CI; never a standalone deployment (this line said *"embedded in CMS"* until M257x close)
     *   [Ant Academy](./services/ant-academy.md): the AI-academy product — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only (Next.js 16 + Expo, Vercel)
 
 ### [Ops](./ops/)
@@ -66,7 +66,7 @@ Operations guides for setting up, running, and updating the platform.
     *   [Snapshot Spec](./ops/snapshot-spec.md): Capture a **public** reference surface once from a safe prod source, manifest-cache it, replay per-stack — tenant-data firewall + snapshot-fidelity (v1.2). Dev is a full-fidelity peer (v1.3/M13).
     *   [Secrets Spec](./ops/secrets-spec.md): Provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip) — **values-blind** — verified by the 6-repo/64-gene secret-coverage DNA + the keep-listed gate; the `DIRECTUS_TOKEN` non-rearm safety (v1.6/M27–M30). Driven by `/stack-secrets`.
     *   [DB Access](./ops/db-access.md): Read-only prod DB access + the public-vs-customer boundary (v1.2/M9a).
-    *   [Safety & Security](./ops/safety.md): The code-cited safety contract — never reads private data, never touches prod (v1.3/M15).
+    *   [Safety & Security](./ops/safety.md): The code-cited safety contract (v1.3/M15). **Neither guarantee is unqualified** — the read side carries the v2.5 content-story prod-read exception (§3.8), and the write side is a claim about *the pointers this tooling knows to override*, which was proven incomplete on 2026-08-11. Read the doc before citing either.
     *   **Content stories (v2.5 "the playbill")** — real prod sessions, cloned + scrubbed, so a demo shows real played content:
         *   [Content Stories — route map](./ops/demo/content-stories-routes.md): per content product × vantage, the exact result route, classified by prove-by-render (M231).
         *   [Session Clone Spec](./ops/demo/session-clone-spec.md): the write side — the `ContentStorySeeder`, the scrub, and the **accepted residual re-identification risk** (M232).

@@ -53,7 +53,11 @@ The stack's clone set and its documented neighbours. Their state lives in
 [`corpus/services/`](../services/README.md).
 
 `app` · `sentinel` · `next-web-app` · `studio-desk` (the four in `repos.yml`) · `platform` ·
-`ant-academy` · `anthropos-studio-room` · `rosetta` · `rosetta-extensions` · and the merged/frozen set
+`ant-academy` · `anthropos-studio-room` · `rosetta` · `rosetta-extensions` · **`db-backup`** (added at
+M257x close — it has a full service doc, [`db-backup.md`](../services/db-backup.md), and is one of the
+**ten instantiated** production modules at `:571`, yet it appeared in **no** section of this register
+while §3 measured it live and §12 called it *"one `terraform apply` away from being live again"*. A
+doc promising *"one row for **every** repository"* owed it a home) · and the merged/frozen set
 `cms`, `jobsimulation`, `storage`, `messenger`, `customerio-sync`, `roadrunner`, `skiller`, `skillpath`,
 `chronos`, `intelligence`, `graphql-wundergraph` · plus the libraries `colony`, `proto`, `taxonomy`,
 `ai`, `authn` and — **added M257x iter-123** — `analytics-go` (see
