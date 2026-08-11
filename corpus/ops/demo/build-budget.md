@@ -379,7 +379,10 @@ failure fails the whole assert.
 > **Clause zero is the one a brand-new host hits FIRST, and it is unpredictable from a three-clause reading.**
 > `buildbench.py:451` names it in its own comment (implemented `:461-470`) and it fires in **all three**
 > production call sites — `pre_rep_assert` requires `disk_avail_gib` (`:724`), the post-rep gate requires
-> `peak_load1` **and** `disk_avail_gib` (`:1175`), the `assert-headroom` CLI requires `disk_avail_gib` (`:1470`).
+> `peak_load1` **and** `disk_avail_gib` (`:1175`), the `assert-headroom` CLI requires `disk_avail_gib` (`:1538`). **Both citations on this line and the
+> `BUILDBENCH_PROFILE` pair below were STALE and were re-derived at the M257x close** — `:1470` is an
+> unrelated `--reps` argument on the *`run`* parser, and `:1205`/`:1217` were a `print` and a comment.
+> A citation that resolves to a real line in the right file is not thereby a citation to the right thing.
 > It exists because the first version *skipped* any clause whose input was `None`, so a rep whose sampler died
 > handed in `peak_load1=None` and the gate **returned `ok=True` on a host it had never measured** — the same
 > "an empty result read as a pass" class the rest of `stack-core` refuses. The failures it emits are named
@@ -604,7 +607,7 @@ common path; these are the rest, and two of them decide whether a campaign is co
 
 | knob | read at | default | note |
 |---|---|---|---|
-| `BUILDBENCH_PROFILE` | `:1205`, `:1217` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so an `odysseus` campaign must pass `--profile odysseus` explicitly or export `BUILDBENCH_PROFILE=odysseus`, or it will grade itself against the wrong host's profile |
+| `BUILDBENCH_PROFILE` | `:1472`, `:1484` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so an `odysseus` campaign must pass `--profile odysseus` explicitly or export `BUILDBENCH_PROFILE=odysseus`, or it will grade itself against the wrong host's profile |
 | `BUILDBENCH_LANES` | `:873` | `1` | the lane count `run` asserts headroom for. **Env-only — there is no `--lanes` flag on `run`** (`--lanes` exists on `assert-headroom` alone) |
 
 *(`--public-host` also falls back to `STACK_PUBLIC_HOST` (`:1405`) — the same stack-wide knob the rest of the
