@@ -6554,3 +6554,103 @@ comment to an assertion, three literal ratchets re-pinned across five convergenc
 **caught three defects of its own making** before closing. Per the user's standing ruling the routes
 above are recorded and NOT met with new machinery; the **seventeenth** cap-without-stabilization in this
 milestone (22, 25, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59, 62, 65, 68).
+
+## Pass 69 — 2026-08-11 — incremental
+
+**Iters hardened this pass:** iter-270 … iter-279 (scope for the whole session; this pass took the
+iter-276 and iter-277 limbs)
+**Tiks covered since prior pass:** 10 (the threshold, met exactly)
+
+Started 00:59:39Z, finished 01:13:59Z. **Two claims that five documents and three code comments
+asserted, and that nothing anywhere ran.** Both were found the same way — by asking what ENFORCES a
+sentence, rather than whether the sentence is true.
+
+1. **iter-276's occupancy bound is correct; its stated reason is false, in three copies.**
+   `heroPeerSlots`' doc comment justified skipping hero slots by asserting heroes ride **hashed**
+   population indices, *"not on low ones"*, and put the collision rate for Org A's shape at *"roughly
+   a third"*. Measured: `personaUserIndexFor` seats each hero at `declaration-order-position + 1` and
+   **its own comment records that a hash was TRIED for this and REJECTED** (#M34-D7 — Size=30 + 3
+   heroes collided ~10 % of the time). Org A comes out `[1 2]`, the showcase `[1]`, a three-hero trio
+   `[1 2 3]`. The hero-slot-blind collision rate, sampled over 2,000 prefixes, is **5.62 %** — exactly
+   what 2 hero slots in 40 predicts. The same sentence had been copied into `jobroleref_test.go`'s doc
+   comment and into the iter's commit message.
+   **And the correction makes the skip MORE load-bearing, not less**: because heroes sit on the
+   lowest slots, the alternative the comment names as the one it deliberately avoids — starting the
+   scan at slot 1 — would land on a hero for the first `heroCount` roles **every** time. The hash
+   offset makes a collision rare; the skip makes it impossible. A maintainer who believed the original
+   would have had the two protections the other way round. The commit message is left as written
+   (`D-M257x-279-4`).
+2. **iter-277's rule was enforced in one of the two walkers.** That iter closed with *"the runner must
+   not live inside its own subject"* and a route saying that until it was acted on, **every future
+   census run reproduces this**. `claim_census_guard`'s walk has always carried a **dot-rule** beside
+   its skip set; `derivation_registry`'s had a **component-exact set only**, at **13** call sites —
+   and `.venv-check` (the name iter-277 actually used) is not `.venv`, and neither is `venv`, `env`,
+   or anything else `python3 -m venv` is pointed at. Two census walkers in one section, two prune
+   decisions for the same tree. `census_pruned()` replaces all 13 copies and adds the rule.
+   **Behaviour-neutral, measured:** zero `.py` files live under a dot-directory in this repo outside
+   `.git`, so **no count and no ratchet moved**.
+   ⚠️ **The first cut of that fix was absolutely wrong and would have passed.** The authoring clone
+   lives at `rosetta/.agentspace/rosetta-extensions`, so an **absolute** dot-rule prunes the entire
+   repository and every census returns nothing — a guard that is GREEN because it measured zero files.
+   Caught before commit; the rule is applied to `path.relative_to(root)` and pinned by its own test.
+3. **`gofmt` was an instruction to the reader, not a property of the tree.** Five checked-in documents
+   assert this repo is gofmt-clean, one printing the command with the comment *"must be empty"*.
+   There are **no git hooks and no CI workflows** in `rosetta-extensions`. Measured: **2 files dirty**
+   — `target_roles_test.go` (landed by **iter-276**, in-range) and `adapters_harden_test.go` (landed
+   by iter-15, dirty for ten days).
+   **One of the two is why this is not cosmetic.** Since Go 1.19 `gofmt` reformats **doc comments**,
+   and that formatter rewrites TEXT: a bare pair of ASCII apostrophes becomes `”`. `stack-snapshot`'s
+   adapter test used that pair to write the SQL **empty string** a query returned, so `gofmt -w` would
+   have replaced measured evidence with a quotation mark. The sentence was rewritten rather than the
+   transform accepted. **A file left un-gofmt-ed does not stay neutral — it accumulates a pending edit
+   somebody eventually applies without reading.**
+
+**Tests added:** 6 Go (`stack-seeding/seeders/jobroleref_occupancy_harden_test.go`) + 3 Python
+(`stack-core/tests/test_frozen_expectation_census_m257x.py`, class
+`TheCensusMustNotWalkItsOwnEnvironment`) + 2 Python (`stack-core/tests/test_gofmt_clean_m257x.py`,
+net-new module, **proven RED on a planted file before being trusted green**).
+
+Two of the six Go tests are **characterisations with disclosed reach, not approval** — the two
+branches where the bound silently does NOT hold. When the story is too small to seat a peer, nothing
+is reserved. When `set[heroCount:]` is empty the general draw falls back to the **full** set —
+measured at **14 of 14** hero roles over the bound, 6 to 10 holders each — while the comment on that
+line says the reservation is the only way to hold a hero's title. Both are unreachable from the
+checked-in presets and both are one blueprint edit away. **The shape is the one M257x has now found
+three times: a derivation that fails OPEN to its unfiltered behaviour** (iter-270's
+`derive_inject_svcs`, and both of these). A fix is a behaviour change and belongs in an iter.
+
+**Coverage delta on touched files:** `heroPeerSlots` (the function iter-276 introduced) **88.9 % →
+100.0 %** statements. `jobroleref.go` is now 100 % per-function across all 14 functions. The
+`seeders` package total is **94.4 % → 94.4 %** — unchanged, because the package is large enough that
++11 pp on one function rounds away, which is why the per-function figure is the one quoted.
+
+**Bugs surfaced + fixed inline:**
+- three copies of a false justification for the occupancy bound (`3f79945`)
+- the census dot-rule missing from one of two walkers (`e997a7c`)
+- an absolute dot-rule in this pass's own first cut, which would have made every census vacuous and
+  GREEN (`e997a7c`)
+- 2 un-gofmt-ed files, one of which gofmt would have corrupted (`3f79945`, `e997a7c`)
+- **this pass's own new file was itself not gofmt-clean**, and was caught by the fence it was written
+  alongside — iter-269's *"a new member is not tested by the tests it ships with"*, again
+
+**Flakes stabilized:** none surfaced.
+
+**The residual noun arm closed on this pass's own prose again** (`uncovered-noun::minutes`). Handled
+per the precedent already written beside `_NOT_NOUNS`: the duration is stated in words and
+`ROUTE-M257x-279-durations-are-unclassified-measurement-nouns` stays **open** rather than being
+decided in passing to unblock a commit.
+
+**VERIFICATION.** pytest 8.4.2 / CPython 3.9.6 (`/usr/bin/python3`), go1.26.5 darwin/arm64.
+
+| scope | result |
+|---|---|
+| `stack-core/tests/test_frozen_expectation_census_m257x.py` | **102 passed** (30.8 s) |
+| the 3 other `derivation_registry` dependents | **28 passed** (18.9 s) |
+| `stack-core/tests/test_gofmt_clean_m257x.py` | **2 passed** — and **1 failed** on a planted file |
+| `stack-seeding` `go vet ./seeders/` + `go test ./seeders/` | rc=0 · **ok** (0.84 s) |
+| `stack-snapshot` `go vet` + `go test ./cmd/stacksnap/` | rc=0 · **ok** (0.36 s) |
+| `gofmt -l` over all **6** Go sections | **empty** |
+
+**Stop condition:** continue-to-next-pass — the iter-278 unpinned-anchor limb (13 measured, 0 held,
+deliberately unrepaired) and the iter-279 docstring-copy limb (what ELSE was copied out of that
+docstring) are untouched.
