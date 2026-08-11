@@ -273,7 +273,7 @@ Why this pattern: business rules and validation live in CMS, caching reduces Dir
 > studio-consumer list with a **hardcoded** `_studio_repos="cms"`, deriving only the rest from `repos.yml`
 > (which has not listed `cms` since `d11a403`) — so the decommissioned repo was the *preferred* fetcher, and
 > on any box still carrying a populated `stack-demo/cms/studio` it was the branch that actually ran.
-> At rext **`8e2974f47`** the hardcode, the `make init-studio` special case, and the preference are all
+> At rext **`e64a3cd3b`** the hardcode, the `make init-studio` special case, and the preference are all
 > **gone**: `demo-stack/ensure-clones.sh:314` derives the set by calling `studio_consumer_names`
 > (`stack-core/lib/studio.sh:121`) against the platform clone's `repos.yml`, and **refuses the
 > bring-up** if it cannot be derived, and

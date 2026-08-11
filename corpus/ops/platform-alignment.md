@@ -3169,7 +3169,7 @@ repos are still part of the platform?"*
 > repos to the canonical's 6** — the five phantom keys iter-222 had removed, every one of them with a
 > directory on disk carrying a git checkout. **The fence that cleaned the canonical did not reach the file
 > the mechanism reads**, which is the same *"second registry one file over"* shape as the studio-consumer
-> list (`services/cms.md`). Arm **D** below closes it. Read at rext **`8e2974f47`**.
+> list (`services/cms.md`). Arm **D** below closes it. Read at rext **`e64a3cd3b`**.
 
 Measured at iter-222: the pin declared **11 keys**; `repos.yml` @ platform `origin/main` (`0c91421`)
 names **4** (`app`, `sentinel`, `next-web-app`, `studio-desk`), and with the two sanctioned extras the
@@ -3189,15 +3189,22 @@ behaviour. The real file's contents were asserted by nothing, in either repo.
 
 | layer | asserts | lives in |
 |---|---|---|
-| canonical clone pin ↔ `repos.yml`, both ways | (A) no pin key outside `repos.yml` + the two sanctioned extras; (B) no `repos.yml` repo the pin omits — `pinned` leaves an unpinned repo **untouched**, so a hole is silent; (C) no pin value RESOLVES to a moving branch, because a barrier pinned to a branch names a different tree every day; **(D)** *(net-new, M257x iter-257)* every `stack-*/clones.pin.json` **workspace copy** graded against the canonical — a phantom key is a **finding** (no operator declaration can make a removed repo legitimate), a value difference is a **disclosure** (printed, never failed), and a workspace with no copy is **NOT-RUN with its reason printed**, never a silent pass | `stack-core/clone_pin_guard.py` (M257x iter-222, arm D iter-257), with `tests/test_clone_pin_guard.py` — **34** test functions at rext `8e2974f47` (16 at iter-222 `cdb87a1`, the figure this row carried until iter-278), a per-phantom mutation battery and four anti-vacuity controls |
+| canonical clone pin ↔ `repos.yml`, both ways | (A) no pin key outside `repos.yml` + the two sanctioned extras; (B) no `repos.yml` repo the pin omits — `pinned` leaves an unpinned repo **untouched**, so a hole is silent; (C) no pin value RESOLVES to a moving branch, because a barrier pinned to a branch names a different tree every day; **(D)** *(net-new, M257x iter-257)* every `stack-*/clones.pin.json` **workspace copy** graded against the canonical — a phantom key is a **finding** (no operator declaration can make a removed repo legitimate), a value difference is a **disclosure** (printed, never failed), and a workspace with no copy is **NOT-RUN with its reason printed**, never a silent pass | `stack-core/clone_pin_guard.py` (M257x iter-222, arm D iter-257), with `tests/test_clone_pin_guard.py` — **34** test functions at rext `e64a3cd3b` (16 at iter-222 `cdb87a1`, the figure this row carried until iter-278), a per-phantom mutation battery and four anti-vacuity controls |
 
-> **Four arms, and the guard's own docstring still says three.** `clone_pin_guard.py`'s header enumerates
-> A/B/C and repeats this section's superseded *"`DEMO_ADVANCE_CLONES=pinned` checks each clone out at the
-> ref it names"* framing of the canonical file — the sentence the corpus copied from it and the retraction
-> above corrects. The **code** is right (arm D runs, and the family wires it through its own `--repo-root`);
-> only the docstring is behind. Routed as `FIX-M257x-278-clone-pin-guard-docstring-says-three-arms` —
-> a rext edit, deliberately not spent here, because taking it would advance the clone past the sha this
-> very section has just been reconciled to.
+> **Four arms — and the SOURCE of the sentence above is now fixed too.** `clone_pin_guard.py`'s header
+> enumerated A/B/C and repeated the superseded *"`DEMO_ADVANCE_CLONES=pinned` checks each clone out at
+> the ref it names"* framing of the canonical file. **That is the sentence this section copied**, so
+> repairing only the copy would have invited the next reader to copy it forward a second time.
+> `FIX-M257x-278-clone-pin-guard-docstring-says-three-arms` is **CLOSED at M257x iter-279**: the header
+> now says four arms, documents arm D's asymmetry, and carries the `PIN_FILE`-vs-`CANONICAL_PIN`
+> retraction. The **code** was right throughout — arm D has run since iter-257, wired through the
+> family's own `--repo-root`; only its description was behind.
+>
+> **iter-278 declined that fix on a cost iter-278 then paid** — *"a rext edit advances the clone past the
+> sha this section has just been reconciled to"* — and the loop turned out to be minutes: commit, tag,
+> `git push --tags`, **verify on origin**, advance the consumption clone, re-point. `D-M257x-279-1`
+> retracts the reason rather than reversing it quietly, because **a documented cost that is wrong will be
+> quoted by the next person deciding whether to fix a source or patch a copy.**
 
 **The two design decisions worth carrying:**
 
