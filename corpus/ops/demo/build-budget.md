@@ -131,20 +131,47 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 > below as *"the host this doc was written for, which no longer exists for this purpose"* — this doc names
 > `billion` 44 times, `odysseus` 26 and `laptop` 22, and **names the sanctioned dev host zero times.**
 >
-> **The operational consequence, measured on the sanctioned host (`Mac16,11`, arm64, 12 cores, 24 GiB,
-> Docker Desktop `overlay2`, VM 8 CPU / 11.67 GiB / 125.4 GiB disk with 64.97 GiB free):**
+> **⚠️ TWO CORRECTIONS TO THIS BANNER'S OWN TEXT (M257 iter-05/iter-07). The supersession still stands** —
+> the 25 `odysseus` sentences below are still un-re-pointed — **but items 1 and 2 have since been fixed, and
+> the parenthetical below got a hardware fact wrong.**
 >
-> 1. **There is no host profile for it.** `rosetta-extensions/stack-core/hostprofiles/` holds exactly two —
+> - **`overlay2` is WRONG for this machine.** It runs the **containerd image store**
+>   (`docker info` DriverStatus `io.containerd.snapshotter.v1`) and **pays a size-proportional unpack leg**:
+>   0.8 s @ 256 MB → 3.0 s @ 1024 MB, and **56.6 s export + 19.3 s unpack** on the real 4.12 GB hiring image.
+>   `docker info` prints `Storage Driver: overlayfs` here, which is exactly how the wrong reading was made —
+>   **grade this with a probe, never with the config string.** The same claim was retracted at
+>   `knowledge/plan/state.md`, `roadmap.md` `D-v28-15` and M257's `overview.md`. **L1 therefore keeps a
+>   substantial price on this host (~136–152 s)**, which inverts the conclusion that paused M257.
+> - **Item 1 is RESOLVED:** `macmini.json` was measured and checked in at M257 iter-04, and **M257's gate now
+>   names it** (iter-05) instead of the retired `odysseus`. Three profiles ship, not two.
+> - **Item 2 is RESOLVED:** `profile_describes_host()` (M257x iter-229) compares the operator-supplied
+>   profile to the host and refuses a mismatch with its own exit code. Verified live on this host at M257
+>   iter-07: verdict **`match`**.
+>
+> **The operational consequence, measured on the sanctioned host (`Mac16,11`, arm64, 12 cores, 24 GiB,
+> Docker Desktop — ~~`overlay2`~~ **containerd**, see the correction above —, VM 8 CPU / 11.67 GiB /
+> 125.4 GiB disk with 64.97 GiB free):**
+>
+> 1. ~~**There is no host profile for it.**~~ **FIXED at M257 iter-04** (see correction above). As measured
+>    at iter-225: `rosetta-extensions/stack-core/hostprofiles/` held exactly two —
 >    `billion.json` (8-core x86_64 Linux, containerd) and `laptop.json` (10-core / 16 GiB M1 Pro, 9,937 MiB
->    VM, 58 GiB VM disk). Neither describes this machine. **Both name `odysseus` as the gate host**, citing
->    the superseded `D-v28-14`, and **no `odysseus.json` was ever written** — so the host the tooling names
->    as its gate has no profile either.
-> 2. **Nothing would notice if you used another host's profile.** `buildbench --profile <name>` is
+>    VM, 58 GiB VM disk). Neither described this machine. **Both named `odysseus` as the gate host**, citing
+>    the superseded `D-v28-14`, and **no `odysseus.json` was ever written** — so the host the tooling named
+>    as its gate had no profile either.
+> 2. ~~**Nothing would notice if you used another host's profile.**~~ **FIXED at M257x iter-229** (see
+>    correction above). As measured: `buildbench --profile <name>` is
 >    operator-supplied; there is no host auto-detection. A missing *named* profile is correctly exit-2
 >    (`load_host_profile`: *"a missing profile is exit-2 territory, never a pass"*), but a **present and
->    inapplicable** one is graded silently. `host_facts()` is recorded into the run JSON and **never
->    compared to the profile.** The harness already refuses an `autoverify.json` verdict *"that does not
->    describe the run under test"* — the same discipline is simply not applied to the host profile.
+>    inapplicable** one was graded silently. `host_facts()` was recorded into the run JSON and **never
+>    compared to the profile.** The harness already refused an `autoverify.json` verdict *"that does not
+>    describe the run under test"* — the same discipline was simply not applied to the host profile.
+>
+>    **A related units defect outlived that fix and was found at M257 iter-06**: the identity check grades
+>    a `docker-desktop-vm` profile's `cores` against **engine NCPU**, correctly — but HEADROOM **clause 1**
+>    was grading the **host's** `os.getloadavg()` against that same VM-allocation `cores`. On this machine
+>    that is a 12-core load against an 8-core limit: a threshold of **6** where the correct one is **10**,
+>    failing **closed**. Fixed by `load1_core_basis()`; a profile must now declare `kind`, and a
+>    `docker-desktop-vm` one must declare `host_logical_cores`.
 > 3. **`require_measured` does not cover this.** Clause zero fails a `None` *measurement input* (a dead
 >    sampler, an unanswered disk probe). A profile describing the wrong machine supplies numbers, not
 >    `None`, so clause zero passes.
@@ -391,10 +418,21 @@ failure fails the whole assert.
 > assert working, not a broken profile.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
-> peak (`max` over the sampler's rows, `buildbench.py:1173`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1466`) — and the failure message still
+> peak (`max` over the sampler's rows, `buildbench.py:1246`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1608`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
+>
+> *(Both line numbers were re-pinned at M257 iter-07. The previous pair predates iter-06's
+> `load1_core_basis`, which shifted the file. One of the two had landed on a **blank line** and the
+> repair-postcondition fence caught it RED; the other still resolved to a **valid but wrong** line — it had
+> drifted onto a dict key in an unrelated function — and **no fence could see it**. A citation that rots
+> into something syntactically fine is invisible to a structural guard, so both were corrected together
+> rather than only the one that complained.)*
+>
+> **And clause 1's denominator moved too**: it is now `load1_core_basis(profile)` — the core count of the
+> machine the sample came **from** — not `profile["cores"]`. On a `docker-desktop-vm` profile those are
+> different machines; see `FIX-M257-load1-units-vm`.
 
 **Clause 2 uses the MEASURED per-lane peak, not the V8 ceiling — deliberately.** The effective ceiling is
 **8192 MiB** (`apps/web/package.json:98` and `apps/hiring/package.json:92` re-assign
