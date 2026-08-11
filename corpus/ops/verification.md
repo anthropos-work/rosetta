@@ -474,6 +474,7 @@ guard. Python executes top to bottom, so the class does not exist when the guard
 never collected, and the run still prints **OK**. Measured — **15 classes / 76 tests**:
 
 ```
+# v2.8 M256, BEFORE the repair — this pair no longer reproduces; see the re-measurement below
 python3 demo-stack/tests/test_roster_invariant.py         ->  Ran 22 tests ... OK
 python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
 ```
@@ -481,6 +482,25 @@ python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
 The five silent tests included that file's own RED-proof for the live 12-dead-buttons cockpit defect — the class
 its docstring calls *"the primary user-visible surface, and the one the defect is actually about."* Worst case:
 `stack-injection/tests/test_apply_patch_selfheal.py`, **11 of 27**.
+
+> **⚠️ RE-MEASURED 2026-08-11 (M257x harden pass 70), and both numbers above have moved.** The block is a
+> **dated exhibit of the repaired state, not a command to run**: that same file now answers **32 tests /
+> 32 passed** under both runners — the gap is **zero**, because the repair below landed. A reader who ran
+> the two lines to see the defect would see nothing and conclude the page was wrong about the mechanism.
+>
+> **The repo-wide figure moved too: 15 classes / 76 tests → 1 class / 3 tests.** And the one is instructive
+> rather than residual — it did not survive the repair; it was **created by the harden pass that came to
+> re-measure the class**, which appended a new `TestCase` to the end of
+> `stack-core/tests/test_frozen_expectation_census_m257x.py` and ran it under pytest only. Direct execution
+> answered **`Ran 99 tests ... OK`** while pytest answered **102**. Repaired in the same pass.
+>
+> Two things follow, and the second is the one worth carrying. **(1)** The `test_test_collection_fence.py`
+> fence named below is NOT the gap — it was green, it detects a planted case immediately, and it was simply
+> **never run**, because the pass ran the modules it had touched rather than the family. **(2)** *"Appending
+> to the bottom of the file is the path of least resistance"* is not a historical observation about six
+> files that drifted across releases; it is a live gradient that catches the next writer, including one
+> who has just read this paragraph. The class is closed by the fence, not by the repair — **and only if
+> the fence is actually invoked by whoever adds a member.**
 
 CI was never wrong — every runner uses pytest, which collects by inspection and ignores statement order. What was
 broken is the loop a human or an agent actually uses: `python3 <the one file I am editing>` is what the file's own

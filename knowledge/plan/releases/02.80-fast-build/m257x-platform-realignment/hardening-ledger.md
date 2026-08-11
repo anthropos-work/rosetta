@@ -6654,3 +6654,146 @@ decided in passing to unblock a commit.
 **Stop condition:** continue-to-next-pass — the iter-278 unpinned-anchor limb (13 measured, 0 held,
 deliberately unrepaired) and the iter-279 docstring-copy limb (what ELSE was copied out of that
 docstring) are untouched.
+
+## Pass 70 — 2026-08-11 — incremental
+
+**Iters hardened this pass:** iter-278 and iter-279 limbs (the anchor-clock and docstring-copy limbs of
+the iter-270…279 batch)
+**Tiks covered since prior pass:** same batch as pass 69
+
+Started 01:14:53Z, finished 02:20:37Z. **The pass came to re-measure a documented defect class and
+re-created it on the way in.**
+
+1. **The corpus's flagship worked example for "a test file can hide tests from the runner it invites
+   you to use" no longer reproduces — and the one surviving instance in the repo was PASS 69's.**
+   `verification.md` prints a two-line exhibit (`22` direct vs `27` under pytest on
+   `demo-stack/tests/test_roster_invariant.py`) and a repo-wide figure of **15 classes / 76 tests**.
+   Re-measured: that file is **32 vs 32**, gap **zero**; repo-wide the class is **1 class / 3 tests**.
+   The one is `TheCensusMustNotWalkItsOwnEnvironment` — appended by **pass 69, that same hour**, below
+   the `__main__` guard, because `cat >>` puts things at the end of a file. Direct execution answered
+   **`Ran 99 tests ... OK`** while pytest answered **102**: the three tests that went silent were the
+   three fencing a census against measuring itself. Moved above the guard; both runners now say 102.
+   **The fence is not the gap** — `test_test_collection_fence.py` already asserts this invariant, it is
+   green, and a planted case is named within seconds. It was never *invoked*, because pass 69 ran the
+   modules it had touched rather than the family. *"Appending to the bottom of the file is the path of
+   least resistance"* is not a historical remark about six files that drifted across releases; it is a
+   live gradient that caught a pass which had just read the paragraph describing it.
+2. **The corpus↔code prose relationship is measured for the first time: 172 (module, doc) pairs share a
+   verbatim 11-word run.** So the iter-278/279 defect — *"three arms"* and *"16 tests"* copied out of
+   `clone_pin_guard.py`'s header into `platform-alignment.md` §8 — is **one instance of a 172-pair
+   class, and copying is the corpus's default authoring mode rather than an exception.** Top pairs:
+   `autoverify.sh`↔`verification.md` (14 runs), `clone_pin_guard.py`↔`platform-alignment.md` (11),
+   `apply_patch.py`↔`demopatch-spec.md` (9), `ant-academy.sh`↔`frontend-tier.md` (9). **Nothing keeps
+   either side in step with the other.** A second instrument — verify every corpus QUOTATION attributed
+   to a named rext module — was built and is **reported as unreliable rather than quoted**: of 12
+   candidates it called 10 unfound, and inspection showed most are markdown emphasis parsed as quote
+   delimiters plus a line-join defect that re-inserts the `#` comment marker. **The population figure
+   stands; the verdict instrument does not.**
+3. **iter-278's deliberate non-repair is now durable corpus-side.** 13 unpinned rext anchors, **0 of 13
+   held, 0 of 13 repaired on purpose** — recorded only in `knowledge/`, so a corpus reader met an
+   unpinned anchor with nothing saying it had been counted. `platform-alignment.md` §8 now carries the
+   measurement, the refuting site, and the reason; and `safety.md`'s `bridge_bedrock_creds` bullet — the
+   site that proved the class, cited at a different line from `media-substrate-spec.md`'s — now states
+   its ref and the re-measurement instead of being silently renumbered.
+4. **The whole-section run's six failures were FOUR defects and TWO of this pass's own making.** Pass
+   69's new Go file moved a declared per-section count (`stack-seeding.go: registry states 119, disk has
+   120`), reddening 4 tests across 2 modules. **And the fenced component is not the whole claim:** the
+   prose above it states the SUM of the six sections, nothing checks that, and `119 + 45 + 37 + 22 + 21
+   + 20 = 264` while `120` does not — so bumping only the fenced number would have left a paragraph
+   whose parts no longer add up, pass 68's ceiling-comment shape exactly. `NON_PYTHON_FILE_FLOOR` was
+   deliberately NOT bumped: it is a FLOOR, 265 clears 264, and re-pinning a floor to the current reading
+   is how a floor becomes a ratchet.
+   The other two were the mechanical-fences mutation battery's **unmutated-baseline** arms, and re-run
+   **ALONE** it is **6 passed in 16 m 17 s**. Its arms assert the tree is green while unmutated, and the
+   119→120 edit landed inside its 36-minute window. **iter-279 wrote that an hour-long suite is run
+   before the last commit or it grades a tree that no longer exists; the corollary this pass paid for is
+   stronger — no edit may land WHILE it runs, and no second runner may touch the tree it is proving.**
+
+> **THE STRUCTURAL ANSWER THE BATCH WAS OWED — "quoting a defect commits it" is not a prose habit, it
+> is one face of a single mechanism, and this session hit that mechanism FOUR times.** *An instrument
+> that lives inside its own subject measures itself.* (a) iter-277's virtualenv inside the scanned tree
+> — the walker enforcement gap pass 69 closed. (b) The noun vocabulary closing on the very sentence
+> that widens it, now past its tenth consecutive occurrence, because the vocabulary's explanatory prose
+> is inside the scanned tree. (c) This pass's own `pgrep -f "pytest tests/"` waiter, whose *own command
+> line* contained the pattern, so it waited on itself and never fired. (d) The mutation battery graded
+> against a tree its own session was editing. **The fourth "quoting the defect commits it" catch is
+> therefore not a fourth prose slip to be more careful about — it is (b), and the general remedy is the
+> rule iter-277 already wrote, applied to prose and to processes and not only to directories.**
+
+**Tests added:** none net-new this pass — pass 70 is repair, re-measurement and disclosure. The two
+runner-visibility repairs are covered by the existing `test_test_collection_fence.py`, which is green
+and was proven to detect a planted case.
+
+**Coverage delta on touched files:** n/a — no new production code. The measurable delta is
+**runner-visible** tests in `test_frozen_expectation_census_m257x.py`: **99 → 102** under direct
+execution (pytest read 102 throughout, which is why nothing failed).
+
+**Bugs surfaced + fixed inline:**
+- 3 tests hidden from the direct runner by pass 69's own append (`817f1e8`)
+- a per-section file count and the sum beside it, both moved by pass 69's new file (`0c9f805`)
+- 4 anchors minted by this pass's first draft of the `safety.md` disclosure: bare `` `:NNNN` `` written
+  beside a `.md` name binds to that document, so a paragraph ABOUT ambiguous anchors created ambiguous
+  anchors — `anchor_construct_guard` + `repair_postcondition` both RED, repaired before commit
+- a stale corpus exhibit whose numbers no longer reproduce (`verification.md`)
+
+**Flakes stabilized:** none — but **two apparent failures were correctly identified as contamination,
+not flake**, and the distinction was made by re-running the battery alone rather than by re-running it
+twice.
+
+**Knowledge backfill:** `corpus/ops/verification.md` (the re-measured exhibit + the
+fence-exists-but-was-not-invoked distinction), `corpus/ops/platform-alignment.md` §8 (the cross-repo
+unpinned-anchor rule with its measured population and deliberate zero), `corpus/ops/safety.md` (the
+`bridge_bedrock_creds` ref + why every line number in that parenthesis names its file).
+
+**VERIFICATION.** pytest 8.4.2 / CPython 3.9.6 (`/usr/bin/python3`), go1.26.5 darwin/arm64.
+
+| scope | result |
+|---|---|
+| `stack-core` whole section | **2,216 passed · 6 failed · 3 skipped** (2,148.41 s = 35 m 48 s) |
+| the 2 `suite_census` modules, after the count fix | **61 passed · 1 skipped** (19.0 s) |
+| `test_m257x_mechanical_fences_mutation_battery.py`, **run alone** | **6 passed** (977.78 s = 16 m 17 s) |
+| `test_test_collection_fence.py` | **35 passed** — and **RED** on a planted late class |
+| `test_iter45_mechanical_fences.py` (the other whole-run suspect) | **83 passed** standalone |
+| the 6 pass-69 Go tests, **3× consecutive** | **ok** each (0.38 / 0.21 / 0.22 s) |
+| the 5 pass-69 Python tests, **3× consecutive** | **5 passed** each |
+| `guard_family --repo-root . --platform stack-demo/platform` | **30 GREEN · 0 RED · 0 could-not-check · 5 not-run** |
+
+**Timing is CONTENDED and is not a baseline** — 35 m 48 s here against pass 68's 39 m 10 s and
+iter-279's 35 m 05 s for the same section.
+
+**NOT COVERED, stated rather than implied:**
+* The **TypeScript** suites remain enumerated and never executed; **no live stack was brought up**, so
+  gate clause 1 is untouched. `demo-1` and `demo-2` were not stopped, restarted or re-seeded.
+* `guard_family` reports **30 of 35**; **5 are NOT-RUN** for want of `--range`/`--ledger`. Not a
+  whole-family green, and the runner says so itself.
+* The other rext sections (`demo-stack`, `dev-stack`, `stack-injection`, `stack-verify`) were **not**
+  re-run. `stack-seeding` and `stack-snapshot` were run for the packages this pass touched, not in full.
+* **This pass's rext commits are in the authoring copy only** — not tagged, not pushed. That matches
+  every prior harden pass (checked: none of `e137cc9`, `1bb9d16`, `abadff7`, `669ce4e` carries a tag),
+  and no stack consumes them; `.agentspace/rext.tag` stays at `fast-build-m257x-iter-279`.
+* **No cited corpus anchor was moved by this pass's rext edits** — checked file by file: the six files
+  touched are referenced in the corpus by PATH only, never with a line anchor.
+
+**Routes carried forward:**
+- `ROUTE-M257x-h70-corpus-and-code-prose-are-copies-with-no-fence` → **NEW, and the largest surface this
+  batch exposed.** 172 (module, doc) pairs share verbatim prose; iter-278/279 repaired one direction of
+  one pair by hand. Sizing a fence is a design decision, not a harden-pass edit.
+- `ROUTE-M257x-h70-quotation-verification-instrument-is-unreliable` → **NEW.** Built, measured, and
+  disqualified in the same pass; its two known defects (markdown emphasis read as quote delimiters, and
+  a line-join that re-inserts the comment marker) are named so a future build starts past them.
+- `ROUTE-M257x-279-durations-are-unclassified-measurement-nouns` → still open; pass 69 hit it again and
+  followed the recorded precedent rather than deciding it.
+- `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks` → still open, now
+  **discoverable from the corpus** rather than only from `knowledge/`.
+- `ROUTE-M257x-h68-rext-hardcodes-3-more-decommissioned-consumer-lists`,
+  `ROUTE-M257x-h59-rext-edits-fire-no-fence-anywhere`,
+  `ROUTE-M257x-h65-fresh-checkout-class-needs-a-scheduled-remeasure` (**this pass is a worked example of
+  its cost — a class measured at 15 and never re-measured had reached 1**),
+  `ROUTE-M257x-h62-live-markdown-refragmented`, `ROUTE-M257x-h59-range-anchors-are-ungraded`,
+  `FIX-M257x-265-prose-deletion-instructions-are-out-of-D-reach` → all open.
+
+**Stop condition:** continue-to-next-pass — **9 defects fixed inline** across passes 69–70, three of
+them this session's own making and one of those created by the pass that came to re-measure its class.
+The incremental cap is **three** passes and this is the second, so the pass-loop continues; what is
+still uncovered is the iter-270/271/272 limb (the clone-set hardcodes, the cold-cycle proof and the
+succession disposition), untouched by either pass so far.

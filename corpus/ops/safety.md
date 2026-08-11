@@ -709,7 +709,18 @@ inherited. It is **strictly narrower**, and it should feel narrower:
      `"jobsimulation"`, so a `dev-N` `backend` kept the operator's real `~/.aws/credentials` mounted
      (`gen_override.py:184-190` records it).
    - **The demo re-supplies the same class by ENV, on purpose.** `bridge_bedrock_creds`
-     (`demo-stack/up-injected.sh:1358-1385`, called unconditionally at `:1575` unless provisioning is skipped)
+     (`demo-stack/up-injected.sh:1358-1385` **@ rext `d739952`**, called unconditionally at `:1575` unless
+     provisioning is skipped — **the ref is now stated because this was the site that proved the rext anchors
+     in this corpus are on undecidable clocks.** `demo/media-substrate-spec.md` cites this same function at a
+     DIFFERENT line of the same script, and for four releases neither sentence said which tree it had read.
+     Re-measured 2026-08-11 at rext `e64a3cd3b`, the definition is `demo-stack/up-injected.sh:1364` and the
+     call `demo-stack/up-injected.sh:1582`; the numbers in this bullet are the OLDER reading and are kept,
+     dated, rather than silently renumbered — `D-M257x-278-3`,
+     `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks`. ⚠️ **Every line number in
+     this parenthesis names its file, and that is not stylistic**: harden pass 70's first draft wrote them
+     bare, `anchor_construct_guard` bound each one to the nearest preceding `.md` name, and a paragraph
+     ABOUT ambiguous anchors minted four ambiguous anchors — the fourth consecutive occurrence of a repair
+     committing the defect it describes)
      appends `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN` and
      `CLAUDE_CODE_USE_BEDROCK` (`:1362`) from the demo workspace's `app/.env` into the demo's `platform/.env`,
      which `env_file: .env` (`docker-compose.yml:44-45`) then loads into `backend`. Values-blind file→file, and

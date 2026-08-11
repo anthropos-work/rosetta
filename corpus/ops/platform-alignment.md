@@ -3488,6 +3488,24 @@ the same mechanism, one cycle apart, with §5 rule 34 already naming it both tim
   indistinguishable from a live citation, and `repair_postcondition` correctly refused this paragraph when
   it carried bare ones.
 
+  > **The same rule CROSS-REPO, where it has a measured population and a deliberate zero (M257x iter-278,
+  > restated corpus-side at harden pass 70 so it cannot read as an oversight).** Advancing
+  > `rosetta-extensions` moved **13 of 13** unpinned `rext` anchors this corpus carries, and **0 of 13 were
+  > repaired — on purpose.** The tempting reading (*"the advance broke 13 anchors"*) is unsupported, and one
+  > site refutes it outright: `safety.md` and `demo/media-substrate-spec.md` cite the **same function**
+  > (`bridge_bedrock_creds`) at **two different lines**, the old ref and the new, with nothing in either
+  > sentence marking which tree it had read; a third (`org-repos.md:195`) matched **neither** ref and was
+  > already stale before the advance. Guessing between two candidates that equally satisfy a citation is the
+  > wrong-construct error the instrument exists to find (`D-M257x-122-5`, transferred from bare basenames to
+  > refs). **So: measured, published, routed, none repaired** — `D-M257x-278-3`,
+  > `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks`. Pass 70 marked the refuting
+  > site with its ref rather than renumbering it, which is the whole of what a non-repair can honestly do.
+  >
+  > **The general form, and it is this milestone's subject turned inward:** a corpus that cites a *moving
+  > repo* without a ref is not WRONG, it is **UNGRADEABLE** — and an ungradeable claim cannot be closed by a
+  > fence, only by an author writing the ref down. That is §5 rules 41/44 stated as a cost rather than as a
+  > style preference, and it is why a measured zero here is a finding and not a clean bill.
+
 | layer | asserts | lives in |
 |---|---|---|
 | repair-induced anchor rot | over a revision range: no commit moves a line out from under an intra-corpus `` `<doc>.md:<N>` `` citation it did not also update. A citation the commit *authored beside a shift it made* is reported **CANNOT-TELL** | `stack-core/anchor_offset_guard.py` (M257x iter-107), with `tests/test_anchor_offset_guard.py` — whose controls are **the two real commits**, replayed |
