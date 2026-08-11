@@ -50,6 +50,22 @@
   the ~50 % rep-01 alone implied. **2 of 3 reps refused by HEADROOM** (peak load1 18.71 / 16.88 vs 10) —
   reported as results. `closed-fixed-partial`; exits `user-blocker`. — see `iter-07/progress.md`
 
+- iter-08 (tik): **`BASELINE-M257-macmini-n3` LANDED — `gated_baseline` is filled.** p50 **449.51 s**
+  (n=3, min 410.80 / max 542.94), **all three reps `rc=0` + `autoverify green:true / 0 warnings` +
+  demo-patches ALL APPLIED + phase table COMPLETE**, run from the **pinned** consumption clone. Every
+  one of iter-07's three disqualifications is gone, confirming by execution the remedy it could only
+  verify against predicates. **Contended and labelled — 2 of 3 reps failed HEADROOM (peak load1
+  19.48 / 14.52 vs 10), so the campaign exits RED by contract and this is NOT a gate pass**; rep-03
+  (410.80 s at load1 4.82) is the one fully-clean cycle. Reaching it took both of iter-07's blockers:
+  the corpus edit unblocked by **fixing the guard, not the prose** (an unpinned citation was being
+  graded at a `git fetch`-moved `origin/main` — 294 anchors were, two tripped), and
+  `rosetta-extensions` **swept, tagged and pushed to origin** (`fast-build-m257-iter-08`, verified on
+  origin). The 71-minute sweep caught one thing only a whole-tree run could: a new derivation
+  unclassified in `derivation_registry`. First lever data on this host: the **UI tier is 246.23 s =
+  54.8 %** of the cycle and the gate needs **89.51 s** — a **19.9 %** cut where billion needed 46 %.
+  `re_scope_trigger` re-derived 420 → **400 s**. `closed-fixed`; exits `budget-exhausted`.
+  — see `iter-08/progress.md`
+
 ## Next-iter routing
 
 > ⚠️ **The routing below is SUPERSEDED for the host and the blocker.** iter-04's Step 0 re-survey found
@@ -57,14 +73,15 @@
 > premise which paused this milestone is **refuted by measurement**. iter-05 then re-pointed the gate.
 > Historical rows kept; read iter-05's close first.
 
-- **iter-08 — `BASELINE-M257-macmini-n3`, take two, from a PINNED clone.** Under `TOK-02` step 3. iter-07
-  proved the campaign cannot be driven from the authoring copy (17/17 demopatches refused; the whole run
-  disqualified by one root cause). **Blocked on a decision, not on evidence:** the fix needs
-  `rosetta-extensions` **tagged and pushed to origin**, `stack-demo/rosetta-extensions` re-pinned to it,
-  the authoring-copy `demo-1` torn down (same compose project name), and the campaign re-run from that
-  clone. Three of the four preconditions already hold — see `iter-07/progress.md` Line 10 for the verified
-  table. Everything else about `TOK-02` step 3 stands: contended and labelled, every rep carries its load1,
-  **a refusal is a RESULT**. Then levers, largest-measured-second first.
+- **iter-09 — L1, the opening lever: multi-stage the two Next images.** Under `TOK-02` step 4, and now
+  priced against a REAL baseline rather than a scaling: the UI tier is **246.23 s = 54.8 %** of the
+  449.51 s p50 (`ui_next_web` 120.79 + `ui_hiring` 117.45 + `ui_studio_desk` 7.99), the gate needs
+  **89.51 s**, and L1 is priced here at ~136–152 s — so **L1 alone should clear it with ~47–63 s to
+  spare**. `ASSERT-M257-isolation-with-L1` lands **with** it, never after (`TOK-01`). Re-measure at
+  n ≥ 3 from the **pinned** clone, every rep carrying its `load1`; a HEADROOM refusal is a RESULT.
+- ~~**iter-08** — the campaign take two, from a pinned clone~~ → **DONE, and it landed.** `gated_baseline`
+  filled at p50 449.51 s. The blocker was never the host, the disk or the contention — it was where the
+  harness was invoked from, and one publish plus one re-pin removed it.
 - ~~**iter-07** — the campaign from the authoring copy~~ → **DONE, and it answered a different question
   than the one it asked.** p50 489.90 s (n=3) is an *anchor*, not a baseline; `gated_baseline` stays empty.
 - ~~**iter-06** — `FIX-M257-load1-units-vm`~~ → **DONE.** The instrument now grades the right machine, so a
