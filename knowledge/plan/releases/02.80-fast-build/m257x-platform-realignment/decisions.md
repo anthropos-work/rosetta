@@ -2121,3 +2121,79 @@ wording to *"formerly"* — it states that **the table was dropped and there is 
 `content-stories-routes.md` retraction records what the softer form cost — *"six seeders failed on every
 host"*. The **render-gate warning those bullets existed to give is preserved**, because it survives its
 mechanism: the manager scoreboard is still blank if the canonical row is missing.
+
+## TOK-09: the standard is architecture + register + buildability, and the rest is a fixed defect list — 2026-08-11
+
+**Tok type:** **USER-SUPPLIED RE-SCOPE — not agent-authored, and not a triggered tok.** The 3-no-prog
+trigger did not fire; iter-282 closed `closed-fixed` with a measured lift. The user closed the
+milestone's scope and put a hard clock on it on 2026-08-11, and this entry records that ruling in the
+`TOK-NN` chain's next slot so every following tik can name its controlling strategy — exactly as
+[`TOK-08`](#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07) did.
+
+**Prior strategy:** [`TOK-08`](#tok-08-census-the-mechanical-classes-stop-sampling-them--2026-08-07) —
+census the mechanical classes; stop sampling them. **It is not retracted and it stays in force for
+whatever remains fenceable.** What changed is not the method but the *subject set*.
+
+### The alignment standard, verbatim, and it is NARROWER than sentence-level truth
+
+> *"as long as rosetta knows the whole platform architecture, their repos/components/products and knows
+> how to build them for me is in line with the goal of the milestone and you can close it"*
+
+Three limbs — **architecture**, the **repo/component/product register**, and **buildability** — and
+measured against that standard all three are **DONE and proven**, not asserted:
+
+| limb | the proof, not the claim |
+|---|---|
+| architecture | the merge map is machine-checked against the platform's own `repos.yml` **in both directions**, so a service entering *or* leaving the clone set turns a guard RED |
+| register | all **93** `anthropos-work` repos enumerated, each with a home and a verdict |
+| retired services | verified against **code**, not against prose — the roadrunner and cms corrections both came from reading source and `infrastructure`, and both refuted a standing corpus claim |
+| buildability | the demo rebuilt **cold** three times; the dev stack built from current `main` |
+
+**Clause 5's sentence-level reading is therefore no longer the gate.** It was never met and is not being
+declared met — it is out of scope by the user's ruling, which supersedes the gate-4-of-5 framing the same
+way `D-M257x-256-1` superseded its predecessor.
+
+### New strategy — a CLOSED list, worked in priority order, under a clock
+
+**No additions. No discovered-adjacent work. No "while I'm here."** Anything found outside the list is
+recorded and routed, never absorbed — the scope-creep tripwire applies with no carve-out.
+
+1. **The safety item, and it outranks everything.** Studio-desk's *"fine-tune in Advanced mode"*
+   attempted `s3:PutObject` against the **production** storage bucket and was refused **403** by IAM.
+   **Nothing was written** — and the only thing that stopped it was an IAM policy **we do not control**.
+   `corpus/ops/safety.md` asserts a demo *cannot write prod*. Establish what the demo's storage config
+   actually points at, fix the pointer, and correct the document wherever its claim overstates what the
+   **design** guarantees. If the true fix is platform-side, say so, and land the demo-side containment
+   plus the honest correction.
+2. **Four product defects**, verbatim in `.agentspace/annotation 2.md` — worked from that file, never
+   from a paraphrase: the studio copilot's first avatar renders broken; the back-to-cockpit patch must
+   remove the logout option; the first back-to-cockpit click is a no-op; and logging in as the
+   AI-readiness manager lands on the *"start now"* boilerplate instead of the seeded dashboard — a
+   regression against M219, which seeded **both** a `closed` and an `active` cycle.
+3. **The dev setup guide's undocumented steps** — the repairs iter-262 had to invent. Lowest priority;
+   whatever clock remains.
+
+**Strategy class:** `new-direction` — the subject set changes, not the method. `TOK-08`'s census rule
+still binds wherever a class is mechanical; it simply has almost nothing left in scope to bind to.
+
+### Budget — TWO limits, and the CLOCK binds
+
+**20 iters**, or **a hard wall-clock stop at 12:15Z**, whichever comes first. At 12:15Z the current iter
+closes cleanly wherever it is and the milestone reports; an iter that cannot finish before it is not
+started. The real clock is read at every iter boundary and the remaining budget stated in each journal
+close line.
+
+**Distance-to-gate context:** the binding closing condition's limbs 1 and 2 are met and proven. Limb 3 —
+*"the corpus reflects that"* — is met **for the three things the user named**; what it is not met for is
+the sentence-level reading the user has now placed out of scope. **This is a scope ruling, not a
+declaration that the unmeasured reading came out clean, and it must never be reported as one.**
+
+**Next-tik direction:** iter-284 takes the safety item. `corpus/ops/safety.md:203` **already** names this
+exposure precisely — the private-bucket row is marked *"unclassified — the guard does not cover it"*,
+records that compose hardcodes `STORAGE_S3_BUCKET=production-storage…` on `backend`, that `PreflightEnv`
+forces only the **public** bucket, and that the disposition is an open escalated item
+(`DEF-M257x-iter80-storage-prod-bucket`, severity high). **So that row does not overstate — but at least
+six other sites in the same document assert *"cannot write prod"* with no such qualification**, one of
+them saying the demo *"never uploads a byte anywhere."* The document contradicts itself, and the live 403
+is the first time the contradiction was exercised. The seam for a zero-platform-edit containment is the
+generated `docker-compose.demo.yml` override the bring-up already writes.
