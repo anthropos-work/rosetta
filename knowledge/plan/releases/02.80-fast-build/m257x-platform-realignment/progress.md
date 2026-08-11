@@ -2299,7 +2299,7 @@ reinterpreted, narrowed or argued. **No fourth harden pass was requested** — s
 
 iter-120 repaired the corpus's flattering security claims. Two of the underlying facts are **platform**
 concerns in their own right. Both are now in
-[`platform-defect-register.md`](../../platform-defect-register.md) with `file:line` and their measurement,
+[`platform-defect-register.md`](../../../platform-defect-register.md) with `file:line` and their measurement,
 which takes that file from 5 M257x-era entries to 7 — and it is worth naming that the register **had zero
 M257x entries until iter-102**, having been created by M256's deferral audit for exactly this class.
 

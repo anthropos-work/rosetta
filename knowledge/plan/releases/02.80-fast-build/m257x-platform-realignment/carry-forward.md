@@ -250,4 +250,4 @@ milestone wants it, it needs a **new** scope decision from the user — not an i
   `cap-without-stabilization` stop condition
 * [`progress.md`](progress.md) § *Ledger completeness* — the 8 iters reconstructed at this close
 * [`../m258-proven-live-build/overview.md`](../m258-proven-live-build/overview.md) — the target milestone
-* [`corpus/ops/safety.md`](../../../../corpus/ops/safety.md) — both guarantees, now qualified
+* [`corpus/ops/safety.md`](../../../../../corpus/ops/safety.md) — both guarantees, now qualified
