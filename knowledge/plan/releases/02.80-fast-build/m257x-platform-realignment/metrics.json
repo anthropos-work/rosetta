@@ -1,0 +1,143 @@
+{
+  "milestone": "M257x",
+  "title": "platform re-alignment",
+  "release": "v2.8 fast build",
+  "shape": "iterative",
+  "closed": "2026-08-11",
+  "close_status": "closed-incomplete",
+  "close_authority": "USER RULING — TOK-09 (decisions.md, iter-283, 2026-08-11). NOT a gate-met close, and must never be recorded as one.",
+  "gate": {
+    "clause_1_cold_demo_3x_green": {
+      "status": "MET",
+      "detail": "3 consecutive `down --purge` + `up` cycles, DOWN_RC=0 / UP_RC=0, autoverify green:true / 0 warnings",
+      "re_established_at": "iter-271 — iter-270 spent the frozen-pin control and bumped rext 206 commits, so iter-260's three green cycles were evidence about tooling a cold bring-up no longer consumes. Re-proven at the shipping pin.",
+      "caveat": "the first advance-proving cycle (iter-258) took 717 s CONTENDED and is explicitly NOT a baseline"
+    },
+    "clause_2_playthroughs": {
+      "status": "MET",
+      "detail": "30 live / 0 failing / 0 error, twice cold, the second from the stack's own clone at an origin tag",
+      "landed_at": "iter-276",
+      "history": "first measured at iter-261 (29/31, one failing); the failure was a REAL product-side finding, not a harness artifact. iter-267 refuted BOTH causes iter-261 offered, and the disjunction with them. Fixed at iter-274/275/276 as a per-role OCCUPANCY bound, not a hero-fit value.",
+      "measurement_note": "every earlier grading came from a --grep'd run, and the harness prints its own disqualification on each one. iter-273 is the first BINDING full-suite measurement."
+    },
+    "clause_3_migration_status_map": {
+      "status": "MET",
+      "artifact": "corpus/architecture/platform-migration-status.md",
+      "fence": "rosetta-extensions/stack-core/platform_alignment_guard.py — machine-checked against the platform's own repos.yml in BOTH directions, so a service entering OR leaving the clone set turns a guard RED",
+      "detail": "one row per service the platform has ever had, every claim cited to a sha or file:line"
+    },
+    "clause_4_zero_dead_schema_writes": {
+      "status": "MET",
+      "detail": "REXT_TRANSITIONAL_SCHEMAS is EMPTY; the derived CREATE SCHEMA set is extensions/sentinel/public — rext creates no schema the platform does not own",
+      "fence": "test_write_target_schema_fence.py, DERIVED from repos_yml.sh (names no dead schema at all, so the next fold goes RED offline)",
+      "coverage": "SECTION_COVERAGE declares a (layer, reason) per Go-bearing section and SCORED_SECTIONS is derived from it — a new section goes RED naming itself",
+      "landed_at": "iter-07 (paydown) / iter-08 (coverage made machine-checked)"
+    },
+    "clause_5_kb_fidelity": {
+      "status": "OUT OF SCOPE BY USER RULING",
+      "MUST_NOT_BE_REPORTED_AS": ["met", "measured clean", "green", "satisfied"],
+      "ruling": "TOK-09 — the user narrowed the definition of done on 2026-08-11 to architecture + repo/component register + buildability, and the narrowed definition was met",
+      "last_measurement": {"iter": 131, "P": 29, "N": 47, "note": "P is a FLOOR, not a reading of the tree as it stands. Unmeasured since."},
+      "verbatim_from_TOK_09": "This is a scope ruling, not a declaration that the unmeasured reading came out clean, and it must never be reported as one."
+    },
+    "clauses_met": 4,
+    "clauses_total": 5,
+    "superseded_framing": "D-M257x-256-1 (user, 2026-08-10) superseded the gate-4-of-5 framing with a working-stack condition (demo AND dev from current main); TOK-09 (user, 2026-08-11) superseded that in turn."
+  },
+  "iters": {
+    "total": 288,
+    "tik": 279,
+    "tok": 8,
+    "measurement_only": 1,
+    "tok_strategies": 9,
+    "tok_chain": "TOK-01..TOK-09; TOK-07 and TOK-08 were each refuted by their own pre-registration; TOK-09 is USER-SUPPLIED, not triggered",
+    "harden_passes": 73,
+    "harden_final_stop_condition": "cap reached without stabilization — and the reason is the finding: the whole-section instrument is itself partially blind on this host (suite_census's unittest runner cannot import a namespace-package submodule on this interpreter; 8 symptoms, 1 cause, proven both ways)",
+    "commits_rosetta": 655,
+    "commits_rext": 339,
+    "orphans_found_at_close": 8,
+    "orphan_detail": "286 iter dirs vs 280 running-ledger lines. 8 iters had no ledger line — 81, 96, 97, 120, 121, 122, 123, 283 — and TWO of those (120, 121) had no iter directory at all despite landing commits and being cited by name in progress.md and decisions.md. All 8 reconstructed at close under an explicit NOT-CONTEMPORANEOUS banner; ledger now complete at 288. Zero orphan commits: all 655 are attributable by subject prefix."
+  },
+  "tests": {
+    "python_rext": {
+      "passed": 5177,
+      "failed": 27,
+      "skipped": 10,
+      "scope": "stack-core (2248 passed / 18 failed / 1 skipped, 94 files) + demo-stack (1085 passed / 9 failed / 1 skipped) + stack-verify (275) + stack-injection (329 passed / 8 skipped) + dev-stack (155)",
+      "source": "per-suite runner summaries, one invocation per suite; demo-stack re-run whole at close",
+      "failure_attribution": "ZERO failures attributable to unfixed product or tooling logic. 18 stack-core: 8 from ONE interpreter cause (no __init__.py in any tests/ dir + python3.12 namespace-package import), 1 from PEP 594 stdlib removals, 7 non-reproducing under different load (subprocess batteries at load 40), 2 a real defect FIXED at ddbe5a8. 9 demo-stack: all live-clone/live-container arms, RED because demo-2 is UP and its clones carry applied demo-patches — disclosed, not a code defect.",
+      "honesty_note": "harden pass 73 first reported demo-stack GREEN off a TRUNCATED TAIL — the `9 failed,` clause was the text immediately before the fragment it read, and was cut off. It was written into the ledger table and said out loud before the pass self-corrected. A truncated tail is not a result."
+    },
+    "go_rext": {
+      "sections_ok": 6,
+      "failing": 0,
+      "detail": "stack-seeding 16 packages ok; alignment, clerkenstein, playthroughs, stack-secrets, stack-snapshot all ok, exit 0",
+      "test_func_counts_reconciled_at_close": {"stack-seeding": 1095, "stack-secrets": 166, "clerkenstein": 315}
+    },
+    "guard_family": {
+      "green": 31,
+      "red": 0,
+      "could_not_check": 0,
+      "not_run": 5,
+      "not_run_reason": "commit-scoped or ledger-scoped members with no --range / --ledger supplied; reported rather than hidden (the runner refuses to call a not-run member green)",
+      "with_platform_and_range": {"green": 32, "red": 0, "could_not_check": 2, "note": "the 2 are fallback-rung members whose subject was empty for the chosen range — CANNOT-RUN, explicitly not GREEN"}
+    },
+    "handbook_reconciliation": {
+      "drifted_figures_found": 15,
+      "drifted_figures_fixed": 15,
+      "sections": 5,
+      "files": 7,
+      "largest_single_drift": "demo-stack/README.md — '663 total' against an actual 1,095",
+      "most_structural": "demo-stack/README.md's parenthetical EXPLAINING why it had drifted had itself drifted (306 -> 365); and stack-core/README.md's '## Tests' section described a TWO-file suite that is 94 files, while instructing a `python3 -m pytest` invocation that cannot run on this host at all"
+    }
+  },
+  "flake_count": 0,
+  "flake_gate": {
+    "mode": "targeted rather than 5x-whole-suite, by disclosed constraint",
+    "constraint": "demo-2 is UP and the user is validating on it; the whole-suite arms that touch its clones are RED by design while it runs, and re-running them 5x would not measure flake",
+    "evidence": "demo-stack re-run WHOLE twice at close: 1085/9/1 then 1085/9/1 — byte-identical, which is what makes the 9 attributable to the live stack rather than to nondeterminism. The one close-introduced regression (test_reap opt-out fence) was fixed and re-proven RED under mutation. stack-core targeted 163 passed.",
+    "harden_pass_73_finding": "7 of its 18 failures did not reproduce at a different load — a failure count is not a defect count"
+  },
+  "lint": {
+    "gofmt": "clean — 0 unformatted across 6 Go sections / 68 changed .go files",
+    "py_compile": "clean — 178 changed .py",
+    "shellcheck": "clean at -S error across 19 changed .sh, and on up-injected.sh after this close's edit",
+    "bash_n": "clean"
+  },
+  "close_review": {
+    "scans": 4,
+    "findings_total": 47,
+    "must_fix": 7,
+    "should_fix": 11,
+    "nice_to_have": 5,
+    "doc_findings": 10,
+    "test_findings": 13,
+    "scope_findings": 1,
+    "landed_now": 31,
+    "routed_to_M258": 16,
+    "commits": 3,
+    "highest_value_finding": "the corpus FRONT DOOR — corpus/README.md, README.md, corpus/ops/README.md — was the one layer 288 iterations of per-service sweeps never reached. corpus/README.md:48 still called the backend tier '8 Go microservices (Backend, CMS, Sentinel, etc.)' — the exact phrase CLAUDE.md records as hunted down and corrected at harden pass 57. The sweep reached CLAUDE.md and missed the index.",
+    "second_finding": "two gates reported a pass they had not earned, both in tooling that MEASURES the gate: up-injected.sh's patch-freshness preflight printed 'anchors resolve' over patches it never classified (including the case where the patched file was renamed or deleted in app source — which IS the anchor drift it exists to catch), and blocking_state_guard turned an unreadable state.md into a fence VIOLATION rather than could-not-check."
+  },
+  "platform_edits": 0,
+  "net_new_deps": 0,
+  "deferrals": {
+    "audit_verdict": "YELLOW",
+    "audit_condition": "YELLOW conditional on the close recording ONE block-level M258 routing decision for the carried-token population; without it the correct grade is RED. Recorded in carry-forward.md § Block fate.",
+    "blocking_state_guard_rc": 0,
+    "blocking_gradings": 10,
+    "blocking_gradings_represented": 10,
+    "graded_iters_swept": 273,
+    "open_user_questions_at_close": 0,
+    "distinct_tokens": 487,
+    "tokens_carried_3plus_iters": 215,
+    "tokens_carried_caveat": "a MARKER count, not a state count — the iter tree is append-only and closure is prose beside a token, never a deletion, so a token that stops being restated is indistinguishable from one that was fixed. No per-item state claim is made for the 215.",
+    "root_cause_of_the_pattern": "not re-deferral — GOING QUIET",
+    "land_next_M258": 11,
+    "land_next_clusters": 5,
+    "block_fate_M258": 1,
+    "escape_hatch_to_a_future_release": 0,
+    "must_not_route_to_M257": "M257's own exit_gate still names odysseus, retired by D-v28-15, so it would inherit an unmeetable-as-written gate"
+  },
+  "notes": "Tooling + docs only; zero platform-repo edits held across 288 iterations. The milestone existed because the platform is migrating its microservices back into `app` and nobody on our side knew how far that had got — the THIRD occurrence of one class (skiller v2.1, skillpath v2.7, jobsimulation now), each time re-derived from scratch. What breaks the cycle is not the re-point but the FENCE (clause 4) plus the written procedure (corpus/ops/platform-alignment.md, authored by iter-01 because it did not exist). Headline corrections that came from reading CODE and refuted a standing corpus claim: roadrunner was DELETED and replaced in-process, not merged into app (0 commits ever adding app/internal/roadrunner in a 6,728-ref clone); and cms's ECS service is DESTROYED, settled by cloning `infrastructure` — a repo that had never been in any clone set, which made the question look unmeasurable when it was only unclone d. TWO safety-relevant facts must survive this close: (1) a demo reached a PRODUCTION S3 bucket and only an IAM policy on an account we do not control refused it — iter-284's containment is proven by a unit test on the EMITTER and on NO RUNNING STACK, demo-2 predates it by nine hours, and the dev-side strip is demo-only; (2) the two tooling fixes landed at this close are in the rext AUTHORING copy and are NOT on a pushed tag, so no stack can obtain them until someone tags and pushes — tagging is not publishing."
+}

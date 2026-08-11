@@ -579,7 +579,7 @@ Nothing in this file was executed. These are handoffs, each with its owner.
 | **the corpus lane** (owns `corpus/**`) | RF-13 (`security_compliance.md`'s `Derivation:` block ends in a hand subtraction); the ~320 minors; the three `*-ops-collateral` sets; `DOC-M257x-iter22-ops-guides-5050`. **Do not start until the blind reading in flight has closed** |
 | **the rext lane** (owns rext code + tags + `.agentspace/rext.tag`) | F1–F11. ~~**F18 is the urgent one**~~ — **F18 is STRUCK as a false positive** (§7 #3, `D-M257x-102-6`): re-derived at iter-102, there is **exactly one** `iter-101` tag on origin, the pin matches it, and it contains `7844e97`. **Nothing is urgent for this lane.** **F1 (`FIX-M257x-iter100-suite-stall`) is the highest-value item** — until it lands, no whole-suite claim in this milestone is defensible, which is the close's own evidence |
 | ~~**the lane that owns `knowledge/plan/**`**~~ **DONE at iter-102** | ✅ F16 — `platform-defect-register.md` has its first M257x entry (`PLATFORM-M257x-compose-points-local-backend-at-the-PRODUCTION-S3-buckets`). ✅ F17 — `roadmap.md` § M257x status and the retired-`odysseus` clause both corrected |
-| **the user** | ✅ Q1–Q4 all decided or withdrawn at iter-102 — see the resolution block at the head of §8. **🔴 Q5 IS OPEN** (the iter-119 `re-scope`; [§12](#12--the-blocking-state-sweep-derived-over-every-field-that-can-block)). **⚠️ This row read *"DONE at iter-102 — zero open user questions"* until M257x iter-281.** §8's banner was corrected at iter-121 and this row was not, so the file asserted the claim in one section and retracted it in another — repair the site, leave the class, the same shape this milestone keeps paying for. It is not a harmless duplicate: §10 is the hand-off table a close gate reads to decide whether a lane is finished |
+| **the user** | ✅ Q1–Q4 all decided or withdrawn at iter-102 — see the resolution block at the head of §8. ✅ **Q5 CLOSED at iter-283 by `TOK-09`** (the iter-119 `re-scope`; [§12](#12--the-blocking-state-sweep-derived-over-every-field-that-can-block), corrected at [§13](#13--close-run-re-audit-2026-08-11)). **Zero open user questions at close.** **⚠️ This row read *"DONE at iter-102 — zero open user questions"* until M257x iter-281.** §8's banner was corrected at iter-121 and this row was not, so the file asserted the claim in one section and retracted it in another — repair the site, leave the class, the same shape this milestone keeps paying for. It is not a harmless duplicate: §10 is the hand-off table a close gate reads to decide whether a lane is finished |
 
 ---
 
@@ -761,7 +761,7 @@ audit has ever run — including §11's, which found one of the five by reading 
 | iter-57 | `user-blocker` | *"the user paused the session"* — an exit, not a question | **CLOSED** — session resumed at iter-58. Recorded because the FIELD cannot tell a pause from a question, and a sweep that reads the field must not silently drop either |
 | iter-68 | `protocol-stop` | the harden cadence hit 10 tiks; the loop stops so a harden pass can run | **CLOSED** — harden pass ran; 26 passes exist today |
 | iter-116 | `re-scope` | `TOK-07` refuted by its own pre-registration (`P = 37` vs `P ≥ 15`) → a user re-scope conversation | **SUPERSEDED** by iter-119 — the conversation happened and produced `TOK-08` |
-| iter-119 | `re-scope` | `TOK-08` refuted the same way (`P = 22` vs `P ≥ 19`); no successor strategy is permitted | **🔴 OPEN — this is Q5.** The milestone is holding on it |
+| iter-119 | `re-scope` | `TOK-08` refuted the same way (`P = 22` vs `P ≥ 19`); no successor strategy is permitted | **CLOSED at iter-283 by `TOK-09`** — corrected at the close re-audit, [§13](#13--close-run-re-audit-2026-08-11). This row read *"🔴 OPEN — this is Q5, the milestone is holding on it"* for 164 iters, and it was still saying so **after** the re-scope conversation had happened. `TOK-09` (`decisions.md`, iter-283, 2026-08-11) is a **USER-SUPPLIED re-scope** and is precisely the ruling this row was waiting for: it closed the scope to a fixed list and placed clause 5's sentence-level reading **out of scope**. ⚠️ **Out of scope is NOT met** — `TOK-09` says so in terms and this table must never be read as grading clause 5 clean |
 | iter-259 | `user-blocker` | the `/dev-up` tooling puts a dev stack in `stack-dev/`, **another project's ACTIVE workspace** (367 commits on no remote, a live worktree) and `make init` is skip-if-present, so the bring-up would ADOPT their tree. Nothing there was touched; the dev half of clause 1 could not be proven | **CLOSED — the user LIFTED the prohibition mid-iter-261** (*"don't bother me and use that repo… don't search for exceptions"*), and iter-262 proved the dev half on the sanctioned path: 5/5 `core` containers from current `main`, `/api/health` 200, 172 migrations, 137 `public` tables, zero decommissioned schemas. **Recorded at M257x iter-269, and only because `blocking_state_guard` was RED on it** — the resolution happened in the iter stream and never reached the file a close gate reads, which is precisely the gap this table exists to close |
 
 | iter-280 | `user-blocker` | the whole-section suite closed **RED (13 failed)**; everything attributable to that iter was found and fixed (22 → 13) and the residual sat in four files that pass standalone on both trees. The decision routed out was *spend an iter on the test-isolation defect plus `FIX-M257x-278`, or accept a RED section gate at close* | **CLOSED — ruled at build-iter run 42: we fix it.** A RED section gate at close is not acceptable, and the residual was not even attributable, because the control-tree full run aborted on the open `FIX-M257x-278`. iter-281 closed that fix **as a class** (6 sites in 3 files, fenced) and re-measured on both trees. **Recorded here at iter-281 — and again only because `blocking_state_guard` was RED on it.** That is the SECOND consecutive occurrence of this exact shape after iter-259, which was recorded ten iters late. The fence catches it every time; nothing runs the fence at close, which is what `ROUTE-M257x-280-the-31-minute-gate-is-skipped-because-it-is-31-minutes` is about |
@@ -792,3 +792,164 @@ Every mutation asserts **it applied** before its result is read.
 
 **New tokens booked here:** `FENCE-M257x-iter121-blocking-state-sweep` (landed) ·
 `FIX-M257x-iter121-audit-sweep-was-one-field-wide` (closed by this section).
+
+---
+
+## §13 — CLOSE-RUN RE-AUDIT (2026-08-11)
+
+**Invoked by:** `close-milestone` Phase 1b, `developer-kit:audit-deferrals --scope=milestone`.
+**Derived at:** rosetta `m257x/platform-realignment` working tree · rext authoring `ddbe5a88c`
+(`describe=fast-build-m257x-iter-288-3-gddbe5a8`) · milestone at **iter-288 + 73 harden passes**.
+**Prior:** §1–§12 of this file, last touched at iter-284. This section brings it to close; it does not redo it.
+
+### Verdict — **YELLOW (conditional)**
+
+**The rule applied.** RED requires *a repeat-deferral without a resolution decision*. Repeat-deferral
+patterns are real here and are named below — but every one has an **available in-release destination**
+(M257 and M258 both exist and are unstarted), and **`TOK-09` supplies standing user authority** for the
+disposition *"anything found outside the closed list is recorded and routed, never absorbed."* What is
+missing is therefore not a **decision** but its **recording**: one block-level routing entry. That is a
+close-agent write, not a user sign-off, so it does not reach the escape hatch.
+
+> **The condition, stated so it can be graded:** if the close records **one block-level routing decision**
+> for the carried-token population (§13.4), this is YELLOW. **If it records nothing, the correct grade is
+> RED** — an unrecorded route is the unfated drop the three-fate rule exists to prevent, and this milestone
+> has booked that exact shape twice already (§12).
+
+**⚠️ Clause 5 is NOT graded here and must never be reported as measured clean.** `TOK-09` places its
+sentence-level reading **out of scope by user ruling** and says in terms that this *"is a scope ruling, not
+a declaration that the unmeasured reading came out clean."* Clauses 1–4 are met; clause 5 is out of scope.
+
+### §13.1 — The machine fence, run at close (this is the point)
+
+`ROUTE-M257x-280-the-31-minute-gate-is-skipped-because-it-is-31-minutes` records that this fence *"catches
+it every time; nothing runs the fence at close."* It was run. **Exit code 0.**
+
+```
+fence-tree: /Users/marco/workspace/anthropos/rosetta/.agentspace/rosetta-extensions @ ddbe5a88c · describe=fast-build-m257x-iter-288-3-gddbe5a8
+blocking-state-guard: 273 graded iter(s) in m257x-platform-realignment; fields seen: budget-exhausted, cap-reached, gate-met, protocol-stop, re-scope, triggered-tok, user-blocker
+blocking-state-guard: blocking fields checked: re-scope, user-blocker, protocol-stop (non-blocking, by decision: gate-met, triggered-tok, cap-reached, budget-exhausted)
+blocking-state-guard: iter-116 re-scope: y — represented in deferrals-audit.md
+blocking-state-guard: iter-119 re-scope: y — represented in deferrals-audit.md
+blocking-state-guard: iter-259 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-280 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-47 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-48 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-49 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-55 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-57 user-blocker: y — represented in deferrals-audit.md
+blocking-state-guard: iter-68 protocol-stop: y — represented in deferrals-audit.md
+blocking-state-guard: OK — every blocking grading is represented in the deferral audit
+```
+
+**10 blocking gradings across 273 graded iters; all 10 named in this file; zero un-represented.** The
+population grew 109 → 273 graded iters since §12 and produced **no new blocking grading** — iters 281–288
+all graded `re-scope: n` / `user-blocker: n` / `protocol-stop: n`.
+
+**And the fence's own limit, found by running it: it checks PRESENCE, not DISPOSITION CURRENCY.** iter-119
+was reported *"represented"* while this file recorded it as **🔴 OPEN — the milestone is holding on it**,
+164 iters after `TOK-09` had closed it. A name can be present with a **wrong** disposition and the fence
+stays green. That is *green over something never checked*, in the fence built to catch exactly that —
+booked as **`ROUTE-M257x-289-blocking-guard-checks-presence-not-disposition`**. The row is corrected in §12.
+
+### §13.2 — `TOK-09` verified; §12's one open row is closed
+
+`decisions.md` **`TOK-09`** (iter-283, commit `6572d6ee`, 2026-08-11) is a **USER-SUPPLIED re-scope**, not
+agent-authored and not a triggered tok. It is the ruling iter-119's `re-scope` routed out for. Chain intact:
+`TOK-07` → refuted (iter-116) → `TOK-08` → refuted (iter-119) → **`TOK-09` (user)**. §12's iter-119 row and
+§10's user row are corrected. **Zero open user questions at close.**
+
+> ⚠️ `state.md` still reads `259 iters`, `62 harden passes`, `last_updated: 2026-08-10`, and asserts
+> **"there is NO active strategy … so there is no `TOK-09`"** — contradicted by `TOK-09` existing.
+> Not a deferral; a stale-state repair the close owns.
+
+### §13.3 — Open deferrals at close (11), each with its fate
+
+**No item is unfated, and no item is a process failure** — `TOK-09` mandates *record and route, never
+absorb*, and the scope-creep tripwire firing 11 times is the tripwire working.
+
+**Iter lane — routed under `TOK-09` authority (5)**
+
+| token | fate | justification |
+|---|---|---|
+| `ROUTE-M257x-284-demo-2-is-live-and-uncontained` | **LAND-NEXT → M258** | The running `demo-2` predates the iter-284 fix; the strip takes effect at the next `/demo-up`. A bring-up is the user's call and M258 owns cold bring-up. |
+| `ROUTE-M257x-285-demo-2-cockpit-serves-a-stale-world` | **LAND-NEXT → M258** | Restoring the demo world needs a re-seed of the live stack the user is validating on. Same owner as the row above. |
+| `ROUTE-M257x-286-next-web-manifest-baselines-have-drifted` | **LAND-NEXT → M258** | 9 live-clone freshness gates doing their job against a moved clone; re-anchoring is a deliberate pass, not a side-effect. |
+| `ROUTE-M257x-282-prose-twin-REPORT-tier-residual` | **LAND-NEXT → M258** | 12 edge divergences the RED tier cannot reach; each needs a source read — per-item work, published on every guard run so it cannot go silent. |
+| `ROUTE-M257x-282-intra-tree-prose-twins` | **LAND-NEXT → M258** | Out of the fence's scope **by design**, measured not assumed. Widening scope is a design change. |
+
+`ROUTE-M257x-285-logout-swap-for-studio-and-academy` **CLOSED at iter-288** (fenced over the family, not
+the members). `ROUTE-M257x-282-readme-does-not-index-13-of-37-fences` is a measured-not-repaired side
+deliverable → **LAND-NEXT → M258** with the block.
+
+**Harden lane — passes 72–73, post-dating this audit's body entirely (6)**
+
+| token | fate | justification |
+|---|---|---|
+| **`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket`** | **LAND-NEXT → M258, and SURFACE TO THE USER AT CLOSE** | **The highest-stakes open item.** The container-side prod-bucket strip is **DEMO-only**: `/dev-up` applies only `gen_override.py`, which emits no strip, so a dev `backend` still holds `STORAGE_S3_BUCKET=production-storage…` — **measured live by `docker inspect` on the running stack, not inferred.** What bounds it is the **absence of credentials, not a pointer override**, so an operator whose `platform/.env` carries AWS keys re-opens on dev exactly what iter-284 closed for demos. **Disclosed, not silent** (`corpus/ops/safety.md:326-334`). Same hazard class the user ranked **#1** under `TOK-09`, on the path the user is on right now. **Not the escape hatch** — see §13.5. |
+| `ROUTE-M257x-h72-gen-injected-override-cites-81-82` | **LAND-NOW (trivial)** or M258 | Off-by-one in a **safety-critical comment** (`:81-82` cited; measured `:82`/`:83`). Comment-only, minutes. |
+| `ROUTE-M257x-h73-suite-census-unittest-path-is-dead-on-this-interpreter` | **LAND-NEXT → M258** | The two-runner cross-check is currently a **one-runner check reporting RED**. The fix is a contract change to `run_one` (or 5 `__init__.py` files that change pytest import semantics tree-wide) — a design decision, correctly not a harden pass's. |
+| `ROUTE-M257x-h73-demo-stack-live-arms-red-while-a-demo-is-up` | **LAND-NEXT → M258** | 9 `demo-stack` failures are live arms asserting against an in-use clone. Arguably not a defect; the defect is that **nothing in the output distinguishes an in-use clone from a broken patch chain**. |
+| `ROUTE-M257x-h73-battery-stage-stdlib-set-is-interpreter-versioned` | **LAND-NEXT → M258** | PEP 594 removals; the fence's own message asks for the allowance class. |
+| `ROUTE-M257x-h73-readme-documents-a-python3-that-has-no-pytest` | **LAND-NOW (trivial)** or M258 | `stack-core/README.md:185` documents a command that exits *"No module named pytest"* on this host. |
+
+> **Close-blocking test evidence, stated because a close gate will ask.** Pass 73 is the milestone's final
+> whole-section run: `stack-core` **2,248 passed / 18 failed**, and the entry **self-corrects a `demo-stack`
+> GREEN it had reported off a truncated tail** (`1,085 passed / 9 FAILED`). Of the 18: 7 did not reproduce
+> at a different load, 8 are one `suite_census` interpreter defect, 1 is PEP 594, 2 were the real defect and
+> are **fixed at `ddbe5a8`**. All 9 `demo-stack` reds are live-arm/in-use-clone. **No red is attributable to
+> unfixed product or tooling logic** — but "green" is not the right word for it either, and the close should
+> not use it.
+
+### §13.4 — Repeat-deferrals (the pattern finding)
+
+Mechanical sweep over the milestone tree (`ROUTE|FIX|CHECK|DEF|RF|INVESTIGATE|MEASURE|DECIDE|DOC|REPOINT|FENCE|HOST`,
+backticks stripped, trailing `._-` normalised): **487 distinct tokens · 215 carried across ≥ 3 distinct
+iter dirs.** Highest carriers, by distinct iter dirs:
+
+| carried | token | disposition |
+|---|---|---|
+| 36 | `CHECK-M257x-iter38-ai-act-classification` | **DROPPED** `D-M257x-102-4` |
+| 33 | `FIX-M257x-iter56-assignment-flake` | hold retired; repair routed |
+| 32 | `FIX-M257x-iter135-adjudicated-live-defects` | closure markers present |
+| 30 | `FIX-M257x-iter53-union-set` | **DROPPED as subsumed** `D-M257x-102-2` |
+| 27 | `FIX-M257x-iter145-sha-baseline-drift` | closure marker present |
+| 24 | `CHECK-M257x-iter52-second-ai-manager` | **quiet after iter-76, no closure marker** |
+| 21 | `ROUTE-M257x-235-fence-scope-is-unread` · `ROUTE-M257x-235-runnable-block-has-two-halves` | **quiet after iter-256, no closure marker** |
+| 20 | `ROUTE-M257x-236-disclosure-scope-is-document-level` | **quiet after iter-256, no closure marker** |
+| 19 | `ROUTE-M257x-238-container-vs-native-is-undrawn` · `FIX-M257x-iter57-within-block-drift` | **quiet, no closure marker** |
+| 17 | `DEF-M257x-iter80-storage-prod-bucket` | **CLOSED at iter-284** — the ten-iter chronic, discharged by being *exercised* |
+| 17 | `DEF-M257x-iter101-briefing-rext-tree` | **quiet after iter-119, no closure marker** — §11 priced it at "~30 min" |
+
+**The finding, and §11 already named it:** the failure mode here is not re-deferral, it is **going quiet**.
+The tree is **append-only** — closure is recorded in prose beside a token, never by deletion — so a token
+that stops being restated is indistinguishable from one that was fixed. **This is a MARKER count, not a
+STATE count**, and no per-item state claim is made for the 215. (An honest per-item number costs ~1 grep
+each; the prior audit said so at §6 and it is still true.)
+
+**Fate for the block — one decision, not 215.** Under the three-fate rule these are **LAND-NEXT (Fate 3)**
+to **M258**, recorded as a single routing decision in the milestone's `decisions.md`. **Do not route to
+M257:** M257's own `exit_gate` still names **`odysseus`**, retired by `D-v28-15`, so routing there inherits
+an unmeetable-as-written gate (already booked as `ROUTE-M257x-225/226`). M257 needs its gate re-cut before
+it can hold anything.
+
+### §13.5 — Escape hatch: **NONE. Nothing blocks the close.**
+
+Conservatively assessed, item by item. The escape hatch requires *release-scope-breaking* work needing user
+sign-off. **No open item qualifies**, for one structural reason: **M257 and M258 both exist, in this
+release, unstarted** — so every routed item has an in-release home and nothing needs a cross-release punt.
+
+`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket` was tested hardest against the bar and **does not clear
+it**: (1) `TOK-09` pre-authorises exactly this disposition for anything outside the closed list, and the dev
+path is outside it — the user's item #1 named *the demo's* storage config; (2) it is **disclosed in the
+corpus**, not silent; (3) it is **bounded by default** — the dev emitter clears the `~/.aws` bind
+(`gen_override.py:195-196`) and there is no M239 env bridge on that path; (4) the remedy costs dev uploads
+a broken-thumbnail trade, which the harden pass correctly called an **operator's** decision. It is a
+**disclosure to surface at close**, not a sign-off gate.
+
+**Recommended close actions (none require user sign-off):** record the one block-level M258 routing
+decision (§13.4); repair `state.md` (§13.2); optionally land the two trivial LAND-NOWs; and **state the
+dev-path prod-bucket residual to the user in the close report** — because the user is on a dev stack now.
+
+_Close-run re-audit, 2026-08-11. Read-only except this file. Zero corpus edits, zero code edits, zero
+platform-repo edits; no stack touched._

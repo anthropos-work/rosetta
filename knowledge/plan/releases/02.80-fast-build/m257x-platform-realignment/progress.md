@@ -2768,3 +2768,51 @@ strategy remains FORBIDDEN by `TOK-08`'s sealed rule; the census is an INSTRUMEN
 - iter-286 (tik): defect 4 fixed at the ROW (`handleClick` is a no-op for an outbound item, so only the nested `<Link>` ever navigated — the antd row is wider than it); defect 2 diagnosed to TWO independent causes in three lines and **escalated to the platform defect register**, because it is not demo-only and a demo-patch would hide a production defect — see iter-286/progress.md
 - iter-287 (tik): the two dev-setup repairs iter-262 had to invent are now IN the guide, at the step where each is met — `make init` is skip-if-present and adopts a stale tree, and `backend` **exits 0** on a missing `INVITATION_HMAC_SECRET` (re-verified: 0 occurrences in `.env_example`). The third repair was already documented and the re-survey is what found that — see iter-287/progress.md
 - iter-288 (tik): **defect 3 closed as a CLASS** — the Log-out swap now covers all three back-to-cockpit apps. The academy guards the BUTTON and keeps its logout ROW (which carries a `connectionSlot`); the studio sha-CHAIN is re-pinned in dependency order and proven by a live apply→LIFO-revert leaving the clone byte-identical. Fenced over the FAMILY, derived from disk, so a fourth app cannot inherit the swap by omission — see iter-288/progress.md
+
+### Ledger completeness — the 8 iters that closed WITHOUT a running-ledger line (reconstructed at the M257x close)
+
+**Derived, not remembered.** At close, the running ledger above was cross-checked against the iter
+directories on disk in **both directions**: 286 `iter-*/` dirs vs 280 `- iter-NN` ledger lines. Every
+ledger line has a directory (0 orphans that way). **Eight iters do not have a line** — six with a
+directory, and **two (120, 121) with no directory at all**, though both landed commits and both are cited
+by name in this file and in `decisions.md`. Nothing below is new work; each entry is a pointer to a record
+that already exists, written so the ledger is a complete index of the milestone rather than a partial one.
+
+⚠️ **These are RECONSTRUCTED, not contemporaneous** — the same banner `iter-81/progress.md` already
+carries for itself. The shape is the one `deferrals-audit.md` §12 names: *the write that creates the
+finding and the write that would represent it are never the same edit*, so the representing write is the
+one that gets skipped. It is recorded here rather than silently backfilled.
+
+- iter-81 (tik): **closed leaving no iteration record at all** — empty `raw/`, no `overview.md`, no
+  `progress.md`, no ledger line. iter-82 found the gap while closing and rightly declined to author the
+  record from memory; **iter-83 reconstructed it from the commits**, and `iter-81/progress.md` opens with
+  a *"RECONSTRUCTED RECORD, NOT CONTEMPORANEOUS"* banner. The absent ledger line is the residue.
+- iter-96 (tik): **the REPAIR, by predicate — 13 anchors → 51 sites.** A repair-only pass by binding
+  condition: no reading is taken inside it, so that iter-97's re-read means something. The separation is
+  what made `140 → 43` a measurement rather than a self-graded number.
+- iter-97 (tik): **THE RE-READ. `N = 20`. Clause 5 is NOT met; the gate stays 4 of 5.** Taken at platform
+  `0c91421` / corpus `00be1ac` — the tree iter-96 produced. 14 blind seats, two readings of an identical
+  partition, all reports on disk under `raw/`, all 58 booked blockers adjudicated by four independent
+  graders re-deriving from the clones.
+- iter-120 (tik): **no iter directory.** Corpus security-claim repairs, landed as three commits
+  (`7f19846e`, `a5f0d81a`, `f723101a`) — *"Sentinel validates **every** API request"* replaced with the
+  measured REST-surface reading, eight wrong-construct citations closed, and a five-site sign-in-token
+  minting enumeration. **No reading was taken: `P` is UNMEASURED, not unmoved.**
+- iter-121 (tik): **no iter directory.** Two platform findings filed plus a tenth quantifier defect found
+  **in iter-120's own repair** (`ad1b82dd`), and the milestone's blocking-state fence
+  (`FENCE-M257x-iter121`, `blocking_state_guard.py`) — the instrument `deferrals-audit.md` §12 is built
+  on. Its five decisions are recorded at `decisions.md` *"iter-121 — five decisions, none of which
+  touches clause 5"*.
+- iter-122 (measurement): **the CLAIM CENSUS, adjudicated** — graded against bands and falsifications
+  sealed at `1262ca7` before a line of the instrument was written; two fired. Carries no `progress.md`
+  by design (it is an adjudication artifact: `pre-registration.md` · `adjudication.md` ·
+  `adjudicator-brief.md` · `raw/` · `verdicts/`). **Nothing in it is `P`, `N`, or a clause-5 verdict**;
+  the gate did not move. Its six decisions are at `decisions.md` *"iter-122 — six decisions."*
+- iter-123 (tik): **the org census follow-ups, re-derived** (run 79) — the corpus half of the user's
+  three-part instruction (corpus · skills · tooling aligned to the platform as it is, plus which repos
+  are worth keeping). This is the iter that cloned `infrastructure` and settled the standing `cms` M810
+  question; iter-124 booked the correction.
+- iter-283 (tok): **`TOK-09` — the USER-SUPPLIED re-scope**, not a triggered tok (the 3-no-progress
+  streak did not fire; iter-282 closed `closed-fixed` with a measured lift). Recorded in full at
+  `decisions.md` § `TOK-09`. The user's alignment standard is **architecture + repo/component register +
+  buildability**; **clause 5 is placed OUT OF SCOPE by that ruling — never declared met.**
