@@ -1,0 +1,44 @@
+B07-001	SUPPORTS	skillpath.ts:44-45 reads DIRECTUS_BASE_URL and DIRECTUS_TOKEN from process.env exactly as the unit says (studio-desk @ 41ee3575, the sha the unit names).
+B07-002	SUPPORTS	index.ts:304 gates on both process.env.DIRECTUS_BASE_URL and DIRECTUS_TOKEN, inside the cited :303-310 range.
+B07-003	SUPPORTS	userService.ts:20 is a `new GraphQLClient(config.GRAPHQL_ENDPOINT` site in app/ (frontend); repo-wide grep finds exactly the 4 sites the unit lists, none in src/, so the "every" holds.
+B07-004	SUPPORTS	taxonomyService.ts:43 is `this.graphqlClient = new GraphQLClient(config.GRAPHQL_ENDPOINT` in the frontend tree, as enumerated.
+B07-005	SUPPORTS	userPreferencesService.js:13 is `new GraphQLClient(config.GRAPHQL_ENDPOINT)` in app/services, as enumerated.
+B07-006	SUPPORTS	simulationContentService.js:325 is `new GraphQLClient(config.GRAPHQL_ENDPOINT)` in app/services/content, as enumerated.
+B07-007	SUPPORTS	config.ts:6 is `GRAPHQL_ENDPOINT: (import.meta as any).env.VITE_GRAPHQL_ENDPOINT || ...` — the VITE-prefixed browser-baked read the unit describes.
+B07-008	SUPPORTS	youtube.ts:43 is the sole process.env read in the file (YOUTUBE_API_KEY) and :44-46 is the `_mock: true` fallback; the "only" quantifier checks out against the whole 99-line file.
+B07-009	SUPPORTS	batch mis-resolved to app/terraform/main.tf; the doc-local target studio-desk/terraform/main.tf:129 is literally `"name": "GCLOUD_SERVICE_ACCOUNT",` and grep of src/ for GCLOUD returns 0, so the claim holds.
+B07-010	SUPPORTS	docker-compose.yml:119 is the studio-desk service's build arg `VITE_GRAPHQL_ENDPOINT:-http://localhost:8082/graphql/query`, and :135 repeats it in environment, at platform 0c91421 as stated.
+B07-011	SUPPORTS	repo-wide grep for "tailscale" returns exactly one hit, app/core/main.ts:105, and it names the self-hosted GlitchTip public ingest; the DSN string itself sits one line later at :107.
+B07-012	SUPPORTS	batch mis-resolved to rosetta/CLAUDE.md; the unit says "the repo's own CLAUDE.md" and stack-demo/app/studio/CLAUDE.md:12-14 is the bash fence containing verbatim the gen.py command the corpus quotes.
+B07-013	SUPPORTS	markdownManager.go:30 is exactly `return &MarkdownManager{ocr: mistralocr.New(aiKey)}, nil` inside func at :29, and :19 is the doc-comment quoted; app-wide Mistral grep is OCR-only.
+B07-014	PARTIAL	pdf2md.py:24 is `from mistralai import Mistral`, not `mistral-ocr-latest` — that literal is at :127; the citation lands on the file's Mistral use but the parenthesised token is 103 lines away and :24 alone does not show OCR.
+B07-015	SUPPORTS	coursebuilder/bedrock.go:109-113 is the either/or backend switch (ANTHROPIC_API_KEY set → first-party Anthropic, else Bedrock), with the rationale comment at :106-108, exactly as described.
+B07-016	SUPPORTS	jobsimulation.go:905 is `AIVendor *AIVendor` on the Directus DTO; the nil→simulation.Openai replacement at :1302-1305 before the Sequence build at :1307 also checks out.
+B07-017	SUPPORTS	completion.go:20-30 holds six consts over five families (3.5 twice — eu.anthropic at :21 and direct claude-3-5-sonnet-20241022 at :22 — plus 3.7, 4, 4.5, 4.6 at :29), at app ad9f3c49 which is this tree's HEAD.
+B07-018	SUPPORTS	coursebuilder/bedrock.go:23 is `DefaultAuthorModelID = "eu.anthropic.claude-opus-4-8"` verbatim.
+B07-019	SUPPORTS	askengine/bedrock.go:25 is `DefaultModelID = "eu.anthropic.claude-sonnet-4-6"` verbatim.
+B07-020	SUPPORTS	report_agent.go:31 is `defaultAgentModel = "eu.anthropic.claude-sonnet-4-6"` verbatim.
+B07-021	SUPPORTS	coursebuilder/bedrock.go:29 is `DefaultGraderModelID = "eu.anthropic.claude-sonnet-4-6"` verbatim.
+B07-022	SUPPORTS	openai/config.go:8-26 holds 11 consts and the sibling OpenAI row at ai_architecture.md:91 lists exactly those 11 models 1:1, so "exact enumeration" is correct.
+B07-023	SUPPORTS	speech.go:9-12 is the only SpeechModel const block in the file (:14 opens the SpeechVoice block); GPT4oMiniTTSS is the whole set and DefaultModel aliases it.
+B07-024	SUPPORTS	jobsimulation/ai/ai.go:267 is the "flag_use_azure_us" PostHog vendor-selection call, i.e. selection living in the consumer's wrapper; note the unit pins @ app 5ba17044 while this tree is at ad9f3c49, where the line still resolves as claimed.
+B07-025	SUPPORTS	skillerai/ai.go:347 is the "flag_use_azure_us" PostHog vendor-selection call, as claimed; same 5ba17044-vs-ad9f3c49 pin note as B07-024.
+B07-026	SUPPORTS	production_config.ini:26-30 (stable) and :32-36 (experimental) are line-for-line identical, and development_config.ini:26-36 is identical to both — all three checked.
+B07-027	SUPPORTS	studio/services/ai.py:356 is the `'gpt-5.2'` pricing-table entry, which is the "pricing entry only" the unit asserts.
+B07-028	SUPPORTS	jobsimulation.go:1081-1085 is a const block with exactly four SimulationVoiceEngine members (gptrealtime, elevenlabs, livekitgptrealtime, livekitchain) under the type at :1079.
+B07-029	SUPPORTS	jobsimulation.go:1594-1597 is func voiceEngineFromDirectus with the nil branch returning SimulationVoiceEngineGptrealtime at :1595-1596 and its closing brace at :1597, exactly as pinned.
+B07-030	PARTIAL	the AIModel const block runs :979-991 with members :980-990; the cited :983-990 starts three members in (Anthropic35SonnetAws :980, 37 :981, 4Sonnet :982 are outside it), so "the enum is :983-990" understates the enum it names.
+B07-031	SUPPORTS	jobsimulation.go:1297 is `aiModel := simulation.Gpt5Point1` as the pre-nil-check default, and Gpt5Point1 routes to openai.GPT5_1 (simulator/ai/ai.go:80-81), so "gpt-5.1" is right.
+B07-032	SUPPORTS	simulator/ai/ai.go:65-66 is the OpenAI arm's `default: aiModel = openai.GPT4Dot1`, i.e. an unrecognised model falls to gpt-4.1 as claimed.
+B07-033	SUPPORTS	validator.go:43 declares the checkerEngines field; it is only written (:60-61) and passed through (:595 → criterion.go:90) while validateLLM constructs NewLLMBulkChecker directly at criterion.go:428, so "stored and never read" holds.
+B07-034	SUPPORTS	skill.go:617-623 is convertLevelTo100 doing `100 * (*score) / levelsCount` — the plain division the unit describes.
+B07-035	SUPPORTS	gate.sh:69 is verbatim `"$alignctl" dna coverage --dna "$base/$dna" --if-declared`; the rationale comment does run from :58 (though it ends at :67, with :68 being the echo, a 1-line over-reach in the secondary :58-68 pin).
+B07-036	SUPPORTS	run.go:133-136 is the const block declaring ExitRegressed = 2 and ExitUnmeasurable = 3, with unmeasurable() starting at :139 as stated.
+B07-037	SUPPORTS	snapshot.go:62 opens validSnapshotOperators with exactly six entries (:63-68) matching the six operators named, including snapshot-cross-surface-closure.
+B07-038	SUPPORTS	graphql-wundergraph/terraform/main.tf:20 is `service_desired_count = 1` inside the live `module "graphql"` block at :10.
+B07-039	DOES-NOT-SUPPORT	the file contradicts the claim: `module "jobsimulation"` is still declared at :31 with `service_desired_count = 0` at :40, so "no longer appears in the file at all" is false here, and the cited :15-22 is an atlas_migration data block that could not evidence an absence in any case.
+B07-040	UNRESOLVABLE	unit pins @ app `b948604` but this tree is at ad9f3c49, where wiring.go:118 is mid-comment about S3 storage namespaces and the Judge0 direct call (JUDGE0_BASE_URL) is at :121-123.
+B07-041	SUPPORTS	docker-compose.yml:84-92 is the comment stating that messenger/customerio-sync are folded in, deliberately have no variables here, and default OFF behind MESSENGER_ENABLED / CUSTOMERIO_SYNC_ENABLED.
+B07-042	DOES-NOT-SUPPORT	same defect as B07-039: at this tree jobsimulation/terraform/main.tf:31 still declares `module "jobsimulation"` with `service_desired_count = 0` at :40, so the cited :15-22 does not show the claimed ECS-module deletion.
+B07-043	SUPPORTS	cms/terraform/main.tf:39 is `service_desired_count          = 0`, exactly the "still declares it at 0" the row asserts.
+B07-044	SUPPORTS	docker-compose.yml:48 is `- AUTHORIZATION_ADDRESS=http://sentinel:8087` in the backend block at platform 0c91421, as claimed.

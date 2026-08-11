@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M257
 title: "first-light build"
-status: in-progress
+status: paused
 release: v2.8 "fast build"
 exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **odysseus** (`devops@100.110.67.14` / `odysseus.taildc510.ts.net`) — the host CHANGED at D-v28-14 (billion is demo-only now), so **the baseline must be RE-MEASURED there (n >= 3) and an `odysseus.json` host profile checked in BEFORE any lever is priced**. billion's 666.29 s does not transfer: odysseus is a near-twin on paper (8 cores / 7 GiB / x86_64 vs 8 vCPU / 7.3 GiB / x86_64) and this release's own rule is *state the environment with every number*. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if odysseus's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
@@ -35,7 +35,7 @@ never exhausting it**, and without weakening a single safety guard.
 **The gate measures against the M255 `n=3` campaign, not the `n=1` annotation.** Both are listed because the
 annotation is where the lever ranking comes from; the campaign is what the exit gate is a percentage of.
 
-| | **n=3 p50 — THE BASELINE** | n=1 annotation |
+| on `billion` | **n=3 p50 — THE BASELINE** | n=1 annotation |
 |---|---|---|
 | Total cycle | **666.29 s (11 m 06 s)** | 672.4 s (11 m 12 s) |
 | Bring-up | 633.15 s (95.0 %) | 650.7 s (96.8 %) |
@@ -100,17 +100,32 @@ not required. **Document it; do not make it the default** (a wiped DB is usually
 ## Also in scope — the §8.5 corpus retraction (D-v28-10, moved here from M255)
 
 Landing **once**, with the *achieved* numbers, so `frontend-tier.md` is rewritten a single time.
-**Enumerated** mirror set (the first draft said "all four docs" and named none):
-`corpus/ops/demo/frontend-tier.md` **×4 sites** — `:231`, `:249`, `:262`, `:271` — plus
-`corpus/ops/demo/README.md:139` and `CLAUDE.md:318`.
+**Enumerated** mirror set — **RE-ANCHORED 2026-07-31, and every line below was re-verified by grepping the
+claim string.** The first draft's `:231 / :249 / :262 / :271` were **pre-M255 line numbers**: M255's own doc
+commit shifted them **+24** and this list was never re-anchored. The live set is
+`corpus/ops/demo/frontend-tier.md` **×4 sites** — **`:255`** (*"one ~3-minute, ~3.7 GB cached build per
+frontend"*), **`:273`** (*"a ~3.7 GB next-web compile"*), **`:274`** (*"pure memory starvation, not a slow
+build"* — a live claim this section previously named in prose with **no** line cite), **`:286`** (*"the ~3.7 GB
+next-web build spike"*) — plus `corpus/ops/demo/README.md:139` and `CLAUDE.md:318` (both **re-verified
+correct**). **Old `:271` is dropped from the work list: it is a NO-OP** — *"the ~3.7 GB build cache"* was
+**already retracted by M255** at `frontend-tier.md:299-306`, which now carries the measured 105.4 GB and the
+25 GiB floor.
 **Gated by a grep assertion** for the retracted strings: the first draft cited
 `stack-core/demo_knob_guard.py` as the machine fence, but that guard matches `${DEMO_*:-default}` knobs and
 `case` arms and **structurally cannot see prose numbers**. `demo-up-defaults.md` carries none of these claims
 and is **not** in the set. The claims:
-*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off) · *"~3 min per frontend"* → right for the two Next apps,
-**~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" zero times in 623 lines** ·
-*"~3.7 GB first build"* (`up-injected.sh:794`) → measured **4.77 / 4.67 GB** · studio *"pure memory
-starvation, not a slow build"* → refuted (export/unpack is 288.4 s; the box never exceeded load 4.90/8).
+*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off; **already retracted**, see above) · *"~3 min per
+frontend"* → right for the two Next apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions
+**"hiring" only 4 times in 676 lines** (`:24`, `:32`, `:294`, `:666` — the stale figure was *"zero times in 623
+lines"*; the substantive point stands, hiring is barely documented as a first-class frontend) ·
+*"~3.7 GB first build"* → **two** sites in `up-injected.sh`, **`:816` and `:1251`** (the stale cite was a single
+`:794`) → measured **4.77 / 4.67 GB** — and note `up-injected.sh:300` already hedges *"4.67-4.84 GB"*, the
+conflict `build-budget.md` resolves to the profile's **4.84 GB** · studio *"pure memory starvation, not a slow
+build"* → refuted (export/unpack is 288.4 s on `billion`; the box never exceeded load 4.90/8).
+
+> **Every retraction written here must NAME ITS HOST** (`D120`): the numbers being retracted are `billion`
+> measurements, M257's achieved numbers will be `odysseus` measurements, and the two must not be mixed in one
+> sentence without saying which is which.
 
 ## Dev path
 
@@ -194,3 +209,44 @@ milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report t
 **Delivers → `corpus/ops/demo/frontend-tier.md`** (rewritten **once**, with achieved numbers: real image
 anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
 **Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
+
+## ⚠️ HOST CLASS PROBLEM (D-v28-15, 2026-07-31) — read before resuming
+
+Dev moved to a **Mac (arm64/overlay2)**; billion (**x86_64/containerd**) is demo-only. M255 measured the same
+Dockerfile at **4.84 GB on billion vs 2.88 GB on an arm64 laptop** — the Mac **pays no image-unpack leg**. **L1,
+this milestone's biggest lever at ~200–250 s, targets exactly that leg**, so its headroom on a Mac is near zero
+and **local seconds will not transfer to billion**. This gate is **un-measurable on the sanctioned hosts as
+written**. Resolve deliberately — re-cut against a Mac-native baseline (arguably a different milestone), or take
+an explicit exception to measure on billion — do not resume and grind.
+
+## ⏸️ PAUSED 2026-07-31 — blocked behind M257x
+
+**Paused after iter-03, at 3 closed iters, on the user's call.** Not a failure: iter-03's own exit blocker
+(`DECIDE-M257-jobsim-schema-ownership`) turned out to be the visible edge of a platform-wide migration whose
+status nobody on our side knew. **M257x now owns that question**, and this milestone resumes when the platform
+is aligned.
+
+**Why it cannot proceed as-is:** the gate measures a cold `--purge` + `demo-up`. Against a platform whose
+schema ownership has moved out from under the tooling, that measures either a pinned-stale build or a broken
+one. Neither is the number v2.8 wants.
+
+**What is already banked and must NOT be redone:**
+- The Phase 0b RED cleared; `TOK-01` authored (*instrument before baseline, baseline before levers*).
+- **odysseus provisioned** as a working bench — rc=0 bring-up, 16/16 containers, remote HTTPS, Go present
+  (`go1.26.5`, off PATH — the "no Go" reading was a login-shell false negative).
+- **Both gate-honesty instruments landed** with mutation-proven negative controls — the autoverify check could
+  previously pass on a half-dead stack AND fail on a working one.
+- **B1 + B2 fixed** (dropped `local_*` mirrors → 34 sites/20 files; the unobtainable studio).
+- The baseline mirror fence **parameterised by host** (4 → 28 tests); on its first run it flagged 12 un-hosted
+  baseline claims, one of them this milestone's own gate line.
+
+**Still owed when it resumes:** the odysseus baseline itself (`PROFILE-M257-odysseus-json` — ship without a
+`gated_baseline`; `lane_heap_measured_peak_mib` must be measured, never guessed, because clause 2 consumes it),
+and **`INVESTIGATE-M257-load1-48`** — peak `load1` measured **48.7** against HEADROOM clause 1's limit of **6**
+(billion read 4.06–4.56). If that is real, **the gate's own clause cannot pass on this host**. Unstarted by
+design: it must be measured with `buildbench`'s sampler against a host running *this* tooling. Worth noting the
+hypothesis to test first — Linux load average counts tasks in uninterruptible sleep, so an I/O-heavy build can
+show a huge `load1` with the CPU nowhere near oversubscribed; and the gate text's own insistence on *"read from
+the sampler (NOT 'sampled, not asserted')"* raises the possibility that clause 1 was never actually asserted on
+billion either.
+

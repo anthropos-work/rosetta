@@ -8,15 +8,31 @@
 >
 > Where everything went:
 >
-> * **Domain** — the skills taxonomy (60K+ skills graph), skill/job-role embeddings, AI skill matching, and
+> * **Domain** — the skills taxonomy (a tens-of-thousands-of-skills graph — see the sized statement under
+>   *Still-true domain knowledge* below), skill/job-role embeddings, AI skill matching, and
 >   job-role skills now live inside `app`: Ent models in `app/internal/data/ent/schema/` (`skill.go`,
 >   `jobrole.go`, `skill_embeddings.go`, `job_role_embeddings.go`, `category.go`, `specialization.go`, …),
 >   data in the **`public` schema** of the same PostgreSQL database. The old `skiller` DB schema is **legacy —
 >   no longer authoritative**.
 > * **RPC** — the skiller Connect-RPC surface (`SkillerService`) is now served by `app`
->   (`app/internal/rpc/skillerrpc/`). Consumers keep the same env var, re-pointed:
->   `SKILLER_RPC_ADDR=http://backend:8083` locally; `skiller_rpc_addr = http://backend:8081` in production
->   terraform. The externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
+>   (`app/internal/rpc/skillerrpc/`). Consumers kept the same env var, re-pointed at
+>   `http://backend:8083` locally — **and it already did before `d11a403`**, which re-pointed `CMS_RPC_ADDR`
+>   and `JOBSIMULATION_RPC_ADDR` and left this one alone (measured at `d11a403^`, M257x iter-115).
+>   **The production value is NOT ASSERTED here in either direction** — this
+>   line used to state `skiller_rpc_addr = http://backend.internal.anthropos:8081` flatly, in the present
+>   tense and unpinned, while four other docs declared the same value unmeasurable; it was the last site
+>   still asserting it. No `.tf` file in any clone names that literal (0 hits over all 44 tracked `.tf`
+>   files in the 13 `stack-demo` repos, each at its own HEAD, 2026-08-06), and the deciding declaration
+>   lives in the `infrastructure` repo, which is not in the standing clone set and **has been read**:
+>   production names the literal **exactly once**, and **not as a `skiller_rpc_address`** — it is
+>   `module "backend_euwest1"`'s `cms_rpc_address` input
+>   (`infrastructure/terraform/production/services.tf:346` @ `13c248e6`, M257x iter-132). **So the old flat
+>   assertion was wrong about the variable as well as the tense**, and no `skiller_rpc_address` survives in
+>   production terraform at all. Derived once in [`backend.md`](./backend.md); not restated here.
+>   **Locally that variable is now set by nothing**: the last block to carry it was
+>   `messenger`'s, and platform `838d907` (merged `0c91421`, 2026-08-05) deleted that service — so
+>   there is no out-of-process consumer left to address, and the surface is reached in-process. The
+>   externally-reached methods (`GetSkills`, `GetSkill`, `SearchSkill`, `MatchSkill`,
 >   `GetJobRole`) are implemented in `app`.
 > * **GraphQL** — the skiller subgraph was **removed** from the WunderGraph/Cosmo federation; `app`'s `backend`
 >   subgraph now serves the taxonomy types/queries (`app/.../graph/schemas/skiller_taxonomy.graphqls`). The
@@ -33,9 +49,19 @@
 
 ## Still-true domain knowledge
 
-* The **taxonomy data** (60K skills / 18K job roles) is a dataset owned by the service DB, not by the
+* The **taxonomy data** is a dataset owned by the service DB, not by the
   `anthropos-work/taxonomy` library — that library only supplies `NodeID` generation helpers
   (see [Shared Libraries → taxonomy](../architecture/shared_libraries.md#taxonomy)).
+* **How big it actually is.** The measured figures are **≥22,470 job roles** and **≥42,790 skills** —
+  those are the **public** rows (`organization_id IS NULL`) from the read-only production capture
+  `.agentspace/snapshots/taxonomy/<digest>/manifest.json` (`source: primary-read`, `public_only: true`,
+  `predicate: org-null`, captured **2026-06-29**), reproduced against a live stack DB. They are floors, not
+  totals: a public-only capture cannot see org-scoped private content.
+  The long-quoted **"60K skills / 18K roles" is not a measurement**, and the two halves fail differently:
+  **"18K roles" is refuted** (it is below the 22,470 public floor, and 18,919 is the `job_role_embeddings`
+  row count — a different table); **"60K skills" is merely unsupported** — unmeasured, not disproved, since
+  private skills are invisible to the capture. Full statement:
+  [Shared Libraries → the "60K / 18K" figures](../architecture/shared_libraries.md#taxonomy-figures).
 * **Embeddings** live in dedicated tables (`skill_embeddings`, `job_role_embeddings` — OpenAI
   text-embedding-3-small, `extensions.vector(1536)` with IVFFLAT indexes), now in the `public` schema. The
   `extensions` schema (housing `pgvector`) must exist before the vector migrations apply. See

@@ -1,0 +1,13 @@
+  1) [chromium] › tests/assignment-assign.spec.ts:39:7 › @pt:pt-assignment-assign — manager assigns a skill path and the assignment LANDS › a manager assigns content to a member with a deadline and the write is read back 
+
+    Error: the assignable-affordance count drops by exactly one (the assignment landed + was read back)
+
+    the assignable-affordance count drops by exactly one (the assignment landed + was read back)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 15
+    Received: 14
+
+    Call Log:
+  passing=29  failing=1  unimplemented=1  unimplementable=0

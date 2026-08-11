@@ -1,0 +1,10 @@
+    [directus] executing the per-stack provision (bootstrap → apply-structure → replay → boot)
+    [directus] bootstrapping the directus_* system schema (node cli.js bootstrap)
+    snapshot store root: /Users/marco/workspace/anthropos/rosetta/.agentspace/snapshots
+replayed "taxonomy" into demo-1: 10 table(s) cleared, 10 table(s), 330261 row(s) loaded, schema identity, reindexed [public.skill_embeddings.small_embedding3 public.job_role_embeddings.small_embedding3], 2 sequence(s) advanced
+    replayed taxonomy into demo-1
+provisioned "directus" structure into demo-1 (schema b4cb55bcee08 → ea2e187a1605)
+replayed "directus" into demo-1: 14 table(s) cleared, 14 table(s), 11986 row(s) loaded, schema identity, 3 sequence(s) advanced
+    replayed directus into demo-1
+    [directus] restarting the compose service 'demo-1-directus-1' so it serves the provisioned catalog
+    [directus] 'demo-1-directus-1' serving /server/health (verified before autoverify)

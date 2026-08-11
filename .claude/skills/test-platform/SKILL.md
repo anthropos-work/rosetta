@@ -35,8 +35,8 @@ Pick the scope you want via the argument: `live`, `repos`, `census`, `full`. Def
 | Scope | Requires | Verify with |
 |---|---|---|
 | `live` | Platform running (`make ps` shows containers up) | `cd stack-dev/platform && make ps` |
-| `repos` | All non-studio repos cloned (`make init`); language toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
-| `census` | All repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
+| `repos` | The 4 `repos.yml` repos cloned by `make init` — `app`, `sentinel`, `next-web-app`, `studio-desk` (studio-desk **is** one of them); toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
+| `census` | Same 4 repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
 | `full` | All of the above | — |
 
 If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/dev-up` first instead of probing a dead stack.
@@ -62,17 +62,54 @@ driver with two env vars:
   so reports land where this skill has always written them.
 
 ```bash
-ROSETTA=/Users/kirality/Dropbox/Workspaces/swarm/rosetta
-# Verification toolkit: prefer the target stack's own clone; else the authoring copy.
-VERIFY="$ROSETTA/.agentspace/rosetta-extensions/stack-verify"
-# (or "$ROSETTA/stack-dev/rosetta-extensions/stack-verify" once the dev stack has its own clone)
-# If neither exists: git clone https://github.com/anthropos-work/rosetta-extensions.git \
-#   --branch v1.2.0 "$ROSETTA/.agentspace/rosetta-extensions"
+# Resolve the corpus root — NEVER hardcode a box's path (this line used to name one specific
+# developer's home dir, which is wrong on every other machine).
+ROSETTA=$(git rev-parse --show-toplevel)
+# Verification toolkit: prefer the target stack's own pinned clone; else the authoring copy.
+VERIFY="$ROSETTA/stack-dev/rosetta-extensions/stack-verify"
+[ -d "$VERIFY" ] || VERIFY="$ROSETTA/.agentspace/rosetta-extensions/stack-verify"
+# If neither exists, clone the authoring copy at the release pin in .agentspace/rext.tag:
+#   git clone https://github.com/anthropos-work/rosetta-extensions.git "$ROSETTA/.agentspace/rosetta-extensions"
+#   git -C "$ROSETTA/.agentspace/rosetta-extensions" checkout "$(cat "$ROSETTA/.agentspace/rext.tag")"
+# (Do NOT pin a literal tag here — `.agentspace/rext.tag` is the single source-of-truth pin, M49 #1.)
 
 STACK_ROOT="$ROSETTA/stack-dev" \
 REPORT_DIR="$ROSETTA/.agentspace/test-platform" \
   bash "$VERIFY/reports/generate.sh" <scope>
 ```
+
+> **Probe scope (M257x iter-148).** `generate.sh` now **derives** the live-probe scope from
+> `$STACK_ROOT/platform/docker-compose.yml` when `STACK_SERVICES` is unset, and **prints the scope into
+> the report**. Before that it ran unscoped, and the probe table is *historical*: it still lists `cms`,
+> `jobsimulation`, `storage` and `roadrunner`, which the platform merged into `app`. Measured against one
+> healthy live demo, unscoped verify reported **6 of 20 probes failed** where the same stack scoped
+> reports **1 of 14** — so the report said four deleted services were DOWN and the run exited 1.
+> **For a demo or a `dev-N` stack, also pass `STACK_PROJECT` / `STACK_OFFSET`** (e.g.
+> `STACK_PROJECT=demo-1 STACK_OFFSET=10000`) — without them the probes go to project `anthropos` on base
+> ports, which is the main dev stack, not the one you meant. An explicit `STACK_SERVICES` always wins
+> over the derivation.
+>
+> **The report states its own target and scope (M257x harden pass 33).** The header carries a
+> `**Target**:` line naming the project + offset the probes went to, and says `DEFAULTED` out loud when
+> neither variable was set — because until that line existed, a report on `demo-1` and a report on the
+> main dev stack were **byte-identical apart from the timestamp**, and a forgotten `STACK_PROJECT` was
+> unrecoverable from the artifact. The live section then carries a scope line on **all three** branches
+> — derived, caller-supplied, and underivable. The caller-supplied one was the gap: it is the branch
+> this note recommends, it is the branch where the scope is arbitrary, and it used to print nothing, so
+> `✓ pass` off a hand-narrowed one-probe run read the same as a full sweep.
+>
+> **The derived scope now UNIONS the stack's own generated override (M257x iter-153).** The platform's
+> unmodified compose is not the artifact that decides what a stack runs. Measured at platform `0c91421`:
+> `platform_topology.py services` returns **five** services, while a default demo's own generated
+> override declares **eleven** — the extra six being `directus`, `next-web-app`, `studio-desk`,
+> `hiring-app` and Clerkenstein's `fake-fapi` / `fake-bapi`. So the derivation covered five of eleven and
+> the report read `✓ pass`. **`STACK_PROJECT` is what makes the union possible** — it is how the stack's
+> override is located (`demo-N` → `<rext>/demo-stack/stacks/demo-N/docker-compose.injected.yml`), so
+> passing it is no longer only about aiming the probes correctly. Three of the eleven have **no row in
+> the probe registry** and therefore cannot be graded at all; the scope line **names them** rather than
+> dropping them silently, and `stack-verify/lib/services.sh` declares them in
+> `STACK_INJECTED_SERVICES_NOT_PROBED` so an arrival or a stale declaration turns a fence RED. If no
+> override is found the scope line **says it found none** — silence would read as a complete scope.
 
 The script:
 - Runs the underlying probes in order

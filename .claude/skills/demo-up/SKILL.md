@@ -1,7 +1,7 @@
 ---
 name: demo-up
 description: Bring up a disposable, isolated demo stack (demo-N) alongside the dev stack — Clerkenstein-wired, on offset ports, with the full UI tier (next-web + studio-desk + ant-academy), auto-set-dressed (real catalog + a seeded org), killable cleanly. Use when asked to spin up / start a demo environment.
-argument-hint: '[N] [--public-host <magicdns>] [--no-public-host] — up-injected.sh takes ONLY these three and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Remote reach is DEFAULT-ON (auto-discovered; --no-public-host opts out). Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_PUBLIC_HOST=1 — all 27 env knobs + 10 CLI flags enumerated in corpus/ops/demo/demo-up-defaults.md, which is fenced against the parsers in both directions)'
+argument-hint: '[N] [--public-host <magicdns>] [--no-public-host] — up-injected.sh takes ONLY these three and HARD-ERRORS (exit 1) on anything else; --profile/--services are flags of the separate rosetta-demo wrapper. Remote reach is DEFAULT-ON (auto-discovered; --no-public-host opts out). Every feature is an env knob, not a flag (DEMO_NO_STORIES=1 / DEMO_NO_UI=1 / DEMO_NO_SETDRESS=1 / DEMO_NO_LOCAL_CONTENT=1 / DEMO_NO_PUBLIC_HOST=1 — all 31 env knobs + 10 CLI flags enumerated in corpus/ops/demo/demo-up-defaults.md, which is fenced against the parsers in both directions)'
 ---
 
 # Demo Up — spin up an isolated demo stack
@@ -20,7 +20,10 @@ single-identity demo — see the toggle list below.) Source of truth:
 1. **Read the guides** — `corpus/ops/rosetta_demo.md` (lifecycle, port-offset, resource budget) +
    `corpus/ops/demo/frontend-tier.md` (the UI tier: per-demo frontend builds, the pk/URL baking, the 12 GB
    VM prereq, ant-academy, `--no-ui`).
-2. **Resource check** — a full stack is ~10–12 GB at runtime; the **frontend build** spikes to ~3.7 GB. Set
+2. **Resource check** — a full stack is ~10–12 GB at runtime. **The old "~3.7 GB frontend build" figure here
+   was wrong and is retracted** (v2.8 M255): measured, a frontend image is **4.67–4.84 GB on `billion`
+   (x86_64)** and **2.88 GB on an arm64 laptop** — *state the environment with every number* — and the
+   BuildKit cache is **105.4 GB**, not 3.7 GB. Sizes: `corpus/ops/demo/build-budget.md`. Set
    the **Docker VM to 12 GB / swap 3 GB** (Settings → Resources) so the per-demo next-web build doesn't
    swap-thrash. `up-injected.sh` runs a **non-fatal** 12 GB pre-flight assert (warns, never blocks;
    `DEMO_VM_MIN_GIB=N` overrides) **plus a disk-headroom assert** (M49 #6 — warns below **25 GiB** free on the
@@ -152,8 +155,10 @@ single-identity demo — see the toggle list below.) Source of truth:
    ensure-clones-seeded `stack-demo/platform/.env` base instead — M26). See
    [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) + `/stack-secrets`.
 4. **Auto set-dress (default-on, non-fatal)** — after migrate the bring-up runs a cache-first snapshot
-   **replay → the multi-org Stories & Heroes seed** (**4 orgs** — Cervato Systems / Solvantis / Northwind
-   Aviation — × a thriving/struggling/manager hero trio) **and
+   **replay → the multi-org Stories & Heroes seed** (**4 orgs** — the **3 workforce** orgs Cervato Systems /
+   Solvantis / Northwind Aviation, each × a thriving/struggling/manager hero trio, **plus the M223 Meridian
+   Talent hiring org**, which has no trio; naming only the three workforce orgs against a count of 4 is what
+   this line used to do) **and
    serves the presenter cockpit — both BY DEFAULT** (the M38-D4 opt-in became opt-OUT), reusing the same proven
    pass `/dev-up` uses. `DEMO_NO_STORIES=1` (or `DEMO_STORIES=0`) restores the **legacy `small-200`** structural
    seed + single-identity fake-FAPI + no-cockpit demo (so `small-200` is the fallback, **not** the default).
@@ -162,7 +167,8 @@ single-identity demo — see the toggle list below.) Source of truth:
    a `directus` compose service on the demo's offset port, **health-gated** — it now waits for the stack's own
    offset `/server/health` to answer 200 before returning, bounded by `DEV_SETDRESS_DIRECTUS_BOOT_TIMEOUT`
    (default 90s, non-fatal on timeout), so the bring-up-tail autoverify can't race the ~30s re-introspect), then
-   **cuts `cms` over** to it (`DIRECTUS_BASE_ADDR` → in-network `http://directus:8055`), so the demo's content is
+   **cuts `backend`'s cms domain over** to it (`app/internal/cms/` — there is no `cms` service;
+   `DIRECTUS_BASE_ADDR` → in-network `http://directus:8055`), so the demo's content is
    **self-contained** (the directus replay **exits 0**). Only the **asset plane** stays on prod —
    `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing at `content.anthropos.work` so browser images load real assets.
    `DEMO_NO_LOCAL_CONTENT=1` opts a demo **out**, back onto the **prod-read fallback** (directus replay skips
@@ -183,8 +189,10 @@ single-identity demo — see the toggle list below.) Source of truth:
    install`** (no token needed — the Font Awesome Pro icons it uses are **vendored/self-hosted** in the repo, not
    pulled from the FA npm registry) when `node_modules` is absent (`storytelling-postfix-2`). The earlier "down"
    was a **blocked clone** (an empty `stack-demo/ant-academy/` stub holding only a gitignored `code/.env.local`
-   defeated `make init`'s skip-if-present), now fixed — not a missing FA token. It's a Clerk-only Vercel-deployed
-   peripheral; the cockpit/next-web/studio-desk carry the demo.)
+   defeated `make init`'s skip-if-present), now fixed — not a missing FA token. It is a Vercel-deployed peripheral, and **not** Clerk-only —
+   it is a GraphQL client of the platform too (`code/src/graphql/server.js:14` reads
+   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` and **throws** at `:18` when it is unset, @ `22df69dd8`), which is the
+   mechanism behind the "empty academy" grid; the cockpit/next-web/studio-desk carry the demo.)
 
 ## Safety
 Every op is `-p demo-N`-scoped; the tooling hard-refuses the dev project. The dev stack is never touched.
@@ -204,10 +212,10 @@ on the demo's offset **`:7700+`** port to walk the seeded stories. (`DEMO_NO_STO
 (M31: minted via `mkcert` at bring-up), so a fresh browser renders the signed-in app with **no proceed-anyway**
 — it falls back to an openssl self-signed cert (one-time proceed-anyway) when mkcert is absent or `DEMO_NO_MKCERT=1`
 (see [`corpus/ops/demo/recipe-browser-login.md`](../../../corpus/ops/demo/recipe-browser-login.md) §B). To customize: re-run the generic stack-ops
-(they accept `demo-N` or `dev-N`) — `/stack-snapshot N` (re-replay), `/stack-seed N --preset mid-500` (a fuller
+(they accept `demo-N` or `dev-N`) — `/stack-snapshot demo-N` (re-replay), `/stack-seed demo-N --preset mid-500` (a fuller
 org / a custom `stack.seed.yaml`). List live stacks with `/stack-list`. If the catalog came up empty (a cold
 snapshot cache), fill it once per [`corpus/ops/snapshot-cold-start.md`](../../../corpus/ops/snapshot-cold-start.md),
-then re-run `/stack-snapshot N`.
+then re-run `/stack-snapshot demo-N`.
 
 ## Related skills
 

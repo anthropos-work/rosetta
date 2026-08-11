@@ -74,11 +74,11 @@ narrative multi-org world you can log into and present; `DEMO_NO_STORIES=1` fall
 `small-200` light seed). So a bare `/demo-up N` already lands you in a real-catalog, log-in-able world
 — no separate skill calls required. The pass is
 **default-on + non-fatal** (a cold cache warns and still seeds; `DEMO_NO_SETDRESS=1` skips it for a bare
-structural bring-up). You can still drive the steps **manually** for finer control — `/stack-snapshot N` (replay)
-+ `/stack-seed N` (a different preset / a custom `stack.seed.yaml`) — they accept `demo-N` or `dev-N` interchangeably.
+structural bring-up). You can still drive the steps **manually** for finer control — `/stack-snapshot demo-N` (replay)
++ `/stack-seed demo-N` (a different preset / a custom `stack.seed.yaml`) — they accept `demo-N` or `dev-N` interchangeably.
 
 **The snapshot step is what makes the world *set-dressed* (v1.2).** A replay stamps the real **public** reference
-library — the ~60K-skill taxonomy + the global simulation / skill-path content templates — into the stack BEFORE
+library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, the measured public subset; [not "60K/18K"](../../architecture/shared_libraries.md#taxonomy-figures)) + the global simulation / skill-path content templates — into the stack BEFORE
 the seed, so the catalog view shows real skills and the seeded sessions link to real templates (not free
 placeholder ids). It's a **stack-global reference replay**, independent of which org you then seed; it's
 **optional** (a structural-only world still logs in — the seeder degrades gracefully), and almost always a
@@ -140,8 +140,8 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 - [`build-budget.md`](build-budget.md) — **the bring-up build budget** (v2.8 "fast build" M255): what *fast*
   means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it. Defines **READY**
   (exit 0 **and** a green `autoverify.json`), the per-phase attribution model, the measured baseline
-  (**n=3 p50 666.29 s**, of which **65.5 % is UI-tier image builds and 46 % is image export/unpack alone**), the
-  **headroom contract** (three clauses against a *measured, checked-in* host profile — and the derived fact
+  (**n=3 p50 666.29 s on `billion`**, of which **65.5 % is UI-tier image builds and 46 % is export/unpack**), the
+  **headroom contract** (**four** clauses — a **clause zero** (`require_measured`) plus CPU/memory/disk — against a *measured, checked-in* host profile, and the derived fact
   that neither host fits two concurrent Next.js build lanes), the **campaign protocol** (the binding
   constraint is the ~18 GiB mid-cycle TRANSIENT, not the ~2 GiB a steady rep nets; reclaim is explicit and
   `until=24h` is **not** a guarantee that rep-touched records survive — one eviction cost 173 s; the pre-rep assert
@@ -150,7 +150,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   **state the environment with every number** — the same Dockerfile yields a 4.84 GB image on `billion` and
   2.88 GB on an arm64 laptop, which also pays no unpack leg at all.
 - [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
-  knob and flag that controls a bring-up — **all 30 env knobs + 10 CLI flags**, with real defaults and the exact
+  knob and flag that controls a bring-up — **all 31 env knobs + 10 CLI flags**, with real defaults and the exact
   `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
   doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
   *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —
@@ -242,7 +242,8 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   provably clean** — residual re-identification risk is real and **ACCEPTED by the data-controller (2026-07-19)**;
   the control is the **VPN/tailnet scope**. **Re-tenanted**, **non-manager-played** (owner = a seeded player
   member), **source-pinned** (deterministic reseed; disclosed in the `content_sessions` manifest block). The full
-  result fan-out (session + the `local_jobsimulation_sessions` MIRROR + attempt/skill/criterion/check results +
+  result fan-out (the one canonical `public.job_simulation_sessions` row — the `local_*` MIRROR it named until
+  M257x iter-129 was dropped by `app` `20260729133514.sql` — + attempt/skill/criterion/check results +
   transcript actors/interactions + the net-new **CODE**/**DOCUMENT** substrate + the **INTERVIEW** report), all
   G14-valid, the REAL skill node-ids copied; plus the two sha-pinned interview-flag-gate **demopatches** (the M219
   aireadiness twin — no PostHog on a demo ⇒ no rollout gate). The bounded read-side exception `safety.md` §3.8
@@ -253,8 +254,11 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   the demo's next-web-app **server** signs against the **Bunny.net CDN** with `BUNNY_RECORDING_CDN_TOKEN_KEY` +
   `BUNNY_RECORDING_PULL_ZONE_HOST` and streams — **no media byte ever moves**, and only hiring-voice cells can source
   the recorded pool). The document body is inline **`input_data.text_document`** (Defect 3 — NOT an S3 blob, fully
-  landed). Gender-coherence (values-blind label) + the values-blind Bunny-key provisioning (the M239 Bedrock pattern).
-  **Current status: Bunny-key-blocked** — the recording signing keys are absent from the authoring dev-stack, so a
+  landed). Gender-coherence (values-blind label). ⚠️ **The "values-blind Bunny-key provisioning (the M239 Bedrock pattern)"
+  claimed here was RETRACTED at M257x iter-130 — no such path was ever built** (0 `BUNNY_RECORDING_*` genes in the
+  secret-coverage DNA; the M239 bridge carries a fixed five-key Bedrock list).
+  **Current status: Bunny-key-blocked on BOTH the path and the values** — the recording signing keys are absent
+  from the authoring dev-stack *and* nothing would carry them if they were present, so a
   demo ships faithful `not_available` (no broken player); the posture (safety §3.8.1, the 2026-07-21 VIDEO sign-off)
   lands ahead of the capability. (M240)
 - [`content-stories-spec.md`](content-stories-spec.md) — the **content_products manifest + honesty gate** (v2.5
@@ -308,10 +312,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
 M20 #M20-D2) · `mid-500` (the default "looks real") · `large-1k` (scale). The `/demo-up` auto-set-dress now
 defaults to the **Stories & Heroes** seed (v1.9 M38); `small-200` is the structural fallback the
 `DEMO_NO_STORIES=1` opt-out seeds (a fuller world than dev's `dev-min`). Override either with a manual
-`/stack-seed N --preset mid-500`
+`/stack-seed demo-N --preset mid-500`
 (or skip the auto pass with `DEMO_NO_SETDRESS=1` and seed by hand). The presets are **purely structural** (they describe an org, not the
 platform's reference library); for a **set-dressed** world the catalog replay runs first (the auto pass does this;
-manually it's `/stack-snapshot replay N`). Without a replay the seeder degrades gracefully (empty catalog, free
+manually it's `/stack-snapshot demo-N replay` — target first, verb second). Without a replay the seeder degrades gracefully (empty catalog, free
 content refs).
 
 > **Known state — a `--local-content` stack is content-self-contained (M22 boot + M23 cutover); a prod-read

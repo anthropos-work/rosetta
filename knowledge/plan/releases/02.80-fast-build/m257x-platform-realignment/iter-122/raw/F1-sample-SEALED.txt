@@ -1,0 +1,65 @@
+# F1 SAMPLE — SEALED before the enumerator was written or run.
+# seed=122 · random.Random(122).sample(range(9543), 60) · prose = lines outside ``` fences,
+# in file-then-line order over the 40 clause-5 files, at rosetta ad1b82d.
+# prose-line population: 9543
+#
+01	corpus/services/README.md:55	| [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js **16** monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
+02	corpus/services/academy-backend.md:90	        *   **Queries** (self-only unless `@public`): `academyProgress`, `academyLastActivity`, `academyChapterTime(s)`,
+03	corpus/services/ai-labs.md:76	    `privacy.Allow`.
+04	corpus/services/ai-readiness.md:202	
+05	corpus/services/ai-readiness.md:391	hash it calls the LLM (GPT-5-Mini) and upserts. On AI error it returns empty + the FE falls back to static
+06	corpus/services/ant-academy.md:2	
+07	corpus/services/ant-academy.md:16	### Service Overview
+08	corpus/services/ant-academy.md:70	> cross-origin GraphQL endpoint with a Clerk Bearer token. The beacon route is the **exception the old sentence
+09	corpus/services/ant-academy.md:230	count until M257x), plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
+10	corpus/services/ant-academy.md:246	clone), then **verifies the running process actually renders the catalog** (`/library` has real course cards, not keyless-bounced)
+11	corpus/services/askengine.md:83	        (`GetTalkToDataCustomRules`); `internal/authorization`.
+12	corpus/services/askengine.md:114	    client.
+13	corpus/services/backend.md:22	> * **The federation composes ONE subgraph** (`backend`). cms-in-app was the **3 → 1** step: the single
+14	corpus/services/backend.md:243	### Key directories
+15	corpus/services/clerk-integration.md:175	
+16	corpus/services/clerkenstein.md:80	The DNAs + mirror + goldens + runners live in the `clerkenstein/` section; the `/align-dna` + `/align-run`
+17	corpus/services/clerkenstein.md:287	`mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers
+18	corpus/services/customerio-sync.md:101	`doc.go` is the port record — or clone the frozen repo for the pre-merge source:
+19	corpus/services/graphql-wundergraph.md:1	# GraphQL Gateway (`graphql-wundergraph`)
+20	corpus/services/graphql-wundergraph.md:152	configs still contain these rows and a reader will find them there.
+21	corpus/services/hiring.md:9	> **read-model that fills the recruiter comparison view had no code anchor**, which is exactly the gap M222 closed.
+22	corpus/services/hiring.md:95	   controls: `OrgFeatureInsights` ×8, `JobSimulationSession` ×44). **But "no read path reads it" would be a second false claim:** the CONTENT-LIBRARY read path does —
+23	corpus/services/hiring.md:366	  (the per-candidate drill-down, reads the `public.validation_*` tables) — present in **both** `apps/web` and
+24	corpus/services/hiring.md:442	**Believability (v2.4 M227 "the notes", seed-only).** The recruiter's AI-Simulations list reads **hiring-only** — the
+25	corpus/services/next-web-app.md:37	> **⚠️ RETRACTED — "the recruiter scoreboard is an `is_hiring` org-type surface in the dockerized `apps/web`, not
+26	corpus/services/next-web-app.md:67	| `@anthropos/graphql` | All data fetching: queries, React Query hooks by domain, server fetchers, **codegen output** (`src/__generated__`), `codegen.ts` |
+27	corpus/services/sentinel.md:21	
+28	corpus/services/sentinel.md:74	| `CheckOrganizationFeature` | Org-level feature quota check |
+29	corpus/services/sentinel.md:92	
+30	corpus/services/skillpath.md:54	>
+31	corpus/services/storage.md:217	> **HISTORICAL — there is no `storage` container to inject any of these into.** The middle column
+32	corpus/services/studio-desk.md:67	### Project Structure
+33	corpus/services/studio-room.md:336	- Python 3.9+ (runtime image when embedded in the `app` container: `python:3.11-slim`; it was the cms container before cms-in-app)
+34	corpus/services/studio-room.md:466	into that one bundle; **none of them drops its own file**. So there is no `dialogue.json`,
+35	corpus/services/studio-room.md:494	
+36	corpus/architecture/README.md:3	This directory contains all documentation related to the Anthropos platform architecture.
+37	corpus/architecture/README.md:30	2.  Review **[Dependency Map](./dependency_map.md)** to see how services interact.
+38	corpus/architecture/ai_architecture.md:137	| FAST | azure / gpt-5-mini | azure / gpt-5-mini | none |
+39	corpus/architecture/ai_architecture.md:222	layer supplies `gptrealtime` — **`app/internal/cms/directus/collections/jobsimulation.go:1594-1597` @ `app`
+40	corpus/architecture/ai_architecture.md:298	### Evaluation System
+41	corpus/architecture/alignment_testing.md:123	| `error_class` | only the error class is compared (both error the same way / both succeed); value ignored. |
+42	corpus/architecture/alignment_testing.md:149	A real source like Clerk is a **live SaaS** — you can't hit it freely, offline, or deterministically.
+43	corpus/architecture/alignment_testing.md:447	**Proven live (M7b):** against the M7a-seeded `demo-1`, `measure` reports **100% / Critical 100%** across the 4
+44	corpus/architecture/architecture_overview.md:361	> v9.0") deleted `STORAGE_RPC_ADDR` from `backend`'s env, dropped `storage` from `backend`'s `depends_on`
+45	corpus/architecture/dependency_map.md:40	### Shared Libraries
+46	corpus/architecture/external_services.md:27	| **Type** | External SaaS |
+47	corpus/architecture/external_services.md:68	
+48	corpus/architecture/external_services.md:140	> Directus service in the platform compose at `0dab54d`.)
+49	corpus/architecture/external_services.md:199	> even if they wanted one. And `backend` does **not** proxy content through a standalone `cms`
+50	corpus/architecture/external_services.md:252	the data-plane address `DIRECTUS_BASE_ADDR` is the one that is genuinely `.env`-settable, which is why the
+51	corpus/architecture/external_services.md:460	
+52	corpus/architecture/external_services.md:561	|:---|:---|:---|:---|
+53	corpus/architecture/external_services.md:672	12 / 12. **This block covers `app`'s Go only**; `app/studio/gen.py:45-48` reads a separate list of **six**
+54	corpus/architecture/external_services.md:728	
+55	corpus/architecture/frontend_architecture.md:36	
+56	corpus/architecture/platform-migration-status.md:201	|---|---|
+57	corpus/architecture/security_compliance.md:71	
+58	corpus/architecture/security_compliance.md:102	> counts code that does not compile into anything. `user_resources` is user-scoped, NOT org-scoped by the ORM.
+59	corpus/architecture/service_taxonomy.md:4	
+60	corpus/architecture/service_taxonomy.md:365	> local stack

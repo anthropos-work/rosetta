@@ -28,10 +28,18 @@ Tools required to provision the environment and run the core infrastructure.
 ## 2. Service Development (Backend)
 Tools specific to developing, building, and running the Go-based microservices.
 
-*   **Go** (v1.23+)
+*   **Go** (**v1.25+**)
     *   *Function*: Programming Language & Runtime.
     *   *User*: Backend Engineers.
-    *   *Context*: Compiling and running service code (`app`, `cms`, `jobsimulation`) locally.
+    *   *Context*: Compiling and running service code locally, and — the binding constraint — the
+        `rosetta-extensions` host tooling (`stacksecrets` / `stacksnap` / `stackseed`), whose six
+        sections all declare `go 1.25.0` + `toolchain go1.25.12` and which build **on the host**.
+        ⚠️ **This said `v1.23+` until M257x harden pass 61**, two minor versions low, and it named
+        `cms` and `jobsimulation` as service code you compile — both are merged into `app` and neither
+        repo is in the clone set. The service repos themselves declare `go 1.26.x` but build **inside
+        Docker** on `golang:1.26-bookworm`, so they do not raise the host floor. Same derivation as
+        [`corpus/ops/setup_guide.md`](../ops/setup_guide.md), which M257x iter-240 repaired; this
+        fourth statement of the floor sat outside that iter's subject and stayed wrong.
 
 *   **Make**
     *   *Function*: Task Runner & Build Automation.
@@ -51,15 +59,18 @@ Tools specific to developing, building, and running the Go-based microservices.
 *   **Atlas**
     *   *Function*: Database Schema Management.
     *   *User*: Backend Engineers.
-    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations (`public`, `cms`, `jobsimulation`, `skillpath`) and versioning. Used via `atlas migrate apply`.
+    *   *Context*: **Required for Setup**. Manages PostgreSQL schema migrations — **two pipelines, both declared in `app`**: `env "local"` → the **`public`** schema (`app/atlas.hcl:6-19`, dir `terraform/migrations`) and `env "sentinel"` → the **`sentinel`** schema (`:50-64`, dir `terraform/migrations-sentinel`, `revisions_schema = "sentinel"`, added 2026-08-04). Used via `atlas migrate apply --env local` / `--env sentinel`. ⚠️ **This said `public, cms, jobsimulation, skillpath` until M257x iter-129** — `cms`/`jobsimulation`/`skillpath` are legacy husks whose repos are out of the clone set, and `repos.yml` @ platform `0c91421df` lists exactly one migrating repo (`app`, `schema: public`). A fresh stack never creates those three schemas.
 
 ## 3. Web Development (Frontend)
 Tools specific to the Next.js monorepo and web applications.
 
-*   **Node.js** (v20+)
+*   **Node.js** (**v24+**)
     *   *Function*: JavaScript Runtime.
     *   *User*: Frontend Engineers.
-    *   *Context*: Executing the dev server and build scripts.
+    *   *Context*: Executing the dev server and build scripts. Derived from the highest
+        `engines.node` in the clone set — `next-web-app` declares `">=24.0.0"`; `ant-academy` declares
+        `">=22"`, which the higher floor already covers. ⚠️ **This said `v20+` until M257x harden pass
+        61** — four major versions low, and low enough that `next-web-app` refuses to install.
 
 *   **pnpm**
     *   *Function*: Package Manager.
@@ -93,6 +104,22 @@ Internal tools and sandboxes that support team workflows but are not part of the
     *   *User*: All Engineers.
     *   *Context*: Installed as a Claude Code plugin, gives Claude full Anthropos context (product details, architecture, design system, competitor analysis) when working in any Anthropos codebase. Includes skills like `/build-feature` and auto-triggered design system enforcement.
     *   *Setup*: Clone repo, then use `/plugin marketplace add` and `/plugin install` in Claude Code.
+    *   ⚠️ **KNOWN CONTRADICTION — read before you trust its architecture context (M257x iter-125).**
+        AKB carries a **second, parallel platform-architecture corpus** (six files under `knowledge/`,
+        ≈1,773 lines) that **contradicts this one on the taxonomy figures**. It asserts *"60,000 skills
+        … mapped to 18,000 roles"* in **14 places, citing no source in any of them**, and the figure is
+        **load-bearing in four customer-facing competitor-comparison tables**. This corpus measured
+        **42,790 public skills / 22,470 public job roles** (read-only production capture,
+        `organization_id IS NULL`, 2026-06-29, reproducible against a live stack) — so **"18K roles" is
+        REFUTED** (public ⊆ total, so 18K is below the floor) and **"60K skills" is UNVERIFIED**, not
+        refuted. Derivation: [`shared_libraries.md § taxonomy figures`](../architecture/shared_libraries.md#taxonomy-figures).
+        **Installing this plugin injects the refuted figure into your editor on every Anthropos repo** —
+        which is why the warning lives on the install line rather than in a repo census nobody opens.
+        **AKB is not simply less accurate: it was RIGHT and this corpus WRONG about the WunderGraph
+        router's production residue**, because it reads the `infrastructure` repo this corpus had never
+        cloned. Reconciliation is filed as `PLATFORM-M257x-akb-taxonomy-figures-contradict-measurement`
+        in [`platform-defect-register.md`](../../knowledge/plan/platform-defect-register.md); the full
+        comparison is [`org-repos.md` § 11](../architecture/org-repos.md).
 
 *   **Anthropos Labs** (`experiments`)
     *   *Function*: Internal experiments hub for PoCs and prototypes.

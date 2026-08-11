@@ -1,0 +1,4 @@
+[directus] executing the per-stack provision (bootstrap → apply-structure → replay → boot)
+[directus] bootstrapping the directus_* system schema (node cli.js bootstrap)
+[directus] restarting the compose service 'demo-1-directus-1' so it serves the provisioned catalog
+[directus] 'demo-1-directus-1' serving /server/health (verified before autoverify)

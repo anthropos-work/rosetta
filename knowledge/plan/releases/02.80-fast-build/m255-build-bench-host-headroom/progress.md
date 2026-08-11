@@ -15,7 +15,7 @@
 
 ---
 
-## The baseline — **`n=3 p50 = 666.29 s`** (2026-07-27)
+## The baseline — **`n=3 p50 = 666.29 s` on `billion`** (2026-07-27)
 
 The milestone's other deliverable: v2.8 now has a **measurement floor**, where before it had one `n=1` number
 from a one-off shell script that lived on a single box and was never in version control.
@@ -26,7 +26,7 @@ Artefacts: `billion:/home/devops/panorama/m255/campaign/`.
 
 | | p50 | min | max |
 |---|---|---|---|
-| **total cycle** | **666.29 s** | 658.15 s | 881.01 s |
+| **total cycle** on `billion` | **666.29 s** | 658.15 s | 881.01 s |
 | UI-tier image builds (3) | **436.1 s — 65.5 %** | | |
 | image export + unpack alone | **307.5 s — 46.2 %** | | |
 
@@ -245,3 +245,25 @@ the pass stopped. Remaining work is recorded as **Fate 3 → M255 harden resume*
 | `demo_knob_guard` anchor-fence mutants | the `Read at` fence is the third M255 guard and has **no** battery entry; add mutants for the anchor comparison and the `--fix` regenerator |
 | `_manifest_lists` body extraction | `text.find("\n}\n")` truncates a build function at the first column-0 `}`; currently masked by the pinned 11/5/6 count test, but the truncation would be silent |
 | the `laptop` profile's provisional field | `projected_image_gib` is the one non-measured number in either profile and says so only in prose; make it a machine-declared `provisional_fields` list the loader can surface |
+
+---
+
+## Provenance of every `billion`-measured number on this page (moved here at M257x iter-129)
+
+**This section's only previous home was `state.md`'s rotating § Process flags** — a field every close
+overwrites — while `roadmap.md` and this file carried the *numbers* without the conditions under which they
+were taken. A measurement whose provenance lives in an index that gets rewritten is one close away from being
+un-reproducible, so it moves to the milestone that made it.
+
+- **Taken on `billion`, 09:59–11:37Z on 2026-07-27, PRE-freeze**, with no overlap with third-party
+  activity on that host (user-confirmed). Three totals across two sessions cluster within 2 % —
+  **658 / 666 / 672 s on `billion`** — which is why the published figure is an `n=3 p50` (666.29 s on
+  `billion`) and never a mean.
+- **On the first post-freeze campaign, re-confirm three timing-derived claims**: the n=3 p50, spike (a)'s
+  146.8 → 2.9 s export, and spike (d)'s disk-bound attribution.
+- **The barrier verdict needs no re-confirmation.** 4.84 GB → 379 MB is bytes on disk, not a stopwatch —
+  a different measurement class with a different sensitivity to host contention.
+
+> **And the standing caveat this milestone earned the hard way:** *state the environment with every number.*
+> The same Dockerfile and context yield **4.84 GB on `billion`** (x86_64, containerd) and **2.88 GB on an
+> arm64 laptop** (overlay2, which pays no unpack leg at all). A number without its host is not a measurement.

@@ -152,3 +152,30 @@ knowledge/plan/**/*-report.json
 # Binary images staged for email campaigns (e.g. Ant Academy launch). These are
 # marketing assets, not corpus documentation, and should be kept out of the repo.
 _email-assets/
+
+# -----------------------------------------------------------------------------
+# MILESTONE EVIDENCE — the exception that outranks every rule above
+# -----------------------------------------------------------------------------
+# M257x TOK-04 P2, and the CHECK it left open
+# (CHECK-M257x-iter54-gitignored-instrument-sweep): *an input that can change
+# without appearing in a diff is not a controlled input* — and the corollary with
+# teeth is that **nothing an instrument depends on may live under a git-ignored
+# path**. TOK-04 named `.agentspace/rext.tag` as the known offender and said to
+# assume it was not the only one until measured. Measured, on 2026-08-03: it was
+# not. Two files sat in this milestone's own evidence dirs, on disk, invisible to
+# every diff and every reviewer:
+#
+#   evidence/pt-run-iter26.log                 (swallowed by `*.log`)
+#   iter-36/evidence/binding-run-report.json   (swallowed by `knowledge/plan/**/*-report.json`)
+#
+# The second is not incidental: iter-36/37 is the clause-2 gate-meeting run TOK-04
+# re-opened for recording no platform ref at all. Its run artifact was never in the
+# repository to re-read. iter-56 hit the same trap and worked around it by writing
+# its evidence as `.txt` — which leaves the trap armed for the next iter.
+#
+# So an `evidence/` directory under knowledge/plan is DELIBERATE, CURATED evidence
+# and always ships, whatever its extension. The rules above keep their intent: a
+# stray report dropped in an iter dir ROOT is still a disposable artifact and is
+# still ignored. Fenced by rosetta-extensions/stack-core/evidence_visibility_guard.py.
+!knowledge/plan/**/evidence/
+!knowledge/plan/**/evidence/**

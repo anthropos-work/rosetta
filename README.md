@@ -7,11 +7,17 @@
 > framework** + **Clerkenstein** — a *measured* drop-in mock of Clerk that lets the platform run stacks Clerk-free
 > with zero platform-code change (100% on Go · JS/FAPI · `@clerk/express`); disposable, **production-safely-seeded
 > stacks**; and the **snapshot mechanism** that *set-dresses* them with the real **public** skills taxonomy +
-> Directus content library at **100% data-DNA coverage** — captured read-only, customer data never copied. In v1.3
+> Directus content library at **100% data-DNA coverage** — captured read-only. (**Snapshot** copies no customer
+> data; since v2.5 a *second*, deliberately customer-scoped prod read exists — `cmd/content-capture` — outside
+> that firewall by design. *"Customer data never copied"* was flat here until M257x close and is not true of the
+> tooling as a whole.) In v1.3
 > **dev and demo stacks converged** — a unified first-available-N registry, dev as a full-fidelity peer (local
 > Directus + auto-snapshot + light seed), and one generic `/dev-up` + `/stack-*` skill set. The
-> tooling's two safety guarantees — **never reads private/customer data, never touches prod** — are stated
-> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). See also
+> tooling's two safety guarantees — *never reads private/customer data, never touches prod* — are stated
+> authoritatively, code-cited, in [`corpus/ops/safety.md`](corpus/ops/safety.md). **Read them there, not here:
+> neither is unqualified.** The first carries the v2.5 content-story exception; the second is a claim about the
+> set of pointers the tooling knows to override, and on 2026-08-11 a demo reached a production bucket that was
+> outside it (refused by IAM, not by design). See also
 > [`corpus/architecture/alignment_testing.md`](corpus/architecture/alignment_testing.md),
 > [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md), and
 > [`corpus/ops/snapshot-spec.md`](corpus/ops/snapshot-spec.md).
@@ -64,8 +70,8 @@ Automate the setup process:
 /dev-up              # First time / daily: build + start the dev environment (one skill — was setup + start)
 /dev-up N            # When needed: an additional isolated dev-N stack, set-dressed by default
 /demo-up N           # When needed: spin up an isolated, Clerkenstein-wired demo stack (e.g., demo-1, demo-2)
-/stack-snapshot N    # Set-dress any stack: replay the real public taxonomy + Directus content (100% catalog; read-only capture)
-/stack-seed N        # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
+/stack-snapshot demo-N   # Set-dress any stack (name it dev-N or demo-N): replay the real public taxonomy + Directus content
+/stack-seed demo-N       # Then: backfill it with a believable data world (a preset or stack.seed.yaml)
 /demo-down N         # When done: tear down a demo stack cleanly (--purge to drop its data); /dev-down N for dev
 /stack-list          # Check: list the live dev + demo stacks, their offset ports, and health
 ```
@@ -82,21 +88,22 @@ corpus/
 │   ├── frontend_architecture.md    # Next.js monorepo details
 │   ├── external_services.md        # Clerk, Directus, GraphQL
 │   ├── dependency_map.md           # Service inter-dependencies
-│   ├── shared_libraries.md         # colony, proto, ai, authn, taxonomy
+│   ├── shared_libraries.md         # analytics-go, colony, proto, storage, taxonomy (app's real go.mod set;
+│   │                               #   `ai` folded INTO app, `authn` ships inside colony)
 │   └── alignment_testing.md        # The alignment test class + framework (rosetta-extensions/alignment/)
 │
 ├── services/              # Individual service documentation
 │   ├── backend.md, cms.md, sentinel.md, ...     # Core services
 │   ├── graphql-wundergraph.md, next-web-app.md  # Gateway + main frontend
 │   ├── studio-desk.md, studio-room.md           # Studio services
-│   └── ant-academy.md                           # Internal learning portal (standalone)
+│   └── ant-academy.md                           # The AI-academy product (public + org tier, standalone)
 │
 ├── ops/                   # Operations guides
 │   ├── platform_repo.md   # The orchestrator repo (Make targets, profiles, compose)
 │   ├── setup_guide.md     # Build local development environment
 │   ├── run_guide.md       # Start services locally
 │   ├── update_guide.md    # Sync code and dependencies
-│   ├── safety.md          # The tooling safety contract (never reads customer data / touches prod)
+│   ├── safety.md          # The tooling safety contract — BOTH guarantees are qualified; read the doc
 │   ├── snapshot-spec.md   # Capture+replay the public reference library (read-side)
 │   ├── seeding-spec.md    # Declarative stack seeding (write-side isolation boundary)
 │   └── demo/              # Demo-environment family index + recipes
@@ -150,9 +157,16 @@ Anthropos uses a **three-tier microservices architecture**:
 
 | Tier | Services | Technology |
 |------|----------|------------|
-| **Core Backend** | Backend (incl. the skills taxonomy domain — former Skiller service, merged in — and the skill-path progression engine — former Skillpath service, merged in via "skillpath-in-app"), CMS, Sentinel, Jobsimulation, Storage, Roadrunner | Go |
-| **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline, embedded in CMS), Ant Academy (internal learning portal) | TypeScript, Python, Next.js + Expo |
-| **External** | Clerk (auth), Directus (CMS), GraphQL/Wundergraph (gateway) | SaaS / Docker |
+| **Core Backend** | **Backend (`app`) and Sentinel — those two, and no others.** `app` is the monolith: the skills taxonomy (ex-Skiller), the skill-path engine (ex-Skillpath), **and the cms, jobsimulation, storage, messenger and customerio-sync domains** — **seven** folded in. (**`roadrunner` was listed here as an eighth domain until M257x iter-137; it was deleted, not folded** — no `app/internal/roadrunner/` at any ref.) Sentinel is authorization only | Go |
+| **Studio & Standalone** | Studio-Desk (design tool), Studio-Room (AI pipeline — embedded in the **`app`** image, not in CMS), Ant Academy (the AI-academy product — a **public storefront** with an enterprise/org tier) | TypeScript, Python, Next.js + Expo |
+| **External** | Clerk (auth), Directus (CMS), Gotenberg (Office→PDF, third-party image). ~~GraphQL/Wundergraph (gateway)~~ — **deleted from the platform** at `2adcf71`; `backend` serves GraphQL directly | SaaS / Docker |
+
+> Measured at platform `0c91421df`: `docker-compose.yml` declares **five** services — `sentinel`,
+> `backend`, `studio-desk`, `next-web-app`, `gotenberg` (`postgresql` + `redis` arrive via its
+> `include:`) — and `repos.yml` lists **four** repos (`app`, `sentinel`, `next-web-app`, `studio-desk`),
+> exactly one of them with migrations. There is no cms / jobsimulation / storage / roadrunner /
+> messenger / graphql service. The fenced per-service statement is
+> [`platform-migration-status.md`](./corpus/architecture/platform-migration-status.md).
 
 See [Architecture Overview](./corpus/architecture/architecture_overview.md) for the full picture.
 

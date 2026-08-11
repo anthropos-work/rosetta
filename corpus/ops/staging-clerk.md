@@ -88,7 +88,11 @@ Then on each staging host, run the rebind procedure (§ 3 of [`staging_from_dump
 
 ## Allowed origins
 
-Clerk only accepts requests from origins in its `allowed_origins` list. Currently (2026-05-14) there are 13:
+Clerk only accepts requests from origins in its `allowed_origins` list. Currently (2026-05-14) there are 13
+— reproduced verbatim, so `http://localhost:5050` still appears: that is what the instance holds. **Since
+platform `2adcf71` (2026-07-31) nothing listens on `:5050`** (the Cosmo router was deleted from compose;
+GraphQL is `backend`'s `:8082/graphql/query`), so the entry is dead weight rather than a needed origin — but
+`:8082` **does** now need to be allowed wherever a browser calls GraphQL cross-origin:
 
 ```
 http://localhost:3000
@@ -146,7 +150,9 @@ When you spin up `wip-<initials>`, you need to add **three** things in three dif
      }'
    ```
 
-3. **Backend CORS** — until [`anthropos-work/app#feat/cors-extra-origins-env`](https://github.com/anthropos-work/app/pulls) lands, edit `app/internal/cors/cors.go` `colony.Development` branch on your staging clone and rebuild backend. Once merged, set `CORS_EXTRA_ORIGINS=http://wip-<initials>staging:3000` in `platform/.env` and `docker compose restart backend` — no rebuild needed.
+3. **Backend CORS** — set `CORS_EXTRA_ORIGINS=http://wip-<initials>staging:3000` in `platform/.env` and `docker compose restart backend`. **No rebuild, and do not edit `cors.go`.**
+
+   > **Corrected 2026-08-07.** This step used to read *"until `anthropos-work/app#feat/cors-extra-origins-env` lands, edit `app/internal/cors/cors.go`'s `colony.Development` branch…"*. It landed. `f664473` (2026-05-14, *"feat(cors): add CORS_EXTRA_ORIGINS env-var support"*) and its hard-gate follow-up `13410de` (2026-05-19, *"hard-gate CORS_EXTRA_ORIGINS to non-production environments"*) are both ancestors of `app` `ad9f3c498`. The var is declared at `app/internal/cors/cors.go:24` and applied at `:78-82` inside `if !environment.IsProduction()`, with the comma-splitter at `:88-100`. A staging clone still carrying a hand-edited `cors.go` under `skip-worktree` should retire it — see [`staging-bringup.md` Quirk #6](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
 
 Test the round-trip:
 
@@ -174,7 +180,15 @@ UND_ERR_CONNECT_TIMEOUT (api.clerk.com:443, 10s)
 
 User-visible symptom: "login page never moves on" — the Clerk `<SignIn>` ticket exchange completes and cookies are set, but the post-login redirect target itself errors.
 
-**Root cause:** A stale-state issue inside Node 24's embedded undici when invoked from Next.js 15.5's wrapped fetch. Plain `node -e "fetch('https://api.clerk.com/v1/users/<id>')"` from inside the same container, with the same `CLERK_SECRET_KEY`, succeeds repeatedly. Only the Next.js Server Component fetch path is broken.
+**Root cause:** A stale-state issue inside Node 24's embedded undici when invoked from Next.js's wrapped fetch. Plain `node -e "fetch('https://api.clerk.com/v1/users/<id>')"` from inside the same container, with the same `CLERK_SECRET_KEY`, succeeds repeatedly. Only the Next.js Server Component fetch path is broken.
+
+> **Version correction 2026-08-07 — this doc said "Next.js 15.5"; it is 16.** Measured at
+> `next-web-app` `8297c684c`: `apps/web/package.json:46` → `"next": "~16.2.12"`, and
+> `apps/hiring/package.json:45` → the same. The rest of the stanza checks out at the same ref: Node 24
+> (`Dockerfile.dev:1` `FROM node:24-alpine`; `package.json:14` `"node": ">=24.0.0"`) and undici 7.25.0
+> (`pnpm-lock.yaml`), which is what makes the hardcoded `node_modules/.pnpm/undici@7.25.0/…` path in
+> the fix file below still resolve. **The symptom and the fix are unchanged** — this is a version
+> label, not a behaviour claim — but do not repeat "15.5" when filing the upstream issue.
 
 Verified non-fixes (in case you're tempted to redo the diagnosis):
 
@@ -334,7 +348,9 @@ if (isDevClerk) {
 }
 ```
 
-**Do NOT ship this to production.** Disabling undici connection re-use globally is fine on a staging singleton but wasteful at production traffic. The upstream bug (Next.js 15.5 Server Components + Clerk SDK 2.33.2 + Node 24 + Docker IPv4-only bridge → `UND_ERR_CONNECT_TIMEOUT`) is worth a Clerk + Next.js issue report.
+**Do NOT ship this to production.** Disabling undici connection re-use globally is fine on a staging singleton but wasteful at production traffic. The upstream bug (**Next.js 16.2** Server Components + the Clerk Next.js SDK + Node 24 + Docker IPv4-only bridge → `UND_ERR_CONNECT_TIMEOUT`) is worth a Clerk + Next.js issue report.
+
+> **Two figures in that sentence were wrong; both corrected 2026-08-07, measured at `next-web-app` `8297c684c`.** "Next.js 15.5" → **`~16.2.12`** (`apps/web/package.json:46`). "Clerk SDK 2.33.2" → **retracted, not replaced**: no `2.33.2` appears in any `package.json` or the lockfile at that ref (`git grep "2\.33\.2" -- "*.json"` → 0 hits). The Clerk packages `apps/web` actually declares are `@clerk/nextjs ^6.39.6` (`:10`), `@clerk/localizations ^4.13.10` (`:9`) and `@clerk/types ^4.101.20` (`:64`). Pin the exact resolved version from your own lockfile before filing — do not carry `2.33.2` forward.
 
 **Skip-worktree on the compose patch:** the `docker-compose.yml` next-web-app block (volumes mount + `NODE_OPTIONS`) is one of the long-lived skip-worktree files on every staging clone. Without it, the `--require` never fires and you get the timeout chain.
 
@@ -360,9 +376,28 @@ if (isDevClerk) {
 
 **What you see:** After a fresh sign-in, the dashboard takes 60-100 seconds to fully render. There's a ~30s gap with no network activity after redirect off `/login` where Clerk JS is bootstrapping in dev mode, then GraphQL fan-out begins.
 
-**Root cause:** Clerk dev-mode has heavier JS bootstrap than prod, plus the cold backend GraphQL subgraphs warm up serially on first hit.
+**Root cause:** Clerk dev-mode has a heavier JS bootstrap than prod — that half stands, and it is the ~30 s no-network gap you can see in the waterfall.
 
-**Not a regression — wait ≥90 seconds.** Subsequent navigations within the same session are fast. Worth investigating as a follow-up (likely needs Clerk dev-mode flag or SDK upgrade), but treat a stuck three-dot spinner under 90s as "still loading," not "bug."
+> **⚠️ RETRACTED 2026-08-07 — "the cold backend GraphQL subgraphs warm up serially on first hit" cannot
+> happen: there are no subgraphs.** The mechanism required a federation gateway fanning one query out
+> to several subgraph processes. Platform **`2adcf71`** (2026-07-31, PR #23, *"drop the WunderGraph
+> router; point local dev at backend"*) deleted it — it removed the service from `docker-compose.yml`
+> and the repo from `repos.yml` in one commit. Measured at platform `0c91421d`: `docker-compose.yml`
+> declares five services (`sentinel`, `backend`, `studio-desk`, `next-web-app`, `gotenberg`) plus
+> `postgresql` + `redis` from the included `common.yml` — **no `graphql` / router service, and nothing
+> on `:5050`.** GraphQL is one in-process gqlgen handler on one route:
+> `app/internal/web/backend/backend.go:317`, `e.Any("/graphql/query", echo.WrapHandler(graphHandler))`
+> (@ `app` `ad9f3c498`). One process, one schema, no fan-out, nothing to warm serially. The supergraph
+> had already collapsed to a single subgraph at the cms-in-app merge *before* the router was deleted,
+> so this sentence was describing a topology that had been gone twice over.
+>
+> **Diagnose the residual latency as what it is,** not as subgraph warm-up: Clerk's dev-mode JS
+> bootstrap (the pre-network gap), then a single cold Go handler + cold Postgres plans on first hit.
+> If the wall-clock is dominated by *repeated* multi-second stalls rather than one cold start, look at
+> the Clerk fetch path above instead — [`demo/latency-budget.md`](./demo/latency-budget.md) records the
+> arithmetic signatures that separate a blackholing address from a fast-failing one.
+
+**Not a regression — wait ≥90 seconds.** Subsequent navigations within the same session are fast. Worth investigating as a follow-up (likely needs a Clerk dev-mode flag or SDK upgrade), but treat a stuck three-dot spinner under 90s as "still loading," not "bug."
 
 When writing Playwright tests, use selector waits, not time waits:
 
@@ -411,7 +446,15 @@ Verified during the Ithaca repair: `national-elk-17` is issuing **bare v2 sessio
 - `PATCH /v1/instance` with `{"session_token_template": {"claims": …}}` returns HTTP 204 but the next-issued JWT has none of the custom claims. The endpoint is silently accepted-and-ignored — session-token customization is genuinely dashboard-only.
 - `POST /v1/jwt_templates` with name `colony` creates a template (returns a `jtmp_…` id) but only takes effect if the **frontend** explicitly calls `getToken({template: 'colony'})`. `next-web-app` doesn't — it uses the bare session token via Clerk middleware. Extending the frontend to use a named template would also require teaching the backend to accept template-issued JWTs (different audience / signing rules), so it's not a small change.
 
-Until someone with dashboard access logs in and applies the template, **plan on the lazy Clerk Backend API fetch path** described in [`staging-bringup.md` Quirk #11](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative). The colony v2-JWT patch already implements this with a process-wide eid cache (`clerk-org-id → DB uuid`), so per-request load on the Clerk API is bounded to one-fetch-per-distinct-org-per-process-lifetime.
+Until someone with dashboard access logs in and applies the template, **plan on the lazy Clerk Backend API fetch path** described in [`staging-bringup.md` Quirk #11](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative) — a process-wide eid cache (`clerk-org-id → DB uuid`) bounds per-request load on the Clerk API to one fetch per distinct org per process lifetime.
+
+> **Corrected 2026-08-07 — do not read this as "apply the colony patch".** That eid cache lived in a
+> **vendored/forked** colony, and no such fork is in the platform any more: `app` at `ad9f3c498` pins
+> upstream `colony v0.35.2` (`go.mod:15`) with **no colony `replace`**, no `vendor-colony/` and no
+> `.colony-fork/` (the fork `app` briefly carried was deleted at `984c50b6`, 2026-06-17). Whether
+> `v0.35.2` itself carries the cache is not measurable from this corpus. The session-token template
+> below is still the better fix for the underlying problem — it removes the fetch entirely instead of
+> caching it.
 
 ### Anatomy of a v2 session token
 
@@ -449,7 +492,7 @@ curl -s -X POST "https://api.clerk.com/v1/sessions/$SESS/tokens" \
     print(json.dumps(json.loads(base64.urlsafe_b64decode(t.split('.')[1] + '==')), indent=2))"
 ```
 
-If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colony build doesn't need the v2 fallback. If it's `"v": 2` with nested `o.*`, the colony build that resolves `GetOrganization()` must support v2 (vendored patch or the future upstream fix).
+If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colony build doesn't need the v2 fallback. If it's `"v": 2` with nested `o.*`, the colony build that resolves `GetOrganization()` must support v2 — **and the way to get that is a version bump, not a vendored patch.** `app` ships stock upstream colony (`v0.35.2` at `ad9f3c498`, no `replace`); check what your staging is pinned to with `grep colony ~/app/go.mod` and raise it. See [`staging_from_dump.md` § 4](./staging_from_dump.md#4-apply-the-colony-patches) for why the vendor route was retired.
 
 ---
 
@@ -458,4 +501,9 @@ If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colon
 - [`staging-bringup.md`](./staging-bringup.md) — fresh-VM onboarding.
 - [`staging-sync.md`](./staging-sync.md) — daily sync routine.
 - [`staging_from_dump.md`](./staging_from_dump.md) — engineer-rebind reference (creates Clerk users + remaps DB).
-- Ant-singularity catalog: [`auto-anthropos-staging-dev-loop.md`](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — full dev-loop blueprint.
+- [`anthropos-work/ant-singularity`](https://github.com/anthropos-work/ant-singularity) — the singularity
+  node repo. **RETRACTED 2026-08-07:** this line used to deep-link
+  `knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md` under the nonexistent account
+  `stefano-anthropos` and call it the *"full dev-loop blueprint."* That file has never existed in the
+  repo (1,046 commits, 0 additions) nor anywhere in the org (code search `total_count: 0`). The
+  blueprint is [`staging-bringup.md`](./staging-bringup.md) — see its § 6 retraction.

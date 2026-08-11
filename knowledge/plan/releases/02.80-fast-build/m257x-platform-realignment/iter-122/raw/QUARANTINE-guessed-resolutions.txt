@@ -1,0 +1,48 @@
+# QUARANTINE — batch items whose CITED FILE was a GUESS by the census's first draft.
+# Control test_22b caught it AFTER the 12 batches were dispatched: for a BARE basename the
+# first draft probed the clone dirs alphabetically and returned the first hit. `main.go` could
+# equally have meant sentinel/main.go. The fix refuses; these items were already in flight.
+# Their verdicts are reported SEPARATELY and are excluded from the tier-1 false rate.
+#
+B01-035	corpus/services/ant-academy.md:474	CLAUDE.md:11	guessed=CLAUDE.md	now=unresolved-ambiguous
+B01-036	corpus/services/askengine.md:88	main.go:467	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B01-037	corpus/services/askengine.md:100	main.go:229	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B01-039	corpus/services/backend.md:3	main.go:1297	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-003	corpus/services/backend.md:3	main.go:325	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-004	corpus/services/backend.md:3	subscriber_wiring.go:248	guessed=stack-demo/app/subscriber_wiring.go	now=unresolved-ambiguous
+B02-007	corpus/services/backend.md:106	main.go:1185	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-010	corpus/services/backend.md:120	main.go:743	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-017	corpus/services/backend.md:207	main.go:1276	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-018	corpus/services/backend.md:207	subscriber_wiring.go:209	guessed=stack-demo/app/subscriber_wiring.go	now=unresolved-ambiguous
+B02-019	corpus/services/backend.md:207	main.go:1579	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-021	corpus/services/backend.md:314	main.go:743	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-032	corpus/services/backend.md:342	main.go:287	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-034	corpus/services/backend.md:342	main.go:1276	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-035	corpus/services/backend.md:342	main.go:325	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B02-036	corpus/services/backend.md:342	subscriber_wiring.go:203	guessed=stack-demo/app/subscriber_wiring.go	now=unresolved-ambiguous
+B02-037	corpus/services/backend.md:342	main.go:1579	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B03-030	corpus/services/coursebuilder.md:48	main.go:770	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B03-032	corpus/services/coursebuilder.md:63	main.go:766	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B03-033	corpus/services/coursebuilder.md:113	main.go:824	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B04-007	corpus/services/graphql-wundergraph.md:274	CLAUDE.md:85	guessed=CLAUDE.md	now=unresolved-ambiguous
+B05-027	corpus/services/next-web-app.md:75	CLAUDE.md:55	guessed=CLAUDE.md	now=unresolved-ambiguous
+B05-034	corpus/services/next-web-app.md:172	CLAUDE.md:15	guessed=CLAUDE.md	now=unresolved-ambiguous
+B06-002	corpus/services/sentinel.md:12	go.mod:3	guessed=stack-demo/app/go.mod	now=unresolved-ambiguous
+B06-035	corpus/services/storage.md:64	README.md:81	guessed=README.md	now=unresolved-ambiguous
+B06-036	corpus/services/storage.md:64	main.go:518	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B06-039	corpus/services/storage.md:192	README.md:81	guessed=README.md	now=unresolved-ambiguous
+B07-012	corpus/services/studio-room.md:224	CLAUDE.md:12	guessed=CLAUDE.md	now=unresolved-ambiguous
+B08-007	corpus/architecture/architecture_overview.md:346	main.go:451	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-010	corpus/architecture/architecture_overview.md:346	main.go:504	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-026	corpus/architecture/dependency_map.md:48	go.mod:9	guessed=stack-demo/app/go.mod	now=unresolved-ambiguous
+B08-027	corpus/architecture/dependency_map.md:48	go.mod:11	guessed=stack-demo/app/go.mod	now=unresolved-ambiguous
+B08-032	corpus/architecture/dependency_map.md:58	main.go:1493	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-035	corpus/architecture/dependency_map.md:58	env_guards.go:61	guessed=stack-demo/app/env_guards.go	now=unresolved-ambiguous
+B08-036	corpus/architecture/dependency_map.md:58	main.go:1437	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-038	corpus/architecture/dependency_map.md:59	main.go:287	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-040	corpus/architecture/dependency_map.md:59	main.go:1276	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B08-042	corpus/architecture/dependency_map.md:59	main.go:1537	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B11-020	corpus/architecture/security_compliance.md:266	README.md:21	guessed=README.md	now=unresolved-ambiguous
+B11-035	corpus/architecture/service_taxonomy.md:99	main.go:394	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+B11-036	corpus/architecture/service_taxonomy.md:99	main.go:387	guessed=stack-demo/app/main.go	now=unresolved-ambiguous
+# total quarantined: 41 of 525

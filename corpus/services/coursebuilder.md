@@ -45,7 +45,7 @@
     chapter shape + validators), `normalize.go` (widget normalization + XSS sanitization), `bedrock.go`/`model.go`/`usage.go`
     (LLM adapter + `MockClient` + cost formula), `embed.go` (`//go:embed assets/*.md` rubric), `imagegen/` (cover
     images).
-*   **LLM usage — AWS Bedrock (eu-west-1)** via the shared `internal/askengine/bedrock.go` transport:
+*   **LLM usage — the backend is SELECTED AT START-UP, and production is the first-party Anthropic API, not Bedrock.** `internal/coursebuilder/bedrock.go:105-114` returns an `api.anthropic.com` client with bare model ids whenever `ANTHROPIC_API_KEY` is set, reporting `ModelBackendName() == "anthropic-api"` (`:98-104`, logged at `main.go:770` @ `app` `b948604` v1.366.0); the Bedrock `eu-west-1` path via `internal/askengine/bedrock.go` is the fallback when it is not. **In production the key is required** — at `app` `ad9f3c49`, `terraform/variables.tf:759-763` declares it `sensitive` with no default, `ssm.tf:328-333` creates the SecureString parameter and `main.tf:757-758` injects it from the SSM ARN — so the shipped path is the direct API. ⚠️ **These carried a `variables.tf` range and a `main.tf` pin until M257x iter-115, and both had drifted onto DIFFERENT SUBJECTS**, which is the maximally misleading failure: at `ad9f3c49`, `variables.tf:631-645` is a cms-in-app secrets comment block and `main.tf:555` is `"name": "DIRECTUS_BASE_ADDR"`, so a reader opening the cited line saw a Directus variable and read the whole production-key claim as wrong. **The substantive claim is true and was re-derived, not assumed** — only the citation pair was false. (`ssm.tf:328` verified at both `b948604f` and `ad9f3c49`; the sentence carries no ref of its own — the only pin in the bullet is the parenthetical `@ app b948604` attached to `main.go:770`, which is a different file — so it grades at the checkout, and now names it.) Models:
     *   **Author/patch model**: Opus 4.8 (`eu.anthropic.claude-opus-4-8`, env `CB_AUTHOR_MODEL`; streaming, no
         sampling params — Opus 4.8 rejects them — at 32 K max_tokens).
     *   **Grader model**: Sonnet 4.6 (`eu.anthropic.claude-sonnet-4-6`, env `CB_GRADER_MODEL`; deliberately a
@@ -63,15 +63,35 @@
 *   **How to find the API**: **HTTP + SSE only — there is NO GraphQL subgraph and NO Connect-RPC for Course
     Builder.** The routes are an Echo group mounted in `internal/web/backend/backend.go` under **`/coursebuilder`**,
     behind `cors + authn (Clerk JWT via colony/authn) + courseBuilderAccessGate` (**org-admin-gated**). Route table:
-    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** when the Bedrock-backed
-    `Service` is nil (missing AWS creds) — no half-working surface.
+    `internal/web/backend/coursebuilder/handler.go:Register`. The whole group is **unmounted** when NEITHER
+    model backend can build a client — i.e. when the author or grader constructor fails, which on the
+    Bedrock path is typically missing AWS creds, but **not** on missing AWS creds alone once
+    `ANTHROPIC_API_KEY` is set (see the backend-selection note above). When that happens the routes stay
+    unmounted deliberately, **so callers get a clean 404 instead of a half-wired endpoint** — there is no
+    half-working surface (`main.go:766-779` @ `app` `b948604` v1.366.0 — the comment at `:766-769`, the
+    two `logger.Warn(… routes disabled)` arms at `:774` / `:778`).
 *   **Key routes**: `POST /coursebuilder/sessions` (+ `/sessions/mixed`, `/sessions/upload`), `GET /sessions` +
     `/sessions/:id`, **`POST /sessions/:id/messages`** (the **SSE** build/refine stream), `/sessions/:id/{queue,steer,
     cancel,publish,unpublish,duplicate,translate,cover}`, `PATCH /sessions/:id/draft`, `GET /sessions/:id/published-diff`,
     `DELETE /sessions/:id`, `GET /people`, `GET /tags`.
-*   **SSE wire contract** (`event:` name / `data:` JSON): `session`, `stage`, `outline`, `progress`, `patch_applied`,
-    `patch_skipped`, `preview_ready`, `draft_kept`, `translation_ready`, `rebuild_required`, `error`, `cost`, and an
-    always-last `done`.
+*   **SSE wire contract** (`event:` name / `data:` JSON) — **16 names, and `cost` is NOT one of them.** Measured at
+    `app` `ad9f3c49` (`== origin/main`, 2026-08-06), all anchors in
+    `internal/web/backend/coursebuilder/handler.go`: `session` is written directly by the stream handler right
+    after `beginSSE` (`:1458`); the other **15** are returned by `renderEvent` (`:2604-2772`) —
+    `text` (`:2607`), `score` (`:2609`), `patch_applied` (`:2614`), `patch_skipped` (`:2620`),
+    `stage` (`:2637`/`:2639`), `outline` (`:2654`), `progress` (`:2661`), `preview_ready` (`:2671`),
+    `draft_kept` (`:2678`), `error` (`:2704`), `translation_ready` (`:2724`), `rebuild_required` (`:2732`),
+    `steering_received` (`:2744`), `steering_applied` (`:2754`), and an always-last `done` (`:2768`).
+    (`renderEvent`'s `default` arm also emits `text`, `:2770` — the same name, not a 17th.)
+*   ⚠️ **`cost` is filtered off the wire BY DESIGN — do not build a client that waits for it.** `case cb.EventCost:`
+    (`:2709`) returns an **empty** event name (`:2717`) under a D2 ruling (2026-07-13) recorded in the code itself:
+    *"the terminal cost readout is COGS and MUST NOT reach the customer SSE stream … filtered here at the wire
+    boundary by returning an empty event name"* — and the stream loop skips `writeSSE` whenever the name is empty
+    (`:1478-1480`). The `EventCost` **kind** still exists internally, consumed by
+    `awaitAndPersist`/`persistTerminal` and the ops surface; it is a wire filter, not a deleted event, which is
+    exactly why grepping the enum finds it and a browser never does. **This bullet previously listed `cost` as a
+    live wire event and omitted four that are live — `text`, `score`, `steering_received`, `steering_applied`
+    (13 listed vs 16 real); corrected M257x iter-102.**
 *   **Dependencies**:
     *   **Upstream (callers)**: the Next.js `/enterprise/coursebuilder` UI (via SSE); **Ask "author mode"**
         (`app/internal/askengine/coursebuilder_tool.go` → `ask.SetCourseBuildStarter`); the Asynq worker.
@@ -84,13 +104,14 @@
 ## Local Development
 
 ### 1. Running Standalone
-*   **Prerequisites**: it runs **as part of `app`** (no separate binary/container). Needs AWS creds resolvable by the
-    default SDK chain (Bedrock, eu-west-1), Postgres (migrations applied), Redis (the Asynq worker), and a Clerk
-    secret. The routes stay unmounted if Bedrock creds are absent.
+*   **Prerequisites**: it runs **as part of `app`** (no separate binary/container). Needs a model backend — **either** `ANTHROPIC_API_KEY` (the production path)
+    **or** AWS creds resolvable by the default SDK chain (Bedrock, `eu-west-1`) — plus Postgres (migrations
+    applied), Redis (the Asynq worker), and a Clerk secret. The routes unmount only when **neither** backend
+    can build a client; AWS creds alone are not a prerequisite.
 *   **Command**: `go run .` in the app repo, or the platform `make up` (Course Builder ships inside the `backend`
     container).
 *   **Key env vars**: `CB_AUTHOR_MODEL` (default `eu.anthropic.claude-opus-4-8`), `CB_GRADER_MODEL` (default
-    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), `COURSEBUILDER_OPENAI_IMAGE_KEY`,
+    `eu.anthropic.claude-sonnet-4-6`), `CB_IMAGE_MODEL` (default `gpt-image-2`), **`OPENAI_KEY`** (the cover generator reads this — `main.go:824-826` @ `app` `b948604` v1.366.0; the `COURSEBUILDER_OPENAI_IMAGE_KEY` this doc used to name was deleted at app `68c24512` and survives only in stale in-repo markdown, so setting it fixes nothing),
     `COURSEBUILDER_PLANNER_ENABLED` (multi-chapter kill-switch), `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`,
     `COURSEBUILDER_MAX_MONTHLY_COGS_USD` (default **500**, the primary per-org ceiling), `COURSEBUILDER_MAX_DAILY_COGS_USD`
     (default 0 = off), `AWS_REGION`, `CLERK_SECRET_KEY`. Cost/rate: session cap `DefaultSessionsPerOrgPerDay=50`
@@ -117,11 +138,19 @@ tools.
 ## Status & Notes
 
 *   **Not behind a global feature flag** — GA to every organization, **org-admin-gated** (`courseBuilderAccessGate`).
-    The only gate is graceful degradation: routes stay unmounted if Bedrock creds are absent. Per-sub-feature
-    kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`.
-*   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines); current app
-    `v1.351.1` (2026-07). The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is
-    the only path now.
+    The only gate is graceful degradation: routes stay unmounted if **neither** model backend can build a
+    client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — a clean 404, never a half-wired
+    endpoint. Per-sub-feature kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`,
+    `COURSEBUILDER_EMAILS_ENABLED`.
+*   **Recently added + heavily iterated** — developed through numbered Waves 1→24 (142 changelog lines), measured at app
+    **`v1.363.2`** @ `5ba17044` (2026-07-31). **That is a reading at a ref, not a standing "current"** — re-read
+    **2026-08-06** at `app` **`ad9f3c49`** (which was `origin/main` that day): the newest tag is **`v1.369.0`**,
+    seven commits back (`git describe --tags ad9f3c49` → `v1.369.0-7-gad9f3c498`), six releases on from
+    `v1.363.2`; the wave count is not re-derived here. ⚠️ **This line used to read `v1.369.0` @ origin/main
+    `2035f9a4`.** The **sha is still a valid pin** — `2035f9a4` resolves and still means what it meant
+    (`v1.369.0-2-g2035f9a40`); what expired is the **`origin/main` label**, which moved 5 commits on 2026-08-06.
+    A version, and a branch label, are each *a reading at a ref* — never a standing "current".
+    The parallel-author pipeline was built then deleted (2026-07-21) — single-shot `Author` is the only path now.
 
 ## Related Documentation
 

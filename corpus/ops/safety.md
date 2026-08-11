@@ -1,8 +1,10 @@
 # Rosetta Tooling — Safety & Security Contract
 
 **The authoritative statement of how the `rosetta-extensions` stack tooling stays safe.** Two structural
-guarantees, proven in code and tested — the first of which, **since v2.5, carries one bounded, disclosed
-exception**:
+guarantees, proven in code and tested — and **neither is unqualified**. The first carries one bounded,
+disclosed exception **since v2.5** (the content-story prod read); the second is a promise about **the set of
+pointers this tooling knows to override**, and **it has been wrong once, on 2026-08-11** — see the ⚠️ box in
+§1 below, which is the binding reading of guarantee 2.
 
 1. **The snapshot path never reads private/customer data.** Anything that *leaves* production through a
    **snapshot capture** is **public reference data only** — enforced by a tenant-data firewall that hard-fails on
@@ -14,9 +16,16 @@ exception**:
    > transcript). It is read-only, authoring-time, source-pinned, and disclosed — but it is **not** covered by
    > the sentence above. **§3.8 is its contract.** Read it before citing any unqualified *"the tooling never
    > reads customer data"* claim from this corpus — including older sentences in this file.
-2. **It never touches production data or services** *(no exception — this one is unqualified)*. Anything a non-prod stack *writes* is confined to that
+2. **It never touches production data or services** — *a claim about the set of pointers this tooling knows
+   to override, **not** an absolute*. Anything a non-prod stack *writes* is confined to that
    stack's own isolated stores — enforced by a 3-layer write-isolation guard that makes a shared/prod write
    **structurally impossible** on a non-prod target, and an audit log that *proves* nothing leaked.
+   > 🔴 **This sentence read *"(no exception — this one is unqualified)"* until M257x close, and that was
+   > false.** On **2026-08-11** a demo's studio-desk attempted an upload to the **production** private S3
+   > bucket; the bucket was hardcoded in platform compose, this tooling overrode only the *public* one, and
+   > **the only thing that stopped the write was an IAM policy on an account we do not control.** A pointer
+   > the platform adds tomorrow is outside the override set until someone notices. **Read the ⚠️ box in §1
+   > before citing this guarantee** — *"nothing was written"* is the outcome, never the guarantee.
 
 …and, since v2.3, a third axis that is **a disclosure, not a guarantee**:
 
@@ -64,10 +73,20 @@ condition. It is source-pinned and auditable in one file, and it changes nothing
 §3.8.1** — and do not repeat the unqualified promise above without them.
 
 On the write side, a small
-set of stores are *shared* with the live product (the content system, one storage bucket, the login system);
+set of stores are *shared* with the live product (the content system, **two** storage buckets, the login system);
 the tooling **blocks every write to those from a non-production stack**, repairs the environment before it
 starts, and produces an **audit log that proves** nothing leaked. Neither promise depends on the operator
 remembering a flag — both are structural.
+
+> **⚠️ The write-side promise is a promise about what the TOOLING blocks, and it has been wrong once — read
+> it that way.** On 2026-08-11 a demo's studio-desk attempted an upload to the **production** private S3
+> bucket. It was refused **403**, nothing was written, and **the reason was an IAM policy on an account we do
+> not control** — not this design. The bucket was hardcoded in platform compose, this tooling overrode only
+> the *public* one, and the store was registered as per-stack-isolated when its default pointer was
+> production. All three are now fixed (§2.1 S3-private row, §2.2). What does not get fixed by that is the
+> shape of the failure: **every claim below of the form *"a demo cannot write prod"* is a claim about the set
+> of pointers this tooling knows to override.** A pointer the platform adds tomorrow is outside it until
+> someone notices, and *"nothing was written"* is the outcome, never the guarantee.
 
 A third write surface joined the family in v1.6: the **secret provisioner** moves secret *bytes*
 source→gitignored-target to fill each stack's `.env`. It is fenced the same way — **values-blind** (no verb
@@ -80,7 +99,8 @@ is instantly "signed in" as that person. It also means **anyone who can reach a 
 can do the same**, with no password. The tooling does **not** claim otherwise, and — contrary to what one of our
 own docs used to say — a demo's ports have always been open on the machine's network interfaces, not just to the
 machine itself. **The reason this is acceptable is the first two promises above: a demo contains no customer
-data and cannot write to production.** There is nothing behind the door — **with one bounded, disclosed
+data and cannot write to production** — reading the second at its true strength (*the pointers this tooling
+knows to override*, per guarantee 2's 🔴 box, **not** an absolute). There is nothing behind the door — **with one bounded, disclosed
 exception (v2.5, WIDENED v2.6): a "content-story" demo carries the REAL content of production sessions, COPIED and scrubbed of
 detectable PII best-effort (not guaranteed clean — residual re-identification risk is accepted, VPN/tailnet-scoped,
 a data-controller decision; §3.8) — and since v2.6 also the REAL recorded interview VIDEO (streamed by reference
@@ -198,25 +218,29 @@ the guard; per-stack stores are listed for documentation + dry-run preview:
 
 | Store(s) | Class | Why / guard action |
 |---|---|---|
-| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points `cms`'s `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
+| **Directus** (`content.anthropos.work`) | `SharedPollutionRisk` | one global instance, visible on prod → **direct writes blocked**; the shared instance is **never written**. (Reads: since **M23** a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — M22 boots it, M23 re-points **`backend`'s** `DIRECTUS_BASE_ADDR` at it (`http://directus:8055`, in-network) — so the served catalog is **local, not a live-prod read**. The prod **data plane** is read only at **capture** time (read-only, public-only, operator-confirmed). The prod **asset plane** stays in use: `DIRECTUS_PUBLIC_BASE_ADDR` keeps pointing here so browser images load real `<...>/assets/<uuid>` URLs (a public, anonymous, read-only GET of a public asset — within the read-side boundary). A **non-`--local-content`** stack (no per-stack Directus) still reads the public content **live** from this instance; a demo does so **anonymously**, the prod token stripped — the documented prod-read fallback. studio-desk's prod-**write** path is disarmed either way (token strip on a prod-read stack; a locally-minted token on a local-content stack).) |
 | **S3 public bucket** | `SharedPollutionRisk` | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
+| **S3 PRIVATE bucket** | `SharedPollutionRisk` | Since platform `0dab54d` (2026-08-03) compose hardcodes `STORAGE_S3_BUCKET=production-storage20240826131618541000000005` on `backend` (`docker-compose.yml:82` @ `0c91421`), and until **M257x iter-284** nothing overrode it: `PreflightEnv` forced the public bucket alone, so a stack with working AWS credentials wrote private uploads into the **production** private bucket. **That was not theoretical — it was exercised.** On `demo-2`, studio-desk's *"fine-tune in Advanced mode"* attempted `s3:PutObject` against `s3://production-storage…/cms/<uuid>` and was refused **403** by an IAM policy on an account we do not control. **Nothing was written, and nothing in this design was the reason.** Now overridden to `""` in **both** places a demo carries a pointer — the running container (the injected compose override strips `STORAGE_S3_BUCKET` and `STORAGE_S3_PUBLIC_BUCKET` on every emitted service, beside the `DIRECTUS_TOKEN` strip) and the seeder (`PreflightEnv`, every target). Empty is `app`'s own local-fallback value, not an invented sentinel (`app/internal/storage/storage.go`). **The cost, stated:** an upload then lands on the container's ephemeral disk and its presigned URL comes back empty, so a freshly uploaded asset renders as a broken image — the platform's own W2 behaviour, and the right trade for a demo. |
 | **Live Clerk** | `SharedPollutionRisk` | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI provider APIs** | `SharedPollutionRisk` | external SaaS; blocked on non-prod (off by default) |
 | **coresignal** | `External` | enrichment source — safe to read, **never write** on non-prod |
-| **Postgres / Redis / S3-private / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack) |
+| **Postgres / Redis / pgvector** | `PerStackIsolated` | inside the stack's own containers → **seed freely** (cannot pollute anything outside the stack). **`S3-private` was in this row and is not per-stack-isolated** — see its own row above. ⚠ For four months the CODE classed it `PerStackIsolated` (*"falls back to local /tmp on demo"*) while this table said otherwise, and iter-98 recorded the disagreement rather than resolving it, because re-classing was the user's call. **M257x iter-284 resolved it in the direction the evidence had always pointed:** the fallback the note described only happens when the bucket is EMPTY, and compose hardcoded a **production** bucket, so it never happened. The registry now classes the store `SharedPollutionRisk` and both pointers are forced empty. **A store whose default pointer is production was never per-stack-isolated by any reading, and a disagreement stated but left standing is still a document that is half wrong.** |
 
 > **The v1.9 M34 verified-skill chain inherits this class.** The `PersonaSeeder`'s six new write surfaces —
-> `jobsimulation.{sessions, validation_attempt_results, validation_attempt_skill_results,
-> validation_criterion_results}`, `public.local_jobsimulation_sessions`, `public.user_skills`,
-> `public.user_skill_evidences` — are all the stack's own offset-port Postgres, declared `PerStackIsolated`,
+> `public.{job_simulation_sessions, validation_attempt_results, validation_attempt_skill_results,
+> validation_criterion_results}`, `public.user_skills`, `public.user_skill_evidences` (⚠️ **six became
+> five and the schema changed at M257x iter-129**: these read `jobsimulation.{…}` + a
+> `public.local_jobsimulation_sessions` mirror, and `app` `20260729133514.sql` dropped the mirror while
+> jobsim-in-app moved the fan-out to `public`) — are all the stack's own offset-port Postgres, declared `PerStackIsolated`,
 > so the chain cannot touch prod or another stack and the seeding-run audit log proves zero pollution
 > (`AssertClean`). The taxonomy it reads to draw skill node-ids is the **public** reference data the snapshot
 > firewall already guaranteed public-only at capture. See [`demo/stories-spec.md`](demo/stories-spec.md) § Safety.
 >
 > **The v1.9 M36 dashboard surfaces inherit it too.** The six new dashboard seeders' write surfaces —
 > `public.{membership_skills, tags, membership_tags, organization_target_roles, user_target_roles,
-> organization_assignment_sessions, local_skill_path_sessions, job_simulation_feedbacks}` and
-> `jobsimulation.interview_extraction_results` — are likewise the stack's own offset-port Postgres, all
+> organization_assignment_sessions, job_simulation_feedbacks, interview_extraction_results}` (⚠️ the
+> `local_skill_path_sessions` mirror was dropped and `interview_extraction_results` is in `public`, not
+> `jobsimulation` — corrected M257x iter-129) — are likewise the stack's own offset-port Postgres, all
 > `organization_id`-scoped per story and declared `PerStackIsolated` + audited. No new shared store is touched,
 > so the zero-pollution posture is unchanged.
 
@@ -229,8 +253,14 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
    **prod** target — **a non-prod stack can never write a shared store, regardless of opt-in.** This makes
    non-prod pollution impossible by construction, not by configuration.
 2. **`Guard.PreflightEnv(env, target)`** — *before* seeding begins, asserts and repairs the environment:
-   - **forces `STORAGE_S3_PUBLIC_BUCKET = ""`** (always, every target) so no storage write can reach the shared
-     public bucket;
+   - **forces `STORAGE_S3_PUBLIC_BUCKET = ""` and `STORAGE_S3_BUCKET = ""`** (always, every target) so no
+     storage write can reach a shared production bucket, public or private. **Only the public one was forced
+     until M257x iter-284**, and the gap was closed by an incident rather than by review — see the S3-private
+     row above. **A second pointer needed the same fix and is NOT in this guard:** `PreflightEnv` repairs the
+     *seeder's* environment, while the write a user actually hit came from `backend`, which reads its **own
+     compose env** and never sees the seeder's. That one is stripped in the injected compose override
+     (`stack-injection/gen_injected_override.py`). Two pointers, two mechanisms — a fence over one of them
+     reads exactly like a fence over both;
    - on non-prod, **rejects a live-Clerk base URL** (any of `CLERK_API_URL`, `CLERK_FAPI_URL`, … pointing at
      `clerk.com` / `api.clerk.com` / `*.clerk.accounts.dev` / `*.clerk.services`) as a hard error — it must be a
      Clerkenstein/local host;
@@ -249,14 +279,29 @@ The guard (`stack-seeding/isolation/`) is three independent enforcement points:
    > serves the public predicate tokenless). **After the strip**, the audit shows **0 of 16** demo-1 containers
    > carry a token, and auto-verify is green (all verified live, 2026-06-11).
 3. **`AuditLog.AssertClean(target)`** — *after* the run, the **proof** of zero pollution: it errors if **any**
-   *allowed* write to a non-per-stack-isolated store actually landed on a non-prod target. On a prod target it is
-   a no-op (prod is allowed to write shared stores). Every attempted write is `Record`ed during the run (the audit
-   log is concurrency-safe — the seeder DAG runs in parallel), so `AssertClean` is an after-the-fact certificate,
-   not a re-derivation.
+   *allowed* write to a non-per-stack-isolated store actually landed on a non-prod target
+   (`stack-seeding/isolation/audit.go:64-80` @ rext `415240f`). On a prod target it is a no-op (prod is allowed to
+   write shared stores). The audit log is concurrency-safe (the seeder DAG runs in parallel), so `AssertClean` is
+   an after-the-fact certificate, not a re-derivation.
 
-> **`CheckWrite` is the gate; `AssertClean` is the proof.** The gate prevents the write; the audit log proves the
-> gate held. A run that passes `AssertClean` on a non-prod target has a machine-checkable guarantee that **zero**
-> shared/external writes landed.
+   > ⚠️ **Recording is automatic only on the BLOCKED path.** This used to read *"every attempted write is
+   > `Record`ed during the run"*. Measured: the DAG's only `audit.Record` call sits inside the `CheckWrite`
+   > failure branch and writes `Allowed: false` (`stack-seeding/seeder/dag.go:197-207`); the allowed path just
+   > passes the log down to the seeder (`:214`), which must call `Record` itself. `audit.go:82-96` says so in as
+   > many words — *"recording on the ALLOWED path is voluntary per-seeder … a new or edited seeder that omits its
+   > Record writes rows that the audit cannot see, and the clean verdict is issued about a ledger the write never
+   > entered."* An **empty** ledger therefore satisfies `AssertClean` on its own.
+   >
+   > What closes that is a **second, separate** assert, not `AssertClean`'s own scope: **`AssertRecorded`**
+   > (`audit.go:97-115`, v2.8 M256 harden pass 2) — the population witness. It cross-checks the DAG's own
+   > per-surface results and errors when a surface reports `Rows > 0` but recorded no audit entry. Both are wired
+   > into the run: `stack-seeding/cmd/stackseed/main.go:624` (`AssertClean`) and `:637` (`AssertRecorded`).
+
+> **`CheckWrite` is the gate; `AssertClean` is the proof; `AssertRecorded` is what makes the proof non-vacuous.**
+> The gate prevents the write; the audit log proves the gate held; the population witness proves the log saw the
+> writes. A run that passes **all three** on a non-prod target has a machine-checkable guarantee that **zero**
+> shared/external writes landed. `AssertClean` **alone** guarantees only that nothing in the ledger was a
+> shared/external write — which is a weaker statement, and exactly as weak as the ledger is complete.
 
 ### 2.3 Never-write shared Directus / prod-S3 (the two highest-risk vectors)
 
@@ -267,7 +312,7 @@ fenced twice over:
   store by class, and the injected override empties `DIRECTUS_TOKEN` on every demo container (fix17) — so the
   shared `content.anthropos.work` instance is **never written** from any non-prod stack. **Reads (M23 cutover):**
   a `--local-content` stack (demo default; dev opt-in) reads its **own per-stack Directus** — the override
-  re-points `cms`'s `DIRECTUS_BASE_ADDR` at the in-network instance (`http://directus:8055`) and studio-desk's
+  re-points **`backend`'s** `DIRECTUS_BASE_ADDR` at the in-network instance (`http://directus:8055`) and studio-desk's
   `DIRECTUS_BASE_URL` + a locally-minted token at it — so the **data plane is local, not a live-prod read**.
   Only the **asset plane** still touches prod: `DIRECTUS_PUBLIC_BASE_ADDR` stays `content.anthropos.work` so
   browser images load real assets (a public, anonymous, read-only GET — within the read-side boundary). A
@@ -276,10 +321,53 @@ fenced twice over:
   header; prod serves only the public predicate). The earlier "every stack keeps
   `DIRECTUS_BASE_ADDR=content.anthropos.work`" state (the M10 collection-schema gap) is **retired** — the gap
   is closed (M21 structure capture + auto-provision) and the per-stack Directus is booted (M22) + cut over (M23).
-- **Prod S3 public bucket.** `STORAGE_S3_PUBLIC_BUCKET` is hardcoded to the prod bucket in the platform compose;
-  `PreflightEnv` **unconditionally** overrides it to `""`, so storage writes fall back to the per-stack local
-  store. (Snapshot media is carried as **refs only** today — the byte payloads + a cloud snapshot store are
-  **deferred (unscheduled backlog)**, see "Future" below.)
+- **Prod S3 buckets — BOTH are covered, and the PRIVATE one only since M257x iter-284.** Both are hardcoded
+  to production buckets in the platform compose (`docker-compose.yml:82` private / `:83` public @ `0c91421`,
+  on the `backend` block), so neither is settable from `.env`. **Two pointers** carry a bucket into a stack and
+  both are now forced to `""`: `PreflightEnv` blanks **both** on every target
+  (`isolation/audit.go:153-154`) — that is the **seeder's** environment — and the demo's injected compose
+  override strips both on every emitted service (`stack-injection/gen_injected_override.py:771-772`, emitted
+  by `demo-stack/up-injected.sh:1969`) — that is the **running container's**. The seeder pointer alone was
+  never enough, and the incident proved it: the `s3:PutObject` came from `backend`, which reads its own
+  compose env and never sees the seeder's. (Snapshot media is carried as **refs only** today — the byte
+  payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
+
+  > **⚠️ The container-side strip is on the DEMO path only — measured at M257x harden pass 72.** It lives in
+  > the *injected* override, and `/dev-up` does not apply that layer: a `dev-N` stack gets only the shared base
+  > override (`stack-core/gen_override.py`), which repoints ports and volumes and emits **no** bucket strip. A
+  > dev stack's `backend` therefore still holds `STORAGE_S3_BUCKET=production-storage…`. What bounds it there
+  > is the **absence of credentials, not a pointer override** — the dev emitter clears the
+  > `$HOME/.aws/credentials` bind (`gen_override.py:195-196`) and there is no M239 env bridge on the dev path
+  > — so an operator whose `platform/.env` carries AWS keys re-opens on dev exactly the exposure iter-284
+  > closed for demos. **Recorded, not fixed**: forcing it would cost dev uploads the same broken-thumbnail
+  > trade a demo accepts, and that is a call for the operator, not for a harden pass
+  > (`ROUTE-M257x-h72-dev-path-carries-the-prod-bucket`).
+  >
+  > **Measured live, not inferred** (M257x harden pass 72, `docker inspect` on the running stacks):
+  > `anthropos-backend-1` carries `STORAGE_S3_BUCKET=production-storage…` **and**
+  > `STORAGE_S3_PUBLIC_BUCKET=production-storage-public…` right now. The same run confirmed three
+  > claims this corpus makes about that container — `AUTHORIZATION_ADDRESS=http://sentinel:8087`,
+  > `GOTENBERG_URL=http://gotenberg:3200`, and **zero** `*_RPC_ADDR` variables.
+
+  > **⚠️ THE STRIP TAKES EFFECT AT THE NEXT `/demo-up`, NOT ON A RUNNING DEMO — and this document said
+  > "now overridden" without saying when.** The override is written by the emitter at bring-up; a demo
+  > that was already up when iter-284 landed keeps the environment it booted with. Measured at harden
+  > pass 72: `demo-2`, up 17 h and brought up **before** iter-284 landed that morning, **still carries
+  > both production buckets on `backend`**. So the containment is proven **by the emitter's unit test,
+  > and on no running stack** — the first demo to actually carry it will be the next one built. Treat
+  > *"a demo cannot write the production bucket"* as true of demos brought up **after** iter-284 and
+  > false of any older one still running.
+
+  > **How credentials actually reach a stack — the mount is no longer the vehicle.** The base compose does bind
+  > `$HOME/.aws/credentials:/root/.aws/credentials:ro` onto `backend` (`docker-compose.yml:99-100` @ `0c91421df`;
+  > `README.md:81-87` tells you to supply the file), **but both emitters now clear that bind** — demo
+  > `stack-injection/gen_injected_override.py:651-652`, dev `stack-core/gen_override.py:195-196`, each deriving
+  > the target set from the compose text (rext `415240f`; the dev side only since M257x iter-129). What supplies
+  > credentials on a **demo** is the M239 env bridge instead — `bridge_bedrock_creds`
+  > (`demo-stack/up-injected.sh:1358-1385`, `:1362` for the five-key list) writes them into the demo's
+  > `platform/.env`, which `env_file: .env` (`docker-compose.yml:44-45`) loads into `backend`. So the exposure
+  > above is **live via env, not via the mount** — do not conclude from "the mount is gone" that the bucket
+  > exposure is closed. §3.4 residual #4 states the Part 3 (exposure-side) half of the same facts.
 
 ### 2.4 The capture-source policy is the write-side's read-half complement
 
@@ -509,8 +597,19 @@ injected override existed.
   **every** demo, exactly like the containers, and the *"gated on the knob"* framing was true only of the cockpit.
 
   > ✅ **LANDED in v2.3 M221 (F-M220-5) — the host-native academy now binds loopback.**
-  > `demo-stack/ant-academy.sh:330` passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` **only** when a
-  > public host is requested), so on a localhost demo the academy binds **`127.0.0.1:13077`**, not `*:13077`.
+  > `demo-stack/ant-academy.sh` passes an explicit **loopback `-H`** on the localhost path (`-H 0.0.0.0` **only**
+  > when a public host is requested), so on a localhost demo the academy binds **loopback**, not `*:13077`.
+  >
+  > 🔁 **The literal changed at v2.8 M257x iter-10: `-H 127.0.0.1` → `-H localhost`.** The exposure property is
+  > **unchanged** — `localhost` resolves only to a loopback address on every host family, and
+  > `exposure_claim_guard.py`'s `_LOOPBACK_BINDS` already contained it — but `127.0.0.1` broke the academy's
+  > *landing page*: next@16 normalizes every loopback hostname to the literal `localhost` when its middleware
+  > builds a rewrite URL, while the router keeps the raw `-H` string, and it compares the two **origins by
+  > string equality**. Mismatched, an in-app rewrite is mis-read as an external proxy target and the dev server
+  > proxies to itself until http-proxy's 30 s timeout → `GET /` = **500 after 30.0 s** (`/library` was spared and
+  > answered 200, which is why every check missed it for four releases). `localhost` is the only loopback literal
+  > that is its own normalized form. **A de-exposure that changes a bind literal can change program semantics
+  > beyond exposure** — see `corpus/ops/platform-alignment.md` §5 rule 11.
   > The M220 S3 table above is retained as the **dated** measurement that *drove* the fix — not a current claim.
   > ⚠ **Scope of the fix:** it tightens **only** the host-native academy's bind; **every demo *container* port
   > stays `0.0.0.0` by design** — that half of §3.1's disclosure is unchanged and still true. Fenced by
@@ -519,7 +618,7 @@ injected override existed.
   **This is the same false-loopback claim §3.1 exists to retract, one layer up** — and it survived M220 S0
   because the exposure fence (`exposure_claim_guard`) checked the three **container** port emitters and had no
   notion of the host-native servers. An exposure fence that cannot see a whole class of listener will report a
-  confident, quietly incomplete pass. *(LANDED: `F-M220-5` at M221 — pass `-H 127.0.0.1` when `BIND_HOST` is
+  confident, quietly incomplete pass. *(LANDED: `F-M220-5` at M221 — pass an explicit loopback `-H` when `BIND_HOST` is
   empty, and the exposure guard was extended to run the host-native emitters too. It was deliberately NOT bundled
   into M220 S3/S4 because it changes the localhost path's behaviour, and the invariant S3 is fenced on is that the
   localhost path stays **byte-identical**.)*
@@ -566,10 +665,14 @@ Recorded honestly, as the argument that actually carries the decision:
    mitigation when D-DESIGN-3 was taken (v2.3), and for the demo shape that existed then it is exactly what
    **Parts 1 and 2 guarantee, unchanged**: that demo's data is **synthetic + public-snapshot-only**. The
    tenant-data firewall means **no customer data can be in it** — not "should not", *cannot*, or the capture
-   aborts. The 3-layer write guard means a demo **cannot write prod**. An attacker who fully owns one obtains: a
-   generated population, the public skills taxonomy every customer already sees, and public Directus content.
-   **The authz-weakening is only alarming if there is something to protect, and for that demo shape there is
-   not.**
+   aborts. The 3-layer write guard means a demo **cannot write prod** *through any pointer the guard covers* — see
+   the write-side caveat in "the two promises" above; the 2026-08-11 S3 incident is the one time that qualifier
+   was load-bearing. An attacker who fully owns one obtains: a
+   generated population, the public skills taxonomy every customer already sees, public Directus content — **and
+   the contents of the `backend` container's environment, which is not synthetic (§3.4 residual #4).**
+   **The authz-weakening is only alarming if there is something to protect, and for the demo shape's DATA there
+   is not** — the credentials in its env are a separate line item, kept separate rather than folded into "nothing
+   behind the door".
 
    > 🔴 **v2.5 NARROWS this argument, and the narrowing is real — do not read past it.** A **content-story**
    > demo (§3.8) carries the copied, best-effort-scrubbed free-text of **real production sessions**: real
@@ -603,9 +706,14 @@ inherited. It is **strictly narrower**, and it should feel narrower:
 3. **The exposure is bounded by CONTENT, not by access.** What is in the demo is exactly the pinned sessions in
    the checked-in fixture — a hand-picked, source-pinned, auditable list (`seed-generation-manifest.yaml`), not a
    slice of the production database. An attacker who fully owns a content-story demo obtains *those* sessions'
-   scrubbed text, and nothing else. This bound is what keeps the blast radius finite once *cannot* is gone.
-4. **Part 2 is untouched.** No demo — content-story or not — can write production. The write-side guarantee
-   carries exactly as much weight here as it does anywhere else in this document.
+   scrubbed text — **and, as on any demo, whatever is in the `backend` container's env (§3.4 residual #4)**. This
+   **content** bound is what keeps the *data* blast radius finite once *cannot* is gone; it is a bound on content,
+   so it does not bound the credential surface, and the earlier wording *"and nothing else"* over-claimed by
+   quietly extending a content bound over an env one.
+4. **Part 2 is untouched.** No demo — content-story or not — can write production **over the pointers the
+   guard covers**. The write-side guarantee carries exactly as much weight here as it does anywhere else in
+   this document — **and no more**: it is a claim about a *covered set*, and §2.3 records that the set was
+   incomplete until M257x iter-284 (the production private bucket sat outside it, and was reached).
 
 > ⚠️ **The consequence for §3.1's already-world-published ports, stated plainly.** For a synthetic demo, the
 > LAN/host-IP exposure §3.1 documents is near-harmless *because* there is nothing behind the door — that is why
@@ -643,6 +751,51 @@ inherited. It is **strictly narrower**, and it should feel narrower:
    > It is exactly as strong as the network the box is on, and nothing will tell you if it is weaker.
 3. **The cockpit is the sharpest edge.** It is the one surface whose *entire purpose* is to hand out sessions
    without credentials.
+4. **What an attacker gains is not only DATA — the `backend` container's env carries real AWS credentials, and
+   the enumerations in §3.3 and §3.3.1 used to omit it.** This is a disclosure gap, closed here. Three measured
+   facts, all at platform `0c91421df` and rext `415240f`:
+
+   - **The base compose bind.** `backend` mounts the operator's own credential file —
+     `$HOME/.aws/credentials:/root/.aws/credentials:ro` (`docker-compose.yml:99-100`); `838d907` moved it there
+     from the deleted `jobsimulation`. **Both stack emitters now clear it**, and both derive the target set from
+     the compose text rather than naming a service: demo `stack-injection/gen_injected_override.py:651-652`
+     (`volumes: !reset null`), dev `stack-core/gen_override.py:195-196` (an empty list under `volumes: !override`).
+     The **dev** side only since M257x iter-129 — before that the removal was keyed on the literal
+     `"jobsimulation"`, so a `dev-N` `backend` kept the operator's real `~/.aws/credentials` mounted
+     (`gen_override.py:184-190` records it).
+   - **The demo re-supplies the same class by ENV, on purpose.** `bridge_bedrock_creds`
+     (`demo-stack/up-injected.sh:1358-1385` **@ rext `d739952`**, called unconditionally at `:1575` unless
+     provisioning is skipped — **the ref is now stated because this was the site that proved the rext anchors
+     in this corpus are on undecidable clocks.** `demo/media-substrate-spec.md` cites this same function at a
+     DIFFERENT line of the same script, and for four releases neither sentence said which tree it had read.
+     Re-measured 2026-08-11 at rext `e64a3cd3b`, the definition is `demo-stack/up-injected.sh:1364` and the
+     call `demo-stack/up-injected.sh:1582`; the numbers in this bullet are the OLDER reading and are kept,
+     dated, rather than silently renumbered — `D-M257x-278-3`,
+     `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks`. ⚠️ **Every line number in
+     this parenthesis names its file, and that is not stylistic**: harden pass 70's first draft wrote them
+     bare, `anchor_construct_guard` bound each one to the nearest preceding `.md` name, and a paragraph
+     ABOUT ambiguous anchors minted four ambiguous anchors — the fourth consecutive occurrence of a repair
+     committing the defect it describes)
+     appends `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN` and
+     `CLAUDE_CODE_USE_BEDROCK` (`:1362`) from the demo workspace's `app/.env` into the demo's `platform/.env`,
+     which `env_file: .env` (`docker-compose.yml:44-45`) then loads into `backend`. Values-blind file→file, and
+     non-fatal when absent (Talk to Data simply stays inert). §2.10 discloses **why** those creds are there and
+     what they are *used* for; this item records that they are also **what an attacker who owns the box reads out
+     of the environment** — a different question, and the one Part 3 is about.
+   - **The environment they sit next to names production buckets.** The same block pins
+     `STORAGE_S3_BUCKET=production-storage…` and `STORAGE_S3_PUBLIC_BUCKET=production-storage-public…`
+     (`docker-compose.yml:82-83`) plus `CHIME_RECORDINGS_BUCKET_NAME=ant-prod-chime-demo` (`:50`) in
+     `eu-west-1` (`:80-81`). §2.3 fences **both** buckets since M257x iter-284 — `PreflightEnv` blanks each on
+     every target and the injected override strips each on every emitted demo service — which closes
+     `DEF-M257x-iter80-storage-prod-bucket` for the **demo** path; the platform-compose fact itself is not ours
+     to change and stays filed. The Part 3 consequence is unchanged and is about the *credentials*, not the
+     pointers: an attacker gets credentials **and** the bucket names in one env dump, and a name blanked in the
+     container is still printed in the repo's compose.
+
+   **What bounds it is the same thing §2.10 names, and it is an operator control, not a tooling guarantee:** the
+   credential carries whatever its IAM principal was granted. A minimally-scoped inference-only principal makes
+   this item small; a broad key makes it the largest thing in a demo, larger than the data the rest of Part 3
+   discusses. Nothing in the tooling creates, scopes, or attests it.
 
 **These are why the flip is scoped to the demo path only, and why `--no-public-host` exists.**
 
@@ -658,7 +811,8 @@ inherited. It is **strictly narrower**, and it should feel narrower:
 exposure. §3.1 shows it did not — the containers were world-published either way, so D-DESIGN-1 was buying less
 safety than it appeared to, at the cost of a demo that a presenter could not reach. What it *did* withhold was
 the trusted HTTPS origin. Meanwhile the thing that actually makes a demo safe to expose — **there is no customer
-data in it, and it cannot write prod** — is a *structural* property (Parts 1-2), not a consequence of the flag.
+data in it, and it cannot write prod** (over the covered pointers — see the write-side caveat in "the two
+promises") — is a *structural* property (Parts 1-2), not a consequence of the flag.
 D-DESIGN-3 therefore moves the default, keeps the escape hatch, and confines the change to the path whose entire
 purpose is to be shown to other people.
 
@@ -715,7 +869,8 @@ the single page not behind the trusted cert, while everything it links to was.
 `tailscale serve` puts it behind the tailnet's **TLS + authenticated device mesh** instead of cleartext HTTP. It
 does **not** password-protect it. Anyone who can reach the tailnet can still become any hero, exactly as before;
 they now do so over a trusted origin. The reason that is acceptable is unchanged and structural: **there is no
-customer data in a demo, and it cannot write prod** (Parts 1–2).
+customer data in a demo, and it cannot write prod** over the covered pointers (Parts 1–2, with the write-side
+caveat in "the two promises").
 
 #### 3.5.3 The DEV path — remote reach is now a real opt-in, where before it was a vacuous one (M220 S7)
 
@@ -840,7 +995,8 @@ above.** The check asserts it captured traffic at all — an empty scan is a FIN
 > ignores the bearer token entirely is the last thing that should be ambient on a tailnet.
 >
 > **Reconciled at v2.3 M221 (F-M220-5):** the fake BAPI is no longer the *only* host-native listener bound to
-> loopback — M221 tightened the **ant-academy** `next dev` bind to `127.0.0.1` on a localhost demo as well (§3.1).
+> loopback — M221 tightened the **ant-academy** `next dev` bind to loopback on a localhost demo as well (§3.1; the
+> literal became `localhost` at v2.8 M257x iter-10 — same loopback property, see the callout in §3.1).
 > The "every other port is world-published" reasoning still holds for the demo **container** ports (unchanged);
 > among the **host-native** listeners, the cockpit was already loopback, and on a localhost demo the academy and
 > this fake BAPI now join it — all three bind loopback.
@@ -986,20 +1142,57 @@ and no `chime_status` is flipped in a demo until this amendment and the 2026-07-
 section IS that gate; it landed before the seeder's media-exhibit code did.
 
 **Part 2 (never-write-prod) is untouched.** The reference-port writes only the **per-stack demo Postgres**
-(`PerStackIsolated`) — the demo never writes prod, never writes Bunny, and never uploads a byte anywhere — and the
-authoring-time read stays read-only. The recording signing keys are **read-only Bunny CDN-token keys** provisioned
-into the demo values-blind (the M239 Bedrock-creds pattern — §2.10), granting the demo server only the ability to
-*sign a fetch* of an existing recording, never to write, replace, or delete one. The extension is entirely on the
-read side, bounded by the (text-only) scrub + the VPN scope; for the video facet, by the VPN scope alone.
+(`PerStackIsolated`) — **the reference-port** never writes prod, never writes Bunny, and never uploads a byte
+anywhere. ⚠️ That sentence said *"the demo"*, not *"the reference-port"*, until M257x harden pass 72, and the
+demo-wide form was **false**: `TOK-09` named this exact site, and iter-284 then measured a demo container
+holding a **production** S3 bucket pointer that its own studio-desk tried to `PutObject` against. The scoped
+claim here is true and is the one this section can make; the demo-wide one belongs to §2.3, with its
+covered-set qualifier. And the
+authoring-time read stays read-only. The recording signing keys are **read-only Bunny CDN-token keys** — they would
+grant the demo server only the ability to *sign a fetch* of an existing recording, never to write, replace, or
+delete one. The extension is entirely on the read side, bounded by the (text-only) scrub + the VPN scope; for the
+video facet, by the VPN scope alone.
+
+> 🔴 **RETRACTED: there is no Bunny recording-key provisioning path.** This paragraph used to say the keys are
+> *"provisioned into the demo values-blind (the M239 Bedrock-creds pattern — §2.10)"*. **Measured** —
+> `grep -rn "BUNNY_RECORDING" .agentspace/rosetta-extensions/` (from the rosetta repo root) returns **0** hits @
+> rext `415240f`. Widened once, case-insensitively (`grep -rniE "BUNNY" .agentspace/rosetta-extensions/`), the
+> count moves to **61** — but **no** hit is a recording key: the only `BUNNY_*` env names in the tooling are
+> `BUNNY_API_KEY` (10 hits, all in `stack-secrets` **test** fixtures), `BUNNY_STREAM_API_KEY` (1) and
+> `BUNNY_CDN_TOKEN_KEY` (1), the last two being `waived-optional` genes in the DNA
+> (`stack-secrets/secretdna/secret-dna.json:425-431`, `:779-785`) and neither of which signs recordings.
+>
+> The two mechanisms the retracted sentence leaned on do not carry it either. **The DNA declares no
+> `BUNNY_RECORDING_*` gene at all** (64 genes, version `fast-build-m256`), and `provision` writes only *"each
+> MEASURABLE gene targeting this file"* (`stack-secrets/provision/provision.go:120`) — so
+> `/stack-secrets --provision` cannot deliver a key it has no gene for. And the **M239 bridge is a fixed
+> five-key list** — `AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
+> CLAUDE_CODE_USE_BEDROCK` (`demo-stack/up-injected.sh:1362`) — with no Bunny key in it and no extension seam.
+> Provisioning these keys is therefore **net-new work** (a DNA gene + a `next-web-app` target-file route), not
+> an existing path waiting on a value. The status note below is right that the feature is blocked; it is blocked
+> on **two** things, the values *and* the path.
 
 > **Current status (M240, honest).** The posture above is signed off and the seed-side reference-port + the render
 > path are specified, but exhibiting a recording depends on the **Bunny.net recording signing keys**
-> (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`) being provisioned into the demo — and those
-> key **values are absent from this authoring box's entire dev-stack** as of 2026-07-21 (no populated value in any
-> real `.env`, in the `.agentspace/secrets` provisioning source, or in the compose; only key-name templates exist).
-> *This supersedes the earlier reading that the blocker was eu-west-1 S3 / `DEF-M10-01`:* the served media is a
-> **Bunny CDN reference**, not an S3 blob, so S3 read access is neither necessary nor sufficient — the **Bunny
-> recording signing keys are** the dependency. Until an operator provisions those keys (from a real source — prod /
+> (`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST`) reaching the demo's next-web-app — and
+> those key **values are absent from this authoring box's entire dev-stack** as of 2026-07-21 (no populated value
+> in any real `.env`, in the `.agentspace/secrets` provisioning source, or in the compose; only key-name templates
+> exist — they are real platform env names, read by `next-web-app` at
+> `packages/core-js/src/functions/bunny-thumbnail.server.*` and templated at `apps/web/.env.example:106-107` @
+> `8297c684c`). **Per the retraction above, no tooling path delivers them either** — the render path is specified,
+> the provisioning path is not built.
+> *This supersedes the earlier reading that the blocker was eu-west-1 S3 / `DEF-M10-01`:* **what the demo serves**
+> is a **Bunny CDN reference**, so S3 read access is neither necessary (the demo streams by reference and never
+> touches S3) nor sufficient (S3 bytes carry no `bunny_video_id` and no `chime_status`, and the render gate reads
+> both) — the **Bunny recording signing keys are** the dependency.
+>
+> ⚠️ **Scoping tightened at M257x iter-86, and the reason matters.** This sentence used to read *"not an S3
+> blob"* full stop, which is **false about the platform**: `jobsimulation` writes the composited MP4 to a prod S3
+> bucket and reads it back before uploading to Bunny (`internal/recording/chime.go` — capture + concatenation
+> sinks, the SNS handler, `getMediaFromS3`; no delete, no lifecycle expiry). **S3 is the origin; Bunny is the
+> delivery copy.** The claim survives only as a statement about *what this demo serves*, which is what it was
+> always meant to say — and the conclusion it supports is unchanged. What it can no longer be used for is the
+> stronger reading *"the bytes aren't there"*, which was never true. Until an operator provisions those keys (from a real source — prod /
 > vault), a content-story demo ships **without** an exhibited recording (`chime_status` stays `not_available`) —
 > exactly the pre-v2.6 state, degraded honestly, **never a broken "play" button over a recording the demo cannot
 > sign for**. The posture is documented **ahead of** the capability, by design (the gate ordering above). See
@@ -1010,8 +1203,10 @@ read side, bounded by the (text-only) scrub + the VPN scope; for the video facet
 
 ## How this relates to the platform's own isolation
 
-The platform itself has a 3-layer **tenant-isolation** posture — DB (`organization_id` on every table, Ent
-auto-filtering), Authorization (Sentinel/Casbin), Identity (Clerk org-scoped JWTs) — documented in
+The platform itself has a 3-layer **tenant-isolation** posture — DB (`organization_id` on **most**
+application tables, with Ent auto-filtering **only where a schema declares the privacy policy** — *"on every
+table, so no cross-tenant access is possible"* is **retracted**; the measured split lives in the linked doc),
+Authorization (Sentinel/Casbin), Identity (Clerk org-scoped JWTs) — documented in
 [`../architecture/security_compliance.md`](../architecture/security_compliance.md#multi-tenant-data-isolation).
 That protects **customers from each other inside the running product**. *This* doc's two guarantees protect
 **production from the tooling**: the read-side firewall ensures the tooling only ever copies the *public* slice

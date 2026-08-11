@@ -6,7 +6,8 @@ argument-hint: [dev-N|demo-N] [replay|capture|status] [--surface taxonomy|direct
 
 # Stack Snapshot — stamp the real public library into a stack (the v1.2 "set dressing" layer)
 
-Replays the real **public** reference library — the ~60K-skill / 18K-role taxonomy and the global simulation /
+Replays the real **public** reference library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, the
+measured public subset; ["60K / 18K" is not a measurement](../../../corpus/architecture/shared_libraries.md#taxonomy-figures)) and the global simulation /
 skill-path content templates — into `dev-N` or `demo-N` so the catalog view shows **real** skills and the
 seeded sessions link to **real** templates. It drives the `stacksnap` CLI: `replay` (the headline verb,
 per-stack), `capture` (the rare prod-read maintenance op), `status` (list the cache). Source of truth:
@@ -23,10 +24,13 @@ per-stack), `capture` (the rare prod-read maintenance op), `status` (list the ca
 > a freshly-migrated post-merge stack has **no `skiller` schema**. The `taxonomy` surface in
 > `rosetta-extensions/stack-snapshot/` was **re-pointed at `public`** in v2.1 M209 (the capture predicate +
 > replay target now query `public.*`), so replay/capture work against a post-merge stack. (Re-capturing the
-> live `public.*` taxonomy from a safe prod source lands in M211; until then a cached capture still replays.)
+> live `public.*` taxonomy from a safe prod source landed in M211 — this note used to say it *"lands in
+> M211; until then a cached capture still replays"*, a forward-reference that long since came due. Check
+> the cache with `stacksnap status` rather than assuming either state.)
 
 ## Where this sits in the flow
-`/dev-up N` or `/demo-up N` → **`/stack-snapshot N replay`** → `/stack-seed N` → log in. (For a `dev-N`,
+`/dev-up N` or `/demo-up N` → **`/stack-snapshot demo-N replay`** (name the stack you brought up — `dev-N`
+or `demo-N`; the target comes FIRST, the verb second) → `/stack-seed demo-N` → log in. (For a `dev-N`,
 `/dev-up` already runs this set-dress pass by default — use this skill to re-run or refresh it.) The snapshot
 is **stack-global** public reference data (independent of which org you seed), it is **optional** (skip it for
 a quick structural-only world — the seeder degrades gracefully to an empty catalog + free content refs), and
@@ -70,7 +74,8 @@ it is almost always a **cache-hit** (zero prod read — captured once per releas
    **`--local-content` stack** (demo **default-on**; dev **opt-in** via `--local-content`; `N=0` behind
    `--force`): the bring-up's set-dress pass EXECUTES the recipe — M21 captures the content-model structure and
    **auto-provisions** the bootstrap gap (the content-schema step is no longer a manual gap), M22 boots the
-   per-stack Directus compose service, and M23 cuts `cms`'s `DIRECTUS_BASE_ADDR` over to it — so the **directus
+   per-stack Directus compose service, and M23 cuts **`backend`'s cms domain** (`app/internal/cms/` — there is
+   no `cms` service or container) over to it via `DIRECTUS_BASE_ADDR` — so the **directus
    replay exits 0** and the stack is content-self-contained (asset plane stays on prod). On a stack **without**
    `--local-content` (the **fallback**), there is no per-stack Directus: the directus replay skips with
    **exit 4** and the stack reads public content **live from prod**. Either way the per-stack Directus env

@@ -30,7 +30,7 @@ customer-scoped rows as if they were shareable reference data.**
 1. **Read-only + low-impact.** SELECT only; schema-qualified; always `LIMIT`. For sizing/shape prefer
    **catalog-only** queries — `pg_class.reltuples`, `pg_total_relation_size(oid)`, `information_schema.columns` —
    which are instant and scan nothing. Avoid `COUNT(*)` / full scans on the GB tables (`public.skill_embeddings`,
-   `public.skills`, `public.ai_usages`, `jobsimulation.interactions/validation_*/activity_events`). The snapshot
+   `public.skills`, `public.ai_usages`, `public.interactions/validation_*/activity_events` — the former `jobsimulation` tables). The snapshot
    **capture-source policy** ([`snapshot-spec.md`](snapshot-spec.md)) generalizes this with a source-pluggable
    precedence (M9a-D3): **ingest an existing prod `pg_dump` [default, zero new prod load]** → **safe throttled
    primary read [fallback]** (MVCC means a read-only `SELECT`/`COPY` never blocks writers — off-peak + chunked +
@@ -43,7 +43,14 @@ customer-scoped rows as if they were shareable reference data.**
 
 ### The public-vs-customer split (prod-verified 2026-06-06, catalog-grounded)
 
-> *(Note: with the July 2026 skiller→app merge the taxonomy tables moved to the `public` schema — same table names, same split; the old `skiller` schema is legacy, no longer authoritative. Counts below are the 2026-06-06 verification.)*
+> *(Note: the monolith merges gave **every** application table a home in the `public` schema — same table names,
+> same public/customer split. Taxonomy came in with skiller→app (July 2026); skill-path sessions with
+> skillpath-in-app; the 23 simulation run-state tables with jobsim-in-app; the similarity + Studio tables with
+> cms-in-app v8.0. The old `skiller`, `skillpath`, `jobsimulation` and `cms` schemas are legacy and no longer
+> authoritative **for the platform**. Counts below are the 2026-06-06 verification — i.e. they were taken in the
+> pre-merge schemas, so a row prefixed `public.` here is a re-label of a legacy-schema measurement, not a
+> re-measurement. **Do not re-label a row whose number is still tied to the legacy schema** — the
+> `cms.similarities` row below is exactly that case, and the note under the table says why.)*
 
 | Surface | public (`org_id IS NULL`) | customer (`org_id` set) | snapshot rule |
 |---|---|---|---|
@@ -52,12 +59,24 @@ customer-scoped rows as if they were shareable reference data.**
 | `public.specializations` | 1,442 | 154 | capture public |
 | `public.categories` | 22 | 42 | capture public |
 | `public.{skill,job_role}_embeddings` | — (no org col) | — | via public parent; rebuild index on replay |
-| `cms.studio_documents` | **0** | 3,060 | **exclude (all customer)** |
-| `cms.studio_tasks` | **0** | 2,353 | **exclude (all customer)** |
-| `cms.similarities` | 274 | 733 | public only |
+| `public.studio_documents` *(was `cms.`)* | **0** | 3,060 | **exclude (all customer)** |
+| `public.studio_tasks` *(was `cms.`)* | **0** | 2,353 | **exclude (all customer)** |
+| **`cms.similarities`** *(see the attribution note)* | 274 | 733 | public only |
 
-The **public content template library** (global simulations/skill-paths) is **not** in the app-Postgres `cms`
-schema — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
+> ⚠️ **The 274 / 733 split was measured in the `cms` schema, and `cms` is still what the tooling captures — do
+> not re-label this row `public.`** The measurement is the 2026-06-06 verification, taken before cms-in-app
+> moved the table (app's `terraform/migrations/20260724132049_cms_data_model.sql` creates `similarities` in
+> `public`, and `scripts/cms-data-sync/sync.sql:46`, `:53-55` copies `cms.similarities` → `public.similarities`;
+> both @ app `ad9f3c498`). So **both tables exist**, and only the `cms` one was counted. The snapshot capture
+> surface still reads the `cms` one: `stack-snapshot/simembeddings/simembeddings.go:44` @ rext `415240f` is
+> `const Schema = "cms"`, and the surface's four tables (`similarities` + `similarity_categories` /
+> `_features` / `_skills`, `:85-108`) are all captured from it. Attaching this number to `public.similarities`
+> breaks the one link that makes it useful — it is the size of the surface the tooling *captures*, and that
+> surface is `cms`. The other two former-`cms` rows above (`studio_documents`, `studio_tasks`) are **0** public
+> either way, so their re-label is inert; this one is not.
+
+The **public content template library** (global simulations/skill-paths) is **not** in any of the merged app
+tables — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
 `content.anthropos.work`, but its rows are reachable read-only via the wired `postgres` MCP / `marco_read`, NOT a
 separate Postgres — M10-D2 corrected the spike's "separate store" inference). That `directus` schema's public subset
 (predicate `private=false AND tenant_id IS NULL AND status='published'`) is the v1.2 M10 content-snapshot source —
@@ -77,7 +96,7 @@ ORDER BY pg_total_relation_size(c.oid) DESC;
 
 Prod headline (2026-06-06, measured pre-merge in the then-live `skiller` schema; the same tables now live in `public`): the taxonomy surface ≈ **2.1 GB** (the v1.2 taxonomy snapshot surface) — `skill_embeddings` 692 MB
 (but heap only 3.3 MB → ~689 MB is the **pgvector index** → rebuild on replay, don't transport it), `skills`
-436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The `cms` content tables are tens of MB.
+436 MB, `job_roles` 362 MB, `job_role_embeddings` 339 MB, + translations. The former-`cms` content tables (now in `public`) are tens of MB.
 
 ## See also
 - [`safety.md`](safety.md) — the tooling's consolidated read-side + write-side safety contract (this public-vs-customer

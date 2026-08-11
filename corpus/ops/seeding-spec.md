@@ -95,10 +95,11 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 |---|---|---|
 | **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**, the shared instance **never written**. (Reads: since v1.5 **M22/M23** a **`--local-content`** stack (demo default-on; dev opt-in) serves content from its **own** per-stack Directus — `cms` cut over to the in-network instance — so the read is **local, not live-prod**; the prod **data plane** is read only at capture time. A stack **without** `--local-content` reads public content **live** from prod, a demo **anonymously** with the token stripped — the documented fallback. The asset plane stays on prod public links either way. See [`directus-local.md`](directus-local.md) + [`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).) |
 | **S3 public bucket** | shared-pollution-risk | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
+| **S3 PRIVATE bucket** | shared-pollution-risk *(re-classed at M257x iter-284; was `unclassified`)* | also hardcoded to a **production** bucket in compose since platform `0dab54d` (`docker-compose.yml:82` @ `0c91421`, on `backend`) → forced to `""` in **both** places a demo carries the pointer: `PreflightEnv` (`isolation/audit.go:153-154`, both buckets, every target) and the injected compose override (`stack-injection/gen_injected_override.py:771-772`) — the second one matters because the write that exercised this came from `backend`, not from the seeder. **⚠️ The container-side strip is DEMO-only**; a `dev-N` `backend` still holds the prod bucket — see [`safety.md`](safety.md) §2.3 |
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
 | **coresignal** | external | read-only; writes blocked on non-prod |
-| **Postgres / Redis / S3-private / pgvector** | per-stack-isolated | seed freely |
+| **Postgres / Redis / pgvector** | per-stack-isolated | seed freely. (`S3-private` is **not** in this class — see its own row above. The code agrees since **M257x iter-284**: `stack-seeding/isolation/isolation.go:93-95` classes `s3-private` as `SharedPollutionRisk`. This cell twice recorded the opposite — iter-98 correctly withdrew a premature "the registry has changed" claim rather than making it true, and iter-284 then made it true; both the class **and** the line number here are the post-284 measurement. See [`safety.md`](./safety.md) §2.2.) |
 
 > **The "shared skillpaths across stacks" myth.** Legacy skillpath sessions appearing across stacks trace to
 > the *shared Clerk identity* (sessions for a shared login leaked via shared auth) — **not** a shared skillpath
@@ -185,7 +186,7 @@ stackseed --stack demo-1 --reset                                 # per-stack res
 inserts 0 rows instead of unique-violating or duplicating the grant. `--reset` truncates the **full**
 seeded fleet child-first FK-safe (`activity_events →` the M34 verified-skill chain `validation_criterion_results
 → validation_attempt_skill_results → validation_attempt_results → user_skill_evidences → user_skills →
-local_jobsimulation_sessions → sessions → skill_path_sessions → assignments → memberships → users →
+job_simulation_sessions → skill_path_sessions → assignments → memberships → users →
 organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2'`, never a TRUNCATE — it shares
 the sentinel schema with `init_policy.sql`'s global policy). Full per-component re-run contract:
 [`idempotency.md`](idempotency.md).
@@ -193,7 +194,7 @@ the sentinel schema with `init_policy.sql`'s global policy). Full per-component 
 > **The chain above is ILLUSTRATIVE, not the list (clarified v2.8 M256 pre-flight).** `resetTables`
 > (`stack-seeding/cmd/stackseed/main.go` §`resetTables`) is **~28 relations**, not the 14 named here — later
 > additions include the AI-readiness fleet, `interview_extraction_results` /
-> `interview_aggregated_reports`, `organization_assignment_sessions`, `local_skill_path_sessions`,
+> `interview_aggregated_reports`, `organization_assignment_sessions`,
 > `job_simulation_feedbacks`, `membership_tags` / `tags`, `organization_target_roles` / `user_target_roles`,
 > `membership_skills`, `organization_sim_invitation_links`, and `jobsimulation.{actors,interactions}`. **Read
 > `resetTables` for the authoritative set.** Two further properties worth stating plainly: `doReset` takes **no
@@ -383,14 +384,16 @@ at M223 (the recruiter + 2 candidate cockpit seats are M224). Full read-model co
 
 Two things make it non-obvious — both are M222 findings the seeder is built to honor:
 
-- **The score is a MIRROR table, not `jobsimulation.sessions`.** The scoreboard reads
-  `public.local_jobsimulation_sessions.score` (the `app` IntelligenceManager mirror), NOT
-  `jobsimulation.sessions.score`. So the `HiringFunnelSeeder` writes the **co-written PAIR** per
-  (candidate × position) — `jobsimulation.sessions` (the federated non-null `Session!`) **and** its
-  `public.local_jobsimulation_sessions` mirror (the score source) — exactly like the `PersonaSeeder`'s
-  chain, **not** like the `AIReadinessFunnelSeeder` (which deliberately skips the mirror and scores off
-  frozen snapshots). Seeding only `jobsimulation.sessions` renders an **EMPTY** comparison — the M219/M222
-  render-gate trap. A test RED-proves it (disabling the mirror write fails the fence).
+- **⚠️ THE MIRROR IS GONE — this bullet is RETRACTED as written (M257x iter-129).** It said *"the score
+  is a MIRROR table, not `jobsimulation.sessions`"* and told a seeder author to write a **co-written
+  PAIR**. `app` migration `20260729133514.sql` **DROPPED** `local_jobsimulation_sessions`, and there is no
+  `jobsimulation` schema on a fresh stack either. **The score source is the one canonical row,
+  `public.job_simulation_sessions.score`**, and `HiringFunnelSeeder` writes exactly that — one row per
+  (candidate × position), `hiring_funnel.go:392`, whose own header records the collapse: *"the pair
+  collapsed into the one canonical write — same row, same id, one table."* The **render-gate trap the
+  bullet existed to warn about is real and survives its mechanism**: a comparison view still renders its
+  chrome with every score blank if the session row is missing, so the seeder is still the thing that makes
+  it non-empty. What changed is that there is now one write, not two.
 - **The 5 "positions" are 5 REAL captured `SIMULATION_TYPE_HIRING` sims — no `directus.job_position`
   replay.** A dedicated **type-aware reader** (`readHiringSimPool`: `directus.simulations WHERE
   type='SIMULATION_TYPE_HIRING'`) resolves them (the generic `contentref` pool is type-blind); the shared
@@ -413,7 +416,8 @@ take assessments), and each admin inherits `org:feature:insights` from the **glo
 policy** via its standard `admin` g2 grant (no net-new grant — M223 D1). The funnel writes **zero skill
 refs**, so `datadna measure-closure` stays green trivially. New reset surface:
 `public.organization_sim_invitation_links` (child-first in `resetTables`); the session pair reuses the
-already-reset `jobsimulation.sessions` + `public.local_jobsimulation_sessions`.
+already-reset `public.job_simulation_sessions` (`resetTables`, `cmd/stackseed/main.go:108` — every entry
+in that list is `public.*`; neither dropped mirror appears in it).
 
 ### Insert-then-heal: test the statement that LANDS it, and count PER ROW (v2.8 M256 harden-final)
 
@@ -489,7 +493,9 @@ enablement gate-row — nothing wrote that table before), **`AIReadinessConfigSe
 since M219 **BOTH a `closed` AND an `active` cycle** — + `ai_readiness_skills` with **real replayed-taxonomy
 node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), **`AIReadinessFunnelSeeder`** (199 frozen
 `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), and — net-new at
-**M219** — the **interview-aggregated-report seeder** (`jobsimulation.interview_aggregated_reports`, flushed by
+**M219** — the **interview-aggregated-report seeder** (`public.interview_aggregated_reports` — read
+`jobsimulation.…` until M257x iter-129; the seeder writes `public` at `ai_readiness_funnel.go:999` and
+`resetTables` names `public.interview_aggregated_reports` at `cmd/stackseed/main.go:62`, flushed by
 the funnel seeder), **without which the manager's four interview-findings blocks render headings with no content**
 (no seeder had ever written that table). DAG-ordered `config → funnel`.
 
@@ -499,7 +505,7 @@ the funnel seeder), **without which the manager's four interview-findings blocks
 > demo now seeds **both** cycles: the **active** one is what the manager dashboard resolves and live-recomputes
 > (it is what fills Ben's funnel, Aria's full hero card, and the manager's `interview` / `diagnosis` / `sources`
 > sub-sections — all of which were NULL/absent under closed-only), while the **closed** one is retained as cycle
-> *history*. The `--reset` table list gains `jobsimulation.interview_aggregated_reports`.
+> *history*. The `--reset` table list gains `public.interview_aggregated_reports`.
 
 Plus the **`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's
 whole-org `loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
@@ -525,16 +531,17 @@ deterministic id is reserved (`blueprint.HiringOrgID()` = `StoryOrgID("hiring")`
 the auditable manifest (`manifest.Org.IsHiring`, `omitempty` — so every existing preset stays byte-identical). **The
 GATE only** — no HiringSeeder/funnel (M223), no cockpit hero + no Clerkenstein `publicMetadata.isHiring` wiring
 (M224). Why it matters: the recruiter **candidate-comparison read-model** requires `is_hiring=true`, and its score
-renders from the MIRROR table **`public.local_jobsimulation_sessions.score`**, NOT `jobsimulation.sessions.score`
-(the M219-class render-gate trap). The full model — the dual-write, the read-path, the seeder-output write-set —
+renders from **`public.job_simulation_sessions.score`** (⚠️ read *"the MIRROR table
+`local_jobsimulation_sessions`, NOT `jobsimulation.sessions`"* until M257x iter-129; the mirror was dropped
+and the schema no longer exists — the M219-class render-gate trap itself still holds). The full model — the dual-write, the read-path, the seeder-output write-set —
 is [`../services/hiring.md`](../services/hiring.md). Code-of-record: `rosetta-extensions` @ `main` (the M222 S2
 gate commit; tagged when M223 consumes it).
 **v2.4 "casting call" M223 "casting the ensemble"** builds the recruiter vantage on the M222 gate — the **4th
 story (Meridian Talent, 5 admins + 45 candidates)** + **two net-new seeders**: **`HiringConfigSeeder`** (the
 org's 5 shared positions = 5 real captured `SIMULATION_TYPE_HIRING` sims via the type-aware `readHiringSimPool`,
 written as `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored
-`SIMULATION_TYPE_HIRING` session PAIR — `jobsimulation.sessions` + the `local_jobsimulation_sessions` **MIRROR**
-the scoreboard reads — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
+`SIMULATION_TYPE_HIRING` session row — `public.job_simulation_sessions`, the one table the scoreboard
+reads (this said "PAIR … + the `local_jobsimulation_sessions` MIRROR" until iter-129) — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
 SOME assigned-only, a differentiated score spread).
 The 5 positions are **disjoint-reserved** from the generic sims pool (M219 R-3); the funnel writes **0 skill
 refs** (closure green trivially); the admins inherit `org:feature:insights` from the global `p3` admin policy

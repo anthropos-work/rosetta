@@ -1,0 +1,11 @@
+baa68a09eb42	demo-1-backend-1	Up 4 days	demo-1-app:injected
+925a88a96aa6	demo-1-directus-1	Up 4 days	directus/directus:11.6.1
+9bc2dc71d069	demo-1-fake-bapi-1	Up 4 days	demo-1-fake-bapi:latest
+93fb4a5598b2	demo-1-fake-fapi-1	Up 4 days	demo-1-fake-fapi:latest
+dfc6fe5e9b2e	demo-1-gotenberg-1	Up 4 days	gotenberg/gotenberg:8
+a0412528d498	demo-1-hiring-app-1	Up 4 days	demo-1-hiring
+67e5f1eaeba7	demo-1-next-web-app-1	Up 4 days	demo-1-next-web
+b27711697da2	demo-1-postgresql-1	Up 4 days (healthy)	demo-1-postgresql
+767a52cf2f5c	demo-1-redis-1	Up 4 days (healthy)	bitnamilegacy/redis:latest
+dbbd1604d4b1	demo-1-sentinel-1	Up 4 days	demo-1-sentinel
+d0075318451e	demo-1-studio-desk-1	Up 4 days	demo-1-studio-desk

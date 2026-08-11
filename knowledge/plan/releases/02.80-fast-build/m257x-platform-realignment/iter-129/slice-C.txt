@@ -1,0 +1,117 @@
+corpus/ops/staging-clerk.md:3-3  The dev Clerk app shared across every Anthropos personal staging, the shared test login that lets any engineer log into any staging, and the load-bearing `clerk-fetch-fix.js` that makes Server Components talk to Clerk inside Docker on HTTP.
+corpus/ops/staging-clerk.md:18-18  | API base         | `https://api.clerk.com`                                    |
+corpus/ops/staging-clerk.md:20-20  | Secret key       | `sk_test_…` (in `platform/.env` as `CLERK_SECRET_KEY`)     |
+corpus/ops/staging-clerk.md:21-21  | Dashboard        | https://dashboard.clerk.com (use Stefano's email to access) |
+corpus/ops/staging-clerk.md:23-23  **Shared across every staging on the tailnet.** Ithaca, Calypso, your `wip-*` — all point at the same dev Clerk app. Users you create show up everywhere.
+corpus/ops/staging-clerk.md:25-25  **This is dev, not prod.** Production has a separate Clerk app — the dev keys do NOT work in prod, and prod keys must NEVER be used on a staging machine (any user-mutating action you trigger from staging would hit real users).
+corpus/ops/staging-clerk.md:36-36  **This account is a shared cross-engineer testing instrument.** Anyone on the team can log into any staging using these credentials, and they "become" Stefano for testing — Clerk authenticates, the dev DB has a `users` row keyed to Stefano's prod UUID, and the casbin grants are wired so Stefano is a
+corpus/ops/staging-clerk.md:40-40  **Caveat: dev Clerk is shared, so all sessions are visible across the team.** Don't put real-customer data into the dev Clerk user pool (names, emails, phone numbers from prod imports — fine; sensitive PII or test fixtures you don't want a teammate to see — not fine).
+corpus/ops/staging-clerk.md:40-40  The dev Clerk dashboard shows every user, session, org, and event to everyone with dashboard access.
+corpus/ops/staging-clerk.md:44-44  For automated smoke tests (the sync routine's `anthropos-staging-smoke.js`) use the real password — it exercises the real-user latency profile and catches Clerk-JS bootstrap regressions:
+corpus/ops/staging-clerk.md:55-55  For programmatic CI flows where Clerk's "new device" challenge blocks you (Quirk #13), use a one-shot sign-in token instead:
+corpus/ops/staging-clerk.md:65-65  (That `user_3DI…` is Stefano's Clerk user id in the dev app.) Don't use this for human-like smoke tests — it bypasses a chunk of the Clerk JS bootstrap and hides real-user latency.
+corpus/ops/staging-clerk.md:115-115  When you spin up `wip-<initials>`, you need to add **three** things in three different places — Clerk allowed_origins, Tailscale ACL `hosts:`, and backend CORS.
+corpus/ops/staging-clerk.md:119-119  **Clerk `allowed_origins`** — PATCH the dev instance:
+corpus/ops/staging-clerk.md:179-179  User-visible symptom: "login page never moves on" — the Clerk `<SignIn>` ticket exchange completes and cookies are set, but the post-login redirect target itself errors.
+corpus/ops/staging-clerk.md:187-187  `extra_hosts: api.clerk.com → 104.18.37.202` (the IPv4-only Cloudflare anycast)
+corpus/ops/staging-clerk.md:193-193  Loaded via `NODE_OPTIONS=--require=/clerk-fetch-fix.js`, mounted into the container via compose:
+corpus/ops/staging-clerk.md:211-211  The file itself lives at `/home/devops/platform/clerk-fetch-fix.js` on Ithaca (and the equivalent path on every other staging).
+corpus/ops/staging-clerk.md:341-341  The upstream bug (Next.js 15.5 Server Components + Clerk SDK 2.33.2 + Node 24 + Docker IPv4-only bridge → `UND_ERR_CONNECT_TIMEOUT`) is worth a Clerk + Next.js issue report.
+corpus/ops/staging-clerk.md:347-347  **What you see:** After login, `/home` (and other protected pages) load *very slowly* (60+ seconds), the three-dot loading spinner stays for minutes, and the server log spams `Clerk: Refreshing the session token resulted in an infinite redirect loop.`
+corpus/ops/staging-clerk.md:349-349  **Root cause:** Clerk's FAPI handshake endpoint always returns cookies with `Secure; SameSite=None`.
+corpus/ops/staging-clerk.md:357-357  The `<SignIn>` component sometimes loses track of partially-completed factor exchanges and asks you to re-enter credentials mid-flow.
+corpus/ops/staging-clerk.md:359-359  **Root cause:** `next-web-app/apps/web/src/app/(unauthenticated)/login/[[...login]]/page.tsx` calls `window.localStorage.clear()` and `window.sessionStorage.clear()` in a mount `useEffect`.
+corpus/ops/staging-clerk.md:359-359  Clerk JS stores transient handshake state in `localStorage` (`__clerk_*` keys), so clearing it on every login-page mount corrupts in-flight sign-ins.
+corpus/ops/staging-clerk.md:365-365  There's a ~30s gap with no network activity after redirect off `/login` where Clerk JS is bootstrapping in dev mode, then GraphQL fan-out begins.
+corpus/ops/staging-clerk.md:367-367  **Root cause:** Clerk dev-mode has heavier JS bootstrap than prod, plus the cold backend GraphQL subgraphs warm up serially on first hit.
+corpus/ops/staging-clerk.md:381-381  **What you see:** Programmatic / Playwright sign-ins from a new IP get a Clerk email-code challenge that breaks automation.
+corpus/ops/staging-clerk.md:383-383  **Root cause:** Clerk's "new device" challenge is enabled on `national-elk-17`.
+corpus/ops/staging-clerk.md:387-387  Clerk then trusts the device.
+corpus/ops/staging-clerk.md:393-393  Clerk's session token doesn't include your DB UUID by default, so colony's auth path has to fetch your user/org from the Clerk Backend API on every request.
+corpus/ops/staging-clerk.md:393-393  Clerk rate-limits aggressively (HTTP 429), and the first few page loads after a fresh login can fail with "organization mismatch".
+corpus/ops/staging-clerk.md:409-409  This is dashboard-only as of 2026-05; there's no public REST endpoint to script it. Once set, every issued session token carries the DB UUIDs in its claims and colony's auth path can skip the per-request Backend API fetch.
+corpus/ops/staging-clerk.md:415-415  `PATCH /v1/instance` with `{"session_token_template": {"claims": …}}` returns HTTP 204 but the next-issued JWT has none of the custom claims.
+corpus/ops/staging-clerk.md:416-416  `next-web-app` doesn't — it uses the bare session token via Clerk middleware.
+corpus/ops/staging-clerk.md:422-422  The token shape colony has to read is now v2 — flat in `v: 1` (`org_id`, `org_role`, `org.eid`), nested in `v: 2` under a single `o` key. Both shapes live in the wild because Clerk only flipped the default for new apps; older apps can be migrated via dashboard toggle, but `national-elk-17` was creat
+corpus/ops/staging-clerk.md:456-456  If a token you capture has `"v": 1` or top-level `org_id`/`org_role`, your colony build doesn't need the v2 fallback.
+corpus/ops/staging-bringup.md:3-3  This is the **spine doc** for setting up a personal Anthropos staging environment that mirrors Stefano's on Ithaca: full prod-shaped data, the platform stack running on Tailscale, your engineer account bound to a dev Clerk app, and PR-ready repos.
+corpus/ops/staging-bringup.md:199-199  The AWS creds are an exception — Talk to Data calls Bedrock via the prod inference profile (no dev tenancy yet), so use the dedicated staging IAM user Stefano keeps for this.
+corpus/ops/staging-bringup.md:222-222  Stefano keeps a recent prod dump at `/home/devops/backup_22934492224-317.sql` on Ithaca (12 GB, plain SQL, pg_dump 16).
+corpus/ops/staging-bringup.md:248-248  **Important: the dump restores into the default `postgres` database, not into a separate `anthropos` DB.** The Bitnami Postgres image creates `postgres` as the bootstrap DB, the dump's top-level `\connect postgres` lands all data there, and so the schemas you care about (`public`, `sentinel`, `cms`,
+corpus/ops/staging-bringup.md:261-261  You should see thousands of users (~5,951 in the 2026-05-14 dump), hundreds of orgs (~250), thousands of memberships (~3,597), and thousands of casbin rules (~5,168).
+corpus/ops/staging-bringup.md:275-275  No need to re-do steps 5-7 since the dev Clerk binding is per-row in the DB, but you WILL need to re-do step 6 (engineer rebind) since the dump's `clerk_id` columns get overwritten.
+corpus/ops/staging-bringup.md:312-312  | `app`             | `public`       | Owns `users`, `organizations`, `memberships`, `ask_conversations`, `ask_messages`, audit logs — plus the merged skiller taxonomy (skills, job roles, translations, embeddings) since July 2026 |
+corpus/ops/staging-bringup.md:316-316  `sentinel` is not in the table because it uses raw Casbin schema management, not Atlas.
+corpus/ops/staging-bringup.md:356-356  **app** (6 migrations, public): `20260414085836` (drop legacy triggers) → `20260506145258` (`ask_query_lessons`).
+corpus/ops/staging-bringup.md:389-389  **Quirk #1 — Makefile uses SSH** — already addressed in §2. Patch `git clone git@github.com:` → `https://github.com/`.
+corpus/ops/staging-bringup.md:413-413  **Quirk #11 — `colony` has two separate Clerk auth bugs.** Both bite every staging today; the working fix on Ithaca + Calypso is a single vendored copy of `colony` that patches both.
+corpus/ops/staging-bringup.md:417-417  **Bug 2 — Clerk v2-JWT claim shape unsupported.** New Clerk apps (including `national-elk-17`) default to a v2 session-token format (`"v": 2`) that nests org info under a single `o` key:
+corpus/ops/staging-bringup.md:428-428  `colony` v0.34.0 (and the `fix/clerk-getuser-nil-client` branch on top) only reads v1 names: `org_id`, `org_role`, `org.eid`.
+corpus/ops/staging-bringup.md:428-428  On a v2 token, `GetOrganization()` returns `nil` → every `colony.User.GetOrganization()`-gated endpoint (Talk to Data `/ask/*`, Members listing, Workforce Intelligence, anything else REST-backed) 403s with `missing organization context`.
+corpus/ops/staging-bringup.md:428-428  The GraphQL ent privacy layer is unaffected, so the bug *looks* like "REST is broken, GraphQL is fine," which is misleading — it's a single common root cause.
+corpus/ops/staging-bringup.md:432-432  **The working fix on Ithaca + Calypso** is a 309-LOC patch on top of `fix/clerk-getuser-nil-client` (saved at `/tmp/colony-v2-jwt-patch.diff` on Ithaca, 2026-05-14).
+corpus/ops/staging-bringup.md:432-432  Three pieces, all in `authn/provider/clerk/`:
+corpus/ops/staging-bringup.md:434-434  `clerk.go`: `Clerk` struct gains an `orgClient OrganizationClient` field; `NewProvider` wires `organization.NewClient(cfg)` into it (reuses the same `BackendConfig` already used by `user.Client` + `jwks.Client`).
+corpus/ops/staging-bringup.md:435-435  `clerk_user.go`: new constant `claimOrgV2 = "o"`, new `OrganizationClient` interface (one-method `Get(ctx, idOrSlug)`), new process-wide `orgEidCache` (clerk-org-id → eid).
+corpus/ops/staging-bringup.md:435-435  If `orgEid` is still empty (the realistic case — v2 tokens omit `public_metadata` by default), a new `lookupOrgEid(clerkOrgID)` helper fetches the org from the Clerk Backend API, reads `public_metadata.eid` from `clerk.Organization.PublicMetadata` (a `json.RawMessage`), caches it, and returns it. Er
+corpus/ops/staging-bringup.md:436-436  All pass; full clerk suite stays green.
+corpus/ops/staging-bringup.md:466-466  **Quirk #12 — Dev Clerk needs Organizations enabled + per-user/org `external_id` set.** Documented as the rebind procedure in §6 below.
+corpus/ops/staging-bringup.md:468-468  **Quirk #13 — Dev Clerk "new device" sign-in challenge** blocks programmatic login.
+corpus/ops/staging-bringup.md:468-468  Bypass with `POST /v1/sign_in_tokens` for Playwright / CI. Real-user login through the form is fine (Clerk emails the code on first sign-in, then trusts the device).
+corpus/ops/staging-bringup.md:474-474  **Quirk #17 — Tailscale ACL `hosts:` for friendly aliases** — addressed in §1. Each new alias also needs: (a) Clerk allowed_origins, (b) backend CORS (or `CORS_EXTRA_ORIGINS` env once the upstream PR lands).
+corpus/ops/staging-bringup.md:486-486  After restoring the prod dump, every `users.clerk_id` and `organizations.clerk_id` in your DB points at **prod** Clerk IDs that don't exist in the dev Clerk app. If you log in now, Clerk authenticates you but the backend can't find your user row → blank /home, no admin context, all enterprise routes
+corpus/ops/staging-bringup.md:490-490  Creating your Clerk user in the dev app, setting `external_id` to your DB UUID, rewriting `public.users.clerk_id`.
+corpus/ops/staging-bringup.md:491-491  Enabling Organizations on the dev Clerk app, creating matching dev orgs, setting `public_metadata.eid`, rewriting `public.organizations.clerk_id`.
+corpus/ops/staging-bringup.md:492-492  Syncing `sentinel.casbin_rules.g2` from `public.memberships` so the authz layer recognizes you as admin.
+corpus/ops/staging-bringup.md:493-493  (Optional, recommended) Customizing the dev Clerk session token to embed `eid`, `email`, `firstname`, `lastname`, and `org.eid` claims — avoids per-request Clerk API fetches and 429 rate-limit pain.
+corpus/ops/staging-bringup.md:514-514  Stefano set this up on Ithaca as `https://ithacastaging.taildc510.ts.net`.
+corpus/ops/staging-bringup.md:514-514  The dev Clerk app has these origins in `allowed_origins` already:
+corpus/ops/staging-bringup.md:628-628  A working Clerk login (yours or Stefano's shared account).
+corpus/ops/staging_from_dump.md:16-16  You only need to develop a single isolated component (use the empty-DB flow from `setup_guide.md` and seed what you need).
+corpus/ops/staging_from_dump.md:28-28  Access to a **dev Clerk app** (NOT production Clerk).
+corpus/ops/staging_from_dump.md:28-28  If you don't have one, create a fresh dev application in the Clerk dashboard and copy its publishable + secret keys.
+corpus/ops/staging_from_dump.md:29-29  Your prod email address — the same email that exists in `public.users` of the dump.
+corpus/ops/staging_from_dump.md:37-37  A staging stack restored from a prod dump contains real customer email addresses in `public.users`.
+corpus/ops/staging_from_dump.md:37-37  Many code paths trigger transactional notifications through the messenger subsystem → Brevo (welcome emails, invitation flows, weekly recaps, password resets).
+corpus/ops/staging_from_dump.md:118-118  If you see anything else (especially `relation already exists` collisions or `permission denied`), check `/tmp/restore.log` and clean the DB before retrying:
+corpus/ops/staging_from_dump.md:133-133  After restore, every `users.clerk_id` and `organizations.clerk_id` in the DB points at **prod** Clerk IDs that don't exist in your dev Clerk app. If you log in now, Clerk will authenticate you fine but the backend won't find your user record → blank/profile state, no admin context, all enterprise ro
+corpus/ops/staging_from_dump.md:172-172  Most Anthropos pages use Clerk's Organizations feature.
+corpus/ops/staging_from_dump.md:181-181  For each org you're an admin of in the prod dump, create a matching Clerk dev org and remap the DB:
+corpus/ops/staging_from_dump.md:219-219  The dump's `sentinel.casbin_rules.g2` is sometimes inconsistent with `public.memberships` — you'll be `admin` in N orgs in the DB but only have casbin grants for fewer.
+corpus/ops/staging_from_dump.md:219-219  Without the casbin grant, sentinel rejects every `org:feature:*` check (members:list, workforce, etc.) with `forbidden`, which the UI surfaces as empty Members tables, empty Activity Dashboard, etc.
+corpus/ops/staging_from_dump.md:239-239  Clerk's session token doesn't include your DB UUID by default, so the Anthropos backend has to fetch your user/org from the Clerk Backend API on every request.
+corpus/ops/staging_from_dump.md:239-239  Clerk rate-limits aggressively (HTTP 429), and the first few page loads after a fresh login can fail with "organization mismatch" errors.
+corpus/ops/staging_from_dump.md:241-241  In the Clerk dashboard → Sessions → "Customize session token", add these custom claims:
+corpus/ops/staging_from_dump.md:261-261  The shared `colony` library used by every Go service has two unfixed-upstream issues that surface only against dev Clerk apps:
+corpus/ops/staging_from_dump.md:263-263  **Nil-deref panic on every authenticated GraphQL query** — `colony@v0.33.2`/`v0.34.0` `authn/provider/clerk.GetUser` returns a `*User` with the `client` field unset.
+corpus/ops/staging_from_dump.md:263-263  `Email()` also nil-derefs when `PrimaryEmailAddressID` is missing on the fetched Clerk user.
+corpus/ops/staging_from_dump.md:264-264  **Clerk JWT v2 format unsupported** — modern Clerk dev apps issue tokens with claims under `o.{id,rol,slg}` instead of `org_id`/`org_role`/`org`.
+corpus/ops/staging_from_dump.md:364-364  Save in https://login.tailscale.com/admin/acls/file (or `POST /api/v2/tailnet/<tailnet>/acl`) and resolution is instant tailnet-wide.
+corpus/ops/staging_from_dump.md:366-366  **Clerk allowed origins** (https://api.clerk.com/v1/instance with `allowed_origins`).
+corpus/ops/staging_from_dump.md:381-381  with your engineer email + the password you set in 3a. If your dev Clerk app still has the "new device" sign-in challenge enabled and you don't want to receive the email code, bypass it with a one-shot ticket:
+corpus/ops/staging_from_dump.md:393-393  `/library/ai-simulations` lists public simulations from Directus.
+corpus/ops/staging_from_dump.md:398-398  If `/enterprise/members` shows `0 / 50, No data`, re-check step 3c (casbin sync) — it almost always means a g2 row is missing for your user × your active org and sentinel is rejecting `org:feature:members:list`.
+corpus/ops/staging_from_dump.md:405-405  Backend's `colony.GetOrganization()` returned `nil` because the JWT's `o.id` (or `org_id`) didn't resolve to a valid `eid`.
+corpus/ops/staging_from_dump.md:411-411  Casbin doesn't know you're an admin of the active org. Re-run step 3c and restart sentinel.
+corpus/ops/staging_from_dump.md:463-463  Clerk-side cleanup (delete the dev orgs and your dev user) can be done by hand in the Clerk dashboard or via `DELETE /v1/organizations/<id>` and `DELETE /v1/users/<id>`.
+corpus/ops/staging-sync.md:59-59  **Save a safety patch** to `~/.local/state/anthropos-staging-sync/safety/<repo>-<TS>.{patch,head}` — the working-tree diff (with skip-worktree files temporarily unmasked so their changes are captured too) and the previous HEAD sha. Recoverable via `git reset --hard <head>; git apply <patch>`. 30-day
+corpus/ops/staging-sync.md:201-201  On 2026-05-14 both Ithaca and Calypso had 6–11 pending migrations sitting unapplied since the initial dump restore, undetected for weeks because the smoke test exercises Clerk + `/home` only.
+corpus/ops/webhook_setup.md:3-3  This guide explains how to receive Clerk webhooks during local development so user and organization data syncs to your local database.
+corpus/ops/webhook_setup.md:7-7  Clerk is the source of truth for authentication.
+corpus/ops/webhook_setup.md:7-7  When events happen in Clerk (user signup, org creation, membership changes), webhooks notify the backend to sync data locally.
+corpus/ops/webhook_setup.md:10-10  Users created in Clerk won't appear in your local database
+corpus/ops/webhook_setup.md:15-15  `user.created`, `user.updated`, `user.deleted`
+corpus/ops/webhook_setup.md:16-16  `organization.created`, `organization.updated`, `organization.deleted`
+corpus/ops/webhook_setup.md:17-17  `organizationMembership.created`, `organizationMembership.updated`, `organizationMembership.deleted`
+corpus/ops/webhook_setup.md:24-24  Clerk runs as a SaaS at `clerk.com`.
+corpus/ops/webhook_setup.md:24-24  Clerk cannot reach `localhost` - it needs a public URL.
+corpus/ops/webhook_setup.md:54-69  Configure the endpoint: - **Endpoint URL**: `https://<your-localtunnel-url>/api/webhook/clerk` - Example: `https://gentle-flies-think.loca.lt/api/webhook/clerk` - **Subscribe to events** (select all of these): - `user.created` - `user.updated` - `user.deleted` - `organization.created` - `organizatio
+corpus/ops/webhook_setup.md:75-75  Add/update the signing secret in `platform/.env`:
+corpus/ops/webhook_setup.md:101-101  **URL changes on every restart** - You must update the webhook URL in Clerk each time you restart the tunnel
+corpus/ops/webhook_setup.md:181-181  This approach is faster but means your local database won't reflect Clerk changes until you set up webhooks.
+corpus/ops/webhook_setup.md:189-189  **Cause**: `CLERK_WEBHOOK_SECRET` doesn't match the signing secret in Clerk.
+corpus/ops/webhook_setup.md:192-192  Go to Clerk Dashboard > Webhooks > your endpoint
+corpus/ops/webhook_setup.md:213-213  Clerk webhook delivery will retry and succeed.
+corpus/ops/webhook_setup.md:223-223  Go to Clerk Dashboard > Webhooks
+corpus/ops/webhook_setup.md:240-240  **Each developer** needs their own webhook endpoint in Clerk (or update the shared one when you start working)
+corpus/ops/setup_github_guide.md:3-3  This guide helps Anthropos employees configure GitHub access to contribute to the organization repositories at `https://github.com/anthropos-work/`.

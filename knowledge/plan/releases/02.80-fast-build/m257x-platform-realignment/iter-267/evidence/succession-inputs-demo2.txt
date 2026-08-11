@@ -1,0 +1,8 @@
+org = Meridian Labs (pt-world Org A) = ad524614-a74d-52e0-ae8a-ae575643943c
+Q1 members|28
+Q2 role_requirements|280
+Q3 declared_skills|266
+Q4 verified_skills|33
+Q5 session_activity|89
+Q6 interview_signals|12
+decommissioned schemas|NONE

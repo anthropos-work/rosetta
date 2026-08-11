@@ -1,0 +1,5 @@
+411a3c15 chore(skills): re-home four skills to the external plugin — 44 stale claims leave with them
+89092e4a close-release(v3.2) Phase 10 follow-through: a commit count measured at one tip and attributed to another, in the retro about exactly that
+a56881cd close-release(v3.2) Phase 9/10: the completeness ledger reaches 0 unaccounted, and three close decisions written down instead of taken silently
+c8bf4d37 close-release(v3.2) Phase 8d: the release retro — seven wrong populations, five consecutive routing failures, and a blocking gate nobody ran
+7a156c9e close-release(v3.2) Phase 8/8c: state.md rotated by REPLACEMENT, and a stats tool that has been reading zero for twelve days

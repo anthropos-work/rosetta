@@ -1,0 +1,15 @@
+decommissioned-instruction-guard: 2 corpus instruction(s) tell an operator to DELETE a line that is LIVE in the clone set:
+    - corpus/ops/setup_guide.md:775  `RUN pip install --no-cache-dir -r studio/requirements.txt`
+      still live at /Users/marco/workspace/anthropos/rosetta/stack-dev/app/Dockerfile:46
+    - corpus/ops/staging_from_dump.md:478  `RUN pip install --no-cache-dir -r studio/requirements.txt`
+      still live at /Users/marco/workspace/anthropos/rosetta/stack-dev/app/Dockerfile:46
+
+The requirement MIGRATED and the remedy did not. Re-point the entry at whatever owns the line now — never at deleting it.
+
+decommissioned-instruction-guard: 1 instruction(s) name a decommissioned service with no historical marker in scope, of 17 enumerated:
+    - corpus/services/roadrunner.md:249 [roadrunner/fence] cd roadrunner
+
+The requirement may have MIGRATED when the service folded. Mark the site historical, or re-point it at whatever owns the requirement now — an unmarked instruction reads as current.
+decommissioned-instruction-guard: population 17 across 10 file(s); decommissioned set = 16 service(s) derived from corpus/architecture/platform-migration-status.md
+decommissioned-instruction-guard: assertion D — 2 deletion-instruction block(s) scanned, 4 candidate line(s), 2 live; reach = 270 build-input line(s) from 1 clone root(s)
+decommissioned-instruction-guard: refused (counted, never guessed): excluded: the map that defines the set x2, fence is a listing, not a command block x2, prose mention carries no imperative x107

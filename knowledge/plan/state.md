@@ -1,131 +1,140 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27; adversarially plan-reviewed + revised same day). The time-to-ready release: from nothing, to live, to provably live, fast. Measure the machine and spend it deliberately (build bench + two checked-in measured host profiles + one HARD headroom assert), sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev bring-up 666 s → ≤ 360 s, then bake the Playthroughs into the bring-up so a stack comes up AND proves itself. 4 milestones M255 (HARD barrier) → M256 → M257 → M258, strictly serial. Tooling + docs only, 0 platform-repo edits."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → M257x → **M257** → M258, strictly serial. **3 of 5 closed.** Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "M257 — first-light build (iterative) — NOT STARTED. Gate: cold --purge + demo-up 666.29 s → ≤ 360 s p50 on a host, autoverify green / 0 warnings. re_scope_trigger re-derived 480 → 420 s."
-last_closed: "M256 — 2026-07-30"
-phase: "Between milestones. M256 closed-on-gate + merged into release/02.80-fast-build. Both repos clean + pushed; rext tag fast-build-m256-harden-final on origin. demo-2 up (16 containers, pt-world re-seeded, drifted cockpit fixture sha 99e2f315 restored). Next: /developer-kit:work-milestone --milestone=M257."
-last_updated: "2026-07-30"
+active_milestone: "(between milestones — M257 «first-light build» is next, UNPAUSED by M257x's close; see Next up)"
+last_closed: "M257x — 2026-08-11"
+phase: "Between milestones. M257x closed 2026-08-11 by USER RULING (`TOK-09`), NOT on gate — clauses 1–4 met and proven, **clause 5 OUT OF SCOPE by that ruling and never met**. M257 is next and its gate needs re-cutting before it starts (it names a retired host). Carry-forward from M257x → M258: 11 items / 5 clusters + 1 block fate."
+last_updated: "2026-08-11"
 ---
 
 # State
 
 **v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
-**2 of 4 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 — not here.
+**3 of 5 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 / § M257x — not here.
 
-## Hosts (D-v28-14, 2026-07-31)
+## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
-- 🔒 **`billion` — THE DEMO MACHINE.** Deploying a final working demo ONLY. **Not available for development
-  or testing.** Do not use it to build, measure, or iterate. (This replaces the old per-occasion sign-off
-  rule and is stricter, not looser.)
-- ✅ **`odysseus` — the dev/test host.** `devops@100.110.67.14` / `odysseus.taildc510.ts.net` (Tailscale).
-  User-signed-off for this milestone **and later ones**, including moving to a nearer-production machine
-  when a milestone needs it. Measured 2026-07-31: **8 cores / 7 GiB / x86_64 Linux 6.8, 189 G free,
-  Docker 29.6.2, NO Go** (the rext tooling is Go — install it).
-- 💻 **laptop** — 10 cores / 16 GiB. Free as of 2026-07-31 (demo-2 torn down, 244 GiB free, 0 containers).
-  M255's headroom model **refuses** it for two concurrent Next.js build lanes.
-
-**`666.29 s` is BILLION's baseline and does not transfer.** M257 must measure odysseus's own (n >= 3) and
-check in `odysseus.json` before pricing any lever against it.
+- 🎬 **`billion` — the OFFICIAL host.** Demo deployment only. Not for development or testing.
+- 💻 **dev/test = LOCAL to the new Mac.** The old laptop and **`odysseus` are both retired** from this project.
+- ⚠️ **Host-class mismatch, and it blocks M257:** billion is **x86_64/containerd**, a Mac is **arm64/overlay2**.
+  M255 measured **4.84 GB vs 2.88 GB** for the same Dockerfile — **the Mac pays no unpack leg**, which is exactly
+  what M257's L1 (~200–250 s) optimises. **M257's speed gate is un-measurable on the sanctioned hosts as
+  written.** M257x is largely unaffected: its gate is correctness, not seconds.
+- 🔧 **New-Mac bootstrap:** `.agentspace/rext.tag` is **git-ignored** → a fresh clone has no pin, and a mismatch
+  is **FATAL** in `ensure-clones.sh:94-101`. Create it deliberately. (On the old box the SoT was 63 commits
+  behind `main`, so `/demo-up` aborted there.)
 
 
-## Active milestone
+## Next up
 
-**M257 — first-light build** (`iterative`, not started). Collapse the cold `--purge` + `demo-up` cycle
-**666.29 s → ≤ 360 s p50**. Levers L1–L10 are ranked by measured seconds in its `overview.md`; **L1 is already
-proven real** (M255: hiring image 4.84 GB → 379 MB, export leg 146.8 s → 2.9 s).
+**M257 — first-light build** (`iterative`), **UNPAUSED** by M257x's close. **Its exit gate must be re-cut
+before it starts:** it names `odysseus`, which `D-v28-15` retired from this project on 2026-07-31, and no
+host profile has ever been measured for the Mac that replaced it — so the gate is not gradeable as written.
+Banked from its 3 closed iters, not to be redone: both gate-honesty instruments landed with
+mutation-proven controls, B1+B2 fixed, the mirror fence parameterised by host. Still owed: a baseline on a
+host that exists, and `INVESTIGATE-M257-load1-48` (peak `load1` **48.7** vs HEADROOM clause 1's limit of
+**6**).
 
-⚠️ **Tighter than first drafted.** Its `re_scope_trigger` was re-derived **480 → 420 s**: at 480 it could only
-fire if L1+L2+L3 returned under 186 s, so a 60 s gate miss could never have tripped it. 666.29 → 360 needs
-**306.29 s** against **300–350 s** of levers, so **at L1's conservative end the big three miss the gate** and
-L4/L5/L7/L8/L10 are load-bearing, not padding.
-
-**It inherits 6 items** — 4 from the M255 close (`run_campaign` rep-body coverage · `demo_knob_guard` anchor
-mutants · `_manifest_lists` truncation · the `laptop` provisional field) and **2 from the M256 close, both
-gate-relevant**: `FIX-M256-demo2-service-self-termination` (two services self-terminate `Exited 0` while
-`docker ps` shows 14/16 "Up" and every grid renders 20 content-free rows — M257's gate would go **green on a
-half-dead stack**) and `FIX-M256-autoverify-fapi-libressl` (warns *"NOBODY CAN LOG IN"* about a working stack;
-M257's gate counts autoverify warnings). Both in its `overview.md`.
+**M257x carry-forward lands in M258**, not M257 — 11 items in 5 root-cause clusters + 1 block fate. Owner:
+[`m257x…/carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md).
+The one with an operational deadline: **the tooling fixes from M257x's close are NOT on a pushed tag**, so
+no stack can obtain them until someone tags and `git push --tags`. *Tagging is not publishing.*
 
 ## Phase
 
-Between milestones. M256 is closed and merged; nothing is half-written.
+Between milestones. **M257x closed 2026-08-11 by USER RULING (`TOK-09`) — not on gate.** Clauses 1–4 met
+and proven; **clause 5 is OUT OF SCOPE by that ruling, was never met, and must never be reported as
+"measured clean".** Full closure narrative: [`roadmap.md`](roadmap.md) § M257x. Clause-by-clause table,
+metrics and routing live in that milestone's own `carry-forward.md` / `metrics.json` / `retro.md`.
+
+⚠️ **Open safety item, routed to M258 and not closed:** a demo reached the **production** S3 bucket and only
+an **IAM policy on an account we do not control** refused it. The containment is proven by a unit test on
+the emitter and **on no running stack**; both currently-running stacks still carry the pointer, and the
+dev-side strip is demo-only. Owner: `corpus/ops/safety.md` + M257x `carry-forward.md` cluster 1.
+
+## Standing rules (outlive the milestone — do NOT move these into `phase:`)
+
+Each rule's derivation lives at its owner; these are the headlines a reader must not miss.
+**`§5`** = [`corpus/ops/platform-alignment.md`](../../corpus/ops/platform-alignment.md) § 5, which owns the
+numbered rules in full.
+
+- **§5 rule 44 — no single search tool is safe.** Gitignored-but-tracked files, NUL-bearing source and
+  nested untracked repos each blind a *different* instrument. Use the mechanized per-tree path
+  (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where
+  it publishes 22.**
+- **TWO INSTRUMENTS, and conflating them cost M257x repeatedly.** The guard family and the graded read
+  measure different things: a guard going green says nothing about corpus sentence-level fidelity, and a
+  reading says nothing about the fences. (M257x's clause 5 — the graded read — was placed **out of scope
+  by the user**, `TOK-09`. It was never met. Do not resurrect it as a claim of cleanliness.)
+- **A guard's green is only as strong as its own load-bearing word** — when a guard qualifies its own
+  claim, the qualifier IS the blind spot. `anchor_construct_guard` said *"every **resolvable** anchor"*
+  while ≥7 upheld findings resolved to the wrong construct; it now PRINTS its floor (`KNOWN_WEAKNESS`),
+  widening measured and declined (`D-M257x-121-4`). **Every count of that class is a floor.**
+- **Read the SUBSTRATE before believing a defect** — a checkout behind its own fetched `origin/main` does
+  not merely fail to confirm a claim, **it manufactures evidence against a true one** (6 of 13 clones
+  stale; 4 adjudicators booked a true claim as contradicted). **And the mirror:** reading at HEAD instead
+  of the census ref **inflated** the re-pin backlog 3.1× (iter-126). Derivation: `D-M257x-122-4`.
+- **NEVER quote this milestone's read-derived error rate as corpus-wide**, and quote its two governing
+  measurements together or neither: test–retest recall **~35 %** (iter-119), and the published rate is a
+  **hunted-sample artifact — 0.70 % over 427 exhaustive adjudications vs ≥ 13.3 % hunted**, over-stating
+  the population **~19×** (`D-M257x-122-3`). The corpus publishes no error rate at all; keep it that way.
+- **§5 rule 53 — every mutation asserts it APPLIED** before its result is interpreted, and is a control
+  only for the clause it can **isolate**. Three of harden pass 26's silently failed to apply, each reading
+  as *"the controls survive."*
+- **§5 rule 51 — state the invocation AND the expected wall time with every whole-suite count.**
+- **§5 rule 54 — a correction that reaches ONE cell is not a correction.** It must reach every site
+  publishing the retracted claim: the router (24 sites), `db-backup` (3), `cms`'s *"assert neither"* (5).
+- **RE-SCOPE TRIGGER: occurrence 3, NOT firing.** It fired at iter-53 and the remedy shipped as TOK-04;
+  35+ clean iters since, so *"two CONSECUTIVE invalidated attempts"* is false on its own words.
 
 ## v2.8 shape
 
 **M255 build-bench & host-headroom** (section, HARD barrier) ✅ **done 2026-07-28, VERDICT GO** →
-**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257 first-light build**
-(666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
+**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257x platform re-alignment** ✅ **done 2026-08-11, `closed-incomplete` (user ruling, not gate)** → **M257 first-light build**
+(`billion` 666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
 user's order — *sharpen the detector before changing what it detects*.
 
 ## Binding user decisions (2026-07-27, + later)
 
-- **D-v28-1** codename **"fast build"** · **D-v28-2** M255 stays a `section` barrier.
-- **D-v28-3** — **batch-gate semantics: no accumulating red.** A run drives the **full batch to completion**;
-  at batch end a non-empty red set **escalates for renegotiation**. **Zero standing red** is the invariant.
-- **D-v28-4** coverage scope: land onboarding (5) + org-admin (4); every remaining uncovered curated UC gets a
-  **written verdict**. **D-v28-5** the cockpit logout defect fixed in M256, deliberately with no Playthrough.
-- **D-v28-6 … D-v28-11** from the adversarial plan review (23 agents, 7 lenses, 35 findings, 14 verified,
-  10 refuted) — held in full in [`roadmap.md`](roadmap.md).
-- **D-v28-12 / D-v28-13** — M256's clause 1 re-cut **twice**: relative for a local host, then **per-leg rather
-  than per-suite**, once the threshold was measured to sit **inside its own 2.04× noise floor**. The standing
-  rule it produced: ***never gate a relative statistic without first measuring its variance.***
-- **HARDEN-CAP-ACCEPTED-D105** (2026-07-30) — M256's final harden accepted un-stabilized, residuals enumerated.
-- **M256 close ratifications** (standing delegation, overrule preserved to release close): **D103**, **D104**,
-  and the **iter-31/32 deviation**. See `m256…/decisions.md`.
-
-## Headline numbers (M256 close, 2026-07-30)
-
-- **Python (rext):** **1,723 pass / 2 skip / 0 fail** over four suites (stack-core 287 · demo-stack 1000 ·
-  stack-verify 171 · stack-injection 267), counts from **JUnit XML, never grepped stdout**, one invocation per
-  suite with rc captured into a variable. Same-scope vs M255's three-suite 1,505: **1,552 (+47)**.
-- **Go (rext):** **2,130** test funcs (M255: 2,023, **+107**) · **0 of 6** modules failing, 58 packages ok.
-  NB rext is **not one Go module** — `go test ./...` from the root fails by design; run each section.
-- **Playwright:** **209 tests in 43 files** (was 204/42); unit **174** (was 169).
-- **Playthroughs: 30 live + 1 verdicted TODO** · mutating **12** · negative controls **28 of 30** ·
-  `blocked` **1** · written verdicts **31/31, 0 `unimplementable`** · `ptvalidate` VALID rc 0.
-- **Flake: 0** (3 consecutive cold reset-to-seed, rc `0/0/0`). **Platform-repo edits: 0. Net-new deps: 0.**
-
-### v2.8 baselines to beat
-
-| | Baseline | v2.8 target |
-|---|---|---|
-| Cold `--purge` + `demo-up` (billion) | **666.29 s** (n=3 p50; min 658.15) | **≤ 360 s p50** (M257) · stretch 300 |
-| Composed up-and-proven cycle | *does not exist* | **≤ 480 s p50**, zero standing red (M258) |
-| Playthrough suite, ABSOLUTE on billion | **228 s** (dominated by one LLM-bound test) | re-measure = **reporting only**, M258 |
+**`D-v28-1` … `D-v28-15` are held in full in [`roadmap.md`](roadmap.md)** — including the two that produced
+standing rules: **`D-v28-3`** (batch-gate semantics — **zero standing red** is the invariant) and
+**`D-v28-12`/`D-v28-13`** (***never gate a relative statistic without first measuring its variance***).
+M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in that file's § M256 closure;
+`HARDEN-CAP-ACCEPTED-D105` is in [`m256…/decisions.md`](releases/02.80-fast-build/m256-playthrough-sharpening/decisions.md).
 
 ## Recently closed milestones (max 5)
-- **M256 — 2026-07-30** · playthrough sharpening (iterative) · **`closed-on-gate`**, 32 iters / 3 harden passes
-  · 18 → **30 live Playthroughs**, mutating 1 → 12, controls 0 → 28/30 · **all three gate clauses proved
-  unmeetable as first authored** · ~43 checks that reported success without checking · 4 Fate-1, 10 Fate-3
-  (6 → M258, 2 → M257), 1 drop, **3 awaiting the user's signature**, 0 escape-hatch · 0 platform edits.
-- **M255 — 2026-07-28** · build-bench & host-headroom (section, HARD barrier) · **VERDICT GO** · baseline
-  n=3 p50 666.29 s · 3 Fate-1, 4 Fate-3 → M257, 0 escape-hatch · 0 platform edits.
+
+_Trimmed to the last 3 days per the state.md contract; older entries live in `roadmap.md`'s `### M{N}` blocks._
+
+- **M257x — 2026-08-11** · platform re-alignment (iterative) · **`closed-incomplete` — CLOSED BY USER
+  RULING (`TOK-09`), NOT on gate.** Clauses 1–4 met and proven; **clause 5 out of scope by that ruling —
+  never met, never measured clean.** 288 iters / 73 harden passes. The microservices→`app` map is now
+  machine-fenced against `repos.yml` in both directions, all 93 org repos are enumerated, and the demo +
+  dev stacks both build from current `main`. Full narrative: `roadmap.md` § M257x.
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;
   prove-on-billion a–h live; **zero carry-forward**; 0 platform edits.
 - **v2.6** 2026-07-23 (`v2.6`) · **v2.5** 2026-07-20 (`v2.5`).
 
-## Standing backlog (fated destinations)
-- **Consumed by v2.8:** the reserved Playthrough futures **M206** / **M207** were re-fated inside M256's
-  clause 3 — each has a **written verdict** rather than a sixth consecutive re-reservation.
-- **Awaiting the user's signature** (M256 close, roadmap calls not routing ones): `PERF-M256-parallel-lane`
-  (needs a cookie-scoped Clerkenstein registry or one fake-FAPI per worker — a real build; no v2.8 gate needs
-  it) · `PT-M257-self-evaluation` (re-homing an M206 reservation) · `PT-M257-talk-to-data` (blocked on
-  `ask_*` migrations **plus live Bedrock credentials**).
-- **Platform defects** (Rosetta cannot fix; zero platform edits binding) → the net-new
-  [`platform-defect-register.md`](platform-defect-register.md), 4 entries with `file:line`.
-- **DROPPED:** DEF-M250-01 · DEF-M215-03(a)/F11 · DEF-M239-01 · `PT-M256-resume-fixture-pair` (premise dissolved).
-- **Still unscheduled (vision):** DEF-M10-01 (S3/Bunny voice media) · DEF-M21-01 · CAVEAT-1 · M314b (platform)
-  · **M205** residual.
+## Standing backlog (fated destinations — this is an INDEX; each row's owner is the link)
+
+Every item below is owned by the linked file. iter-129 closed the last three that were owned by **this
+section and nothing else**, so no fate now depends on a field the next close overwrites.
+
+| class | owner |
+|---|---|
+| **Consumed by v2.8** — the M256-clause-3 re-fating of the reserved Playthrough futures M206 / M207, each with a written verdict rather than a sixth re-reservation | [`roadmap-vision.md`](roadmap-vision.md) |
+| **Awaiting the user's signature** — `PERF-M256-parallel-lane` · `PT-M257-self-evaluation` · `PT-M257-talk-to-data` (roadmap calls, not routing ones) | [`roadmap.md`](roadmap.md) § M256 closure |
+| **Platform defects** Rosetta cannot fix (zero platform edits binding) — **7** entries with `file:line`, **3 of them M257x**; it had **zero** until iter-102 | [`platform-defect-register.md`](platform-defect-register.md) |
+| **DROPPED** + **still unscheduled** — incl. the three moved out of here at iter-129 (`DEF-M250-01` · `CAVEAT-1` · `PT-M256-resume-fixture-pair`) | [`roadmap-vision.md`](roadmap-vision.md) § Unscheduled backlog |
 
 ## Process flags (do NOT auto-push)
 
-- 📌 **Provenance of every billion-measured M255 number: taken 09:59–11:37Z 2026-07-27, PRE-freeze**, with no
-  overlap with third-party activity (user-confirmed; three totals across two sessions cluster within 2 % —
-  658/666/672 s). **On the first post-freeze campaign, re-confirm three timing-derived claims:** the n=3 p50,
-  spike (a)'s 146.8 → 2.9 s export, spike (d)'s disk-bound attribution. The **barrier verdict needs no
-  re-confirmation** — 4.84 GB → 379 MB is bytes on disk, not a stopwatch.
+- 📌 **Provenance of every `billion`-measured M255 number now lives with the milestone that took it** —
+  [`m255…/progress.md`](releases/02.80-fast-build/m255-build-bench-host-headroom/progress.md) § Provenance
+  (moved there at iter-129, its first durable owner): the window, the pre-freeze condition, the 658/666/672
+  cluster, and the three claims owed a re-confirmation on the first post-freeze campaign.
 - ⚠️ **The stack's PINNED `stackseed` can be older than the authoring copy.** M256 added three `Persona`
   fields, so a `--reset` with the stack's binary **truncates the world and then fails to re-seed**, leaving it
   EMPTY. Shadow the authoring build on `PATH` for any reset. Cost the M256 close one run before it was found.
@@ -138,5 +147,10 @@ user's order — *sharpen the detector before changing what it detects*.
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-07-30 — M256 closed-on-gate and merged. Stable resting point: both trees clean, rext tagged
-on origin, suites green, demo-2 up with its drifted cockpit fixture restored (sha 99e2f315)._
+_Last updated 2026-08-07 — M257x iter-129. Both trees clean and pushed; `demo-1` up._
+
+> **Budgets: every one of them met** — file 14,935/15,360 · frontmatter 1,656/1,860 · body 13,281/13,500 ·
+> all six fields in budget. The body budget was **raised once against a measurement** at iter-129 (12,000 →
+> 13,500, and the frontmatter 2,600 → 1,860 so the two now sum *exactly* to the file cap, which the old
+> triple did not). Derivation, the two probes that were narrower than their own conclusion, and the
+> **re-raise guard**: [`context.md` § state.md contract](context.md).

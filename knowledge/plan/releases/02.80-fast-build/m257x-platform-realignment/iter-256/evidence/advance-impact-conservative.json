@@ -1,0 +1,346 @@
+{
+  "repo_root": "/Users/marco/workspace/anthropos/rosetta",
+  "files_scanned": 114,
+  "guard_resolved": 883,
+  "recorded": 905,
+  "buckets": {
+    "held": 139,
+    "moved": 27,
+    "moved-ambiguous": 4,
+    "changed": 2
+  },
+  "by_repo": {
+    "stack-demo/app": {
+      "head": "ad9f3c498",
+      "origin_main": "3eaadae68",
+      "behind": 28,
+      "buckets": {
+        "held": 107,
+        "moved": 26,
+        "moved-ambiguous": 4,
+        "changed": 2
+      }
+    },
+    "stack-demo/next-web-app": {
+      "head": "8297c684c",
+      "origin_main": "19423a1fb",
+      "behind": 12,
+      "buckets": {
+        "held": 20
+      }
+    },
+    "stack-demo/ant-academy": {
+      "head": "22df69dd8",
+      "origin_main": "249430c39",
+      "behind": 10,
+      "buckets": {
+        "held": 12,
+        "moved": 1
+      }
+    }
+  },
+  "pinned": 113,
+  "ambiguous_pinned": 200,
+  "not_advancing": 238,
+  "no_clone": 182,
+  "unmeasured_clone": [],
+  "impact": [
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 286,
+      "bucket": "moved",
+      "detail": "286 -> 287",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 63,
+      "bucket": "moved",
+      "detail": "63 -> 64",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 64,
+      "bucket": "moved",
+      "detail": "64 -> 65",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 1464,
+      "bucket": "moved",
+      "detail": "1464 -> 1478",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 1485,
+      "bucket": "moved",
+      "detail": "1485 -> 1499",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 1487,
+      "bucket": "moved",
+      "detail": "1487 -> 1501",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 1459,
+      "bucket": "moved-ambiguous",
+      "detail": "1459 -> 24 candidates: [143, 151, 159, 182, 345, 381]",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 1576,
+      "bucket": "moved",
+      "detail": "1576 -> 1600",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:121"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 395,
+      "bucket": "moved",
+      "detail": "395 -> 396",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:129"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 286,
+      "bucket": "moved",
+      "detail": "286 -> 287",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:129"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 394,
+      "bucket": "moved",
+      "detail": "394 -> 395",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/platform-migration-status.md:129"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 294,
+      "bucket": "moved",
+      "detail": "294 -> 299",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:213"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 306,
+      "bucket": "moved",
+      "detail": "306 -> 311",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:214"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 300,
+      "bucket": "moved",
+      "detail": "300 -> 305",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:215"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 317,
+      "bucket": "moved",
+      "detail": "317 -> 322",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:257"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 324,
+      "bucket": "moved",
+      "detail": "324 -> 329",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:258"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 320,
+      "bucket": "moved",
+      "detail": "320 -> 325",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:262"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 314,
+      "bucket": "moved-ambiguous",
+      "detail": "314 -> 2 candidates: [308, 319]",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:263"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 306,
+      "bucket": "moved",
+      "detail": "306 -> 311",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:264"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 227,
+      "bucket": "moved",
+      "detail": "227 -> 232",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/architecture/security_compliance.md:292"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 278,
+      "bucket": "moved-ambiguous",
+      "detail": "278 -> 14 candidates: [121, 126, 198, 279, 650, 661]",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/ops/observability.md:28"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 273,
+      "bucket": "moved",
+      "detail": "273 -> 274",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/ops/observability.md:29"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 62,
+      "bucket": "moved",
+      "detail": "62 -> 63",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/ops/platform-alignment.md:2050"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 63,
+      "bucket": "moved",
+      "detail": "63 -> 64",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/ops/platform-alignment.md:2050"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/web/backend/backend.go",
+      "line": 317,
+      "bucket": "moved",
+      "detail": "317 -> 322",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/ops/staging_from_dump.md:454"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/aireadiness/readiness.go",
+      "line": 716,
+      "bucket": "moved-ambiguous",
+      "detail": "716 -> 22 candidates: [54, 92, 293, 301, 332, 336]",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/ai-readiness.md:483"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/aireadiness/readiness.go",
+      "line": 730,
+      "bucket": "moved",
+      "detail": "730 -> 736",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/ai-readiness.md:486"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/aireadiness/readiness.go",
+      "line": 655,
+      "bucket": "moved",
+      "detail": "655 -> 661",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/ai-readiness.md:487"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/aireadiness/readiness.go",
+      "line": 690,
+      "bucket": "moved",
+      "detail": "690 -> 696",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/ai-readiness.md:503"
+    },
+    {
+      "repo": "stack-demo/ant-academy",
+      "file": "code/ucourses/catalog.js",
+      "line": 961,
+      "bucket": "moved",
+      "detail": "961 -> 1025",
+      "read_at": "origin/main@249430c",
+      "site": "corpus/services/ant-academy.md:174"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "main.go",
+      "line": 284,
+      "bucket": "moved",
+      "detail": "284 -> 285",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/customerio-sync.md:141"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/organization/manager.go",
+      "line": 450,
+      "bucket": "changed",
+      "detail": "old: 'switch org.IsHiring {'",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/hiring.md:98"
+    },
+    {
+      "repo": "stack-demo/app",
+      "file": "internal/organization/manager.go",
+      "line": 453,
+      "bucket": "changed",
+      "detail": "old: 'antRole = enum.RoleCandidate'",
+      "read_at": "origin/main@3eaadae",
+      "site": "corpus/services/hiring.md:99"
+    }
+  ]
+}

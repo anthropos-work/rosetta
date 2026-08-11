@@ -1,0 +1,18 @@
+{
+  "demo-1": {
+    "adopted": true,
+    "created": "2026-08-06T10:21:54+00:00",
+    "n": 1,
+    "ports": [],
+    "status": "up",
+    "type": "demo"
+  },
+  "demo-2": {
+    "adopted": true,
+    "created": "2026-08-10T14:04:46+00:00",
+    "n": 2,
+    "ports": [],
+    "status": "up",
+    "type": "demo"
+  }
+}

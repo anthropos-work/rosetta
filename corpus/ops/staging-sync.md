@@ -62,7 +62,7 @@ Phase 1 of `anthropos-staging-sync.sh` is the force-main loop. Per repo:
 6. **Re-apply skip-worktree marks** for every captured file that still exists upstream. Files that vanished upstream (e.g., a removed Dockerfile or moved config) are logged but not re-marked.
 7. Default branch is auto-detected via `git symbolic-ref refs/remotes/origin/HEAD` — works for repos that use `master` instead of `main`.
 
-Untracked staging-local files (`vendor-colony/`, `apps/web/.env.production`, `clerk-fetch-fix.js`, etc.) listed in `.git/info/exclude` survive `reset --hard` naturally — git doesn't touch ignored or unknown files.
+Untracked staging-local files (~~`vendor-colony/`~~ — **dead, see below**, `apps/web/.env.production`, `clerk-fetch-fix.js`, etc.) listed in `.git/info/exclude` survive `reset --hard` naturally — git doesn't touch ignored or unknown files.
 
 ---
 
@@ -100,6 +100,15 @@ The 14 repos the routine covers (same on every staging host; was 15 before `skil
 
 **Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
 
+> **⚠️ Seven of those eleven no longer build anything.** This is the routine's *configured* scope, read
+> off the staging hosts; upstream has moved out from under most of it. At platform `0c91421` only `app`,
+> `sentinel`, `next-web-app` and `studio-desk` are still `repos.yml` entries, and only `backend`,
+> `sentinel`, `next-web-app`, `studio-desk` and `gotenberg` are still compose services.
+> `graphql-wundergraph` went at `2adcf71`/`360efd4`; `cms`, `jobsimulation` and `roadrunner` at
+> `d11a403`; `storage`, `messenger` and `customerio-sync` at `838d907` — every one of them folded into
+> `app`. Force-resetting those clones still works; the **rebuild** step for them has no compose service
+> left to name. Re-derive the routine's live scope from the host's own script before trusting this list.
+
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
 **Excluded by design:**
@@ -127,9 +136,17 @@ git diff --name-only | while read f; do
 done
 
 # Untracked dirs/files → local-only ignore (.git/info/exclude is per-repo, never committed)
-echo 'vendor-colony/' >> .git/info/exclude
+echo 'vendor-colony/' >> .git/info/exclude   # ← DEAD, see below; harmless but pointless
 echo 'apps/web/.env.production' >> .git/info/exclude
 ```
+
+> **The `vendor-colony/` line is dead — corrected M257x iter-130.** The colony fork existed to carry a
+> nil-client crash, and **the fix landed upstream in colony `v0.34.4`** (*"fix(clerk) ensure client is
+> not nil when fetching user"*, `b810b28`, 2026-06-15). At `ad9f3c498` `app/go.mod:15` requires
+> `colony v0.35.2` and carries **no colony `replace`** — the only `replace` in the file is
+> `getsentry/sentry-go/echo` at `:295` — and there is no `vendor-colony/` or `.colony-fork/` in the
+> tree. Excluding a directory that is never created is harmless; **following the vendor recipe is
+> not**, because it would pin you behind eight months of colony fixes.
 
 After: `git status` shows only what the agent actually changed; `git add .` stages just that; `git diff main` is empty until the agent edits something real.
 
@@ -139,11 +156,25 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 
 | Repo                       | Skip-worktree files                                                                                                  |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, `internal/cors/cors.go`, `internal/web/backend/graphql/graph/handler.go`       |
-| `cms`                      | `Dockerfile.dev`, `go.mod`                                                                                           |
-| `jobsimulation`, `storage`, `sentinel`, `messenger` | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                          |
-| `next-web-app`             | `Dockerfile.dev`                                                                                                     |
+| `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, ~~`internal/cors/cors.go`~~, `internal/web/backend/graphql/graph/handler.go`   |
+| ~~`cms`~~, ~~`jobsimulation`~~, ~~`storage`~~, ~~`messenger`~~ | **RETIRED — `make init` no longer clones any of these** |
+| `sentinel`                 | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                                                      |
+| `next-web-app`, `studio-desk` | `Dockerfile.dev`                                                                                                  |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
+
+> **Corrected M257x iter-130, two ways.**
+>
+> **1. The `internal/cors/cors.go` mark is retirable — the patch it protected LANDED upstream.**
+> `CORS_EXTRA_ORIGINS` is in `app` at `ad9f3c498`: the const at `internal/cors/cors.go:24`, applied at
+> `:78-82` behind a `!environment.IsProduction()` hard-guard, parsed at `:86-100`. It arrived in
+> `f664473` (2026-05-14) + `13410de` (2026-05-19), both ancestors of `ad9f3c498`. **Unmark the file and
+> set the env var instead** — keeping the mark now hides real upstream changes to a file you no longer
+> need to edit.
+>
+> **2. Four of the repos in this table are no longer in the clone set.** `repos.yml` @ `0c91421` has
+> **four** entries — `app`, `sentinel`, `next-web-app`, `studio-desk`. `d11a403` removed `cms` +
+> `jobsimulation` + `roadrunner`; `838d907` removed `storage` + `messenger`. A `for` loop over the old
+> list silently skips them, which is the *"`[ -d ] || continue`"* failure this milestone exists to fence.
 
 ### Force-reset interaction (the dance)
 
@@ -173,15 +204,15 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | ------------------- | ---------------------- |
 | `app`               | `backend`              |
 | `next-web-app`      | `next-web-app`         |
-| `cms`               | `cms`                  |
-| `jobsimulation`     | `jobsimulation`        |
-| `storage`           | `storage`              |
+| `cms`               | ~~`cms`~~ — service **deleted** at `d11a403` |
+| `jobsimulation`     | ~~`jobsimulation`~~ — service **deleted** at `d11a403` |
+| `storage`           | ~~`storage`~~ — service **deleted** at `838d907` |
 | `sentinel`          | `sentinel`             |
-| `roadrunner`        | `roadrunner`           |
-| `messenger`         | `messenger`            |
-| `customerio-sync`   | `customerio-sync`      |
+| `roadrunner`        | ~~`roadrunner`~~ — service **deleted** at `d11a403` |
+| `messenger`         | ~~`messenger`~~ — service **deleted** at `838d907` |
+| `customerio-sync`   | ~~`customerio-sync`~~ — service **deleted** at `838d907` |
 | `studio-desk`       | `studio-desk`          |
-| `graphql-wundergraph` | `graphql`            |
+| `graphql-wundergraph` | ~~`graphql`~~ — service **deleted** at `2adcf71` |
 
 Builds run **serially** (1-2 builds in parallel exhaust RAM on a 16 GB box). Build failures are logged but don't abort the rest of the run — they show up in `errors[]` of `last.json`.
 
@@ -327,4 +358,8 @@ Then ssh in and verify `cat ~/.local/state/anthropos-staging-sync/drift.summary`
 - [`staging-bringup.md`](./staging-bringup.md) — fresh-VM onboarding.
 - [`staging-clerk.md`](./staging-clerk.md) — dev Clerk app + shared test login.
 - [`staging_from_dump.md`](./staging_from_dump.md) — original verbose engineer-rebind reference.
-- Ant-singularity catalog: [`auto-anthropos-staging-dev-loop.md`](https://github.com/stefano-anthropos/ant-singularity/blob/main/knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md) — org-level workflow framing.
+- [`anthropos-work/ant-singularity`](https://github.com/anthropos-work/ant-singularity) — the singularity
+  node repo. **RETRACTED 2026-08-07:** this line used to deep-link
+  `knowledge/singularity-catalog/auto-anthropos-staging-dev-loop.md` under the nonexistent account
+  `stefano-anthropos`. That file has never existed in the repo (1,046 commits, 0 additions) nor anywhere
+  in the org (code search `total_count: 0`). See [`staging-bringup.md`](./staging-bringup.md) § 6.

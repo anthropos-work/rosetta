@@ -1,0 +1,509 @@
+demo-up: public-host auto-discovery STOPPED at rung 1/6 — 'tailscale' is not on PATH. Falling back to a LOCALHOST demo: byte-identical to a no-flag bring-up — the demo works fully, it just is not reachable from another machine. Fix: install Tailscale — https://tailscale.com/download
+hostlock: acquired demo-2 [up-injected demo-2 (localhost) host=Marcos-Mac-mini.local pid=51368 at=2026-08-10T14:25:08Z] → /Users/marco/.rosetta-demo-locks/demo-2.lock
+==> [demo-2] host pre-flight OK — Go + atlas present.
+==> [ensure-clones] stack-demo/platform present — reusing
+==> [ensure-clones] rext pin: consuming rosetta-extensions @ fast-build-m257x-iter-101 (matches .agentspace/rext.tag)
+==> [ensure-clones] stack-demo/platform/.env present — keeping it (not overwriting)
+==> [ensure-clones] make init in stack-demo/platform (clone missing repos.yml repos from GitHub as siblings; skip-if-present)
+Cloning missing repos...
+  app already exists, skipping
+  sentinel already exists, skipping
+  next-web-app already exists, skipping
+  studio-desk already exists, skipping
+Done. All repos are available in /Users/marco/workspace/anthropos/rosetta/stack-demo/
+==> [ensure-clones] stack-demo/ant-academy present — reusing
+==> [ensure-clones] cms: studio/ already populated — reusing (idempotent)
+==> [ensure-clones] app: studio/ already populated — reusing (idempotent)
+==> [ensure-clones] recording clone provenance + freshness -> /Users/marco/workspace/anthropos/rosetta/stack-demo/clones.lock.json
+==> [ensure-clones] freshness: all clones provably fresh-or-pinned (0 stale-by-neglect / pin-drift / fetch-unknown).
+==> [ensure-clones] demopatch R1: ensured pristine academy-fs-published-chapter-body.yaml
+==> [ensure-clones] demopatch R1: ensured pristine academy-fs-published-fallback.yaml
+==> [ensure-clones] demopatch R1: ensured pristine academy-fs-published-public.yaml
+==> [ensure-clones] demopatch R1: ensured pristine ant-academy-back-to-cockpit.yaml
+==> [ensure-clones] demopatch R1: ensured pristine ant-academy-dev-origins.yaml
+==> [ensure-clones] demopatch R1: ensured pristine app-aireadiness-snapshot-loadmembers.yaml
+==> [ensure-clones] demopatch R1: ensured pristine app-targetrole-authz-skip.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-hiring-members-pagination.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-hiring-role-remap.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-aireadiness-flag-gate.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-back-to-cockpit.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-interview-flag-container.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-interview-flag-result.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-members-pagination.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-no-thirdparty.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-public-website-url.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-ssr-graphql-origin.yaml
+==> [ensure-clones] demopatch R1: ensured pristine next-web-studio-url.yaml
+==> [ensure-clones] demopatch R1: ensured pristine studio-desk-back-to-cockpit.yaml
+==> [ensure-clones] demopatch R1: ensured pristine studio-desk-logo-url.yaml
+==> [ensure-clones] demopatch R1: ensured pristine studio-desk-logout-url.yaml
+==> [ensure-clones] demopatch R1: ensured pristine studio-desk-no-thirdparty.yaml
+==> [ensure-clones] demopatch R1: ensured pristine studio-desk-shell-first-paint.yaml
+==> [ensure-clones] demopatch R1: swept 23 manifest(s) from /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/patches/ (directory-driven — F-M236-CLOSE-2)
+==> [ensure-clones] demopatch R2: demo clones' push remote set to no-push:// (structural leak-block; fetch untouched)
+==> [ensure-clones] stack-demo is now a true peer of stack-dev (own platform clone set; secrets seeded from stack-dev when present, else provisioned by M30). Provenance: /Users/marco/workspace/anthropos/rosetta/stack-demo/clones.lock.json
+▶ secret-coverage pre-flight (stack=demo-2, source=/Users/marco/workspace/anthropos/rosetta/.agentspace/secrets, demo-aware)
+  ⚠   ant-academy    2/6 short: ANTHROPIC_API_KEY, FONTAWESOME_NPM_AUTH_TOKEN, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY
+  ⚠   app            5/9 short: AWS_SESSION_TOKEN, ELEVENLABS_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY
+  ⚠   next-web-app   4/6 short: AZURE_OPENAI_KEY, STRIPE_SECRET_KEY
+  ⚠   platform       16/29 short: ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, MISTRAL_API_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY, PUBLIC_HOST, SENTRY_DSN, SKILLER_AZURE_OPENAI_ENDPOINT_URL, SKILLER_AZURE_OPENAI_KEY, SKILLER_OPENAI_KEY, STRIPE_SECRET_KEY
+  ⚠   sentinel       0/1 short: SENTRY_DSN
+  ✓ secret-coverage: critical keys 100% present (standard gaps, if any, warned above)
+==> [demo-2] provision: writing stack-demo's per-repo .env from /Users/marco/workspace/anthropos/rosetta/.agentspace/secrets (values-blind; --force)
+PROVISIONED — stack demo-2 (N=2, non-prod):
+  ant-academy/code/.env.local
+      write : CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+      MISS  : ANTHROPIC_API_KEY, FONTAWESOME_NPM_AUTH_TOKEN, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY  (not in the source — provide it or check coverage)
+  app/.env
+      write : AWS_ACCESS_KEY_ID, AWS_REGION, AWS_SECRET_ACCESS_KEY, CLAUDE_CODE_USE_BEDROCK, GH_TOKEN, STRIPE_SECRET_KEY
+      MISS  : AWS_SESSION_TOKEN, ELEVENLABS_API_KEY, OPENAI_API_KEY  (not in the source — provide it or check coverage)
+  next-web-app/apps/web/.env
+      write : AZURE_OPENAI_ENDPOINT_URL, AZURE_OPENAI_KEY, CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, STRIPE_SECRET_KEY
+  platform/.env
+      write : AZURE_API_KEY, AZURE_ENDPOINT, AZURE_OPENAI_ENDPOINT_URL, AZURE_OPENAI_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET, CORESIGNAL_API_KEY, DIRECTUS_BASE_ADDR, ENVIRONMENT, GH_ACCESS_TOKEN, GH_PAT, OPENAI_KEY
+      blank : DIRECTUS_TOKEN  (strip-on-non-prod — defers to the injection override)
+      MISS  : ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, INVITATION_HMAC_SECRET, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, MISTRAL_API_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY, PUBLIC_HOST, SENTRY_DSN, SKILLER_AZURE_OPENAI_ENDPOINT_URL, SKILLER_AZURE_OPENAI_KEY, SKILLER_OPENAI_KEY, STRIPE_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY  (not in the source — provide it or check coverage)
+  sentinel/.env
+      MISS  : SENTRY_DSN  (not in the source — provide it or check coverage)
+  studio-desk/.env
+      write : AI_ANTHROPIC_API_KEY, AI_OPENAI_API_KEY, CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY
+      blank : DIRECTUS_TOKEN  (strip-on-non-prod — defers to the injection override)
+
+summary: 30 written, 2 blanked, 0 skipped (copy-if-absent)
+==> [demo-2] provision: demo-2 now runs from the assembled-source base env (/Users/marco/workspace/anthropos/rosetta/stack-demo/platform/.env)
+==> [demo-2] M239: Bedrock cred class already in /Users/marco/workspace/anthropos/rosetta/stack-demo/platform/.env (4 key(s) present) — Talk to Data wired (idempotent; nothing new to bridge)
+==> [demo-2] preflight: + the per-stack Directus runtime container (~1 GiB cap, mem_limit 1g) is included in the
+==> [demo-2]   budget when local content is on (DEMO_NO_LOCAL_CONTENT=1 drops it). Runtime stays cheap (~0.66 GiB
+==> [demo-2]   BOTH stacks measured, + ~1 GiB for the local Directus); the VM floor below is a BUILD guard only.
+==> [demo-2] ⚠ preflight: Docker VM RAM = 11.6 GiB (< 12 GiB recommended for the ~3.7 GB frontend build).
+==> [demo-2]   The per-frontend build may swap-thrash on an undersized VM holding another stack. NOTE THE UNITS:
+==> [demo-2]   Docker Desktop's memory slider is DECIMAL GB, this floor is BINARY GiB — 12 GiB is about
+==> [demo-2]   12.8 GB on the slider, so setting exactly "12 GB" lands BELOW the floor and this note
+==> [demo-2]   never clears. Raise it to >= 12.8 GB / swap 3 GB (Settings -> Resources), or run backend-only
+==> [demo-2]   with DEMO_NO_UI=1.  (non-fatal: continuing — override the floor with DEMO_VM_MIN_GIB=N.)
+==> [demo-2] preflight: Docker VM disk free = 62 GiB (>= 25 GiB) — OK for the demo build + images.
+preflight: ⚠ app-targetrole-authz-skip — whole-file sha DRIFTED (88f25f06… → 7dc28c30…) but the anchor is intact (1x).
+preflight:   SELF-HEALABLE — the recorded baseline is stale; nothing was written (check).
+preflight:   To record it:  pre_sha256: 7dc28c30978b236cd5c271ba0cd191f951a671c244ae8fc6ae4c2fc9e2c599e2
+preflight:                  post_sha256: 8ccc1d9f84f561d885fc1efd8cdf6229a51236de613cff9fd1d585d3b644b1ee
+preflight: ⚠ app-aireadiness-snapshot-loadmembers — whole-file sha DRIFTED (130e58f7… → e1dea147…) but the anchor is intact (1x).
+preflight:   SELF-HEALABLE — the recorded baseline is stale; nothing was written (check).
+preflight:   To record it:  pre_sha256: e1dea1473692e7cc294cb83ca63252a98d28191e15031456991d95745f50cea5
+preflight:                  post_sha256: eb33592bd3a4fa8bc75f17e637ba3844f160f739acf310e2f5190913aab3d512
+==> [demo-2] preflight: app demo-patch anchors resolve against v1.371.1.
+==> [demo-2] note: injection candidate 'cms' is no longer built by the platform compose — skipping (folded into app)
+==> [demo-2] note: injection candidate 'jobsimulation' is no longer built by the platform compose — skipping (folded into app)
+==> [demo-2] injecting: app (derived from the platform compose's build set: sentinel app)
+==> [demo-2] app build-scratch @ v1.371.1
+==> [demo-2] inject disarmed colony into app
+    apply-app-authz-skip: ⚠ app-targetrole-authz-skip — whole-file sha DRIFTED (88f25f06… → 7dc28c30…) but the anchor is intact (1x).
+    apply-app-authz-skip:   SELF-HEALING — recomputing for this box and applying. The recorded baseline is stale.
+    apply-app-authz-skip:   To record it:  pre_sha256: 7dc28c30978b236cd5c271ba0cd191f951a671c244ae8fc6ae4c2fc9e2c599e2
+    apply-app-authz-skip:                  post_sha256: 8ccc1d9f84f561d885fc1efd8cdf6229a51236de613cff9fd1d585d3b644b1ee
+    apply-app-authz-skip: app-targetrole-authz-skip — applied to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/clones/app/internal/roles/roles.go.
+==> [demo-2] app: applied target-role authz-skip (members-grid per-member Sentinel RPC dropped; DB roles still render)
+    apply-app-aireadiness-loadmembers: ⚠ app-aireadiness-snapshot-loadmembers — whole-file sha DRIFTED (130e58f7… → e1dea147…) but the anchor is intact (1x).
+    apply-app-aireadiness-loadmembers:   SELF-HEALING — recomputing for this box and applying. The recorded baseline is stale.
+    apply-app-aireadiness-loadmembers:   To record it:  pre_sha256: e1dea1473692e7cc294cb83ca63252a98d28191e15031456991d95745f50cea5
+    apply-app-aireadiness-loadmembers:                  post_sha256: eb33592bd3a4fa8bc75f17e637ba3844f160f739acf310e2f5190913aab3d512
+    apply-app-aireadiness-loadmembers: app-aireadiness-snapshot-loadmembers — applied to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/clones/app/internal/aireadiness/readiness.go.
+==> [demo-2] app: applied ai-readiness snapshot-read loadMembers bound (frozen dashboard hydrates only the snapshot users; renders fast)
+==> [demo-2] build demo-2-app:injected (background)
+==> [demo-2] build fake FAPI + BAPI (clerkenstein) — host cross-compile -> tiny image
+==> [demo-2] waiting for 3 builds…
+==> [demo-2] all images built
+==> [demo-2] build stackseed (for the roster export + the shared seed binary)
+==> [demo-2] export multi-identity roster (the seeded heroes' clerk ids) → /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/fake-fapi-roster.json
+stackseed: exported 35-identity roster to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/fake-fapi-roster.json
+gen_injected_override: FENCE-M257x-iter13-compose-service-exists OK — 2 depends_on target(s) all defined by the platform compose: ['backend', 'postgresql']
+gen_injected_override: demo-2 -> /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/docker-compose.injected.yml (3 injected, 2 frontends, directus, multi-identity fake-fapi (roster)+fake-bapi added)
+==> [demo-2] studio-desk wired to Clerkenstein (CLERK_* via .env.demo-2; RS256 networkless verify)
+==> [demo-2] building the UI tier serially (before compose up) — next-web, then studio-desk, then hiring
+demopatch: WARN next-web-studio-url — whole-file sha DRIFTED (0d4c3790... -> 4939994b...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 4939994bcb8eb5cf563677545ac3028d1d58752dcefff64c5aeb9ceeb3b617e4
+demopatch:                  post_sha256: 9a31cee02c5a7f9be1243ddb7d77a457d5f4662184fce928d2c8d04c030b365f
+demopatch apply: next-web-studio-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-studio-url to the demo clone (reverted after the image bakes).
+demopatch: WARN next-web-public-website-url — whole-file sha DRIFTED (fe15aa71... -> 9a31cee0...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 9a31cee02c5a7f9be1243ddb7d77a457d5f4662184fce928d2c8d04c030b365f
+demopatch:                  post_sha256: af3a555f698ec575017ea831cbdeb9a8bd7ddc6ae4d0ca1c88caa7d0c967bdaa
+demopatch apply: next-web-public-website-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-public-website-url to the demo clone (PUBLIC_WEBSITE_URL → demo-local; reverted after the image bakes).
+demopatch apply: next-web-members-pagination applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-members-pagination to the demo clone (insights fetch limit 1000->30; reverted after the image bakes).
+demopatch: WARN next-web-ssr-graphql-origin — whole-file sha DRIFTED (31210a5c... -> 333a17e7...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 333a17e738bd5ed997bada53c45df9db0bd1ce04b25b26654caeb8c84e748ec5
+demopatch:                  post_sha256: 4eaef26646019dd666dffafa247454639e7efd6a74ec3d94db9765a08d5a449c
+demopatch apply: next-web-ssr-graphql-origin applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-ssr-graphql-origin to the demo clone (SSR GraphQL origin → WUNDERGRAPH_SSR_ENDPOINT; reverted after the image bakes).
+demopatch apply: next-web-aireadiness-flag-gate applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-aireadiness-flag-gate to the demo clone (no PostHog ⇒ no rollout gate; the member AI-readiness surface can mount. Reverted after the image bakes).
+demopatch apply: next-web-no-thirdparty applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-no-thirdparty to the demo clone (Plausible + Bellasio + BetterStack + GTM compiled out; reverted after the image bakes).
+demopatch apply: next-web-interview-flag-container applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-interview-flag-container to the demo clone (no PostHog ⇒ no rollout gate; the interview report FETCHES. Reverted after the image bakes).
+demopatch apply: next-web-interview-flag-result applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-interview-flag-result to the demo clone (no PostHog ⇒ no rollout gate; the interview report RENDERS. Reverted after the image bakes).
+demopatch: WARN next-web-back-to-cockpit — whole-file sha DRIFTED (0c2c2ed2... -> 48b6dd07...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 48b6dd07401a4ddd51c70f2d92c47740ceb0d67ac3dfaa01eb7ae2df74bd1652
+demopatch:                  post_sha256: a28808e06ee374cf5bc5107191ea0885d3f8eb1ad4462deba7965c14da74708f
+demopatch apply: next-web-back-to-cockpit applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-back-to-cockpit to the demo clone (a 'Back to Cockpit' account-dropdown item; reverted after the image bakes).
+==> [demo-2] build demo-2-next-web (offset URLs + minted pk; patch set 02cdab17584081b13b3f67d3144fdf4f64b1dcb6130e57c5ca8bbb0f73039f96; unmodified Dockerfile; ~3 min / ~3.7 GB first build)
+demopatch apply: studio-desk-back-to-cockpit applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied studio-desk-back-to-cockpit to the demo clone (Back-to-Cockpit item + 'Back' → this stack's app; reverted after the image bakes).
+demopatch apply: studio-desk-logout-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied studio-desk-logout-url to the demo clone (logout → this stack's app; reverted after the image bakes).
+demopatch apply: studio-desk-logo-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied studio-desk-logo-url to the demo clone (header logo → this stack's app; reverted after the image bakes).
+demopatch apply: studio-desk-shell-first-paint applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied studio-desk-shell-first-paint to the demo clone (paint the .page-skeleton shell BEFORE the boot awaits; reverted after the image bakes).
+demopatch apply: studio-desk-no-thirdparty applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied studio-desk-no-thirdparty to the demo clone (no-op Sentry.init/posthog.init; reverted after the image bakes).
+==> [demo-2] build demo-2-studio-desk (offset GraphQL endpoint + minted pk + offset web-app + sign-in URL + cockpit URL; patch set 02087a8fa562f674c26f0e6394c4f31e0481fb78954833f64a143b6e302778dc; Clerkenstein-wired)
+demopatch: WARN next-web-studio-url — whole-file sha DRIFTED (0d4c3790... -> 4939994b...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 4939994bcb8eb5cf563677545ac3028d1d58752dcefff64c5aeb9ceeb3b617e4
+demopatch:                  post_sha256: 9a31cee02c5a7f9be1243ddb7d77a457d5f4662184fce928d2c8d04c030b365f
+demopatch apply: next-web-studio-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-studio-url to the hiring demo clone (Studio nav link → demo-local; reverted after the image bakes).
+demopatch: WARN next-web-public-website-url — whole-file sha DRIFTED (fe15aa71... -> 9a31cee0...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 9a31cee02c5a7f9be1243ddb7d77a457d5f4662184fce928d2c8d04c030b365f
+demopatch:                  post_sha256: af3a555f698ec575017ea831cbdeb9a8bd7ddc6ae4d0ca1c88caa7d0c967bdaa
+demopatch apply: next-web-public-website-url applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-public-website-url to the hiring demo clone (PUBLIC_WEBSITE_URL → demo-local; reverted after the image bakes).
+demopatch apply: next-hiring-role-remap applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-hiring-role-remap to the demo clone (apps/hiring remaps org:admin->admin like apps/web; reverted after the image bakes).
+demopatch apply: next-hiring-members-pagination applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-hiring-members-pagination to the demo clone (insights members fetch limit 1000->30; reverted after the image bakes).
+demopatch apply: next-web-interview-flag-container applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-interview-flag-container to the hiring clone (no PostHog ⇒ no rollout gate; the interview report FETCHES. Reverted after the image bakes).
+demopatch apply: next-web-interview-flag-result applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-interview-flag-result to the hiring clone (no PostHog ⇒ no rollout gate; the interview report RENDERS. Reverted after the image bakes).
+demopatch: WARN next-web-back-to-cockpit — whole-file sha DRIFTED (0c2c2ed2... -> 48b6dd07...) but the anchor is intact (1x).
+demopatch:   SELF-HEALING - recomputing for this box and applying. The recorded baseline is stale.
+demopatch:   To record it:  pre_sha256: 48b6dd07401a4ddd51c70f2d92c47740ceb0d67ac3dfaa01eb7ae2df74bd1652
+demopatch:                  post_sha256: a28808e06ee374cf5bc5107191ea0885d3f8eb1ad4462deba7965c14da74708f
+demopatch apply: next-web-back-to-cockpit applied (working-tree-only; image will bake the fix).
+==> [demo-2] demopatch: applied next-web-back-to-cockpit to the hiring clone (a 'Back to Cockpit' account-dropdown item; reverted after the image bakes).
+==> [demo-2] build demo-2-hiring (offset URLs + minted pk; patch set 013ef80c002256bf914a08d461db3c0da2de13ef13b31abec448c0ba7fe33f46; rext hiring.Dockerfile filters @anthropos/hiring-app; unmodified next-web clone; ~3 min / ~3.7 GB first build)
+==> [demo-2] host bind-mount pre-flight: every host-absolute bind source the default profile needs is present
+==> [demo-2] bringing up the full injected stack (-p demo-2, core profile — derived from the platform compose)
+ Image demo-2-sentinel Building 
+ Image demo-2-postgresql Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.27kB done
+#1 DONE 0.0s
+
+#2 [postgresql internal] load build definition from Dockerfile
+#2 transferring dockerfile: 916B done
+#2 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 2)
+#2 DONE 0.0s
+
+#3 [sentinel internal] load build definition from Dockerfile.dev
+#3 transferring dockerfile: 845B done
+#3 DONE 0.0s
+
+#4 [auth] library/alpine:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [auth] library/golang:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [postgresql internal] load metadata for docker.io/bitnamilegacy/postgresql:15
+#6 ...
+
+#7 [auth] bitnamilegacy/postgresql:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [sentinel internal] load metadata for docker.io/library/golang:1.26-bookworm
+#8 DONE 0.8s
+
+#9 [sentinel internal] load metadata for docker.io/library/alpine:latest
+#9 DONE 0.8s
+
+#10 [sentinel internal] load .dockerignore
+#10 transferring context: 52B done
+#10 DONE 0.0s
+
+#11 [sentinel stage-1 1/3] FROM docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
+#11 resolve docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b done
+#11 DONE 0.0s
+
+#12 [sentinel build 1/9] FROM docker.io/library/golang:1.26-bookworm@sha256:6c5605ab3a9a9fb3c4eafe5b3d63cdbf3881caf113262b67862547b54a9db599
+#12 resolve docker.io/library/golang:1.26-bookworm@sha256:6c5605ab3a9a9fb3c4eafe5b3d63cdbf3881caf113262b67862547b54a9db599 done
+#12 DONE 0.0s
+
+#13 [sentinel internal] load build context
+#13 transferring context: 2.12kB done
+#13 DONE 0.0s
+
+#14 [sentinel build 4/9] COPY go.sum ./
+#14 CACHED
+
+#15 [sentinel build 2/9] WORKDIR /build
+#15 CACHED
+
+#16 [sentinel build 6/9] RUN export GOPRIVATE=github.com/anthropos-work/*
+#16 CACHED
+
+#17 [sentinel build 5/9] RUN git config --global url."https://x-access-token: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@github.com/".insteadOf "https://github.com/"
+#17 CACHED
+
+#18 [sentinel build 7/9] RUN --mount=type=cache,target=/go/pkg/mod     go mod download -x
+#18 CACHED
+
+#19 [sentinel build 9/9] RUN --mount=type=cache,target=/go/pkg/mod     --mount=type=cache,target=/root/.cache/go-build     CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -ldflags "-X main.Version=dev -X main.BuildDate=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ant-sentinel
+#19 CACHED
+
+#20 [sentinel build 3/9] COPY go.mod ./
+#20 CACHED
+
+#21 [sentinel stage-1 2/3] WORKDIR /app
+#21 CACHED
+
+#22 [sentinel build 8/9] COPY . ./
+#22 CACHED
+
+#23 [sentinel stage-1 3/3] COPY --from=build /build/ant-sentinel ./
+#23 CACHED
+
+#24 [sentinel] exporting to image
+#24 exporting layers done
+#24 exporting manifest sha256:4118d6c227cf9a7d71680f2908cb73f50f9e6f0f371a6b26021b6353c4aa8360 done
+#24 exporting config sha256:97d8331b1758535eb28095a278abb6eb0b0fdeb7905b680d9dcca6d1c5a951c0 done
+#24 exporting attestation manifest sha256:6319f33c303300dd08a089d9939eb859df11ac5af17e07ac71215cf74998b0e3 done
+#24 exporting manifest list sha256:3a62d0aaf5f41055f0723a70585f9192e379eb9ca139fab44736500e5acb3b0b done
+#24 naming to docker.io/library/demo-2-sentinel:latest done
+#24 unpacking to docker.io/library/demo-2-sentinel:latest done
+#24 DONE 0.0s
+
+#6 [postgresql internal] load metadata for docker.io/bitnamilegacy/postgresql:15
+#6 DONE 0.9s
+
+#25 [sentinel] resolving provenance for metadata file
+#25 DONE 0.0s
+
+#26 [postgresql internal] load .dockerignore
+#26 transferring context: 2B done
+#26 DONE 0.0s
+
+#27 [postgresql build 1/2] FROM docker.io/bitnamilegacy/postgresql:15@sha256:e989bcc1772cd82ef46bd03d3e6bf7ea35011b39a7826d828886cb9c45aec819
+#27 resolve docker.io/bitnamilegacy/postgresql:15@sha256:e989bcc1772cd82ef46bd03d3e6bf7ea35011b39a7826d828886cb9c45aec819 done
+#27 DONE 0.0s
+
+#28 [postgresql stage-1 2/5] COPY --from=build     /tmp/pgvector/README.md     /tmp/pgvector/LICENSE     /usr/share/doc/pgvector/
+#28 CACHED
+
+#29 [postgresql stage-1 3/5] COPY --from=build     /tmp/pgvector/vector.so     /opt/bitnami/postgresql/lib/
+#29 CACHED
+
+#30 [postgresql stage-1 4/5] COPY --from=build     /tmp/pgvector/vector.control     /opt/bitnami/postgresql/share/extension/
+#30 CACHED
+
+#31 [postgresql build 2/2] RUN set -e;     install_packages build-essential git ;     git clone --branch v0.4.4 https://github.com/pgvector/pgvector.git /tmp/pgvector ;     cd /tmp/pgvector ;     make OPTFLAGS="" ;     make install ;     :
+#31 CACHED
+
+#32 [postgresql stage-1 5/5] COPY --from=build     /tmp/pgvector/sql/*.sql     /opt/bitnami/postgresql/share/extension/
+#32 CACHED
+
+#33 [postgresql] exporting to image
+#33 exporting layers done
+#33 exporting manifest sha256:eaf3081afaf24346c77f718c542b6d19b21e3dec053637fd2cdd6bca287e13d1 done
+#33 exporting config sha256:3b0cb4f7e9dd1dcac4119d0ac43712aed35d8b2de8b0374cfaff46d8655e5be9 done
+#33 exporting attestation manifest sha256:09430b654a4ca34f83c5710f51a60783da23af98bc82f67cf6caf883f56473ca done
+#33 exporting manifest list sha256:4de6de3fb73ba3c072d780663c1eb2dbbc4b3e36b2d3c7431b4ba9201da69cc4 done
+#33 naming to docker.io/library/demo-2-postgresql:latest done
+#33 unpacking to docker.io/library/demo-2-postgresql:latest done
+#33 DONE 0.0s
+
+#34 [postgresql] resolving provenance for metadata file
+#34 DONE 0.0s
+ Image demo-2-postgresql Built 
+ Image demo-2-sentinel Built 
+ Network demo-2_app-network Creating 
+ Network demo-2_app-network Created 
+ Container demo-2-fake-bapi-1 Creating 
+ Container demo-2-gotenberg-1 Creating 
+ Container demo-2-redis-1 Creating 
+ Container demo-2-fake-fapi-1 Creating 
+ Container demo-2-postgresql-1 Creating 
+ Container demo-2-fake-fapi-1 Created 
+ Container demo-2-redis-1 Created 
+ Container demo-2-gotenberg-1 Created 
+ Container demo-2-fake-bapi-1 Created 
+ Container demo-2-postgresql-1 Created 
+ Container demo-2-directus-1 Creating 
+ Container demo-2-sentinel-1 Creating 
+ Container demo-2-sentinel-1 Created 
+ Container demo-2-backend-1 Creating 
+ Container demo-2-directus-1 Created 
+ Container demo-2-backend-1 Created 
+ Container demo-2-studio-desk-1 Creating 
+ Container demo-2-next-web-app-1 Creating 
+ Container demo-2-hiring-app-1 Creating 
+ Container demo-2-studio-desk-1 Created 
+ Container demo-2-hiring-app-1 Created 
+ Container demo-2-next-web-app-1 Created 
+ Container demo-2-redis-1 Starting 
+ Container demo-2-postgresql-1 Starting 
+ Container demo-2-fake-fapi-1 Starting 
+ Container demo-2-fake-bapi-1 Starting 
+ Container demo-2-gotenberg-1 Starting 
+ Container demo-2-redis-1 Started 
+ Container demo-2-gotenberg-1 Started 
+ Container demo-2-postgresql-1 Started 
+ Container demo-2-postgresql-1 Waiting 
+ Container demo-2-postgresql-1 Waiting 
+ Container demo-2-fake-bapi-1 Started 
+ Container demo-2-fake-fapi-1 Started 
+ Container demo-2-postgresql-1 Healthy 
+ Container demo-2-directus-1 Starting 
+ Container demo-2-postgresql-1 Healthy 
+ Container demo-2-sentinel-1 Starting 
+ Container demo-2-directus-1 Started 
+ Container demo-2-sentinel-1 Started 
+ Container demo-2-redis-1 Waiting 
+ Container demo-2-postgresql-1 Waiting 
+ Container demo-2-postgresql-1 Healthy 
+ Container demo-2-redis-1 Healthy 
+ Container demo-2-backend-1 Starting 
+ Container demo-2-backend-1 Started 
+ Container demo-2-hiring-app-1 Starting 
+ Container demo-2-studio-desk-1 Starting 
+ Container demo-2-next-web-app-1 Starting 
+ Container demo-2-studio-desk-1 Started 
+ Container demo-2-next-web-app-1 Started 
+ Container demo-2-hiring-app-1 Started 
+==> [migrate demo-2] wait for demo-2 postgres to accept connections (bounded)
+==> [migrate demo-2]   postgres ready
+==> [migrate demo-2] wait for demo-2 sentinel to come up (defense-in-depth vs the casbin_rules race)
+==> [migrate demo-2]   sentinel container running
+==> [migrate demo-2] create schemas + extensions in demo-2 postgres (host 25432)
+==> [migrate demo-2]   schemas: extensions sentinel public
+==> [migrate demo-2] atlas migrate the derived migration set against demo-2 (localhost:25432): app:public
+==> [migrate demo-2]   app ok
+==> [migrate demo-2] apply the global Sentinel policy (init_policy.sql — the role→feature model)
+==> [migrate demo-2]   sentinel global policy applied
+==> [migrate demo-2] restart sentinel + backend so they pick up the migrated schema + policy
+==> [migrate demo-2] done — sentinel healthy; /api/health 200; global authz policy loaded. (Authorized 200s also need the seed: org + identity + grants.)
+==> [demo-2 academy] Clerkenstein-wired (pk from /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/.env.demo-2; BAPI http://127.0.0.1:25401) — the academy SHARES the demo session; keyless mode is off
+==> [demo-2 academy] launching natively on :23077 (Clerkenstein-wired — the hero arrives signed in as herself)
+apply-academy-fs-published: applied — getServerCatalogView now has the ACADEMY_DEMO_FS_PUBLISHED FS-as-published fallback (/Users/marco/workspace/anthropos/rosetta/stack-demo/ant-academy/code/src/lib/serverTenant.js).
+==> [demo-2 academy] academy-fs-published-fallback: the home grid will render the committed FS catalog as published (no Draft chip; reverted on --stop)
+apply-academy-fs-published-public: applied — getPublicCatalogView now has the ACADEMY_DEMO_FS_PUBLISHED FS-as-published fallback (anonymous /library + /free + academy home render REAL cards) (/Users/marco/workspace/anthropos/rosetta/stack-demo/ant-academy/code/src/lib/serverTenant.js).
+==> [demo-2 academy] academy-fs-published-public: the anonymous /library + /free + academy home will render the committed FS catalog as published (no Draft chip; reverted on --stop)
+apply-academy-fs-published-body: applied — resolveServerChapterBody now has the ACADEMY_DEMO_FS_PUBLISHED FS-as-published body fallback (/Users/marco/workspace/anthropos/rosetta/stack-demo/ant-academy/code/src/lib/serverChapterBody.js).
+==> [demo-2 academy] academy-fs-published-chapter-body: clicking Start on a course will render the committed FS chapter body as published (reverted on --stop)
+apply-ant-academy-back-to-cockpit: applied — the user menu now carries a fail-closed 'Back to Cockpit' item (/Users/marco/workspace/anthropos/rosetta/stack-demo/ant-academy/code/src/components/UserMenu.jsx).
+==> [demo-2 academy] ant-academy-back-to-cockpit: the academy user menu now carries a 'Back to Cockpit' item (reverted on --stop)
+==> [demo-2 academy] started + SERVING on :23077 (pid 1143; session-detached — survives this session ending). Open http://localhost:23077  |  Stop: ant-academy.sh 2 --stop  |  Log: /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/ant-academy.log
+==> [demo-2] set-dressing demo-2 (cache-first snapshot replay + stories (4 orgs × 3-hero trio) seed, local-content=on) — default-on + non-fatal
+==> demo-2: per-stack Directus + cache-first snapshot replay (taxonomy + directus + sim-embeddings)
+per-stack Directus provision recipe for demo-2 (M10 store fork — bootstrap → content-schema → replay → boot):
+  1. bootstrap-system-schema Directus creates its OWN directus_* SYSTEM tables (27 of them — and nothing else; the content tables come from the content-schema step below). The schema must exist first and bootstrap must be pointed at it via DB_SEARCH_PATH=directus, else everything lands in `public`. The image entrypoint runs `node <arg>`, so the subcommand is `node cli.js bootstrap` (a bare `bootstrap` arg dies MODULE_NOT_FOUND). Two DSNs: psql runs on the HOST (the localhost offset-port DSN, inlined); the docker leg's $DEMO_2_DIRECTUS_DSN must be CONTAINER-reachable (host.docker.internal:25432 on Docker Desktop, or the stack's compose network + service name) — one value cannot serve both sides. ADMIN_TOKEN sets a LOCALLY-MINTED static token on the bootstrapped admin (M23): studio-desk uses it as DIRECTUS_TOKEN so its skill-path WRITES target THIS per-stack Directus, never prod.
+     $ psql "postgres://postgres@localhost:25432/postgres" -c 'CREATE SCHEMA IF NOT EXISTS directus' && docker run --rm -e DB_CLIENT=pg -e DB_CONNECTION_STRING=$DEMO_2_DIRECTUS_DSN -e DB_SEARCH_PATH=directus -e SECRET=local-directus-secret-demo_2 -e ADMIN_EMAIL=admin@demo-2.example.com -e ADMIN_PASSWORD=local-directus-demo_2 -e ADMIN_TOKEN=local-directus-token-demo_2 directus/directus:11.6.1 node cli.js bootstrap
+  2. content-schema          Create the user-collection table STRUCTURE (the 26 collections' DDL + PRIMARY KEYs) in the directus schema so the schema digest converges to the captured source (M21 option A). AUTOMATED (M21): the next `stacksnap replay` step AUTO-PROVISIONS this from the snapshot's Structure artifact — on a bootstrapped-gap directus schema (digest miss), replay applies the captured structure, re-probes, then loads. No separate command. (The snapshot must be a structure-bearing capture — re-capture once per release if the cache predates the M21 structure extension.) NOTE: collection REGISTRATION (directus_collections) + the public READ permissions a booted Directus needs to SERVE are the M21 serve-rows piece (in progress) — until they land, the schema + rows are correct but anonymous serving needs the hand recipe (corpus/ops/snapshot-spec.md).
+     $ # AUTOMATED by the next replay step (M21 structure auto-provision) — no separate command
+  3. replay-content          AUTO-PROVISION the table structure (if the directus schema is bootstrapped-gap) THEN bulk-COPY the captured public content rows (304 sims / 22 paths / children) into the user-collection tables in the stack's directus schema. Per-stack-isolated → the seeding guard allows it (class postgres). Exits 0 on success; exit 4 if the directus schema is missing (bootstrap first); exit 5 only on a genuine cache miss / unmigrated divergence.
+     $ stacksnap replay --surface directus --stack demo-2
+  4. boot-directus           Boot the per-stack Directus container pointed at the stack's directus schema (same DB_SEARCH_PATH), published on the stack's offset port. CMS + studio-desk for this stack point their DIRECTUS_BASE_ADDR at THIS container (the offset port), not content.anthropos.work.
+     $ docker run -d --name demo-2-directus -p 28055:8055 -e DB_CLIENT=pg -e DB_CONNECTION_STRING=$DEMO_2_DIRECTUS_DSN -e DB_SEARCH_PATH=directus -e SECRET=local-directus-secret-demo_2 directus/directus:11.6.1
+
+default per-stack env contract (prod-safe — wire these for the per-stack Directus):
+  DIRECTUS_BASE_ADDR = http://localhost:28055
+  DB_CONNECTION_STRING = postgres://postgres@localhost:25432/postgres
+  ADMIN_EMAIL = admin@demo-2.example.com
+  ADMIN_TOKEN = local-directus-token-demo_2   (studio-desk DIRECTUS_TOKEN — local static, never prod)
+
+NOTE: the live container boot is an operational step (the M9b/M10 discipline) — the per-stack
+Directus DB schema is per-stack-isolated; the shared prod Directus (content.anthropos.work) is NEVER written.
+per-stack Directus env for demo-2 is prod-safe (local/offset-port only — not the shared prod Directus)
+    [directus] executing the per-stack provision (bootstrap → apply-structure → replay → boot)
+    [directus] bootstrapping the directus_* system schema (node cli.js bootstrap)
+    snapshot store root: /Users/marco/workspace/anthropos/rosetta/.agentspace/snapshots
+replayed "taxonomy" into demo-2: 10 table(s) cleared, 10 table(s), 330261 row(s) loaded, schema identity, reindexed [public.skill_embeddings.small_embedding3 public.job_role_embeddings.small_embedding3], 2 sequence(s) advanced
+    replayed taxonomy into demo-2
+provisioned "directus" structure into demo-2 (schema b4cb55bcee08 → ea2e187a1605)
+replayed "directus" into demo-2: 14 table(s) cleared, 14 table(s), 11986 row(s) loaded, schema identity, 3 sequence(s) advanced
+    replayed directus into demo-2
+    [directus] restarting the compose service 'demo-2-directus-1' so it serves the provisioned catalog
+    [directus] 'demo-2-directus-1' serving /server/health (verified before autoverify)
+stacksnap: ⚠ surface "sim-embeddings" was captured from schema "cms", but on demo-2 its tables live in "public" — replaying into "public".
+stacksnap:   This is the platform's service-into-app consolidation, not an error: the capture source still has "cms". Resolved from the TARGET's catalog, not from a declared constant (corpus/ops/platform-alignment.md §2).
+replayed "sim-embeddings" into demo-2: 4 table(s) cleared, 4 table(s), 1490 row(s) loaded, schema cms -> public, reindexed [public.similarities.small_embedding3], 0 sequence(s) advanced
+    replayed sim-embeddings into demo-2
+==> demo-2: applying the light seed (/Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/stack-seeding/presets/stories.seed.yaml)
+
+Run results:
+  content   rows=307  ok
+  org       rows=4    ok
+  policy-grants rows=1    ok
+  taxonomy  rows=42790 ok
+  ai-readiness-config rows=39   ok
+  ai-readiness-sim-skills rows=3    ok
+  identity  rows=4    ok
+  org-settings rows=1    ok
+  users     rows=2950 ok
+  assignments rows=1033 ok
+  content-stories rows=2014 ok
+  content-stories-nonsim rows=4    ok
+  generated-batch rows=0    ok
+  hiring-config rows=5    ok
+  hiring-funnel rows=51   ok
+  jobsim-sessions rows=1057 ok
+  member_languages rows=1343 ok
+  membership-skills rows=3816 ok
+  onboarding-params rows=0    ok
+  personas  rows=1232 ok
+  skillpath-sessions rows=553  ok
+  tags      rows=732  ok
+  target-roles rows=301  ok
+  activity  rows=2160 ok
+  certificates rows=406  ok
+  feedback  rows=268  ok
+  hero-activity rows=48   ok
+  population-evidence rows=950  ok
+  profiles  rows=9344 ok
+  projects  rows=29   ok
+  succession rows=168  ok
+  ai-readiness-funnel rows=9071 ok
+
+Audit: 75 write attempt(s), 80684 row(s) on target "demo-2" (prod=false)
+isolation: clean (no shared/external writes landed; 75 audited write attempt(s) covering every surface that wrote)
+p3 policy advisory: OK (18 grants, matches expected)
+==> demo-2: set-dressed (content:local-content, snapshot:taxonomy=replayed directus=replayed directus=local-served sim-embeddings=replayed, stories seeded).
+==> [demo-2] reload Sentinel Casbin policy after set-dress (the g3 sim-entitlement grant must reach the in-memory enforcer)
+==> [demo-2]   ✓ Sentinel policy reloaded via AuthorizationService/Reload (LoadPolicy re-run) — sim /start renders, no manual restart
+==> [demo-2] create post-seed FK indexes on demo-2-postgresql-1 (membership_skills + membership_tags — the enterprise-grid fan-out lookups)
+==> [demo-2]   ✓ FK indexes ensured (membershipskill_membership, membershiptag_membership) — per-membership lookups are index scans, not seq scans
+==> [demo-2] reconcile per-stack Directus schema drift on demo-2-postgresql-1 (directus.simulations ← current cms * field set)
+==> [demo-2]   ✓ Directus schema-drift reconciled (directus.simulations.is_interview_validation_enabled) — the cms * sim query resolves, the activity-dashboard renders real content
+==> [demo-2] rewrite replayed Directus content URLs on demo-2-postgresql-1 (simulations.{public_landing_page_url,read_more_link} + skill_paths.public_landing_page_url: anthropos.work → http://localhost:23000 — kill the content-field prod-eject)
+==> [demo-2]   ✓ Directus content URLs rewritten demo-local (simulations + skill_paths) — the library drill-downs no longer eject to production
+stackseed: exported cockpit manifest (12 heroes) to /Users/marco/workspace/anthropos/rosetta/stack-demo/rosetta-extensions/demo-stack/stacks/demo-2/cockpit-manifest.json
+==> [demo-2] presenter cockpit serving on http://localhost:27700 (pick a hero → [Log in as] → her screen; [Academy] → the portal signed-in as a member; [Download] serves the consolidated seed-generation manifest) — session-detached, torn down with the stack
+▶ autoverify demo-2 (offset 20000) — cheap-win asserts + scoped verify (non-fatal)
+  ✓ backend /api/health 200 on :28082
+  ✓ sentinel.casbin_rules = 1251 (authz policy loaded)
+  ✓ directus.directus_collections = 21 (the content model is REGISTERED — serving is proven separately by directus-serves-content)
+  ✓ directus DB is per-stack-local (not prod): postgres://postgres@postgresql:5432/postgres
+  ✓ verify live: all liveness + readiness probes passed
+  ✓ demo-patches: all applied (none refused, none skipped)
+  ✓ frontend builds: ok (the running images are this run's)
+  ✓ taxonomy replayed: public.skills = 42790
+  ✓ presenter cockpit answering on :27700
+  ✓ clerkenstein fake-FAPI answering (rung A: in-container HTTPS GET /v1/environment — host-TLS-independent); hero login is possible
+  ✓ hiring org set-dressed: 5 shared positions + 42 candidate HIRING sessions (the recruiter comparison is populated)
+  ✓ AI Academy renders its catalog on :23077/library (real course cards)
+  ✓ studio-desk carries an AI provider key (AI_OPENAI_API_KEY present) — the /api/ai/completion builder is wired
+  ✓ container liveness: all 11 expected container(s) running
+▶ autoverify demo-2: OK — verified-working.
+==> [demo-2] UP. Clerk-free demo-2 is live. Status: rosetta-demo status   Down: rosetta-demo down 2 --purge
+hostlock: released demo-2
+EXIT_CODE=0

@@ -1,0 +1,661 @@
+{
+  "_source": "iter-109/verdicts/adj-{1,2,3,4}.md — the UPHELD, IN-SCOPE bookings, one row per distinct PREDICATE (the field each adjudicator booked), never one row per anchor. Seeds are the anchors the reading DETECTED; they are inputs to the enumeration, not its denominator (TOK-07 rule 1). Carried forward VERBATIM from iter-112/predicate-ledger.json — statements and seeds are unchanged; only the FORMS were re-authored, which is the whole subject of iter-113.",
+  "_scope": "corpus/services + corpus/architecture. iter-109's one OUT-OF-SCOPE upheld booking (CLAUDE.md:248) is deliberately absent, and the 3 REJECTED bookings are absent because they are not false.",
+  "_forms": "TWO TIERS (M257x iter-113). `forms` identify sites that PUBLISH the proposition; `subject_forms` identify every site that so much as MENTIONS the topic, and so bound where the proposition COULD live. iter-112 had one tier doing both jobs, which is why 12 predicates read NO-EXPANSION (a verbatim literal lifted off the seed finds its own seed and nothing else) and 4 read as vocabulary (a form naming the SUBJECT counted every mention of it). `excluded` records a headroom site adjudicated as a subject-mention that publishes nothing — with its reason, always.",
+  "predicates": [
+    {
+      "id": "P01",
+      "statement": "The Mistral OCR client in `app` is constructed at markdownManager.go:19.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:34"
+      ],
+      "forms": [
+        "markdownManager.go:19"
+      ],
+      "subject_forms": [
+        "markdownManager",
+        "Mistral OCR"
+      ],
+      "excluded": {
+        "corpus/architecture/ai_architecture.md:88": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/architecture/architecture_overview.md:308": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/architecture/architecture_overview.md:309": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/architecture/external_services.md:565": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/architecture/external_services.md:598": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/cms.md:215": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/cms.md:216": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/cms.md:220": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/cms.md:221": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/cms.md:222": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`.",
+        "corpus/services/studio-room.md:381": "names markdownManager / Mistral OCR but publishes a different field — either the CORRECTED construction site (`:29-30` / `:30`, four sites) or what the OCR client is used for. None asserts `:19`."
+      }
+    },
+    {
+      "id": "P02",
+      "statement": "All Go services access AI through the shared `ai` module github.com/anthropos-work/ai.",
+      "seeds": [
+        "corpus/architecture/external_services.md:554"
+      ],
+      "forms": [
+        "services access AI through",
+        "service accesses AI through"
+      ],
+      "subject_forms": [
+        "shared `ai` library",
+        "shared `ai` module",
+        "anthropos-work/ai"
+      ],
+      "excluded": {
+        "corpus/architecture/README.md:21": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/architecture/ai_architecture.md:296": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/architecture/security_compliance.md:185": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/architecture/service_taxonomy.md:172": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/architecture/shared_libraries.md:123": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/architecture/shared_libraries.md:126": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/academy-backend.md:110": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/ai-labs.md:5": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/ant-academy.md:475": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/askengine.md:81": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/coursebuilder.md:102": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim.",
+        "corpus/services/jobsimulation.md:164": "mentions the shared `ai` library while publishing either the CORRECTED import picture (no repo a stack builds requires it) or a single service's own use of it. None publishes the universal 'all Go services' claim."
+      }
+    },
+    {
+      "id": "P03",
+      "statement": "The platform's Anthropic models are Claude 4.5 / 4 / 3.7 / 3.5 Sonnet.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:87"
+      ],
+      "forms": [
+        "Claude 3.7 Sonnet",
+        "Claude 4.5 Sonnet"
+      ],
+      "subject_forms": [
+        "Sonnet"
+      ],
+      "excluded": {
+        "corpus/architecture/ai_architecture.md:240": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/architecture/external_services.md:564": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/architecture/external_services.md:705": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/README.md:63": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/askengine.md:11": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/askengine.md:41": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/askengine.md:80": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/askengine.md:112": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/askengine.md:116": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/coursebuilder.md:18": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/coursebuilder.md:51": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/coursebuilder.md:99": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/coursebuilder.md:114": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about.",
+        "corpus/services/studio-desk.md:112": "names a Sonnet model for a specific consumer (askengine, coursebuilder, studio-desk) or a different/newer model set. None publishes the platform-wide 4.5/4/3.7/3.5 enumeration this predicate is about."
+      }
+    },
+    {
+      "id": "P04",
+      "statement": "The platform's speech-model set includes TTS v2 and TTS v2 HD.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:89"
+      ],
+      "forms": [
+        "TTS v2 HD"
+      ],
+      "subject_forms": [
+        "TTS v2",
+        "Mini TTS",
+        "CreateSpeech"
+      ],
+      "excluded": {
+        "corpus/architecture/shared_libraries.md:129": "lists `CreateSpeech` as a method on the shared ai interface — the interface's capability set, not the platform's speech-MODEL set.",
+        "corpus/architecture/shared_libraries.md:163": "lists `CreateSpeech` as a method on the shared ai interface — the interface's capability set, not the platform's speech-MODEL set."
+      }
+    },
+    {
+      "id": "P05",
+      "statement": "variables.tf:635-638 declares anthropic_api_key and main.tf:555 injects ANTHROPIC_API_KEY.",
+      "seeds": [
+        "corpus/services/coursebuilder.md:48"
+      ],
+      "forms": [
+        "variables.tf:635-638",
+        "main.tf:555"
+      ],
+      "subject_forms": [
+        "ANTHROPIC_API_KEY"
+      ],
+      "excluded": {
+        "corpus/architecture/ai_architecture.md:45": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/ai_architecture.md:87": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/architecture_overview.md:296": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/external_services.md:567": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/external_services.md:611": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/external_services.md:661": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/security_compliance.md:7": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/security_compliance.md:202": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/architecture/security_compliance.md:214": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/ant-academy.md:403": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/coursebuilder.md:69": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/coursebuilder.md:107": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/coursebuilder.md:142": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-desk.md:190": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-desk.md:307": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-desk.md:349": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-desk.md:373": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-room.md:270": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-room.md:273": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins.",
+        "corpus/services/studio-room.md:407": "mentions ANTHROPIC_API_KEY as an env var, a routing exit or a setup line. None asserts the terraform declaration/injection sites this predicate pins."
+      }
+    },
+    {
+      "id": "P06",
+      "statement": "The LiveKit EU/US split is on the endpoint only, not on the agent name.",
+      "seeds": [
+        "corpus/architecture/external_services.md:723"
+      ],
+      "forms": [
+        "not on the agent name",
+        "anthropos-agent-eu"
+      ],
+      "subject_forms": [
+        "anthropos-agent"
+      ],
+      "excluded": {
+        "corpus/architecture/ai_architecture.md:188": "names the agent identifiers or the flag; neither asserts where the EU/US split lives. ai_architecture.md:188 in fact exhibits the two agent NAMES differing, which is evidence against the predicate rather than a publication of it.",
+        "corpus/services/jobsimulation.md:163": "names the agent identifiers or the flag; neither asserts where the EU/US split lives. ai_architecture.md:188 in fact exhibits the two agent NAMES differing, which is evidence against the predicate rather than a publication of it."
+      }
+    },
+    {
+      "id": "P07",
+      "statement": "The flag_use_realtime_openai arm's only effect is swapping the endpoint to openai-hosted.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:218"
+      ],
+      "forms": [
+        "openai-hosted"
+      ],
+      "subject_forms": [
+        "flag_use_realtime_openai"
+      ],
+      "excluded": {
+        "corpus/architecture/external_services.md:727": "states the voice_engine nil default, a different proposition from what the flag arm does."
+      }
+    },
+    {
+      "id": "P08",
+      "statement": "The M51 iter-08/09 block that carries the re-anchored call site is at ai-readiness.md:496.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:49-52"
+      ],
+      "forms": [
+        "when the two disagree, the name wins",
+        "pinned at **`:496`**"
+      ],
+      "subject_forms": [
+        "`:496`",
+        "iter-08/09"
+      ],
+      "excluded": {
+        "corpus/services/ai-readiness.md:498": "the REFERENT rather than a publication. `:498` is where the M51 iter-08/09 block actually opens, which measures the `:496` pin as off by two — step 2 must RE-DERIVE the anchor, never copy it.",
+        "corpus/services/ai-readiness.md:512": "the REFERENT rather than a publication. `:498` is where the M51 iter-08/09 block actually opens, which measures the `:496` pin as off by two — step 2 must RE-DERIVE the anchor, never copy it."
+      }
+    },
+    {
+      "id": "P09",
+      "statement": "AIReadinessClient.tsx's orgEnabled gate, effectiveCycleId, isFetched gate and tab-filter read sit at :133-134/:153-154/:166-170/:599.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:84",
+        "corpus/services/ai-readiness.md:334-335",
+        "corpus/services/ai-readiness.md:482-484"
+      ],
+      "forms": [
+        "AIReadinessClient.tsx",
+        "orgEnabled"
+      ],
+      "subject_forms": [
+        "AIReadinessClient",
+        "effectiveCycleId",
+        "useAiReadinessEnabled"
+      ],
+      "excluded": {
+        "corpus/services/ai-readiness.md:298": "names AIReadinessClient without any line pin, so it publishes no claim about where those four reads sit.",
+        "corpus/services/ai-readiness.md:542": "names AIReadinessClient without any line pin, so it publishes no claim about where those four reads sit."
+      }
+    },
+    {
+      "id": "P10",
+      "statement": "The Go service invokes studio/gen.py and studio/postgen.py through bash -c.",
+      "seeds": [
+        "corpus/services/cms.md:287"
+      ],
+      "forms": [
+        "studio/gen.py",
+        "studio/postgen.py",
+        "exec gen.py"
+      ],
+      "subject_forms": [
+        "gen.py",
+        "postgen",
+        "studio-venv"
+      ],
+      "excluded": {
+        "corpus/architecture/external_services.md:565": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/architecture/external_services.md:641": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/architecture/service_taxonomy.md:257": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/architecture/service_taxonomy.md:259": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/architecture/service_taxonomy.md:262": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:138": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:139": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:223": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:274": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:276": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:280": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/cms.md:282": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:51": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:52": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:53": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:54": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:55": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:62": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:63": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:78": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:96": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:108": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:141": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:161": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:164": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:186": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:189": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:205": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:211": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:216": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:227": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:232": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:241": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:246": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:273": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:286": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:327": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:330": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:415": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:418": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:430": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:441": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:442": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:443": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:452": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them.",
+        "corpus/services/studio-room.md:459": "documents `gen.py`/`postgen.py` as a manual CLI (usage blocks, arg lists, repo trees, pipeline diagrams) — none asserts that the GO SERVICE invokes them."
+      }
+    },
+    {
+      "id": "P11",
+      "statement": "The email-override validator's placeholder package is messenger/pkg/aireadinessemail, not app/internal/messenger/aireadinessemail.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:270"
+      ],
+      "forms": [
+        "messenger/pkg/aireadinessemail"
+      ],
+      "subject_forms": [
+        "aireadinessemail",
+        "ai_readiness_email_overrides"
+      ],
+      "excluded": {
+        "corpus/services/ai-readiness.md:184": "names the ai_readiness_email_overrides table or the ai_readiness_* table count; neither asserts which package holds the placeholder validator.",
+        "corpus/services/backend.md:292": "names the ai_readiness_email_overrides table or the ai_readiness_* table count; neither asserts which package holds the placeholder validator."
+      }
+    },
+    {
+      "id": "P12",
+      "statement": "The Directus voice-engine nil-default lives at cms/directus/collections/jobsimulation.go:1594-1597.",
+      "seeds": [
+        "corpus/services/jobsimulation.md:160"
+      ],
+      "forms": [
+        "cms/directus/collections/jobsimulation.go:1594-1597",
+        ":1594-1600"
+      ],
+      "subject_forms": [
+        "voice_engine",
+        "gptrealtime"
+      ],
+      "excluded": {
+        "corpus/architecture/ai_architecture.md:201": "names the voice_engine field, the engine enum or the nil default itself, without pinning where the default is declared.",
+        "corpus/architecture/ai_architecture.md:208": "names the voice_engine field, the engine enum or the nil default itself, without pinning where the default is declared.",
+        "corpus/architecture/external_services.md:727": "names the voice_engine field, the engine enum or the nil default itself, without pinning where the default is declared."
+      }
+    },
+    {
+      "id": "P13",
+      "statement": "customerio-sync was the only platform compose service ever built from a git-URL context.",
+      "seeds": [
+        "corpus/services/customerio-sync.md:163-164",
+        "corpus/services/customerio-sync.md:85-86",
+        "corpus/services/customerio-sync.md:64"
+      ],
+      "forms": [
+        "compose service built that way",
+        "the only service built that way",
+        "build pattern was unique in the platform"
+      ],
+      "subject_forms": [
+        "built that way",
+        "build pattern",
+        "git-URL",
+        "build context"
+      ],
+      "excluded": {
+        "corpus/architecture/external_services.md:495": "discusses a build context or build pattern for a different service. external_services.md:495 records that the ROUTER was also once built from a git+url context — evidence against the 'only' quantifier, and material step 2 must weigh, but not a publication of this predicate.",
+        "corpus/architecture/platform-migration-status.md:90": "discusses a build context or build pattern for a different service. external_services.md:495 records that the ROUTER was also once built from a git+url context — evidence against the 'only' quantifier, and material step 2 must weigh, but not a publication of this predicate.",
+        "corpus/architecture/service_taxonomy.md:95": "discusses a build context or build pattern for a different service. external_services.md:495 records that the ROUTER was also once built from a git+url context — evidence against the 'only' quantifier, and material step 2 must weigh, but not a publication of this predicate.",
+        "corpus/services/graphql-wundergraph.md:116": "discusses a build context or build pattern for a different service. external_services.md:495 records that the ROUTER was also once built from a git+url context — evidence against the 'only' quantifier, and material step 2 must weigh, but not a publication of this predicate.",
+        "corpus/services/graphql-wundergraph.md:134": "discusses a build context or build pattern for a different service. external_services.md:495 records that the ROUTER was also once built from a git+url context — evidence against the 'only' quantifier, and material step 2 must weigh, but not a publication of this predicate."
+      }
+    },
+    {
+      "id": "P14",
+      "statement": "graphql-wundergraph's own CLAUDE.md Version Tracking section is stale.",
+      "seeds": [
+        "corpus/services/graphql-wundergraph.md:274"
+      ],
+      "forms": [
+        "Version Tracking"
+      ],
+      "subject_forms": [
+        "own `CLAUDE.md`"
+      ],
+      "excluded": {
+        "corpus/services/jobsimulation.md:188": "cites a DIFFERENT repo's own CLAUDE.md (jobsimulation, next-web-app, storage, studio-room). None is about graphql-wundergraph's.",
+        "corpus/services/next-web-app.md:75": "cites a DIFFERENT repo's own CLAUDE.md (jobsimulation, next-web-app, storage, studio-room). None is about graphql-wundergraph's.",
+        "corpus/services/next-web-app.md:153": "cites a DIFFERENT repo's own CLAUDE.md (jobsimulation, next-web-app, storage, studio-room). None is about graphql-wundergraph's.",
+        "corpus/services/storage.md:52": "cites a DIFFERENT repo's own CLAUDE.md (jobsimulation, next-web-app, storage, studio-room). None is about graphql-wundergraph's.",
+        "corpus/services/studio-room.md:224": "cites a DIFFERENT repo's own CLAUDE.md (jobsimulation, next-web-app, storage, studio-room). None is about graphql-wundergraph's."
+      }
+    },
+    {
+      "id": "P15",
+      "statement": "roadrunner/terraform/main.tf:19 was last touched at 87d8d44 (2026-06-19).",
+      "seeds": [
+        "corpus/services/roadrunner.md:13-14"
+      ],
+      "forms": [
+        "roadrunner/terraform/main.tf:19",
+        "87d8d44` (2026-06-19"
+      ],
+      "subject_forms": [
+        "roadrunner/terraform",
+        "service_desired_count"
+      ],
+      "excluded": {
+        "corpus/architecture/architecture_overview.md:20": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/architecture_overview.md:222": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/architecture_overview.md:348": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/dependency_map.md:31": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/external_services.md:175": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/platform-migration-status.md:273": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/architecture/service_taxonomy.md:160": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/backend.md:70": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/cms.md:8": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/cms.md:73": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/graphql-wundergraph.md:7": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/jobsimulation.md:9": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/jobsimulation.md:12": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/messenger.md:43": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/messenger.md:50": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim.",
+        "corpus/services/storage.md:175": "cites `service_desired_count` or a terraform module for cms / storage / jobsimulation, not roadrunner's, and none carries the last-touched claim."
+      }
+    },
+    {
+      "id": "P16",
+      "statement": "Storage's compose environment block at platform 0dab54d declares eight variables.",
+      "seeds": [
+        "corpus/architecture/dependency_map.md:19"
+      ],
+      "forms": [
+        "eight variables"
+      ],
+      "subject_forms": [
+        "compose env",
+        ":116-123"
+      ],
+      "excluded": {
+        "corpus/architecture/dependency_map.md:103": "describes the BACKEND's or gotenberg's compose environment block, not storage's, and none states a variable count.",
+        "corpus/architecture/external_services.md:132": "describes the BACKEND's or gotenberg's compose environment block, not storage's, and none states a variable count.",
+        "corpus/architecture/external_services.md:248": "describes the BACKEND's or gotenberg's compose environment block, not storage's, and none states a variable count.",
+        "corpus/architecture/external_services.md:260": "describes the BACKEND's or gotenberg's compose environment block, not storage's, and none states a variable count.",
+        "corpus/services/gotenberg.md:50": "describes the BACKEND's or gotenberg's compose environment block, not storage's, and none states a variable count."
+      }
+    },
+    {
+      "id": "P17",
+      "statement": "storage's StorageService Connect handler is declared in storage:sdk/storage/v1/service.go.",
+      "seeds": [
+        "corpus/services/backend.md:37-41"
+      ],
+      "forms": [
+        "storage@4ce8ece5:sdk/storage/v1/service.go",
+        "sdk/storage/v1/service.go"
+      ],
+      "subject_forms": [
+        "StorageService"
+      ],
+      "excluded": {
+        "corpus/architecture/shared_libraries.md:95": "names StorageService as an RPC surface or a doc heading; none asserts which file declares the Connect handler.",
+        "corpus/architecture/shared_libraries.md:103": "names StorageService as an RPC surface or a doc heading; none asserts which file declares the Connect handler.",
+        "corpus/services/storage.md:129": "names StorageService as an RPC surface or a doc heading; none asserts which file declares the Connect handler."
+      }
+    },
+    {
+      "id": "P18",
+      "statement": "studio-desk's Express backend holds the GraphQL client and calls the platform GraphQL API.",
+      "seeds": [
+        "corpus/services/studio-desk.md:38",
+        "corpus/services/studio-desk.md:46"
+      ],
+      "forms": [
+        "GraphQL integration with the",
+        "GraphQL[GraphQL :8082/graphql/query"
+      ],
+      "subject_forms": [
+        "Express backend"
+      ],
+      "excluded": {
+        "corpus/architecture/alignment_testing.md:358": "`@clerk/express` in the alignment-DNA doc — the token matched, the subject did not."
+      }
+    },
+    {
+      "id": "P19",
+      "statement": "studio-desk declares GCLOUD_SERVICE_ACCOUNT at .env.example:120.",
+      "seeds": [
+        "corpus/services/studio-desk.md:107"
+      ],
+      "forms": [
+        ".env.example:120"
+      ],
+      "subject_forms": [
+        "GCLOUD_SERVICE_ACCOUNT"
+      ],
+      "excluded": {
+        "corpus/services/studio-desk.md:199": "the .env sample line for the same variable; it states no declaring file:line, so it publishes no pin to contradict."
+      }
+    },
+    {
+      "id": "P20",
+      "statement": "archiveStudioTask is declared in app's cms_queries.graphqls at line 106.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:48-49"
+      ],
+      "forms": [
+        "cms_queries.graphqls:106"
+      ],
+      "subject_forms": [
+        "archiveStudioTask",
+        "cms_queries.graphqls"
+      ]
+    },
+    {
+      "id": "P21",
+      "statement": "d11a403 re-pointed all four of messenger's *_RPC_ADDR at http://backend:8083.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:425"
+      ],
+      "forms": [
+        "http://backend:8083"
+      ],
+      "subject_forms": [
+        "_RPC_ADDR"
+      ],
+      "excluded": {
+        "corpus/architecture/architecture_overview.md:179": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:336": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:348": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:352": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:357": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:363": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/architecture_overview.md:364": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/dependency_map.md:7": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/platform-migration-status.md:92": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/platform-migration-status.md:93": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/platform-migration-status.md:267": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/service_taxonomy.md:189": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/architecture/shared_libraries.md:99": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/README.md:44": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/academy-backend.md:63": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/academy-backend.md:118": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/backend.md:46": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/backend.md:49": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/backend.md:315": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/cms.md:101": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/cms.md:204": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/jobsimulation.md:146": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/messenger.md:170": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/roadrunner.md:24": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/roadrunner.md:29": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/roadrunner.md:60": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/roadrunner.md:124": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/sentinel.md:85": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/skillpath.md:16": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/skillpath.md:33": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/skillpath.md:61": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/storage.md:26": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/storage.md:29": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's.",
+        "corpus/services/storage.md:35": "concerns a DIFFERENT `*_RPC_ADDR` (STORAGE_, ROADRUNNER_, SKILLPATH_, CMS_) or the fact that compose now sets none. None asserts that d11a403 re-pointed all FOUR of messenger's."
+      }
+    },
+    {
+      "id": "P22",
+      "statement": "The Cosmo Router is deployed in the VPC's public subnets.",
+      "seeds": [
+        "corpus/architecture/security_compliance.md:22"
+      ],
+      "forms": [
+        "(ALB), Cosmo Router"
+      ],
+      "subject_forms": [
+        "Cosmo Router",
+        "public subnet"
+      ],
+      "excluded": {
+        "corpus/architecture/architecture_overview.md:3": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:45": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:62": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:71": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:89": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:251": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:284": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:325": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/architecture_overview.md:423": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/dependency_map.md:23": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/external_services.md:3": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/external_services.md:358": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/external_services.md:365": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/external_services.md:403": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/external_services.md:475": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/frontend_architecture.md:39": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/frontend_architecture.md:55": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:3": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:117": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:390": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:403": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:507": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/architecture/service_taxonomy.md:514": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/README.md:52": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/backend.md:307": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/cms.md:197": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/customerio-sync.md:153": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/graphql-wundergraph.md:37": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/graphql-wundergraph.md:72": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/graphql-wundergraph.md:74": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/graphql-wundergraph.md:256": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/graphql-wundergraph.md:271": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/jobsimulation.md:122": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/next-web-app.md:12": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/next-web-app.md:15": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all.",
+        "corpus/services/studio-desk.md:132": "mentions the Cosmo Router's deletion, its routing role or its version; none places it in a subnet. security_compliance.md:22 is the only site in the corpus that states its network placement at all."
+      }
+    },
+    {
+      "id": "P23",
+      "statement": "Ant Academy is an internal @anthropos.work-domain-gated portal that external users cannot enter.",
+      "seeds": [
+        "corpus/services/ant-academy.md:474"
+      ],
+      "forms": [
+        "so external users cannot enter",
+        "external users cannot"
+      ],
+      "subject_forms": [
+        "@anthropos.work",
+        "domain-gated",
+        "domain gate"
+      ],
+      "excluded": {
+        "corpus/architecture/architecture_overview.md:40": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/architecture/architecture_overview.md:260": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/architecture/external_services.md:55": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/architecture/frontend_architecture.md:9": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/architecture/service_taxonomy.md:281": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/architecture/service_taxonomy.md:282": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/README.md:56": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/ant-academy.md:5": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/ant-academy.md:24": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/ant-academy.md:31": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/ant-academy.md:298": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider).",
+        "corpus/services/ant-academy.md:346": "states the domain gate or the portal's internal purpose without the access-impossibility entailment this predicate turns on. ant-academy.md:298 publishes the CORRECTION (the public surface is much wider)."
+      }
+    },
+    {
+      "id": "P24",
+      "statement": "The platform's docker-compose still contains a messenger service block.",
+      "seeds": [
+        "corpus/services/sentinel.md:5"
+      ],
+      "forms": [
+        "its compose block sets no `AUTHORIZATION_ADDRESS`"
+      ],
+      "subject_forms": [
+        "compose block",
+        "messenger service block"
+      ],
+      "excluded": {
+        "corpus/architecture/dependency_map.md:21": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/architecture/external_services.md:243": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/architecture/external_services.md:851": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/architecture/platform-migration-status.md:93": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/architecture/platform-migration-status.md:184": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/architecture/platform-migration-status.md:267": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/backend.md:302": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/jobsimulation.md:143": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:29": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:52": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:74": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:132": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:168": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/messenger.md:174": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/roadrunner.md:186": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/sentinel.md:85": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/sentinel.md:89": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/storage.md:52": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier.",
+        "corpus/services/storage.md:192": "records the messenger compose block as DELETED, or describes a different service's compose block. The corpus states the deletion at ten sites; the seed's surviving presupposition is the outlier."
+      }
+    }
+  ]
+}

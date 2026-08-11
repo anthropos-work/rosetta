@@ -36,9 +36,16 @@ Two properties make it safe to trust with secrets:
    value. You see key *names* and whether each one is present — never the value itself. The one operation
    that necessarily moves secret bytes (writing a repo's `.env`) copies them straight from your source
    folder to the (git-ignored) target file and nowhere else.
-2. **It can't re-arm the production-write path.** The one secret that could leak a demo's writes onto the
-   live product (the Directus admin token) is deliberately **left blank** on any non-production stack — the
-   tool defers to the same strip the demo bring-up enforces, so it can never undo a closed safety hole.
+2. **It can't re-arm the production-write path.** The secrets that could leak a demo's writes onto the live
+   product — the Directus write tokens — are deliberately **left blank** on any non-production stack: the tool
+   defers to the same strip the demo bring-up enforces, so it can never undo a closed safety hole. **It is
+   TWO genes, not one**, and saying "the one secret" hides the second: the DNA declares
+   `platform/DIRECTUS_TOKEN` (`critical`·`required`) **and** `studio-desk/DIRECTUS_TOKEN`
+   (`standard`·`required`, noted *"SAFETY: same strip-on-non-prod class as platform/DIRECTUS_TOKEN"*) —
+   `stack-secrets/secretdna/secret-dna.json:191`, `:659` @ rext `415240f`. The second one matters on its own
+   terms: studio-desk's skill-path builder is the surface that *could have written* prod Directus (see
+   §2.2's fix16/fix17 scope note in [`safety.md`](safety.md)). The strip set itself is **three key names** —
+   `DIRECTUS_TOKEN`, `DIRECTUS_STATIC_TOKEN`, `DIRECTUS_ADMIN_TOKEN` (`stack-secrets/provision/provision.go:50-54`).
 
 A **coverage scorecard** (the "secret-DNA") tells you, repo by repo, whether your source folder carries
 everything a working stack needs — and a CI-style gate keeps that list honest as the platform's required
@@ -91,19 +98,19 @@ alias (a family id — genes sharing ONE underlying value), source_hint, note
 
 The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are unique across the DNA.
 
-**The 6-repo / 61-gene map** (the committed `secret-dna.json`, version `sound-check-m239`, profile `graphql`):
+**The 6-repo / 64-gene map** (the committed `secret-dna.json`, version `fast-build-m256`; its `profile` field still literally reads the retired `graphql` token — see the waived class below):
 
 | Repo | Target file | Genes | Notable keys |
 |---|---|---|---|
-| **platform** | `.env` | 29 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants, `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
+| **platform** | `.env` | 32 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants (incl. the M256 `SKILLER_AZURE_OPENAI_KEY`/`_ENDPOINT_URL` pair), `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
 | **app** | `.env` | 10 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) + **the M239 Bedrock cred class** (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` + `AWS_REGION`/`AWS_SESSION_TOKEN`/`CLAUDE_CODE_USE_BEDROCK` — Talk to Data, see below) |
 | **sentinel** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example` |
 | **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
 
-Status split: **42 required · 11 optional · 8 waived**. Of the required genes, **13 are `critical`** (the
-gate denominator) and 29 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
+Status split: **44 required · 12 optional · 8 waived**. Of the required genes, **13 are `critical`** (the
+gate denominator) and 31 are `standard`. `Validate()` enforces an **anti-vacuous-100 guard** — a DNA with
 no required+critical gene is rejected at load (else `Critical` would score a hollow 100% over zero genes),
 the same defence the data-DNA + alignment frameworks carry. (The M30 field-bake reclassified
 `sentinel/DB_CONNECTION` from critical/required to `waived-config` — it is compose-injected, never read from
@@ -111,8 +118,11 @@ a `.env`; this shifted the split from 40/8/7 + 13-critical to 39/8/8 + 12-critic
 `platform/INVITATION_HMAC_SECRET` as critical/required — the `app` exits early when it is unset
 (`invitations.NewTokenManager` errors and `main` returns: the silent `app Exited (0)` class) — landing the
 split at 40/8/8 + 13-critical. **M239** then added the 5-gene **Bedrock cred class** for `app` (2 required-`standard`
-+ 3 optional; deliberately **NOT** critical — see below), landing the split at **42/11/8 + 13-critical**;
-the anti-vacuous guard still holds.)
++ 3 optional; deliberately **NOT** critical — see below), landing the split at 42/11/8 + 13-critical.
+**M256 iter-21** then added 3 `platform` genes — the `SKILLER_AZURE_OPENAI_KEY` / `SKILLER_AZURE_OPENAI_ENDPOINT_URL`
+pair (required-`standard`; they gate **every** taxonomy write, and `standard` rather than `critical` was
+measured, not assumed) plus optional `SKILLER_OPENAI_KEY` — landing the split at **44/12/8 + 13-critical**
+at version `fast-build-m256`; the anti-vacuous guard still holds.)
 
 ### The per-repo target-file map (where `provision` writes)
 
@@ -181,12 +191,21 @@ local-vs-prod realities never poison the score:
 |---|---|---|
 | `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification |
 | `waived-aws-mount` | `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID` | AWS recording creds are mounted from `~/.aws/credentials`, never a `.env` secret |
-| `waived-profile-gated` | `platform/BREVO_KEY` | only needed under the `messenger` docker-compose profile, not the default `graphql` profile |
+| `waived-profile-gated` | `platform/BREVO_KEY` | the class name is historical: the `messenger` profile is gone — `838d907` deleted the container along with the profile. Messenger now runs in-process inside `backend`, gated by `MESSENGER_ENABLED`, which defaults **off** on a developer machine (`ENVIRONMENT=development`; `docker-compose.yml:84-92`), so no default stack ever reads the key |
 | `waived-optional` | `platform/BUNNY_STREAM_API_KEY`, `app/TAILSCALE_AUTH_KEY`, `studio-desk/GCLOUD_SERVICE_ACCOUNT`, `studio-desk/YOUTUBE_API_KEY`, `next-web-app/BUNNY_CDN_TOKEN_KEY` | example-only / absent from live / convenience — a local stack comes up without them |
 
 A waived gene names **no operators** and is never measured (`Validate` enforces this). Because the catalog is
-profile-scoped to `graphql` (the DNA's `profile` field), the denominator is honest for the default stack;
-a different profile would carry a different waived set.
+scoped to the **default stack's** service set, the denominator is honest for it — `platform/BREVO_KEY` is
+waived because the default selection (`core` at platform `0c91421`: `backend` + `gotenberg` + the always-on
+`postgresql`/`redis`/`sentinel` floor) sends no mail. Since `838d907`, **no selection does**: there is no
+`messenger` container left to start, and `backend`'s in-process messenger stays dormant until
+`MESSENGER_ENABLED` is set in `.env`.
+
+> **⚠️ The DNA's `profile` field still literally reads `graphql`** — the token platform `0dab54d` renamed to
+> `core`. Nothing mis-selects on it: the field is never resolved against compose, only required non-empty at
+> load (`stack-secrets/secretdna/dna.go:233`) and **printed** in the catalog banner
+> (`stack-secrets/secretdna/catalog.go:17`), so the staleness is operator-visible rather than behavioural.
+> Re-labelling it is a `rosetta-extensions` change, not a doc one.
 
 ### The provisioning engine (`provision` — the one place secret bytes move)
 
@@ -237,6 +256,32 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
   resolution and prints the per-file plan (write / blank / skip / missing key NAMES) **without writing** —
   an honest preview.
 
+> **⚠️ The demo bring-up ALWAYS passes `--force`, so on that path a re-run is NOT idempotent — it appends a
+> full block every time, without bound** (measured M257x iter-269). `up-injected.sh:1538` runs
+> `provision … --force` unconditionally, and `--force` skips the copy-if-absent check above while the merge
+> stays **append-only** — so each bring-up adds one block. Measured on this box's `stack-demo/platform/.env`
+> after 31 bring-ups: **471 lines · 18 distinct keys · 13 of them present 31 times · 0 keys whose value
+> varies · `DIRECTUS_TOKEN` blank in all 31.** There is no reaper and no upper bound.
+>
+> **It is not a bug in either half, and that is why it survived.** Append-only is what makes the tool
+> values-blind — `provision/io.go:173-175`: *"an existing line is never re-read for its value or rewritten,
+> so provision can never corrupt or echo a value already in the target."* And `--force` is deliberate:
+> `up-injected.sh:1529` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
+> last-wins** (the strip-on-non-prod class)."* **Compose's last-wins resolution is therefore LOAD-BEARING,
+> not incidental** — the blank is delivered *by being appended last*.
+>
+> **Which is why "make the writer replace-or-skip" is the wrong fix, and it was the routed one**
+> (`FIX-M257x-262-demo-env-append-is-not-idempotent`). Replace-in-place would either re-read an existing
+> value (breaking values-blindness) or drop the trailing blank (re-arming `DIRECTUS_TOKEN` on a demo — the
+> fix16/17 class this spec exists to prevent). Any real repair must keep **both** properties and prune
+> **older** duplicates rather than stop appending. Re-routed as
+> `FIX-M257x-269-force-append-grows-the-demo-env-without-bound`.
+>
+> **The live hazard to know about:** with N copies of a key, the **last** one wins. Today all 31 agree, so
+> nothing is wrong. The moment one writer appends a *differing* value — a stale source, a partial run, a
+> hand-edit — the file silently prefers whichever landed last, and the classic symptom is *stack boots,
+> catalog empty*. **Diagnose a suspect `.env` by reading the LAST occurrence of a key, never the first.**
+
 ### The demo-aware coverage check (`check` / `measure`)
 
 `check` (`secretdna.MeasureForStack`) scores a source against the DNA and exits 1 if **critical coverage <
@@ -273,15 +318,43 @@ real Clerk keys + the real `INVITATION_HMAC_SECRET` in its source. The pre-fligh
 > sandbox/throwaway keys into the source: the **AI-simulation voice** engine (LiveKit), the **ant-academy
 > `/api/ai/chat`** assistant (`OPENAI_API_KEY`/`ANTHROPIC_API_KEY`), and the **M45 AI batch-generation**
 > (`ai v1.40.1`) all no-op gracefully — they are not on any demo gate path (the M42 coverage gate is MET on
-> both vantages with **zero** AI keys present). These keys remain in the **`waived` / optional** class for a
-> demo source (the `waived-aws-mount` precedent's sibling): their absence is correct, not a coverage hole, so
-> the values-blind `check` does **not** false-fail a demo that is designed not to carry them.
+> both vantages with **zero** AI keys present).
 >
-> **The studio-desk AI keys are the exception (v2.7 "july jitter" M252 — the KB-1 correction).** The blanket
-> above is **imprecise**: `studio-desk/AI_OPENAI_API_KEY` + `studio-desk/AI_ANTHROPIC_API_KEY` do **not** remain
-> in the waived/optional class — they are **required · standard** (warn, not waived), the **same** posture as the
-> M239 Bedrock class below, because the studio **builder GENERATE** (`/api/ai/completion`) is a live-inference
-> surface a demo now drives. See "The studio-desk AI class" below.
+> 🔴 **RETRACTED — "these keys remain in the `waived` / optional class … so `check` does not false-fail a demo".
+> `waived` is wrong for every one of them, and for two it inverts the gate.** Measured against the committed
+> `stack-secrets/secretdna/secret-dna.json` (64 genes, version `fast-build-m256`) @ rext `415240f`: **zero** of
+> the keys named above carries a `waived-*` status. The waived class is exactly the **8** genes tabulated under
+> "The waived class" above — `sentinel/DB_CONNECTION`, `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID`,
+> `platform/BREVO_KEY`, and 5 `waived-optional` — and **no AI-inference key is among them**. What the manifest
+> actually says:
+>
+> | gene | criticality | status | operators |
+> |---|---|---|---|
+> | `platform/OPENAI_KEY` | **critical** | **required** | `key-present`, `nonempty` |
+> | `platform/AZURE_OPENAI_KEY` | **critical** | **required** | `key-present`, `nonempty` |
+> | `platform/ANTHROPIC_API_KEY` · `platform/OPENAI_API_KEY` · `platform/LIVEKIT_API_KEY` · `platform/LIVEKIT_API_SECRET` | standard | **required** | `key-present`, `nonempty` |
+> | `app/OPENAI_API_KEY` · `ant-academy/OPENAI_API_KEY` · `ant-academy/ANTHROPIC_API_KEY` · `next-web-app/AZURE_OPENAI_KEY` | standard | **required** | `key-present`, `nonempty` |
+> | `platform/ELEVENLABS_API_KEY` · `platform/MISTRAL_API_KEY` · `app/ELEVENLABS_API_KEY` · `platform/SKILLER_OPENAI_KEY` | optional | optional | `key-present` |
+>
+> **The gate consequence, stated exactly.** `Critical` is the *unweighted* pass ratio over the
+> **required + critical** genes and the gate is `Critical == 1.0`; waived genes are excluded from both
+> denominators (`stack-secrets/secretdna/measure.go:32-33`, `:44-45`). `platform/OPENAI_KEY` and
+> `platform/AZURE_OPENAI_KEY` are **2 of the 13** critical·required genes and both demand `nonempty` — so a
+> source carrying neither **cannot** score `Critical == 1.0`. The retracted sentence promised the opposite of
+> what the gate does: as written, the waived class it described would have **false-failed its own gate**.
+>
+> **What survives the retraction:** the *decision* — no real AI key is minted or fabricated for a demo, the
+> AI-dependent surfaces are inert-by-design, and the M42 coverage gate is met with zero AI keys. That is a
+> statement about the **demo**, not about the **DNA**. If a demo source is meant to pass `check` without AI
+> keys, the fix is a **classification change in the manifest** (reclassify or scope those genes, the way
+> `sentinel/DB_CONNECTION` was reclassified `waived-config`), not a sentence in this doc asserting a class the
+> manifest does not carry.
+>
+> **The studio-desk AI keys were already caught (v2.7 "july jitter" M252 — the KB-1 correction).**
+> `studio-desk/AI_OPENAI_API_KEY` + `studio-desk/AI_ANTHROPIC_API_KEY` are **required · standard** (warn, not
+> waived), the **same** posture as the M239 Bedrock class below, because the studio **builder GENERATE**
+> (`/api/ai/completion`) is a live-inference surface a demo now drives. See "The studio-desk AI class" below.
+> M252 corrected one row; the retraction above is the rest of the same table.
 
 ### The Bedrock cred class for app (v2.6 M239, Talk to Data)
 
@@ -368,7 +441,7 @@ is discarded the moment a line is parsed. `provision` **moves** secret bytes sou
 job) but the bytes never leave the value-carrying boundary (`provision/io.go`) except into the target `.env`.
 The `secret-dna.json` file stores NAMES only and is **committable** (unlike a `.env`). This mirrors the
 platform's values-blind `Guard.PreflightEnv` discipline — the safety clause is stated authoritatively in
-[`safety.md`](safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m28).
+[`safety.md`](safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m30).
 
 ### The CLI — `stacksecrets`
 
@@ -390,7 +463,8 @@ non-prod stack, values-blind.
 
 ## Status
 
-M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/61-gene map)
+M27 delivers the framework: the source-dir/zip ingestion + the secret-coverage DNA (the 6-repo/**64**-gene map
+at today's `fast-build-m256`; 55 genes when M27 shipped it — the growth is the split history above)
 + the two-tier keep-listed `diff` gate, **113 Go tests** (hermetic, `-race` clean). M28 adds the `provision`
 engine (alias-mapped per-file writes, copy-if-absent + `--force`, N=0-guarded, the `DIRECTUS_TOKEN`
 non-rearm regression pinned) + the demo-aware `check`, wired non-fatally into `/dev-up` + `/demo-up`

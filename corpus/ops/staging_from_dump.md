@@ -19,7 +19,7 @@ It is the bridge between "the stack starts" and "I can log in as my own admin ac
 ## Prerequisites
 
 You should already have, per `setup_guide.md`:
-- `platform/`, `app/`, `cms/`, `jobsimulation/`, `sentinel/`, `storage/`, `messenger/`, `roadrunner/`, `next-web-app/`, `studio-desk/`, `graphql-wundergraph/` cloned as siblings. (`skillpath` is decommissioned into `app` — no longer cloned.)
+- `platform/` plus the four `repos.yml` entries — `app/`, `sentinel/`, `next-web-app/`, `studio-desk/` — cloned as siblings. (`skiller`, `skillpath`, `cms`, `jobsimulation`, `roadrunner`, `storage`, `messenger` and `customerio-sync` are all folded into `app` and no longer cloned or built; `graphql-wundergraph` went with the router at `2adcf71`.)
 - `platform/.env` with `GH_PAT`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` filled in.
 - `make up postgresql` succeeds and Postgres is healthy.
 
@@ -34,23 +34,45 @@ You also need:
 
 ## 1. Outbound-email kill switch (mandatory, do this FIRST)
 
-A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications via `messenger` → Brevo (welcome emails, invitation flows, weekly recaps, password resets). If `BREVO_KEY` is set to a real value, those emails will go out to real people the moment you exercise the relevant flow.
+A staging stack restored from a prod dump contains real customer email addresses in `public.users`. Many code paths trigger transactional notifications through the messenger subsystem → Brevo. If `BREVO_KEY` is set to a real value, those emails will go out to real people the moment you exercise the relevant flow.
 
-**Blank `BREVO_KEY` in `platform/.env` and restart `messenger` BEFORE running any flow that could enqueue a notification:**
+> **⚠️ Corrected 2026-08-07 — three of the four examples this paragraph used to give do not exist.** It
+> read *"(welcome emails, invitation flows, weekly recaps, password resets)"*. Measured in the messenger
+> domain at `app` `ad9f3c498` (`git grep -in <term> -- internal/messenger`) and in the frozen `messenger`
+> repo at `fa47850d9`:
+>
+> | Old example | Verdict | Measurement |
+> |---|---|---|
+> | invitation flows | **REAL** | `internal/messenger/flow/organizations.go` + `internal/messenger/flow/invitation_reminders.go`; goldens `organization_member_invited_whitelabel_{en,it}*`, `invitation_reminder_{workforce,hiring}_r1…r5_{en,it}` |
+> | welcome emails | **NO SUCH FLOW** | `welcome` → **0** hits in `app/internal/messenger`. The only hit in the whole `messenger` repo is a test-fixture body string, `pkg/aireadinessemail/override_test.go:191` |
+> | weekly recaps | **NO SUCH FLOW** | `recap` → **0** hits in `app/internal/messenger` and **0** in the `messenger` repo. The only weekly thing is the AI-readiness **manager** digest (`internal/messenger/brevo/brevo.go:265` *"Weekly manager digest"*, `internal/messenger/flow/organizations.go:152`) — a cycle report to managers, not a user recap |
+> | password resets | **NOT OURS — Clerk's** | `password` → **0** hits in `app/internal/messenger` and **0** in the entire `messenger` repo. Widened to all of `app/internal/`: 16 hits, none a sender (a Clerk-webhook payload field at `internal/clerk/events/types.go:116`, LLM prompt templates, a meta-server config). The login surface is Clerk's own `<SignIn>` component — `next-web-app/apps/web/src/app/(unauthenticated)/login/[[...login]]/page.tsx:4` imports it from `@clerk/nextjs` and renders it at `:40` — so the reset mail is issued by **Clerk**, over Clerk's own transport. **Blanking `BREVO_KEY` does not suppress it.** Use a dev Clerk app (which this guide already mandates); that, not the Brevo key, is what keeps reset mail off real inboxes |
+>
+> The real Brevo-backed families, from the golden corpus in `internal/messenger/flow/testdata/emails/`:
+> org member **invitations** + 5-slot invitation **reminders** (workforce + hiring), **assignment**
+> mail (assigned / unassigned / completed / due-date-updated / past-due, for skill paths and job
+> simulations), **job-simulation results** (passed / failed / dropped / interview-completed),
+> **course-builder** mail (build completed / failed / course published), and the **AI-readiness**
+> cycle set (invited / reminders r1–r5 / completed / cycle-launched / manager digest). Blanking
+> `BREVO_KEY` is still mandatory — it is those flows it protects.
+
+> **⚠️ There is no `messenger` container any more.** Platform `838d907` (2026-08-05) deleted it — messenger runs in-process inside `backend` (v9.0 "support-in-app"), gated by `MESSENGER_ENABLED`. Any `docker compose … messenger` command now fails with *no such service*; target **`backend`** instead. `MESSENGER_ENABLED` unset means off while `ENVIRONMENT=development`, but do not lean on that — a staging `.env` copied from elsewhere may well set it, which is exactly why blanking the key is the mandatory step.
+
+**Blank `BREVO_KEY` in `platform/.env` and restart `backend` BEFORE running any flow that could enqueue a notification:**
 
 ```bash
 sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
-docker compose -f platform/docker-compose.yml restart messenger
+docker compose -f platform/docker-compose.yml restart backend
 ```
 
 Verify:
 
 ```bash
-docker compose -f platform/docker-compose.yml exec -T messenger env | grep BREVO_KEY
-# Expected: BREVO_KEY=  (empty)
+docker compose -f platform/docker-compose.yml exec -T backend env | grep -E '^(BREVO_KEY|MESSENGER_ENABLED)='
+# Expected: BREVO_KEY=  (empty); MESSENGER_ENABLED absent, or explicitly false
 ```
 
-The messenger boots with `INFO Brevo Messenger` either way; with the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
+With the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
 
 Apply the same caution to any other live-customer integration you don't intend to fire from staging:
 - `CUSTOMERIO_*` (marketing/lifecycle email — disable unless you're testing customer.io integration explicitly).
@@ -256,12 +278,29 @@ This is dashboard-only as of 2026-05; there's no public REST endpoint to script 
 
 ## 4. Apply the colony patches
 
-The shared `colony` library used by every Go service has two unfixed-upstream issues that surface only against dev Clerk apps:
+> **⚠️ SUPERSEDED 2026-08-07 — do not vendor colony. Bump the pin.** Bug 1 below is **fixed upstream at
+> colony `v0.34.4`** (*"fix(clerk): ensure client is not nil when fetching user"*, `b810b28`,
+> 2026-06-15 — read from `.colony-fork/CHANGELOG.md` as checked into `app` at `fc5607a`), and `app`
+> took the bump the same day at `b30f25e`. **`app` at `ad9f3c498` pins `colony v0.35.2` (`go.mod:15`)
+> with no colony `replace` directive** (its only `replace`, `:295`, is for `sentry-go/echo`), **no
+> `vendor-colony/` and no `.colony-fork/`.** The platform itself vendored colony exactly once, for one
+> day — `fc5607a` (2026-06-16) added `.colony-fork/`, `984c50b6` (2026-06-17) deleted all 55 files of
+> it, dropped the `replace` from `go.mod` and the `COPY .colony-fork/` from `Dockerfile.dev`, and
+> removed app's own hand-rolled v2-claim reader from `internal/web/backend/api/api.go` in the same
+> commit. Whether colony `v0.35.2` reads the v2 claim shape is **not measurable from this corpus** —
+> `colony` is not in the clone set and only `v0.34.3` is in the local module cache — so do not assert
+> it either way; what *is* certain is that `app` ships stock upstream colony with no patch of any kind.
+> **Full evidence in [`staging-bringup.md` Quirk #11](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).**
+>
+> The rest of § 4 is kept as the diagnosis (the symptoms below are exactly what an old build shows) and
+> as an unwind guide for a host that still carries a `vendor-colony/`.
 
-1. **Nil-deref panic on every authenticated GraphQL query** — `colony@v0.33.2`/`v0.34.0` `authn/provider/clerk.GetUser` returns a `*User` with the `client` field unset. Any later call to `User.Email()` or `User.fetchUser()` panics on a nil receiver. `Email()` also nil-derefs when `PrimaryEmailAddressID` is missing on the fetched Clerk user.
-2. **Clerk JWT v2 format unsupported** — modern Clerk dev apps issue tokens with claims under `o.{id,rol,slg}` instead of `org_id`/`org_role`/`org`. Colony's `GetOrganization()` only reads v1 names, so it returns `nil`, and downstream resolvers see "no active organization" → `forbidden: organization mismatch` on every org-scoped query.
+The two issues, as they present against dev Clerk apps:
 
-The fix is to vendor a patched colony into each Go service and add a `replace` directive in its `go.mod`. Patched source is on Ithaca at `/home/devops/colony/`; the diff against upstream `v0.34.0` is small enough to copy by hand. Key changes:
+1. **Nil-deref panic on every authenticated GraphQL query** — `colony@v0.33.2`/`v0.34.0` (and still `v0.34.3`, the newest we can read locally: `clerk.go:62-66`) `authn/provider/clerk.GetUser` returns a `*User` with the `client` field unset. Any later call to `User.Email()` or `User.fetchUser()` panics on a nil receiver. `Email()` also nil-derefs when `PrimaryEmailAddressID` is missing on the fetched Clerk user. **Fixed at `v0.34.4`.**
+2. **Clerk JWT v2 format unsupported** — modern Clerk dev apps issue tokens with claims under `o.{id,rol,slg}` instead of `org_id`/`org_role`/`org`. Colony's `GetOrganization()` only reads v1 names (`colony@v0.34.3/authn/provider/clerk/clerk_user.go:148-167`), so it returns `nil`, and downstream resolvers see "no active organization" → `forbidden: organization mismatch` on every org-scoped query.
+
+The historical fix was to vendor a patched colony into each Go service and add a `replace` directive in its `go.mod`. Patched source was on Ithaca at `/home/devops/colony/`; the diff against upstream `v0.34.0` was small enough to copy by hand. Key changes:
 
 `authn/provider/clerk/clerk.go` `GetUser`:
 ```go
@@ -292,7 +331,7 @@ return ""
 
 `authn/provider/clerk/clerk_user.go` `GetOrganization()` — fall back to v2 claim names + lazy-fetch `public_metadata.eid` via Clerk API with a process-wide cache (Clerk rate-limits otherwise).
 
-Each consuming service (`app`, `cms`, `jobsimulation`, `messenger`, `storage`, `sentinel`) needs:
+Each consuming service needed the steps below. On a current stack the Go services are **`app` and `sentinel`** — when this recipe was written it also covered `cms`, `jobsimulation`, `messenger` and `storage`, all since folded into `app`. **Do not run these; see the box at the top of § 4.** Reproduced so you can recognise and unwind a `vendor-colony/` on an old host:
 
 1. `cp -r <patched-colony> <service>/vendor-colony`
 2. Append to `<service>/go.mod`:
@@ -303,7 +342,7 @@ Each consuming service (`app`, `cms`, `jobsimulation`, `messenger`, `storage`, `
 4. `cd <service> && go mod tidy && cd ..`
 5. `docker compose -f platform/docker-compose.yml build <service>`
 
-Once this lands upstream in `colony`, the vendor + replace can be removed and each service can pin a fixed colony version directly.
+**To unwind one:** unmark the `skip-worktree` on `go.mod`, `go.sum` and `Dockerfile.dev`, `git checkout --` all three, `rm -rf vendor-colony/`, drop the `vendor-colony/` line from `.git/info/exclude`, and rebuild. Upstream is where the fix lives now — `app` pins a plain colony version and nothing else.
 
 ---
 
@@ -320,7 +359,12 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see ~14 services running (was ~15 before `skillpath` was decommissioned into `app`). If any service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
+You should see **7** services running at platform `0c91421` — `--profile all` now selects the whole
+effective topology (`backend`, `gotenberg`, `next-web-app`, `studio-desk` + the always-on
+`postgresql`/`redis`/`sentinel` floor). The count was ~14 before the cms/jobsimulation/roadrunner
+fold and the `graphql` deletion, 8 at `0dab54d`, and 7 since `838d907` dropped the `storage`,
+`messenger` and `customerio-sync` containers (corrected M257x iter-78, re-measured iter-87). If any
+service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
 
 ---
 
@@ -334,7 +378,7 @@ If you want to open the staging from another device on your Tailscale network (e
    PUBLIC_HOST=100.x.y.z
    ```
    …then `docker compose build next-web-app && docker compose up -d next-web-app`.
-3. Add the Tailscale origin to the backend's CORS allowlist (`app/internal/cors/cors.go`, in the `colony.Development` block). Rebuild backend.
+3. Add the Tailscale origin to `CORS_EXTRA_ORIGINS` in `platform/.env` (comma-separated) and `docker compose restart backend` — **no rebuild, and do not edit `cors.go`.** The env var landed at `app` `f664473` (2026-05-14) and was hard-gated out of production at `13410de` (2026-05-19); both are ancestors of `app` `ad9f3c498`. It is read at `app/internal/cors/cors.go:24` and applied at `:78-82` under `if !environment.IsProduction()`.
 4. Add the same origin in your dev Clerk app's "Allowed origins" list.
 5. From the other device, open `http://100.x.y.z:3000/login`.
 
@@ -357,7 +401,7 @@ Tailscale's MagicDNS gives each device one canonical short name (e.g., `calypso.
 Save in https://login.tailscale.com/admin/acls/file (or `POST /api/v2/tailnet/<tailnet>/acl`) and resolution is instant tailnet-wide. After this, both `http://calypso:3000` and `http://calypsostaging:3000` work from any tailnet device. Remember to add each new alias to:
 
 - **Clerk allowed origins** (https://api.clerk.com/v1/instance with `allowed_origins`).
-- **Backend CORS** (`app/internal/cors/cors.go`'s `colony.Development` block).
+- **Backend CORS** — append the alias to `CORS_EXTRA_ORIGINS` in `platform/.env`, then restart `backend`. (The old instruction here was to edit `app/internal/cors/cors.go`'s `colony.Development` block; that is obsolete — see step 3 above.)
 
 Both lists must contain `http://<alias>:3000` for the browser to trust it.
 
@@ -395,7 +439,7 @@ If `/enterprise/members` shows `0 / 50, No data`, re-check step 3c (casbin sync)
 ## Troubleshooting
 
 ### "forbidden: organization mismatch" on enterprise routes
-Backend's `colony.GetOrganization()` returned `nil` because the JWT's `o.id` (or `org_id`) didn't resolve to a valid `eid`. Either the colony patch (step 4) isn't applied, or the org's `public_metadata.eid` (step 3b) isn't set. Verify:
+Backend's `colony.GetOrganization()` returned `nil` because the JWT's `o.id` (or `org_id`) didn't resolve to a valid `eid`. Either the org's `public_metadata.eid` (step 3b) isn't set, or `app` is on a colony version that can't read your token's claim shape (check `grep colony ~/app/go.mod` against § 4 — the remedy is a version bump, **not** a vendor tree). **Note the blast radius:** this is not REST-only. A nil org context also denies GraphQL, because `OrganizationMixin`'s Ent privacy policy opens with `DenyIfNoOrganizationInContext()` on **30** schemas — see [`staging-bringup.md` Quirk #11](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative). Verify:
 ```bash
 docker compose logs backend --since 1m | grep -i "organization mismatch\|colony: failed"
 ```
@@ -404,10 +448,10 @@ docker compose logs backend --since 1m | grep -i "organization mismatch\|colony:
 Casbin doesn't know you're an admin of the active org. Re-run step 3c and restart sentinel.
 
 ### Members table shows skeleton rows forever
-The query is panicking on the backend with `nil pointer dereference`. Apply the colony patch (step 4) and rebuild backend — this is the same root cause as "organization mismatch", just a different code path.
+The query is panicking on the backend with `nil pointer dereference` — the colony nil-client bug, same root cause as "organization mismatch", different code path. **Fixed upstream at colony `v0.34.4`**; if you are seeing it, `app` is pinned below that. Bump `~/app/go.mod` and rebuild backend — do not vendor (§ 4).
 
-### CMS subgraph 422 on `publicJobSimulations`
-Same colony root cause — the `cms` service needs the same vendor-colony patch as `app`.
+### 422 on `publicJobSimulations`
+Same colony root cause. **There is no `cms` service to patch** — the cms domain runs in-process inside `backend` (`app/internal/cms/`), and `cms` is neither a compose service nor a `repos.yml` entry at platform `0c91421d`. Nor is there a subgraph: platform `2adcf71` (2026-07-31) deleted the federation router, and `backend` serves one GraphQL schema at `:8082/graphql/query` (`app/internal/web/backend/backend.go:317`). Fix it on `backend` and only `backend`.
 
 ### "FATAL: role X does not exist" during DB restore
 Harmless — these are GRANT statements on missing roles. Data tables load fine.
@@ -427,13 +471,18 @@ studio-desk:
     - "9101:9100"   # was 9100:9100
 ```
 
-### CMS image build fails on `COPY studio/`
-The `studio/` submodule was removed from `cms/main`. Edit `cms/Dockerfile.dev` and remove:
-```dockerfile
-COPY studio/ ./studio/
-RUN pip install --no-cache-dir -r studio/requirements.txt
-```
-The Go binary runs without the Python studio runner.
+### Image build fails on `COPY … studio` — ACQUIRE the tree, do not delete the lines
+On a current stack the failing image is **`backend` (`app`)**, not `cms`: `app/Dockerfile:45-46` hard-COPYs
+`/build/studio`, nothing in the documented flow puts that tree on disk, and `make up` cannot complete
+without it. Clone it — [`setup_guide.md` § Acquire the Studio
+runtime](setup_guide.md#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails).
+
+> **⚠️ Corrected M257x iter-265.** This entry read *"the `studio/` submodule was removed from `cms/main`.
+> Edit `cms/Dockerfile.dev` and remove … The Go binary runs without the Python studio runner."* That was
+> true of the frozen `cms` repo and is **false for every image a current staging builds** — `cms` is
+> decommissioned, and `app` needs the Python runtime because it now hosts the embedded studio-room
+> pipeline. **The requirement migrated with the fold; this troubleshooting entry did not**
+> (`D-M257x-265-1`; two sibling copies in `setup_guide.md` and `staging-bringup.md` carried the same text).
 
 ### Next.js build crashes with "STRIPE_SECRET_KEY is not configured"
 Next.js statically evaluates server routes at build time and reads from `process.env`. Compose `env_file` is runtime-only. Drop a gitignored `next-web-app/apps/web/.env.production` containing the keys the routes need (Stripe, OpenAI, Azure OpenAI, Clerk publishable, Wundergraph endpoint, etc.) before `docker compose build`.

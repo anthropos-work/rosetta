@@ -19,7 +19,9 @@ and scoped to the **services actually brought up**. So when a bring-up says "UP"
 > authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform
 > repo is modified.**
 >
-> **In scope:** the backend `graphql`-profile services (what exists today). **Out of scope:** the
+> **In scope:** the backend services the **default** profile starts — `core` at platform `0c91421`
+> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis`/`sentinel` floor; the same five as at
+> `0dab54d` — `838d907` deleted three services, none of which `core` selected). **Out of scope:** the
 > frontend tier — the frontends don't exist in the stack yet; **M19** adds them and extends the verify
 > service list. Deep behavioural / e2e flows remain the operator-driven `/test-platform` job; this
 > auto-run is the always-on *smoke net*.
@@ -111,10 +113,30 @@ On a stack brought up with **local content** (demo default; dev `--local-content
 more cheap-wins — gated on the directus **container actually existing**, so a prod-read stack (no local
 Directus) never false-warns even on an unscoped run:
 
-3. **Directus serves the catalog** — `SELECT count(*) FROM directus.directus_collections` via `docker exec
-   <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin assert: a Directus
-   can be UP (`/server/health` 200) but serve **nothing** if the content-model never registered. (Also runs as
-   the `directus-collections` readiness probe.)
+3. **Directus REGISTERED the content model** — `SELECT count(*) FROM directus.directus_collections` via
+   `docker exec <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin
+   assert: a Directus can be UP (`/server/health` 200) and have no content model at all. (Also runs as the
+   `directus-collections` readiness probe.)
+
+   > **⚠ This assert used to be described — here and in its own `✓` line — as *"Directus serves the
+   > catalog"*, and it cannot know that.** `directus_collections` is a **registry** table written by the
+   > *structure* replay; the content rows are loaded by a later step and the anon read grants by a third, so
+   > the count is `> 0` on a Directus holding zero items and on one that 403s every read. On M257x clause
+   > 1's three cold cycles it was exactly that: the content replay raised on `directus.sequences`, **0 of
+   > 11986 rows** landed, every anon `/items` read returned 403 — and `autoverify` graded `green:true /
+   > 0 warnings` three times over it, because nothing anywhere in the verify path asked the *running*
+   > Directus for an item. Corrected in M257x harden pass 1; the rule it produced is
+   > [`platform-alignment.md`](platform-alignment.md) §5 rule 14 — **REGISTERED is not SERVED.**
+
+3b. **Directus actually SERVES an item** (`directus-serves-content` readiness probe, M257x harden pass 1) —
+   the measurement the count above cannot make. It asks the **running** Directus over HTTP, on the stack's
+   own offset port, **unauthenticated**, for one item out of a collection it did not choose: the target is
+   **derived** from the stack's own catalog (the non-system `directus.*` table holding the most rows), so a
+   re-modelled surface cannot make the probe stale and it cannot pick a target that guarantees its own
+   success. The derivation is **fail-closed** — no user collection holding a single row IS the defect, not a
+   skip. `403` (holds the content, serves it to nobody), `200` with an empty `data` array (serving, content
+   absent) and no-response are each named distinctly, because they have three different repairs. Scoped to
+   the `directus` service like the others, so a prod-read stack still skips cleanly.
 4. **No prod read** — the per-stack Directus's `DB_CONNECTION_STRING` (read from the container's env) must
    resolve to the stack's **own** Postgres, never a prod host. The runtime mirror of the executed-provision
    firewall gate; warns (non-fatal) if a mis-wired override pointed the local Directus at prod.
@@ -138,14 +160,26 @@ Directus) never false-warns even on an unscoped run:
 - **Liveness** — per service (`lib/services.sh::service_rows` + `probe_service`): docker-health /
   TCP-connect / HTTP-code, at `base+offset`, against `<project>-<svc>-1`.
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
-  `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
-  Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
+  `PING`, GraphQL introspection (`:8082+offset` at `/graphql/query` — re-pointed at M257x iter-13 when the
+  `:5050` router was deleted; a wrong *host* refuses loudly but a wrong *path* connects and 404s, so both
+  halves moved), gotenberg version (`:3200+offset`), sentinel
+  Connect-RPC handler mounted (`:8087+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
-  `directus-collections` serve-check — each resolving the offset port + project container via the same
+  `directus-collections` registration check **and the `directus-serves-content` probe that reads an actual
+  item back over HTTP** (§"cheap-wins" 3/3b above — the registration count alone graded three cold cycles
+  green over a Directus that served nothing) — each resolving the offset port + project container via the same
   `target.sh` helpers. **Both** phases honour the `STACK_SERVICES` scope filter: the readiness phase skips a
   deep probe whose backing service isn't in scope (the same `target_service_selected` gate as liveness), so a
   reduced bring-up never produces a wall of false `down`s in *either* phase. (The directus row is scoped in
   only on a `--local-content` bring-up and gated on the container existing — a prod-read stack stays clean.)
+
+> **The registry still carries merged-away rows on purpose.** `lib/services.sh` keeps `jobsimulation`,
+> `cms`, `storage` and `roadrunner` rows (and `readiness.sh` keeps `probe_storage_rpc`, base
+> `:8300`/`:8301`) for older/rollback clones. None of them can fire on a current stack: `2adcf71`,
+> `d11a403` and `838d907` deleted those containers, and both `/dev-up` and `/demo-up` pass a **derived**
+> `--services` scope that filters the rows out. Running `verify.sh` with **no** `STACK_SERVICES` set
+> probes the whole table and will false-`down` every merged-away row — that is a scope error, not a
+> broken stack.
 
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,
@@ -211,7 +245,9 @@ candidate-comparison scoreboard is populated **entirely from the auto-set-dress*
 HIRING sims ride along in the **standard** directus content-surface capture; there is **no** separate 5-sim capture and
 **no `directus.job_position` replay** — 0 rows, unread by the scoreboard, M222 BA-6 / M223 D4) as the org's
 `organization_sim_invitation_links` **positions**, and the `HiringFunnelSeeder` writes each candidate's scored
-`local_jobsimulation_sessions` **mirror** row (the score the scoreboard reads).
+`public.job_simulation_sessions` row (the score the scoreboard reads). ⚠️ **This said "the
+`local_jobsimulation_sessions` MIRROR row" until M257x iter-129** — `app` `20260729133514.sql` dropped that
+table, so a probe written against the old name would have counted a relation that does not exist.
 
 The silent failure it catches: a **cold snapshot cache** (or a starved HIRING-typed pool) leaves `readHiringSimPool`
 **empty** → the seeders **honestly degrade** to 0 positions / 0 sessions (never fabricate) → the recruiter comparison
@@ -223,7 +259,7 @@ downstream M224/M226 render gate as the loud catch; this cheap-win brings that c
   hiring-less demo (a non-stories preset, or `DEMO_STORIES=0`) **skips cleanly**, never false-warns (the same
   discipline as the directus container-presence gate).
 - **Floors:** `≥ 5` positions (the shared-positions contract, `reservedHiringSimRefs`; `< 5` is the cold-cache /
-  starved-pool "dangerous middle") **and** `≥ 40` candidate `local_jobsimulation_sessions` for the hiring org (a full
+  starved-pool "dangerous middle") **and** `≥ 40` candidate `public.job_simulation_sessions` for the hiring org (a full
   comparable cohort — a robust weak lower bound; the ~200 the funnel seeds is the healthy number, and the **strong**
   per-sim `≥ 40` floor is the M224/M226 render probe, not this cheap bring-up assert).
 
@@ -438,6 +474,7 @@ guard. Python executes top to bottom, so the class does not exist when the guard
 never collected, and the run still prints **OK**. Measured — **15 classes / 76 tests**:
 
 ```
+# v2.8 M256, BEFORE the repair — this pair no longer reproduces; see the re-measurement below
 python3 demo-stack/tests/test_roster_invariant.py         ->  Ran 22 tests ... OK
 python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
 ```
@@ -445,6 +482,25 @@ python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
 The five silent tests included that file's own RED-proof for the live 12-dead-buttons cockpit defect — the class
 its docstring calls *"the primary user-visible surface, and the one the defect is actually about."* Worst case:
 `stack-injection/tests/test_apply_patch_selfheal.py`, **11 of 27**.
+
+> **⚠️ RE-MEASURED 2026-08-11 (M257x harden pass 70), and both numbers above have moved.** The block is a
+> **dated exhibit of the repaired state, not a command to run**: that same file now answers **32 tests /
+> 32 passed** under both runners — the gap is **zero**, because the repair below landed. A reader who ran
+> the two lines to see the defect would see nothing and conclude the page was wrong about the mechanism.
+>
+> **The repo-wide figure moved too: 15 classes / 76 tests → 1 class / 3 tests.** And the one is instructive
+> rather than residual — it did not survive the repair; it was **created by the harden pass that came to
+> re-measure the class**, which appended a new `TestCase` to the end of
+> `stack-core/tests/test_frozen_expectation_census_m257x.py` and ran it under pytest only. Direct execution
+> answered **`Ran 99 tests ... OK`** while pytest answered **102**. Repaired in the same pass.
+>
+> Two things follow, and the second is the one worth carrying. **(1)** The `test_test_collection_fence.py`
+> fence named below is NOT the gap — it was green, it detects a planted case immediately, and it was simply
+> **never run**, because the pass ran the modules it had touched rather than the family. **(2)** *"Appending
+> to the bottom of the file is the path of least resistance"* is not a historical observation about six
+> files that drifted across releases; it is a live gradient that catches the next writer, including one
+> who has just read this paragraph. The class is closed by the fence, not by the repair — **and only if
+> the fence is actually invoked by whoever adds a member.**
 
 CI was never wrong — every runner uses pytest, which collects by inspection and ignores statement order. What was
 broken is the loop a human or an agent actually uses: `python3 <the one file I am editing>` is what the file's own
@@ -621,10 +677,19 @@ What that looks like from the outside is the part worth internalising:
 - **Recovery is `docker start <container>`** — no build, no compose, no teardown. The same class of action
   `run-playthroughs.sh --reset` already performs on the fake services every run.
 
-**The gap this names:** `autoverify` probes HTTP endpoints and DB state, and a dead subgraph's surfaces answer
-`200` with empty data, so nothing in the cheap-win set fires. A **container-liveness assert** — *the stack's
-declared container set is all running* — is one line, costs nothing, and would have named this instead of an
-hour of Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258.
+**The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
+not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2732`), and an
+`Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
+rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
+the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,
+the same F-6/F-10 hazard recorded at `:252-260` and `:293-303` — **not** a missing check. The genuine coverage
+gap is narrower and was undocumented: the containers with **no `services.sh` row at all** — `fake-fapi`,
+`fake-bapi` and `hiring-app` (`gen_injected_override.py:353,560,581`). **That** is the 14-of-16 arithmetic:
+13 rows in the demo scope against 16 containers. A **container-liveness assert** — *the stack's declared
+container set is all running* — is one line, costs nothing, and would have named this instead of an hour of
+Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258; landed at M257 as
+`autoverify.sh` check **(h)**, which derives its expected set from `services.sh` and adds the injected trio.
 
 **The general rule: check container liveness BEFORE diagnosing a test.** It is the cheapest measurement
 available and it is the one that was taken fourth.

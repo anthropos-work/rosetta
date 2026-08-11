@@ -1,0 +1,231 @@
+{
+  "results": [
+    {
+      "useCaseId": "ai-readiness.manager-dashboard.UC1",
+      "playthroughId": "pt-aireadiness-manager-dashboard",
+      "product": "ai-readiness",
+      "story": "ai-readiness.manager-dashboard",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "ai-readiness.manager-dashboard.UC2",
+      "playthroughId": "pt-aireadiness-manager-howwemeasure",
+      "product": "ai-readiness",
+      "story": "ai-readiness.manager-dashboard",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "ai-readiness.member-funnel.UC1",
+      "playthroughId": "pt-aireadiness-member-done",
+      "product": "ai-readiness",
+      "story": "ai-readiness.member-funnel",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "ai-readiness.member-funnel.UC2",
+      "playthroughId": "pt-aireadiness-member-progress",
+      "product": "ai-readiness",
+      "story": "ai-readiness.member-funnel",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "ai-simulations.access-denied.UC1",
+      "playthroughId": "pt-aisim-org-feature-blocked",
+      "product": "ai-simulations",
+      "story": "ai-simulations.access-denied",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "ai-simulations.chat.UC1",
+      "playthroughId": "pt-aisim-chat-launch",
+      "product": "ai-simulations",
+      "story": "ai-simulations.chat",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "assignment-monitoring.assign-and-track.UC1",
+      "playthroughId": "pt-assignment-assign",
+      "product": "assignment-monitoring",
+      "story": "assignment-monitoring.assign-and-track",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "assignment-monitoring.assign-and-track.UC2",
+      "playthroughId": "pt-activity-drilldown",
+      "product": "assignment-monitoring",
+      "story": "assignment-monitoring.assign-and-track",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "hiring.recruiter-comparison.UC1",
+      "playthroughId": "pt-hiring-recruiter-compare",
+      "product": "hiring",
+      "story": "hiring.recruiter-comparison",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "onboarding.completion.UC1",
+      "playthroughId": "pt-onboarding-complete",
+      "product": "onboarding",
+      "story": "onboarding.completion",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "onboarding.enterprise-hiring.UC1",
+      "playthroughId": "pt-onboarding-hiring-candidate",
+      "product": "onboarding",
+      "story": "onboarding.enterprise-hiring",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "onboarding.enterprise-workforce-ai-readiness.UC1",
+      "playthroughId": "pt-onboarding-aireadiness-guided",
+      "product": "onboarding",
+      "story": "onboarding.enterprise-workforce-ai-readiness",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "onboarding.enterprise-workforce-standard.UC1",
+      "playthroughId": "TODO",
+      "product": "onboarding",
+      "story": "onboarding.enterprise-workforce-standard",
+      "state": "unimplemented",
+      "detail": "VERDICT will-not-build: MEASURED, then deliberately refused — and the refusal has held for thirteen iters. The journey is fully drivable: both import sources sit on ONE step, #linkedinUrl needs no fixture at all, and the import really runs on a demo (parse counter 5 -\u003e 8 -\u003e 50, a real career profile populated, the forward control re-enabled in ~15 s), arriving with a same-surface negative control (a non-resolving profile URL advances to the identical step and never enables, watched 120 s). The whole measured journey is preserved at ../e2e/drafts/onboarding-self-import.spec.ts.draft rather than shipped.\nIT IS NOT A CAPABILITY GAP AND IT IS NOT AN EFFORT GAP. The only path that advances SCRAPES A LIVE PUBLIC LINKEDIN PROFILE from a site that blocks automation. Landing it would make a real person's profile a permanent test fixture, send outbound traffic from a demo on every gate cycle, and be flaky by construction — and, worst for the suite's meaning, ITS RED WOULD READ AS AN ANTHROPOS REGRESSION when nothing about the product had changed. A test whose failure lies is worse than no test.\nTHE DETERMINISTIC ALTERNATIVE IS BLOCKED BY A PRODUCT DEFECT WE DO NOT OWN, not by us: the CV route with the checked-in fixtures (../fixtures/synthetic-cv-sre.{pdf,docx}, both real) ATTACHES and uploads 200 to POST /api/resources/resume, and then the parse counter stays 0 and the forward control stays Next/DISABLED for 100 s+, on a valid PDF and a docx alike, hidden DOM nodes included. Not a fixture-format problem — upstream of the fixture. That single fix is what would make this use case land byte-deterministically, and it is the one thing to change. Until then the honest artifact is this verdict, not a Playthrough. [measured by: v2.8 M256 iter-18 (six probe passes, live) + D104 (the coordinator's decision, ratified at close)]"
+    },
+    {
+      "useCaseId": "onboarding.enterprise-workforce-standard.UC2",
+      "playthroughId": "pt-onboarding-org-prepared",
+      "product": "onboarding",
+      "story": "onboarding.enterprise-workforce-standard",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "onboarding.individual.UC1",
+      "playthroughId": "pt-onboarding-individual",
+      "product": "onboarding",
+      "story": "onboarding.individual",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "org-admin.feature-config.UC1",
+      "playthroughId": "pt-orgadmin-setting-toggle",
+      "product": "org-admin",
+      "story": "org-admin.feature-config",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "org-admin.members.UC1",
+      "playthroughId": "pt-orgadmin-member-tag",
+      "product": "org-admin",
+      "story": "org-admin.members",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "org-admin.roles.UC1",
+      "playthroughId": "pt-orgadmin-role-create",
+      "product": "org-admin",
+      "story": "org-admin.roles",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "org-admin.tags.UC1",
+      "playthroughId": "pt-orgadmin-tag-create",
+      "product": "org-admin",
+      "story": "org-admin.tags",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "profile.foundation.UC1",
+      "playthroughId": "pt-profile-identity",
+      "product": "profile",
+      "story": "profile.foundation",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "profile.growth.UC1",
+      "playthroughId": "pt-profile-growth",
+      "product": "profile",
+      "story": "profile.growth",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "profile.timeline.UC1",
+      "playthroughId": "pt-profile-timeline",
+      "product": "profile",
+      "story": "profile.timeline",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "profile.verified.UC1",
+      "playthroughId": "pt-profile-verified",
+      "product": "profile",
+      "story": "profile.verified",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "skill-paths.legacy.UC1",
+      "playthroughId": "pt-skillpath-legacy",
+      "product": "skill-paths",
+      "story": "skill-paths.legacy",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "skill-paths.save-for-later.UC1",
+      "playthroughId": "pt-skillpath-bookmark",
+      "product": "skill-paths",
+      "story": "skill-paths.save-for-later",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "studio.simulation-builders.advanced",
+      "playthroughId": "pt-studio-advanced-generate",
+      "product": "studio",
+      "story": "studio.simulation-builders",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "studio.simulation-builders.guided",
+      "playthroughId": "pt-studio-guided-generate",
+      "product": "studio",
+      "story": "studio.simulation-builders",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "workforce-intelligence.organization-feedback.UC1",
+      "playthroughId": "pt-workforce-org-feedback",
+      "product": "workforce-intelligence",
+      "story": "workforce-intelligence.organization-feedback",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "workforce-intelligence.roster.UC1",
+      "playthroughId": "pt-workforce-roster",
+      "product": "workforce-intelligence",
+      "story": "workforce-intelligence.roster",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "workforce-intelligence.skills-funnel.UC1",
+      "playthroughId": "pt-workforce-funnel",
+      "product": "workforce-intelligence",
+      "story": "workforce-intelligence.skills-funnel",
+      "state": "passing"
+    },
+    {
+      "useCaseId": "workforce-intelligence.talent-pool.UC1",
+      "playthroughId": "pt-workforce-succession",
+      "product": "workforce-intelligence",
+      "story": "workforce-intelligence.talent-pool",
+      "state": "failing",
+      "detail": "Error: the succession/at-risk projection names the org's seeded hero (Pat Ellis) — which is what makes it THIS org's projection rather than any populated org's"
+    }
+  ],
+  "summary": {
+    "failing": 1,
+    "passing": 29,
+    "unimplementable-without-platform-edit": 0,
+    "unimplemented": 1
+  },
+  "total": 31,
+  "coverage": 0.9354838709677419
+}

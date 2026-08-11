@@ -41,7 +41,7 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 `measureLogin` begins by reading the cockpit's real CTA, and the ACCESS predicate's second half ("the user menu
 shows the hero") is resolved from the CTA's **`data-login-as`** attribute. The cockpit emits that attribute on
-**hero cards only** (`cockpit.py:1214`); the Content-stories tab's seat CTAs (`:882`) carry a bare `href`. So
+**hero cards only** (`cockpit.py:1374`); the Content-stories tab's seat CTAs (`:1036`) carry a bare `href`. So
 `readCockpitCta` (`e2e/lib/latency.ts:115-127`) **throws before t0** for a content seat — there is no clock to
 start. `run-latency.sh:53-59` independently hard-rejects any vantage outside `employee|manager|recruiter`
 (`exit 2`). **A content-seat number cannot be produced by this harness at all**, so its absence is a property
@@ -137,8 +137,29 @@ hypotheses an operator reaches for first.
 | a **constant** ~37.5 s / ~6.1 s regardless of page content | a **retry ladder** — blackholing vs fast-failing (above) |
 | **scales with the item count** on the page; a light sibling passes | a **per-item fan-out** — a query inside a loop |
 | **large and cold, small and warm**, same page | a **warm-up transient** — see R4 below, not a gate violation |
+| **one process pays it, every later call is ~0**, and it lands **before** the surface exists | a **name-service lookup on a bind/connect path** — see below |
 
-**The order matters: name the arithmetic signature *before* reading code.** All three are distinguishable from
+**The fourth signature is the one no page instrumentation can see, because it happens before there is a page.**
+A process pays a large, fixed cost **exactly once**, and every subsequent call in that process — and in the
+next process on the same box — is free. That is not a warm-up transient (which is per-surface and recurs on
+each cold stack); it is a **name-service lookup the OS resolver then caches**, and it sits on a *bind* or
+*connect*, upstream of every timer a browser or a probe could start.
+
+M257x iter-171 measured one, on the demo's own entry point: CPython's `http.server.HTTPServer.server_bind`
+sets `server_name = socket.getfqdn(host)` — a synchronous reverse-DNS query — and on the dev Mac's homebrew
+Python **3.14.6** the first `socket.getfqdn("127.0.0.1")` took **35.005 s**, against **0.005 s** on the Apple
+system **3.9.6**, warm calls ~0 s on both. Nothing reads `server_name`. The damage was not the delay:
+`up-injected.sh` polls the presenter cockpit's `/healthz` **25 × 0.2 s ≈ 5 s**, so the bring-up declared the
+cockpit **dead**, skipped fronting it with `tailscale serve`, and the cockpit came up fine — unfronted — half
+a minute later. **Read a health-gate false negative as a latency signature**, not as a crash.
+
+> **Diagnostic, and it is one call:** dump the blocked thread's stack — `sys._current_frames()` in Python,
+> the equivalent elsewhere — *before* theorising about the harness. It named the frame outright here, where
+> two plausible wrong answers ("the test window is too tight", "3.14 is flaky") were already on the table.
+> And **never re-measure without clearing or defeating the cache**: the second reading is free, so a warm
+> measurement reports the bug as absent. The fence for this class poisons the resolver instead of timing it.
+
+**The order matters: name the arithmetic signature *before* reading code.** All four are distinguishable from
 the number and one contrast, and each sends you to a different file.
 
 > ⚠️ **But first, disbelieve the clock.** A per-item fan-out and a **mis-instrumented wait** produce the same
@@ -343,8 +364,54 @@ Contract:
   (`stack-verify/e2e/**`, the coverage sweep, which uses a *ceiling-bounded* networkidle as one input to a presence
   heuristic **by design**) is now written down rather than implied by which directories the scanner happens to read.
 - **It clears cookies per sample**, so each click is a genuine cold login.
-- **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
-  next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
+- **curl cannot drive this flow** at all. It **must** be a real browser on the real origin — but **not** for the
+  reason this bullet gave until M257x, and the difference is a security one.
+
+  > ### 🔻 RETRACTED — *"the fake-FAPI validates `redirect_url` against the public origin"* (M257x)
+  >
+  > **It does not validate it at all.** The handshake handler takes `redirect_url` straight off the query
+  > string, substitutes `/` only when it is **empty**, appends the freshly-minted `__clerk_handshake` token
+  > and 303s to it **verbatim** — no scheme check, no host check, no allowlist, no comparison against the
+  > demo's own origin. Measured at `rosetta-extensions/clerkenstein/clerk-frontend/server.go:414-423`
+  > @ rext `415240f`:
+  >
+  > ```go
+  > loc := r.URL.Query().Get("redirect_url")   // :414
+  > if loc == "" { loc = "/" }                 // :415-417
+  > …
+  > loc += sep + "__clerk_handshake=" + url.QueryEscape(hsToken)   // :422
+  > http.Redirect(w, r, loc, http.StatusSeeOther)                  // :423
+  > ```
+  >
+  > `grep -n "redirect_url" clerkenstein/clerk-frontend/*.go` returns **22 lines across four files**, of
+  > which **three sit outside `_test.go`** — and **exactly one is CODE**: the `:414` read. ⚠️ **This
+  > receipt said *"returns one non-test occurrence"* until M257x iter-140, and run verbatim it does not:**
+  > the other two non-test lines are **comments** in the same file (`:150`, `:155`) describing the very
+  > handshake bounce this paragraph is about. **The conclusion is untouched — there is one code
+  > occurrence — but the number was written from the conclusion rather than from the command's output**,
+  > which is the defect: a reader who runs it sees 22 and stops trusting the paragraph. There is no origin allowlist anywhere in the file; the only `Origin` handling is
+  > `corsMiddleware`, which **reflects** whatever Origin it is sent (`:214-217`) rather than checking it.
+  >
+  > **Why this correction is load-bearing, not pedantry.** The bullet credited the Clerkenstein mock with a
+  > **security property it has never had**, in the document a reader consults to decide what a demo is safe
+  > to expose. The mock is an **open redirect that hands the caller a session** — `GET
+  > /v1/client/handshake?__clerk_identity=<hero>&redirect_url=<anywhere>` mints an RS256 `__session` +
+  > `__client_uat` + `__clerk_db_jwt` and forwards them to an attacker-chosen destination, with **no
+  > credential presented at any point**. That is not a regression to fix here: it is the *designed* behaviour
+  > of a deliberately disarmed mock, and the control that makes it defensible is the one
+  > [`../safety.md` §3](../safety.md) states — **there is nothing behind the door** (no customer data in a
+  > demo, no write path to prod) plus the VPN/tailnet exposure scope. `safety.md:627` already discloses the
+  > password-free handshake as an exposure; **what was wrong was only this page's claim that a validation
+  > step stands in front of it.** Do not re-add the claim, and do not treat the mock's `redirect_url` as
+  > sanitised anywhere else.
+  >
+  > **What actually makes curl insufficient** is the definition of ACCESS at the top of this page: the
+  > authenticated shell **rendered and interactive with the hero's identity present**. Reaching that requires
+  > `clerk-js` to execute (the bundle the fake FAPI proxies), the client gate to resolve, and the data query
+  > to return — none of which a redirect-following fetch performs. The HTTPS-origin requirement is real but
+  > belongs to `@clerk/clerk-js`/`clerkMiddleware`, which derive the FAPI host from the publishable key and
+  > always prefix it `https://` (see [`recipe-browser-login.md` step 2](recipe-browser-login.md)) — it is a
+  > property of the Clerk SDK, not of a check the mock performs.
 
 ## The studio-desk first-paint budget (v2.7 "july jitter" M253)
 

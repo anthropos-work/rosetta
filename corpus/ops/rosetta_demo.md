@@ -83,11 +83,15 @@
    provisions its `.env` from `.agentspace/secrets` first, instead of aborting prematurely. A box with
    **neither** a `stack-dev` seed **nor** a usable secret source aborts loud here (the genuine
    unprovisionable case).
-3. **build everything from `stack-demo`**: the 5 injected Go services clone their per-demo COPY from
-   `stack-demo/<svc>`; the two frontends build from `stack-demo/next-web-app` + `stack-demo/studio-desk`;
-   the non-Clerk services (sentinel/storage/roadrunner/graphql) build from `stack-demo`'s clones via the
-   compose `build.context` (the compose dir `PLAT` is `stack-demo/platform`, so the relative contexts
-   resolve against `stack-demo`). **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
+3. **build everything from `stack-demo`**: the injected Go services clone their per-demo COPY from
+   `stack-demo/<svc>` — **which services those are is DERIVED, not a fixed list** (`derive_inject_svcs`
+   filters the Clerk-consuming candidates against the compose `build.context` set), precisely because
+   the platform keeps folding services into `app`; the two frontends build from
+   `stack-demo/next-web-app` + `stack-demo/studio-desk`; the remaining non-Clerk services build from
+   `stack-demo`'s clones via the compose `build.context` (the compose dir `PLAT` is
+   `stack-demo/platform`, so the relative contexts resolve against `stack-demo`). At platform `0c91421`
+   that non-Clerk set is **`sentinel` alone** — `graphql` was deleted at `2adcf71`, `roadrunner` at
+   `d11a403`, and `storage` at `838d907`. **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
    built images (which could carry dev WIP), even when dev is up; opt back in with `DEMO_REUSE_DEV_IMAGES=1`.
 4. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
    the shared `stack-demo/<svc>` clone is the COPY's SOURCE and stays git-clean.

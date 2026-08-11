@@ -1,0 +1,69 @@
+hostlock: acquired demo-2 [rosetta-demo down demo-2 host=Marcos-Mac-mini.local pid=50164 at=2026-08-10T14:24:33Z] → /Users/marco/.rosetta-demo-locks/demo-2.lock
+==> demo-2: down (project demo-2 ONLY — dev stack untouched)
+==> [demo-2 academy] stopped (pid 26671).
+==> [demo-2 academy] note: ant-academy-dev-origins revert skipped (non-fatal)
+==> [demo-2 academy] restored predev-hook-generated code/public/catalog.json (clone left git-clean — F5b)
+==> demo-2: host-native listeners (cockpit, ant-academy) are down; their ports are free
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"VITE_CLERK_PUBLISHABLE_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_SECRET_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_JWT_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_PUBLISHABLE_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_API_URL\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_SECRET_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_PUBLISHABLE_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_JWT_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_API_URL\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_SECRET_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_PUBLISHABLE_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_JWT_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-10T16:24:34+02:00" level=warning msg="The \"DESK_CLERK_API_URL\" variable is not set. Defaulting to a blank string."
+ Container demo-2-studio-desk-1 Stopping 
+ Container demo-2-directus-1 Stopping 
+ Container demo-2-next-web-app-1 Stopping 
+ Container demo-2-gotenberg-1 Stopping 
+ Container demo-2-hiring-app-1 Stopping 
+ Container demo-2-fake-bapi-1 Stopping 
+ Container demo-2-fake-fapi-1 Stopping 
+ Container demo-2-fake-fapi-1 Stopped 
+ Container demo-2-fake-fapi-1 Removing 
+ Container demo-2-fake-fapi-1 Removed 
+ Container demo-2-gotenberg-1 Stopped 
+ Container demo-2-gotenberg-1 Removing 
+ Container demo-2-gotenberg-1 Removed 
+ Container demo-2-fake-bapi-1 Stopped 
+ Container demo-2-fake-bapi-1 Removing 
+ Container demo-2-fake-bapi-1 Removed 
+ Container demo-2-next-web-app-1 Stopped 
+ Container demo-2-next-web-app-1 Removing 
+ Container demo-2-next-web-app-1 Removed 
+ Container demo-2-hiring-app-1 Stopped 
+ Container demo-2-hiring-app-1 Removing 
+ Container demo-2-hiring-app-1 Removed 
+ Container demo-2-directus-1 Stopped 
+ Container demo-2-directus-1 Removing 
+ Container demo-2-directus-1 Removed 
+ Container demo-2-studio-desk-1 Stopped 
+ Container demo-2-studio-desk-1 Removing 
+ Container demo-2-studio-desk-1 Removed 
+ Container demo-2-backend-1 Stopping 
+ Container demo-2-backend-1 Stopped 
+ Container demo-2-backend-1 Removing 
+ Container demo-2-backend-1 Removed 
+ Container demo-2-sentinel-1 Stopping 
+ Container demo-2-redis-1 Stopping 
+ Container demo-2-sentinel-1 Stopped 
+ Container demo-2-sentinel-1 Removing 
+ Container demo-2-sentinel-1 Removed 
+ Container demo-2-postgresql-1 Stopping 
+ Container demo-2-redis-1 Stopped 
+ Container demo-2-redis-1 Removing 
+ Container demo-2-redis-1 Removed 
+ Container demo-2-postgresql-1 Stopped 
+ Container demo-2-postgresql-1 Removing 
+ Container demo-2-postgresql-1 Removed 
+ Network demo-2_app-network Removing 
+ Network demo-2_app-network Removed 
+==> demo-2: data purged (the next bring-up initdb's a fresh cluster → migrate → replay → seed)
+==> demo-2: removing this stack's images (reclaim disk)
+hostlock: released demo-2
+DOWN_EXIT=0

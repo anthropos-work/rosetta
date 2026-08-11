@@ -25,8 +25,9 @@ any stack** — with a tested **tenant-data firewall** (never customer data) and
 
 ## For PMs — what it does
 
-A demo world needs more than an org with users — it needs the **library** behind the product: the ~60K-skill /
-18K-role taxonomy and the global content templates. That library is **public reference data** (the same for every
+A demo world needs more than an org with users — it needs the **library** behind the product: the taxonomy
+(**≥42,790 skills / ≥22,470 job roles** — the measured *public* subset; the long-quoted "60K / 18K" figures are
+[not measurements](../architecture/shared_libraries.md#taxonomy-figures)) and the global content templates. That library is **public reference data** (the same for every
 customer), but it lives in production. The snapshot mechanism copies the **public** part of that library out of
 prod **once**, in a way that **cannot slow the live product** and **cannot copy any customer's private data**,
 stores it locally (never in git — it's gigabytes), and **stamps it into each demo/dev stack** on demand. The
@@ -186,7 +187,12 @@ prod is **not required** — you can **migrate the existing captured cache**: re
 new merged **schema digest** (the taxonomy surface probes the digest, so the migrated cache HITs on the next
 replay). The payloads are hardlinked (bytes unchanged → SHA256s still valid); the column set is verified to match
 the merged target first (M209's names-only/type-agnostic capture makes this safe). v2.1 M211 used this to recapture
-the 42,790-row public taxonomy + 274 sim-embeddings with **no prod access** — a faithful re-key of real captured
+the 42,790-row public taxonomy + 274 **`cms.similarities`** sim-embeddings (the schema matters and was
+unattributed until M257x iter-130 — `stack-snapshot/simembeddings/simembeddings.go:44` is
+`const Schema = "cms"`, and the surface's four tables are declared against it at `:85-108` @ `415240f`.
+`public.similarities` is a *separate* table the cms-in-app fold created, populated by
+`scripts/cms-data-sync/sync.sql:53-55` copying `cms`→`public`; the tooling still captures the `cms` one)
+with **no prod access** — a faithful re-key of real captured
 data, never a fabrication. This is the sanctioned no-prod-capture-source path when a merge is a pure schema-prefix
 move; a genuine schema/column change still needs a real recapture (`snapshot-cold-start.md`).
 
@@ -274,7 +280,7 @@ the firewall**. A live-run recipe (the DDL in `reference/reference.go`) stands t
 
 ## The taxonomy surface (M9b — the first REAL surface)
 
-M9b proves the framework on the live **public skills taxonomy** — the ~60K-skill / 18K-role library behind the
+M9b proves the framework on the live **public skills taxonomy** — the **≥42,790-skill / ≥22,470-role** library behind the
 product (~2.1 GB, prod-measured ~98% public). The surface is enumerated in `stack-snapshot/taxonomy/` (one source of
 truth shared by the CLI registry, the fidelity gene, and any live-run recipe): `stacksnap capture --surface taxonomy`.
 
@@ -345,7 +351,7 @@ serializes in order.
 The two-sided fidelity gene needs a **source** side (the captured manifest) and a **replay** side (the live stack).
 M9b wires both: `dna.CapturedFromManifest` derives the per-table expectations from a real `manifest.json` (refusing
 a non-public-only manifest), and `datadna measure-snapshot --stack demo-N --dna <dna> --manifest <taxonomy.json>`
-runs the five fidelity operators (row-count / structural / referential / embedding-dim / public-only) against the
+runs the fidelity operators for the surface (`stack-seeding/dna/snapshot.go:62` declares **six**; the taxonomy surface uses five of them — row-count / structural / referential / embedding-dim / public-only — and the content surface swaps `embedding-dim` for `snapshot-cross-surface-closure`) against the
 replayed stack, exiting non-zero if critical fidelity < 100%.
 
 **Read-side public-only is asymmetric to the capture side** (pinned by the M9b hardening pass — `PgFidelityProbe`):
@@ -416,11 +422,23 @@ content-schema → replay → boot** (`stack-snapshot/directus/provision.go`, 4 
    This was the M10 **"collection-schema gap"**. **Closed at the tooling level by M21** (`prop-room-m21`):
    `stacksnap` now captures the structure (DDL + PKs + sequences + serve rows) from the sanctioned `--dsn` and
    **auto-provisions** a bootstrapped-gap stack before the row replay, so the replay **exits 0** and a booted
-   Directus serves the captured catalog **anonymously**. See [`directus-local.md`](./directus-local.md) for the
+   Directus serves the captured catalog **anonymously**.
+
+   > **⚠ That sentence describes the DESIGN, and the design did not hold from M21 until v2.8 M257x iter-15.**
+   > The provisioned structure script emitted the sequences and the `DEFAULT nextval(...)` but never
+   > `ALTER SEQUENCE … OWNED BY …`, so the replay's Phase-5 sequence advance refused and **the replay exited
+   > 1 on every cold cycle** — 0 content rows, every anon `/items` read 403. Nothing noticed, because the
+   > only Directus check anywhere counted rows in the `directus_collections` REGISTRY (populated by the
+   > structure step, which *had* succeeded) and never asked the running Directus for an item. Fixed at
+   > iter-15; made **checkable** by the `directus-serves-content` probe (M257x harden pass 1). The rule is
+   > [`platform-alignment.md`](platform-alignment.md) §5 rule 14 — **REGISTERED is not SERVED.**
+
+   See [`directus-local.md`](./directus-local.md) for the
    structure-capture model, the bootstrap empirics, the redefined exit codes, and the firewall carve-out. (The
    *execution at bring-up* — booting the Directus as a per-stack compose service — landed in **M22**
    (`prop-room-m22`): a `--local-content` stack executes bootstrap → apply-structure → replay → boot. The
-   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at it — **landed in M23** (`prop-room-m23`): a
+   *cutover* — re-pointing the data-plane consumers' `DIRECTUS_BASE_ADDR` at it (`DIRECTUS_DATA_CONSUMERS =
+   ("cms", "backend")`, and **`backend` is the one that reads**) — **landed in M23** (`prop-room-m23`): a
    `--local-content` stack now serves its catalog from its OWN Directus, content-self-contained. See the
    known-state note below.)
 3. **`stacksnap replay --surface directus --stack demo-N`** bulk-`COPY`s the captured content rows into the
@@ -443,7 +461,7 @@ executes no step — and reads public content live from prod. See [`directus-loc
 
 **Known state (post-M23) — two paths: the self-contained `--local-content` path (the converged end-state) and
 the prod-read fallback.** Since M23 a **`--local-content` stack is content-self-contained**: it boots its own
-per-stack Directus, the directus replay **exits 0**, and `cms`'s `DIRECTUS_BASE_ADDR` is cut over to the
+per-stack Directus, the directus replay **exits 0**, and **`backend`'s** `DIRECTUS_BASE_ADDR` is cut over to the
 in-network instance (asset plane stays on prod). This is the **default for every demo** and **opt-in for any
 dev-N≥1**. The **prod-read path is now the documented *fallback*** — taken by a stack **without** local content
 (a plain dev bring-up, or `DEMO_NO_LOCAL_CONTENT=1`). On that fallback path the stack has **no local Directus**:
@@ -464,7 +482,7 @@ and a **non-nullable federated field** (`publicJobSimulations.skills`, resolved 
 query — surfacing as an empty Assign-AI-Simulation picker. **Resolution (M23, landed):** M21 closed the
 **collection-schema gap** (the capture-side structure extension — DDL + serve rows), M22 made the recipe
 **executed** (bootstrap + boot the per-stack Directus), and **M23** cut a `--local-content` stack over to its
-own Directus (re-point `cms`'s `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
+own Directus (re-point **`backend`'s** `DIRECTUS_BASE_ADDR`, #M23-D1) + added the **cross-surface closure gene** (below,
 #M23-D5) so closure is **measured, not assumed**. The taxonomy capture is **full-public** (`organization_id IS NULL` — every
 public node), so closure is maximal by construction; the only residual is a content ref pointing at a *non-public*
 node, which is a **prod data inconsistency** the gene surfaces (prod has exactly **1**: `K-AIFUNX-E658`,
@@ -796,7 +814,7 @@ After bring-up (and schema migration), `dev-setdress.sh <N>` runs three steps ag
    when the bring-up passes **`--local-content`** (dev opt-in; demo default), the pass **executes** the recipe
    (bootstrap → apply-structure → replay → boot the per-stack Directus compose service) behind that
    now-**load-bearing executed** firewall gate, and since **M23** the same `--local-content` pass also performs the
-   *cutover* — re-pointing `cms`'s `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
+   *cutover* — re-pointing **`backend`'s** `DIRECTUS_BASE_ADDR` at the in-network per-stack instance (`http://directus:8055`)
    and stripping its prod token, so a `--local-content` dev stack reads its catalog from its OWN Directus (asset
    plane stays on prod — `DIRECTUS_PUBLIC_BASE_ADDR` unchanged). **Without** `--local-content` the recipe is
    printed + the env validated but no step runs (the M9b/M10 "operator's step" discipline) and the dev CMS still

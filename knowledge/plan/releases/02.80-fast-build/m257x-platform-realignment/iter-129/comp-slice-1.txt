@@ -1,0 +1,205 @@
+corpus/architecture/README.md:3-3  [R4 default — presumed citable]  This directory contains all documentation related to the Anthropos platform architecture.
+corpus/architecture/ai_architecture.md:3-3  [R1 scaffolding]  This document describes the AI model inventory, provider routing, voice engine, recording architecture, and cost tracking across the Anthropos platform.
+corpus/architecture/ai_architecture.md:15-17  [R4 default — presumed citable]  **⚠️ There is no ordered EU-first fallback chain.** The corpus published one for several releases ("Azure → Bedrock → Mistral → OpenAI → Anthropic"); **no such ladder exists in the code**, and **Mistral is not in the AI manager at all**.
+corpus/architecture/ai_architecture.md:22-24  [R3 names a reachable artifact]  **The caller picks the vendor.** `ChatCompletion` / `Response` take a `vendor AIVendor` argument and hand it to `getClient` (`:259-289`) — a plain `switch` over the four vendor consts at `:30-33` (`azure`, `openai`, `anthropic-aws`, `anthropic`).
+corpus/architecture/ai_architecture.md:25-27  [R3 names a reachable artifact]  **`azure` resolves to the EU deployment by default**, swapped to the US one only when the PostHog flag `flag_use_azure_us` evaluates true; a *failed* flag lookup logs and **keeps the EU client**.
+corpus/architecture/ai_architecture.md:28-29  [R3 names a reachable artifact]  **`anthropic-aws` and `anthropic` both return the same Bedrock client**, constructed with `config.WithRegion("eu-west-1")`.
+corpus/architecture/ai_architecture.md:28-29  [R4 default — presumed citable]  There is **no** US-direct Anthropic branch in this manager.
+corpus/architecture/ai_architecture.md:30-32  [R4 default — presumed citable]  **The one automatic fallback is 429-only.** `isThrottlingError` sets `vendor = Openai` for the next retry attempt — i.e. **direct US OpenAI**.
+corpus/architecture/ai_architecture.md:44-48  [R4 default — presumed citable]  **Two** levers inside the manager can send a request outside the EU, **neither a region-health failover**: the `flag_use_azure_us` flag, and the 429 retry (which goes straight to direct OpenAI **without** trying another EU provider first).
+corpus/architecture/ai_architecture.md:73-76  [R4 default — presumed citable]  The **outcome** claim — direct US OpenAI, first attempt, no error condition — survives unchanged.
+corpus/architecture/ai_architecture.md:95-95  [R4 default — presumed citable]  | **Transcription** | GPT-4o Transcribe | Azure EU (US via `flag_use_azure_us`) |
+corpus/architecture/ai_architecture.md:96-96  [R4 default — presumed citable]  | **Embeddings** | Text Embedding 3 Small | OpenAI |
+corpus/architecture/ai_architecture.md:111-111  [R3 names a reachable artifact]  A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
+corpus/architecture/ai_architecture.md:122-122  [R3 names a reachable artifact]  | **jobsimulation domain** *(in `app`)* | Simulation conversations (chat + voice), document analysis, code evaluation |
+corpus/architecture/ai_architecture.md:124-124  [R3 names a reachable artifact]  | **cms domain** *(in `app`)* | Content generation, similarity matching, AI video (HeyGen), **and runs the full simulation generation pipeline** (Python studio-room embedded — see below) |
+corpus/architecture/ai_architecture.md:126-126  [R3 names a reachable artifact]  **Runs as a subprocess inside the `app` (backend) container** since cms-in-app — the `anthropos-studio-room` project is pulled into the image by CI. |
+corpus/architecture/ai_architecture.md:137-137  [R4 default — presumed citable]  | FAST | azure / gpt-5-mini | azure / gpt-5-mini | none |
+corpus/architecture/ai_architecture.md:138-138  [R4 default — presumed citable]  | STRICT | azure / gpt-5-mini | azure / gpt-5-mini | none |
+corpus/architecture/ai_architecture.md:139-139  [R4 default — presumed citable]  | EXECUTION | azure / gpt-5.4 | azure / gpt-5.4 | none |
+corpus/architecture/ai_architecture.md:140-140  [R4 default — presumed citable]  | CREATIVE | azure / gpt-5.4 | azure / gpt-5.4 | low |
+corpus/architecture/ai_architecture.md:141-141  [R4 default — presumed citable]  | REASONING | azure / gpt-5.4 | azure / gpt-5.4 | medium |
+corpus/architecture/ai_architecture.md:155-155  [R4 default — presumed citable]  **Model**: Text Embedding 3 Small (OpenAI), 1536-dim
+corpus/architecture/ai_architecture.md:157-157  [R4 default — presumed citable]  **Process**: RAG matches user input to taxonomy using OpenAI (Azure EU) or Anthropic (Bedrock EU)
+corpus/architecture/ai_architecture.md:158-158  [R4 default — presumed citable]  **Caching**: Redis for frequent matches
+corpus/architecture/ai_architecture.md:169-169  [R3 names a reachable artifact]  As of 2026-Q2 (skiller migrations `20260417103036` and `20260417120309`), embeddings are stored in **dedicated tables**, not as columns on the entity tables.
+corpus/architecture/ai_architecture.md:195-195  [R4 default — presumed citable]  The primary voice engine uses **LiveKit rooms** with **OpenAI GPT Realtime** agents:
+corpus/architecture/ai_architecture.md:223-223  [R4 default — presumed citable]  **Transcript**: Generated from LiveKit conversation events
+corpus/architecture/ai_architecture.md:224-224  [R3 names a reachable artifact]  **Configuration**: Voice engine is selectable per simulation in CMS (`livekitgptrealtime`)
+corpus/architecture/ai_architecture.md:230-230  [R3 names a reachable artifact]  | `elevenlabs` | Active (legacy default) | ElevenLabs conversational agents; still used by the call/reply pipeline (`getJobSimulationCallSignedUrl` / `getJobSimulationCallConversationToken`) and transcript improvement |
+corpus/architecture/ai_architecture.md:231-231  [R3 names a reachable artifact]  | `gptrealtime` | Deprecated | Direct OpenAI Realtime without LiveKit |
+corpus/architecture/ai_architecture.md:267-267  [R4 default — presumed citable]  | **LiveKit** | Voice only | MP3 | Audio transcript and voice recording |
+corpus/architecture/ai_architecture.md:268-268  [R4 default — presumed citable]  | **AWS Chime SDK** | Camera + screensharing + mic | Composited MP4 (grid view) | Full video record of simulation |
+corpus/architecture/ai_architecture.md:276-276  [R4 default — presumed citable]  **Load**: Simulation definition fetched from CMS (actors, tasks, rubrics, AI model config per sequence)
+corpus/architecture/ai_architecture.md:285-286  [R3 names a reachable artifact]  The corpus asserted a single *"default: `gpt-5` via Azure"* for several releases.
+corpus/architecture/ai_architecture.md:285-286  [R3 names a reachable artifact]  **`gpt-5` is not a default in any of the three places a default is applied** — measured at `app` HEAD:
+corpus/architecture/ai_architecture.md:313-313  [R3 names a reachable artifact]  The inputs to it are not** — measured at `app` HEAD, M257x iter-38:
+corpus/architecture/dependency_map.md:9-9  [R3 names a reachable artifact]  Since the monolith merge most of this matrix collapsed: `skiller`, `skillpath`, `roadrunner`, `jobsimulation`, `cms`, `storage`, `messenger` and `customerio-sync` are all domains inside **Backend (`app`)**, so their edges are in-process calls, not dependencies.
+corpus/architecture/dependency_map.md:9-9  [R4 default — presumed citable]  The rows below that are struck through have **no compose service at all**.
+corpus/architecture/dependency_map.md:14-14  [R4 default — presumed citable]  | **Sentinel** | - | Postgres |
+corpus/architecture/dependency_map.md:17-17  [R3 names a reachable artifact]  | ~~**Skillpath**~~ | **Merged into `app`** ("skillpath-in-app", M502→M507) — the skill-path engine's dependencies (cms content by ID, the jobsimulation Redis Stream, Sentinel) are now `app`'s, in-process | *(no standalone service)* |
+corpus/architecture/dependency_map.md:20-20  [R4 default — presumed citable]  | **Gotenberg** | - | - (stateless conversion service) |
+corpus/architecture/dependency_map.md:63-63  [R3 names a reachable artifact]  | ~~`roadrunner`~~ | — | **no producer or consumer** — roadrunner is merged into app, which calls Judge0 synchronously | ~~`RoadrunnerSubmissionCompleted`~~ |
+corpus/architecture/dependency_map.md:66-66  [R4 default — presumed citable]  Jobsimulation no longer has chronos as a dependency.
+corpus/architecture/dependency_map.md:71-71  [R4 default — presumed citable]  `Frontend` -> `Backend` -> `Sentinel`
+corpus/architecture/dependency_map.md:72-72  [R4 default — presumed citable]  The Backend validates requests using Sentinel.
+corpus/architecture/dependency_map.md:76-76  [R3 names a reachable artifact]  `Frontend` -> `Backend` (`app` — the **jobsimulation domain**, in-process; there is no jobsimulation service to reach)
+corpus/architecture/dependency_map.md:77-77  [R3 names a reachable artifact]  The jobsimulation engine fetches the simulation **definition** (the `simulations` content/blueprint) from the cms domain by ID — in-process since cms-in-app.
+corpus/architecture/dependency_map.md:79-79  [R4 default — presumed citable]  Voice flows go through LiveKit; video recordings via AWS Chime SDK.
+corpus/architecture/dependency_map.md:82-82  [R3 names a reachable artifact]  `Frontend` -> `app` (cms domain) -> `Directus`   *(was `Frontend -> CMS -> Directus` before cms-in-app)*
+corpus/architecture/dependency_map.md:83-83  [R3 names a reachable artifact]  The cms **domain inside `app`** acts as the gateway to Directus content — `Frontend -> app (cms domain) -> Directus`.
+corpus/architecture/dependency_map.md:83-83  [R3 names a reachable artifact]  It was a separate `CMS` service until cms-in-app v8.0; the hop is in-process now.
+corpus/architecture/dependency_map.md:86-86  [R3 names a reachable artifact]  `Studio Desk` → `app` (cms domain) → (in-process) `Studio Room`   *(was `Studio Desk → CMS → Studio Room` before cms-in-app)*
+corpus/architecture/dependency_map.md:87-88  [R3 names a reachable artifact]  **Studio-Desk** (TypeScript) creates blueprints, sent to the **cms domain inside `app`** as `StudioDocument` rows over `backend`'s GraphQL endpoint (`:8082/graphql/query`).
+corpus/architecture/dependency_map.md:89-90  [R3 names a reachable artifact]  The **cms domain** (Go, `app/internal/cms/`) creates `StudioTask` records and dispatches generation work — an in-process hop since cms-in-app v8.0, not a service call.
+corpus/architecture/dependency_map.md:91-91  [R3 names a reachable artifact]  **Studio-Room** (Python, embedded inside the **`app`** container since cms-in-app) executes the generation pipeline against AI providers (OpenAI, Azure OpenAI, Anthropic — **not** Mistral; see the table above).
+corpus/architecture/dependency_map.md:92-92  [R3 names a reachable artifact]  Final content is persisted via the **cms domain** (in `app`); **Directus** is the underlying storage backend.
+corpus/architecture/dependency_map.md:95-95  [R4 default — presumed citable]  `App (jobsimulation domain)` -> `Redis Stream` -> `App (skill-path engine, in-process)`
+corpus/architecture/dependency_map.md:96-96  [R3 names a reachable artifact]  When a user completes a simulation, the **jobsimulation domain inside `app`** publishes an event — both ends of this stream have been the same process since jobsim-in-app; the stream survives because the *name* was retained, not because a second service does.
+corpus/architecture/dependency_map.md:101-101  [R4 default — presumed citable]  `Backend (app)` → `Gotenberg`
+corpus/architecture/dependency_map.md:103-103  [R3 names a reachable artifact]  `GOTENBERG_URL=http://gotenberg:3200` is injected via the backend's compose env.
+corpus/architecture/security_compliance.md:36-36  [R4 default — presumed citable]  **Data subnets**: PostgreSQL RDS, Redis ElastiCache
+corpus/architecture/security_compliance.md:146-146  [R4 default — presumed citable]  Org-scoped tables carry an `organization_id` column
+corpus/architecture/security_compliance.md:179-179  [R3 names a reachable artifact]  | `:190-191` | **viewer has no active org** (`org == nil \|\| org.ID() == uuid.Nil`) | `next(ctx)` |
+corpus/architecture/security_compliance.md:320-320  [R4 default — presumed citable]  | **CDN** | Worldwide (Vercel for frontend) |
+corpus/architecture/security_compliance.md:343-343  [R4 default — presumed citable]  | **PostHog** | Product analytics |
+corpus/architecture/security_compliance.md:427-427  [R4 default — presumed citable]  **AI**: OpenAI, Anthropic, Mistral
+corpus/architecture/security_compliance.md:428-428  [R4 default — presumed citable]  **Voice/Recording**: LiveKit, AWS Chime
+corpus/architecture/security_compliance.md:429-429  [R4 default — presumed citable]  **Infrastructure**: AWS, Vercel
+corpus/architecture/security_compliance.md:431-431  [R4 default — presumed citable]  **Analytics**: PostHog, Sentry
+corpus/architecture/security_compliance.md:432-432  [R4 default — presumed citable]  **Email**: Brevo (Sendinblue)
+corpus/architecture/service_taxonomy.md:6-6  [R4 default — presumed citable]  This document explains the three-tier service architecture of the Anthropos platform, categorizing all services by their deployment model, technology stack, and operational characteristics.
+corpus/architecture/service_taxonomy.md:10-10  [R4 default — presumed citable]  The Anthropos platform is built from **three types of services**:
+corpus/architecture/service_taxonomy.md:12-12  [R4 default — presumed citable]  **Core Backend Services**: The main engine of the platform - containerized microservices that handle user data, skills, simulations, and business logic.
+corpus/architecture/service_taxonomy.md:66-66  [R4 default — presumed citable]  **Deployment**: Docker Compose with Makefile automation (local) / AWS ECS (production)
+corpus/architecture/service_taxonomy.md:67-67  [R4 default — presumed citable]  **Communication**: HTTP/RPC + Redis Streams
+corpus/architecture/service_taxonomy.md:87-87  [R3 names a reachable artifact]  | **Gotenberg** | 3200 | Office-doc → PDF conversion (LibreOffice) | core, backend, all | Third-party image `gotenberg/gotenberg:8` |
+corpus/architecture/service_taxonomy.md:89-92  [R3 names a reachable artifact]  Neither profile works *alone* — both services declare `depends_on: backend`, which their own profile does not select, so compose exits 1; stack them on `core`.
+corpus/architecture/service_taxonomy.md:96-96  [R3 names a reachable artifact]  | **Studio-Desk** | 9000, 9100 | Studio design tool (containerized variant) | studio-desk, all | Local `../studio-desk` |
+corpus/architecture/service_taxonomy.md:97-97  [R3 names a reachable artifact]  | **Next-Web-App** | 3000 | Frontend (containerized variant) | frontend, all | Local `../next-web-app` |
+corpus/architecture/service_taxonomy.md:180-180  [R3 names a reachable artifact]  | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types | `git@github.com:anthropos-work/proto.git` |
+corpus/architecture/service_taxonomy.md:225-225  [R3 names a reachable artifact]  | **Port** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
+corpus/architecture/service_taxonomy.md:228-228  [R3 names a reachable artifact]  | **Location** | Local `../studio-desk` (sibling of platform, cloned by `make init`) |
+corpus/architecture/service_taxonomy.md:249-249  [R4 default — presumed citable]  | **Input** | Blueprints (StudioDocuments) created in Studio-Desk and stored via CMS |
+corpus/architecture/service_taxonomy.md:250-250  [R4 default — presumed citable]  | **Output** | Generated simulations and learning content; CMS persists results |
+corpus/architecture/service_taxonomy.md:251-251  [R3 names a reachable artifact]  | **Repo** | `git@github.com:anthropos-work/anthropos-studio-room.git` |
+corpus/architecture/service_taxonomy.md:252-252  [R3 names a reachable artifact]  | **Location** | Pulled into the **`app`** image by CI (`additional_repo`, app v1.360.1).
+corpus/architecture/service_taxonomy.md:252-252  [R3 names a reachable artifact]  Before cms-in-app it was `cms/studio/`, cloned by `cd cms && make init-studio`. |
+corpus/architecture/service_taxonomy.md:253-253  [R3 names a reachable artifact]  | **Runtime** | Baked into the `app` (backend) Docker image — Python deps installed alongside the Go binary |
+corpus/architecture/service_taxonomy.md:260-261  [R3 names a reachable artifact]  **Local development** (no backend container needed) — run the Python project directly from a clone of `anthropos-studio-room`:
+corpus/architecture/service_taxonomy.md:279-280  [R3 names a reachable artifact]  Before cms-in-app this lived at `cms/studio/`, synced with `cd cms && make update-studio`.
+corpus/architecture/service_taxonomy.md:282-282  [R4 default — presumed citable]  **Relationship**: Studio-Desk creates the *design* (blueprint).
+corpus/architecture/service_taxonomy.md:282-282  [R3 names a reachable artifact]  The cms domain in `app` (Go) orchestrates `StudioTask` records; the studio-room Python code runs inside the same container to execute generation.
+corpus/architecture/service_taxonomy.md:288-288  [R4 default — presumed citable]  | **Technology** | Next.js 16 App Router + React 19.2 (web) + Expo / React Native (mobile) |
+corpus/architecture/service_taxonomy.md:290-290  [R3 names a reachable artifact]  | **Purpose** | The AI-academy learning product — micro-chapters on AI engineering, agent frameworks, Claude Code, etc. **Publicly reachable, sold to anonymous visitors; the org tier is the enterprise surface.** *"for `@anthropos.work` employees"* was removed at run 81 |
+corpus/architecture/service_taxonomy.md:292-292  [R3 names a reachable artifact]  | **Repo** | `git@github.com:anthropos-work/ant-academy.git` |
+corpus/architecture/service_taxonomy.md:294-294  [R3 names a reachable artifact]  | **Deployment** | Vercel native (`.github/workflows/deploy-academy.yaml`) — **not** in docker-compose |
+corpus/architecture/service_taxonomy.md:300-300  [R4 default — presumed citable]  Companion iOS / Android app (Expo SDK 54) bundling the same chapters at build time
+corpus/architecture/service_taxonomy.md:301-301  [R3 names a reachable artifact]  Opt-in in-app "Cosmo" AI assistant (`NEXT_PUBLIC_FEATURE_TRAINING_COACH`, default OFF) — calls the OpenAI Responses API (`gpt-5.2`) directly from the browser via a per-user `localStorage` key
+corpus/architecture/service_taxonomy.md:326-326  [R4 default — presumed citable]  **Hosting**: SaaS or third-party Docker images
+corpus/architecture/service_taxonomy.md:336-336  [R4 default — presumed citable]  | **Integration Points** | Frontend apps, Backend middleware, Studio-Desk |
+corpus/architecture/service_taxonomy.md:342-342  [R3 names a reachable artifact]  `CLERK_PUBLISHABLE_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+corpus/architecture/service_taxonomy.md:343-343  [R3 names a reachable artifact]  `CLERK_SECRET_KEY`
+corpus/architecture/service_taxonomy.md:344-344  [R3 names a reachable artifact]  `CLERK_SIGN_IN_URL`
+corpus/architecture/service_taxonomy.md:347-347  [R4 default — presumed citable]  Next.js apps (Web, Hiring)
+corpus/architecture/service_taxonomy.md:349-349  [R4 default — presumed citable]  Studio-Desk
+corpus/architecture/service_taxonomy.md:356-356  [R4 default — presumed citable]  | **Type** | Third-party Headless CMS (self-hosted, **production**) |
+corpus/architecture/service_taxonomy.md:359-359  [R3 names a reachable artifact]  | **Database** | PostgreSQL (dedicated `directus` schema) |
+corpus/architecture/service_taxonomy.md:415-415  [R4 default — presumed citable]  | **Type** | Third-party with custom config (WunderGraph Cosmo Router) |
+corpus/architecture/service_taxonomy.md:417-417  [R4 default — presumed citable]  | **Purpose** | Apollo Federation v2, unified GraphQL API gateway |
+corpus/architecture/service_taxonomy.md:418-418  [R3 names a reachable artifact]  | **Repository** | `git@github.com:anthropos-work/graphql-wundergraph.git` |
+corpus/architecture/service_taxonomy.md:424-424  [R3 names a reachable artifact]  Backend (`app`) — the only subgraph left.
+corpus/architecture/service_taxonomy.md:424-424  [R4 default — presumed citable]  CMS and Jobsimulation folded into it.
+corpus/architecture/service_taxonomy.md:427-427  [R4 default — presumed citable]  Next.js frontend applications
+corpus/architecture/service_taxonomy.md:428-428  [R4 default — presumed citable]  Studio-Desk
+corpus/architecture/service_taxonomy.md:430-430  [R3 names a reachable artifact]  Locally, both of those now consume `backend` directly at `:8082/graphql/query`.
+corpus/architecture/service_taxonomy.md:438-438  [R4 default — presumed citable]  **Asynchronous**: Redis Streams (e.g., `JOBSIMULATION_STREAM=jobsimulation`)
+corpus/architecture/service_taxonomy.md:441-441  [R3 names a reachable artifact]  **Studio-Desk**: GraphQL via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` (was `:5050/graphql` on the router)
+corpus/architecture/service_taxonomy.md:442-443  [R3 names a reachable artifact]  **Studio-Room**: runs inside the `app` image, orchestrated from `app/internal/cms/studio/` — blueprint retrieval is in-process against the cms domain, not a call to a CMS service
+corpus/architecture/service_taxonomy.md:447-447  [R3 names a reachable artifact]  **Content Storage**: Directus API (via the cms **domain** in `app`, for core services)
+corpus/architecture/service_taxonomy.md:477-477  [R4 default — presumed citable]  Or run everything in Docker:
+corpus/architecture/service_taxonomy.md:495-495  [R4 default — presumed citable]  | (none — default `docker compose up`) | postgresql, redis, sentinel only — **the floor**, the three services that declare no `profiles:` key and are therefore in *every* selection |
+corpus/architecture/service_taxonomy.md:496-496  [R3 names a reachable artifact]  | `core` (the Makefile default — `PROFILE ?= core`) | the floor + backend, gotenberg |
+corpus/architecture/service_taxonomy.md:497-497  [R3 names a reachable artifact]  | `backend` | the floor + backend, gotenberg |
+corpus/architecture/service_taxonomy.md:499-499  [R3 names a reachable artifact]  | `frontend` / `studio-desk` | **exit 1** — each named service declares `depends_on: backend`, which its own profile does not select, so compose rejects the project |
+corpus/architecture/service_taxonomy.md:522-522  [R3 names a reachable artifact]  | **Studio** | Studio-Desk + Studio-Room | TypeScript / Python | Studio-Desk standalone; Studio-Room is embedded in the **`app`** image, orchestrated from `app/internal/cms/studio/` (it was `cms/studio/` before cms-in-app) | Local directories |
+corpus/architecture/shared_libraries.md:75-75  [R4 default — presumed citable]  | **taxonomy** | The **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset |
+corpus/architecture/shared_libraries.md:99-99  [R3 names a reachable artifact]  | **Module** | `github.com/anthropos-work/colony` |
+corpus/architecture/shared_libraries.md:104-104  [R4 default — presumed citable]  The platform framework.
+corpus/architecture/shared_libraries.md:108-108  [R3 names a reachable artifact]  | `colony` (root) | `NewDBStdConn`/`NewDBPool` (pgx v5 Postgres for Ent + raw pools, with a 30s **DB health monitor** that cancels the service context after 3 failed pings), `InitLogger` (slog + Sentry fan-out), `NewGQLHandlerServer` + `Apply*GraphqlMiddlewares`, `NewHTTPServer` (serves `GET /_meta` version/health JSON), `NewCORSHandler`, `Environment`, `NewVersionConfig` (resolves ECS task id) |
+corpus/architecture/shared_libraries.md:111-111  [R3 names a reachable artifact]  | `colony/pubsub` | Watermill over **Redis Streams**: `NewPublisher`/`NewSubscriberServer`, generic `EventHandler[T]`, poison-queue DLQ + 3× exponential-backoff retry, proto `eventsv1.Event` envelope |
+corpus/architecture/shared_libraries.md:112-112  [R3 names a reachable artifact]  | `colony/redis` | go-redis/v9 `UniversalClient` factory (pings on startup) |
+corpus/architecture/shared_libraries.md:113-113  [R3 names a reachable artifact]  | `colony/rpc` | h2c (cleartext HTTP/2) Connect-RPC server/client + `DefaultInterceptors` (request logging + proto `Validate()`) |
+corpus/architecture/shared_libraries.md:114-114  [R3 names a reachable artifact]  | `colony/flags` | Feature flags: `PosthogChecker` (PostHog EU, 5-min polling) and `EnvChecker` |
+corpus/architecture/shared_libraries.md:116-119  [R3 names a reachable artifact]  **Notable**: Sentry only initializes when `ENVIRONMENT=production` *or* `FORCE_SENTRY` is set (dev = plain slog).
+corpus/architecture/shared_libraries.md:127-127  [R3 names a reachable artifact]  | **Module** | `github.com/anthropos-work/proto` |
+corpus/architecture/shared_libraries.md:128-128  [R3 names a reachable artifact]  | **Language** | Go (`go 1.25.0`); tooling: `buf` (CI pins `v1.57.0`), protoc-gen-go, protoc-gen-connect-go, goverter |
+corpus/architecture/shared_libraries.md:134-134  [R3 names a reachable artifact]  **Generated** — `proto/<svc>/v1/*.proto` → `go/<svc>/v1/` (message structs) + `go/<svc>/v1/<svc>v1connect/` (Connect-RPC stubs, *do not edit*).
+corpus/architecture/shared_libraries.md:135-135  [R3 names a reachable artifact]  **Hand-written** — `go/domain/<svc>/` idiomatic Go types (string enums, `time.Time`) plus **goverter**-generated converters. goverter fails codegen if a proto enum value has no matching domain const — the "three-file rule" (proto + domain const + `make gen`).
+corpus/architecture/shared_libraries.md:167-167  [R3 names a reachable artifact]  | **Module** | `github.com/anthropos-work/ai` |
+corpus/architecture/shared_libraries.md:172-174  [R3 names a reachable artifact]  A thin wrapper exposing **one interface, `ai.AI`** (`ChatCompletion`, `ChatCompletionStream`, `Response`, `CreateEmbeddings`, `CreateSpeech`, `OCRProcess`, `AudioTranscriptions`, `Tokenize`, `GetEndpoint`) over per-provider constructors:
+corpus/architecture/shared_libraries.md:178-178  [R3 names a reachable artifact]  | `openai.New` / `NewOpenAI` | OpenAI direct |
+corpus/architecture/shared_libraries.md:179-179  [R3 names a reachable artifact]  | `openai.NewAzure` | Azure OpenAI (default API version `2025-04-01-preview`) |
+corpus/architecture/shared_libraries.md:180-180  [R4 default — presumed citable]  | `anthropic.NewAnthropic(cfg, key)` | **AWS Bedrock** (`cfg!=nil`, EU `eu.anthropic.*` model IDs) **or** Anthropic-direct (`key!=nil`) — one constructor for both |
+corpus/architecture/shared_libraries.md:181-181  [R3 names a reachable artifact]  | `mistral.NewMistral` | Mistral — **OCR only** (chat/embeddings/speech `panic`) |
+corpus/architecture/shared_libraries.md:237-246  [R3 names a reachable artifact]  The standalone repo is legacy/orphaned (and its `HTTPAuthnMiddleware` has a missing `return` after the websocket-skip that colony's copy fixed).
+corpus/architecture/shared_libraries.md:254-254  [R3 names a reachable artifact]  | **Module** | `github.com/anthropos-work/taxonomy` (README title: **"nodeid"**) |
+corpus/architecture/shared_libraries.md:256-256  [R3 names a reachable artifact]  | **Version pin** | `v1.2.0` |
+corpus/architecture/shared_libraries.md:259-270  [R3 names a reachable artifact]  **Where it lives.** The repo is a **131-line** node-id library (`node.go`) and ships **no dataset**.
+corpus/architecture/shared_libraries.md:326-326  [R4 default — presumed citable]  The whole product is the `NodeID` type and its generators/validators:
+corpus/architecture/shared_libraries.md:328-330  [R3 names a reachable artifact]  `NodeID` (a `string`) with `MarshalGQL`/`UnmarshalGQL` — satisfies gqlgen's marshaler **structurally** (no gqlgen import), so malformed IDs are rejected at the GraphQL boundary.
+corpus/architecture/shared_libraries.md:331-333  [R4 default — presumed citable]  Constructors: `NewSkillID` (K), `NewSpecializationID` (S), `NewCategoryID` (C), `NewJobRoleID` (J), `NewIndustryID` (I).
+corpus/architecture/shared_libraries.md:331-333  [R3 names a reachable artifact]  As of `v1.2.0` all except Industry take an `organization *string` so IDs can be **org-scoped** (org folded into the hash).
+corpus/architecture/shared_libraries.md:335-340  [R3 names a reachable artifact]  **Canonical ID format**: `<PREFIX>-<WORDPART>-<HASH>` matching `^[CSKJI]-[0-9A-Z_]{6}-[0-9A-F]{4}$` — PREFIX = C/S/K/J/I; WORDPART = 6 uppercased alphanumerics (X-padded; multi-word = 3 chars/word; `.`/`+`/`#` → `DOT`/`P`/`SHARP`); HASH = first 4 hex of SHA-1 of the sanitized name(+org).
+corpus/architecture/shared_libraries.md:335-340  [R4 default — presumed citable]  Example: `NewSkillID("go") = K-GOXXXX-F63F`, `".net" = K-DOTNET-DDE9`, `"c#" = K-CSHAXX-5F5B`.
+corpus/services/TEMPLATE.md:13-13  [R1 scaffolding]  **Database**: [Database] (e.g., Postgres, Redis)
+corpus/services/cms.md:106-106  [R3 names a reachable artifact]  **Serves content** to the rest of the platform via GraphQL Federation and internal RPC — **skill paths** (title, description, cover/video, curators a.k.a. "Meet the Experts", library categories, **chapters → steps**, the job-simulation steps inside a chapter, skills-to-verify, settings, versioning — the `skill_paths` Directus collection), **job-simulation blueprints** (the `simulations` collection + `sequences`, roles, tasks, validation criteria), and the **content library** (`library_categories`, `library_macro_categories`, `resource`) — all proxied through Directus with Anthropos-specific business logic on top.
+corpus/services/cms.md:119-119  [R3 names a reachable artifact]  Since cms-in-app it rides in the **`app`** image rather than the cms one.
+corpus/services/cms.md:207-207  [R4 default — presumed citable]  CMS acts as a proxy + business-logic layer over Directus:
+corpus/services/cms.md:213-213  [R4 default — presumed citable]  Why this pattern: business rules and validation live in CMS, caching reduces Directus load, and the abstraction makes it easier to swap the storage backend later.
+corpus/services/cms.md:217-217  [R3 names a reachable artifact]  **GraphQL**: since cms-in-app the schemas live with the rest of app's at `app/internal/web/backend/graphql/graph/schemas/*.graphqls`, served on the `backend` subgraph.
+corpus/services/cms.md:222-222  [R4 default — presumed citable]  Next Web App (GraphQL)
+corpus/services/cms.md:223-223  [R4 default — presumed citable]  Studio-Desk (GraphQL for studio entities)
+corpus/services/cms.md:231-231  [R4 default — presumed citable]  Directus (content storage)
+corpus/services/cms.md:236-236  [R4 default — presumed citable]  Redis (cache, Watermill streams)
+corpus/services/cms.md:257-261  [R3 names a reachable artifact]  **⚠️ HISTORICAL — `cd cms; make init-studio` is NOT the onboarding path any more.** Since cms-in-app v8.0 the studio-room pipeline is pulled into the **`app`** image by CI via the `additional_repo` mechanism (app v1.360.1) — see the **Studio** bullet of the *Where everything went* list in the banner at the top of this doc (**named, not pinned:** this said `:70-71`, which at M257x iter-120 was the **Events** bullet).
+corpus/services/cms.md:257-261  [R3 names a reachable artifact]  Work on this domain in **`app`**, not in the frozen `cms` repo.
+corpus/services/cms.md:263-263  [R3 names a reachable artifact]  The Python studio submodule had to be cloned **before** any docker build, otherwise `make up` failed with `"/studio": not found`:
+corpus/services/cms.md:334-336  [R3 names a reachable artifact]  **HISTORICAL — this is no longer how the shipped pipeline is refreshed.** Since cms-in-app v8.0 CI pulls `anthropos-studio-room` into the **`app`** image via `additional_repo`; there is no manual sync step, and the `cms` repo is not cloned by `make init`.
+corpus/services/coursebuilder.md:3-5  [R3 names a reachable artifact]  **Not a standalone service — a domain of the `app` monolith** (the service the platform calls "backend").
+corpus/services/coursebuilder.md:3-5  [R3 names a reachable artifact]  Course Builder ships inside `app`; there is no separate container, repo, or subgraph.
+corpus/services/coursebuilder.md:3-5  [R3 names a reachable artifact]  Code lives in `app/internal/coursebuilder/` (the engine) + `app/internal/web/backend/coursebuilder/` (the HTTP/SSE boundary).
+corpus/services/coursebuilder.md:34-34  [R3 names a reachable artifact]  **Language**: Go (1.26.4) — part of the `app` monolith.
+corpus/services/coursebuilder.md:86-94  [R3 names a reachable artifact]  ⚠️ **`cost` is filtered off the wire BY DESIGN — do not build a client that waits for it.** `case cb.EventCost:` (`:2709`) returns an **empty** event name (`:2717`) under a D2 ruling (2026-07-13) recorded in the code itself: *"the terminal cost readout is COGS and MUST NOT reach the customer SSE stream … filtered here at the wire boundary by returning an empty event name"* — and the stream loop skips `writeSSE` whenever the name is empty (`:1478-1480`).
+corpus/services/coursebuilder.md:86-94  [R3 names a reachable artifact]  **This bullet previously listed `cost` as a live wire event and omitted four that are live — `text`, `score`, `steering_received`, `steering_applied` (13 listed vs 16 real); corrected M257x iter-102.**
+corpus/services/coursebuilder.md:107-110  [R3 names a reachable artifact]  **Prerequisites**: it runs **as part of `app`** (no separate binary/container).
+corpus/services/coursebuilder.md:107-110  [R4 default — presumed citable]  The routes unmount only when **neither** backend can build a client; AWS creds alone are not a prerequisite.
+corpus/services/coursebuilder.md:111-112  [R3 names a reachable artifact]  **Command**: `go run .` in the app repo, or the platform `make up` (Course Builder ships inside the `backend` container).
+corpus/services/coursebuilder.md:125-125  [R3 names a reachable artifact]  **Service Name**: none of its own — it is part of the `backend` service (`docker compose up -d backend`).
+corpus/services/coursebuilder.md:132-136  [R3 names a reachable artifact]  The deterministic `MockClient` (FIFO scripted responses, usage/cache accounting) stands in for the Bedrock `ModelClient` — no real LLM in unit tests.
+corpus/services/coursebuilder.md:140-144  [R4 default — presumed citable]  **Not behind a global feature flag** — GA to every organization, **org-admin-gated** (`courseBuilderAccessGate`).
+corpus/services/coursebuilder.md:140-144  [R3 names a reachable artifact]  The only gate is graceful degradation: routes stay unmounted if **neither** model backend can build a client (no `ANTHROPIC_API_KEY` *and* no resolvable AWS creds) — a clean 404, never a half-wired endpoint.
+corpus/services/coursebuilder.md:140-144  [R3 names a reachable artifact]  Per-sub-feature kill-switches: `COURSEBUILDER_PLANNER_ENABLED`, `CB_SOURCE_DISTILL`, `COURSEBUILDER_EMAILS_ENABLED`.
+corpus/services/intelligence.md:14-14  [R4 default — presumed citable]  **Primary Goal**: Background data sync between Backend and Skiller schemas.
+corpus/services/intelligence.md:15-15  [R3 names a reachable artifact]  **Codebase**: `git@github.com:anthropos-work/intelligence.git` (no longer cloned locally)
+corpus/services/jobsimulation.md:129-129  [R3 names a reachable artifact]  Exposed via CSV export with language arg (see `internal/simulator/manager/interview_report_csv*.go`).
+corpus/services/jobsimulation.md:134-134  [R3 names a reachable artifact]  **GraphQL**: schemas at `internal/graph/schemas/` (main contract: `schema.graphqls`). ~~Federated into the platform schema by Cosmo Router~~ — **the jobsimulation subgraph is folded into `backend`**; the supergraph is one subgraph (`backend.graphqls`).
+corpus/services/jobsimulation.md:160-160  [R4 default — presumed citable]  **Backend (app)** — user context, organization scoping
+corpus/services/jobsimulation.md:166-166  [R4 default — presumed citable]  **PostgreSQL**, **Redis** — base infra
+corpus/services/jobsimulation.md:170-170  [R3 names a reachable artifact]  **LiveKit** — primary voice engine (`LIVEKIT_HOST_URL`, `LIVEKIT_RECORDINGS_BUCKET_NAME`)
+corpus/services/jobsimulation.md:171-171  [R4 default — presumed citable]  **AWS Chime SDK** — video/camera/screensharing recording (`CHIME_RECORDINGS_BUCKET_NAME=ant-prod-chime-demo`)
+corpus/services/jobsimulation.md:173-173  [R3 names a reachable artifact]  **AssemblyAI** — EU voice transcription for call recordings (`ASSEMBLYAI_API_KEY`)
+corpus/services/jobsimulation.md:174-174  [R3 names a reachable artifact]  **Bunny.net** — video stream hosting / tokenized playback (`BUNNY_REC_STREAM_API_KEY`, `BUNNY_TOKEN_HASH_KEY`)
+corpus/services/jobsimulation.md:192-192  [R3 names a reachable artifact]  **The cobra ROOT command's `RunE` *is* the server.** There is **no `serve` and no `run` subcommand.**
+corpus/services/jobsimulation.md:194-195  [R3 names a reachable artifact]  The image is `ENTRYPOINT ["./application"]` with **no CMD**; when compose still declared the service it passed **no `command:`** either.
+corpus/services/jobsimulation.md:206-207  [R4 default — presumed citable]  The root command sets neither `SilenceUsage` nor `SilenceErrors`.
+corpus/services/jobsimulation.md:206-207  [R4 default — presumed citable]  So **any** error returned from `RunE` makes cobra print `Error: …` **followed by the full usage/help block**, then exit 1.
+corpus/services/jobsimulation.md:225-226  [R3 names a reachable artifact]  So on the container that actually runs the engine since the fold — `backend`; there is no `…-jobsimulation-1` container to inspect — the same underlying failure reads like this instead:
+corpus/services/jobsimulation.md:234-236  [R3 names a reachable artifact]  `head -3` is still right (the first line is still the whole story), but "it printed the CLI help" is, on `backend`, a report of something that cannot happen.
+corpus/services/jobsimulation.md:255-255  [R3 names a reachable artifact]  **With the path simply absent, `LoadDefaultConfig` returns `nil`.** The mount is the bug.
+corpus/services/jobsimulation.md:259-261  [R4 default — presumed citable]  **In a demo/dev stack**, rext's **generated compose override drops the bind** (`volumes: !reset null` on the demo path; an `!override`-tagged empty list on the dev path).
+corpus/services/jobsimulation.md:263-264  [R4 default — presumed citable]  ⚠️ **A bare `volumes: []` does NOT remove it** — compose *merges* volume sequences and the inherited bind survives.
+corpus/services/jobsimulation.md:263-264  [R3 names a reachable artifact]  Only the `!reset` / `!override` tags remove it. Verified against the compose binary.
+corpus/services/jobsimulation.md:288-288  [R3 names a reachable artifact]  **To work on the live engine, you run `app`, not this repo:**
+corpus/services/skillpath.md:70-74  [R3 names a reachable artifact]  It publishes `EventSkillPathSessionUpdated` + `EventChapterStepSessionCompleted` to the `skillpath` Redis stream (consumed by `app`).
+corpus/services/skillpath.md:70-74  [R3 names a reachable artifact]  All of this now runs in-process inside `app`.

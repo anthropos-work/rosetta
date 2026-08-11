@@ -161,7 +161,7 @@ Setup complete when:
 4. Key added to GitHub account
 5. `ssh -T git@github.com` shows correct username
 6. Organization access requested
-7. Successfully cloned `rosetta` to `./stack-dev/rosetta`
+7. Successfully cloned a **private org** repo over SSH — e.g. `platform` into `stack-dev/platform`, the first clone `/dev-up` needs. (Not `rosetta` into `stack-dev/rosetta`: `rosetta` is *this* corpus, the repo you are already standing in, and `stack-dev/` holds the platform service repos — nesting a second rosetta clone there is neither needed nor correct.)
 
 ### Dual Account
 1. Both SSH keys generated and secured
@@ -172,7 +172,7 @@ Setup complete when:
 6. `ssh -T git@github.com-personal` shows PERSONAL username
 7. Organization access requested
 8. Keys persist after restart
-9. Successfully cloned `rosetta` to `./stack-dev/rosetta`
+9. Successfully cloned a **private org** repo over SSH — e.g. `platform` into `stack-dev/platform`, the first clone `/dev-up` needs. (Not `rosetta` into `stack-dev/rosetta`: `rosetta` is *this* corpus, the repo you are already standing in, and `stack-dev/` holds the platform service repos — nesting a second rosetta clone there is neither needed nor correct.)
 
 ## Additional Resources
 

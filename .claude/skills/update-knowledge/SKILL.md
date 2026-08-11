@@ -44,34 +44,65 @@ Apply to EVERY documentation update:
 
 ## Corpus Sweep Checklist
 
-**Use TodoWrite to track which sections you've checked.** For each piece of evidence, review:
+**Use TodoWrite to track which sections you've checked.**
 
-### Architecture (check all that may apply)
-- `corpus/architecture/architecture_overview.md` - System design changes
-- `corpus/architecture/service_taxonomy.md` - New or reclassified services
-- `corpus/architecture/frontend_architecture.md` - Frontend changes
-- `corpus/architecture/external_services.md` - Third-party integrations
-- `corpus/architecture/dependency_map.md` - Dependency changes
+> **⚠️ Enumerate from the indexes, never from this page.** The corpus is **90 markdown files** and the skill
+> set is **16**. This checklist used to hardcode **10** corpus docs and **8** skills — so the demo family
+> (23 files), the fenced migration map, and half the skills were invisible to every sweep that trusted it.
+> That is a live root cause, not a hypothetical: 12 of 20 skill files went unswept across three platform
+> moves. **Start each sweep by listing the directory or its README**, then narrow.
 
-### Services (check affected services)
-- `corpus/services/{service}.md` - Service-specific documentation
-- Follow `corpus/services/TEMPLATE.md` for new service docs
+### Step 0 — enumerate, then narrow
 
-### Operations (check if workflow affected)
-- `corpus/ops/setup_guide.md` - New setup requirements
-- `corpus/ops/run_guide.md` - New startup steps
-- `corpus/ops/update_guide.md` - New update procedures
+```bash
+ls corpus/architecture/*.md corpus/ops/*.md corpus/ops/demo/*.md corpus/services/*.md corpus/tools/*.md
+ls -d .claude/skills/*/          # every skill, not a remembered subset
+```
 
-### Tools (check if tooling affected)
-- `corpus/tools/toolchain_overview.md` - New development tools
+Each section has a maintained index — read it before guessing a filename:
+`corpus/README.md` · `corpus/architecture/README.md` · `corpus/services/README.md` (the enumerated index of
+all service docs) · `corpus/ops/README.md` · `corpus/ops/demo/README.md` · `corpus/tools/README.md`.
 
-### Claude Skills (check if automation affected)
-- `.claude/skills/dev-up/` - Dev build + start + set-dress automation changes (← the former setup-platform + start-platform)
-- `.claude/skills/dev-down/` - Dev teardown automation changes
-- `.claude/skills/stack-update/` - Stack code/deps/schema sync automation changes (← update-platform)
-- `.claude/skills/stack-list/`, `stack-seed/`, `stack-snapshot/` - Generic stack-ops changes (← demo-status/seed/snapshot)
-- `.claude/skills/update-knowledge/` - This skill (if process improves)
-- `CLAUDE.md` - Agent context changes
+### Architecture (`corpus/architecture/`, 11 files)
+Start with **`platform-migration-status.md`** for anything touching which services exist — it is the
+**fenced** one-row-per-service map (machine-checked against the platform's own `repos.yml` in both
+directions by `stack-core/platform_alignment_guard.py`), and it outranks prose anywhere else, including
+`CLAUDE.md`. Then as applicable: `architecture_overview.md` · `service_taxonomy.md` · `dependency_map.md` ·
+`frontend_architecture.md` · `external_services.md` · `shared_libraries.md` · `security_compliance.md` ·
+`ai_architecture.md` · `alignment_testing.md`.
+
+### Services (`corpus/services/`, 29 files)
+`corpus/services/README.md` is the enumerated index — start there rather than guessing. Follow
+`corpus/services/TEMPLATE.md` for a new service doc. Remember the archived/merged redirects
+(`skiller`, `skillpath`, `chronos`, `intelligence`) are docs too.
+
+### Operations (`corpus/ops/`, 23 files + `corpus/ops/demo/`, 23 more)
+Core: `setup_guide.md` · `run_guide.md` · `update_guide.md` · `platform-alignment.md` · `safety.md` ·
+`verification.md` · `secrets-spec.md` · `seeding-spec.md` · `snapshot-spec.md` · `idempotency.md` ·
+`db-access.md` · `directus-local.md` · `rosetta_demo.md` · `quick_ops.md` · the `staging-*` family.
+**The whole `corpus/ops/demo/` family counts** — `demo-up-defaults.md` (fenced against the parsers),
+`build-budget.md`, `latency-budget.md`, `coverage-protocol.md`, `playthroughs.md`, the `recipe-*` and
+`*-spec.md` pages. List the dir; do not work from memory.
+
+### Tools (`corpus/tools/`, 3 files)
+`README.md` (the index) · `toolchain_overview.md` · `anthropos-labs.md`.
+
+### Claude Skills — **all 16, check the list, don't recall it**
+`ls -d .claude/skills/*/`. At time of writing: `align-dna` · `align-run` · `db-query` · `demo-down` ·
+`demo-up` · `dev-down` · `dev-for-dummies` · `dev-up` · `setup-github` · `stack-list` · `stack-secrets` ·
+`stack-seed` · `stack-snapshot` · `stack-update` · `test-platform` · `update-knowledge`. Several carry a
+`reference.md` beside `SKILL.md` — **sweep both**; a SKILL.md and its own reference.md have contradicted
+each other before, and the SKILL.md is what an agent actually follows.
+
+Plus `CLAUDE.md` — agent context, and its skill table (every row's guide-doc pointer must resolve).
+
+### A skill is executable — grade it harder than a doc
+A stale doc misleads; a stale skill **runs**. When platform evidence changes, check each skill for:
+service names · profile tokens · compose commands · `repos.yml` expectations · schema names · ports ·
+env vars · paths into a platform clone. **The most dangerous shape is a command that still exits 0 while
+selecting nothing** — `postgresql`, `redis` and `sentinel` declare no `profiles:` key, so a retired
+profile token starts the floor and the stack looks alive with the application absent. Grade a documented
+command on *"does it still select anything"*, never on *"does it still parse."*
 
 ## Writing Guidelines
 

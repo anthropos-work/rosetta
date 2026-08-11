@@ -1,0 +1,31 @@
+  [PASS] ai-readiness.manager-dashboard.UC1       passing                                 
+  [PASS] ai-readiness.manager-dashboard.UC2       passing                                 
+  [PASS] ai-readiness.member-funnel.UC1           passing                                 
+  [PASS] ai-readiness.member-funnel.UC2           passing                                 
+  [PASS] ai-simulations.access-denied.UC1         passing                                 
+  [PASS] ai-simulations.chat.UC1                  passing                                 
+  [FAIL] assignment-monitoring.assign-and-track.UC1 failing                                   — Error: the assignable-affordance count drops by exactly one (the assignment lan…
+  [FAIL] assignment-monitoring.assign-and-track.UC2 failing                                   — Error: the org's seeded hero (Pat Ellis) is among the per-member results — wh…
+  [PASS] hiring.recruiter-comparison.UC1          passing                                 
+  [PASS] onboarding.completion.UC1                passing                                 
+  [FAIL] onboarding.enterprise-hiring.UC1         failing                                   — Error: her ASSIGNED position renders as a startable, org-scoped link (`/sim/<sl…
+  [PASS] onboarding.enterprise-workforce-ai-readiness.UC1 passing                                 
+  [TODO] onboarding.enterprise-workforce-standard.UC1 unimplemented                             — VERDICT will-not-build: MEASURED, then deliberately refused — and the refusal…
+  [PASS] onboarding.enterprise-workforce-standard.UC2 passing                                 
+  [PASS] onboarding.individual.UC1                passing                                 
+  [PASS] org-admin.feature-config.UC1             passing                                 
+  [PASS] org-admin.members.UC1                    passing                                 
+  [FAIL] org-admin.roles.UC1                      failing                                   — TimeoutError: page.waitForURL: Timeout 60000ms exceeded.
+  [PASS] org-admin.tags.UC1                       passing                                 
+  [PASS] profile.foundation.UC1                   passing                                 
+  [PASS] profile.growth.UC1                       passing                                 
+  [PASS] profile.timeline.UC1                     passing                                 
+  [PASS] profile.verified.UC1                     passing                                 
+  [PASS] skill-paths.legacy.UC1                   passing                                 
+  [PASS] skill-paths.save-for-later.UC1           passing                                 
+  [PASS] studio.simulation-builders.advanced      passing                                 
+  [PASS] studio.simulation-builders.guided        passing                                 
+  [FAIL] workforce-intelligence.organization-feedback.UC1 failing                                   — Error: the org's seeded hero (Pat Ellis) appears among the aggregated feedback …
+  [PASS] workforce-intelligence.roster.UC1        passing                                 
+  [FAIL] workforce-intelligence.skills-funnel.UC1 failing                                   — Error: and her card carries her seeded role ("DevOps Engineer") — asserted IN…
+  [FAIL] workforce-intelligence.talent-pool.UC1   failing                                   — Error: the succession/at-risk projection names the org's seeded hero (Pat Ellis…

@@ -139,7 +139,7 @@ Every SIMULATION row carries two language fields (the non-simulation exhibits ca
 real played sessions):
 
 - **`language`** ∈ `english | italian` — the REAL language the source session was played in (the source's
-  `jobsimulation.sessions.language`, copied onto the pin and written to the clone's session row so the demo
+  `public.job_simulation_sessions.language`, copied onto the pin and written to the clone's session row so the demo
   renders the story in its intended language). The fixture `Validate` requires a valid language on every pin
   (a missing/unknown one fails loud at load — the seeder never falls back to a wrong label). Before M241 the
   seeder hard-coded every clone to `english`, mislabeling the 11-of-13 Italian pins.
@@ -299,7 +299,7 @@ bring-up wiring. **M235 (run 3) delivered the non-simulation product sections** 
   seam; **not** `/library/<slug>` — that route does not exist in ant-academy, M236 iter-08), no manager view.
   **`app/cmd/academy-seed` is MOOT in a demo** (see the §"academy" note above): with no
   `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` the demo academy serves its committed FS catalog, so a seeded
-  `academy_chapter_progress` row has no reader. A
+  `academy_chapter_progresses` row has no reader. A
   `Label` field carries the believable row title (real course/lab names). Today's demo now renders all four
   product sections. rext tags `playbill-m235-nonsim-{skillpath,ailabs,academy}`.
 - **Proving every CTA lands on a non-empty result page (a LIVE browser on a cold reset-to-seed) is M236**
@@ -380,7 +380,7 @@ dispositions:
   finalized in **M235** (depends on M230), and the CTA went **live at M236 iter-08** as a real
   **`/courses/<slug>`** link into the demo academy's committed FS catalog (see §4 + §7.1).
 
-  > *This previously read: "Today's fixture carries no academy session; this path is unit-proven and lights up
+  > *This previously said: "Today's fixture carries no academy session; this path is unit-proven and lights up
   > when M235 adds the fixture." **Stale** — the academy CTA is live, and it is **not** fixture-driven. A demo
   > academy has no `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it serves its committed FS catalog and never reads a
   > seeded session; the CTA resolves against that catalog. There is no academy content-session fixture to wait
@@ -437,7 +437,7 @@ sections, per-session rows, the two CTA hrefs with the right `__clerk_identity`/
 omission, AI-labs presence-only, academy origin), the seats resolve through `roster.go` byte-identically to the
 seed, and the export→render pipeline runs end-to-end. **Proving every CTA lands on a non-empty result page — a
 live browser on a cold reset-to-seed — is M236** (the "prove-it-lands" milestone, run on `billion`). **M235
-unit-proves the seeders + the manifest projection**; it does not drive a browser. *(This line previously read
+unit-proves the seeders + the manifest projection**; it does not drive a browser. *(This line previously said
 "…is M235; proving it on `billion` is M236", which split one gate across two milestones and credited M235 with a
 render proof it did not perform — M235 closed `closed-incomplete`. §4's statement of the same split is the
 correct one.)*

@@ -1,0 +1,44 @@
+B10-001	SUPPORTS	docker-compose.yml:28 is literally `backend:`, the compose service name the cell claims for app.
+B10-002	SUPPORTS	app/main.go:690 is `skillerManager := skiller.NewSkillerManager(...)`, exactly the skiller wiring call site named.
+B10-003	SUPPORTS	wiring.go:123 is `jsrunner.NewRunnerManager(getenv("JUDGE0_API_KEY"), getenv("JUDGE0_BASE_URL"))` and jsrunner is imported at :34 as app/internal/jobsimulation/runner, backing the "no app/internal/roadrunner" claim.
+B10-004	SUPPORTS	cms/terraform/main.tf:39 is `service_desired_count = 0` verbatim, inside a module block that still exists.
+B10-005	UNRESOLVABLE	Pin is `repos.yml:9-10` @ `0dab54d`; the platform clone is checked out at `0c91421`, where :9-10 is the rewritten header, so the pre-838d907 wording cannot be decided here.
+B10-006	SUPPORTS	repos.yml:2-10 contains verbatim "own no local schema, no compose service and no clone entry" and "None of them are deleted", and carries no infrastructure/services.tf pointer.
+B10-007	UNRESOLVABLE	Pin is `jobsimulation/terraform/main.tf:15-22` @ `82cb66e`; this clone's working tree is at `462343b0` (origin/main fetched at 82cb66ec), where :15-22 is the atlas-migration data block the cell itself says the OLD file had.
+B10-008	SUPPORTS	cms/terraform/main.tf:39 is `service_desired_count = 0`, the "still declares" half of the cell's two-facts-opposite-ways statement.
+B10-009	SUPPORTS	app/main.go:721 is `jobsimwiring.Wire(...)` and the comment at :718-720 states it is unconditional and FATAL, matching "wired unconditionally".
+B10-010	SUPPORTS	docker-compose.yml:59 is `JUDGE0_BASE_URL=http://52.48.139.23:2358` inside the `backend:` service environment block (service starts :28, env :46-94).
+B10-011	SUPPORTS	wiring.go:123 constructs jsrunner.NewRunnerManager from JUDGE0_BASE_URL; jsrunner is app/internal/jobsimulation/runner (import :34), and the app checkout ad9f3c49 carries no Go-source delta from the named pin.
+B10-012	SUPPORTS	roadrunner/terraform/main.tf:19 is `service_desired_count = 1`; the roadrunner clone is at 87d8d44, the very HEAD the cell names.
+B10-013	UNRESOLVABLE	Pin is `repos.yml:9-10` @ `0dab54d`; platform clone is at `0c91421`, so the claim about what that header said before 838d907 cannot be decided here.
+B10-014	SUPPORTS	sentinel/terraform/main.tf:19 is `service_desired_count = 1`, exactly the `= 1` the cell asserts.
+B10-015	SUPPORTS	docker-compose.yml:5 is the `sentinel:` service block, which is what the bare citation asserts.
+B10-016	SUPPORTS	repos.yml:18-20 is `- name: sentinel / type: go / migrations: false`, exactly the "despite migrations: false" claim.
+B10-017	SUPPORTS	repos.yml:12-13 says sentinel "is the one Go service still deployed alongside backend ... the only other backend clone local dev needs", which is the header statement claimed.
+B10-018	UNRESOLVABLE	The cell reads storage at `9f8cb53`; this working tree is at `4ce8ece5` (origin/main fetched at 9f8cb532), where main.tf is 101 lines with `module "storage"` and `service_desired_count = 1` and no "ECS service ... is GONE" text at :9-11.
+B10-019	UNRESOLVABLE	Same stale checkout (4ce8ece5, pre-`d3e6d32`): storage.tf:22-25 here reads "That is what M903's `moved` blocks are for", and the quoted "never executed / shipped design supersedes it" text occurs nowhere in the tree.
+B10-020	SUPPORTS	docker-compose.yml:82 is `STORAGE_S3_BUCKET=...` inside the backend service env, with the rationale comment at :73-79 immediately above.
+B10-021	SUPPORTS	app/main.go:524 is `storageManager := internalstorage.NewManager(storageBucket)`, the in-process manager construction claimed.
+B10-022	SUPPORTS	app/internal/storage/service.go:22 is `EnvBucket = "STORAGE_S3_BUCKET"` — an env-var NAME constant, exactly as the cell qualifies it.
+B10-023	SUPPORTS	app/main.go:504 is the comment "the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"; a Go grep of the app clone returns exactly 3 hits, all comments, at the three cited lines.
+B10-024	SUPPORTS	wiring.go:101 is the comment "replacing the STORAGE_RPC_ADDR edge", one of the verified 3 comment-only hits.
+B10-025	SUPPORTS	callsites_test.go:189 is a comment line containing STORAGE_RPC_ADDR, the third of the verified 3 comment-only hits.
+B10-026	PARTIAL	repos.yml:2-10 backs "not deleted" verbatim ("None of them are deleted" + clone-by-hand) but says nothing about GitHub archive state, which the same sentence asserts "in as many words".
+B10-027	UNRESOLVABLE	Messenger clone working tree is fa47850d (origin/main fetched e9421c68); here main.tf is 111 lines with `service_desired_count = 1` at :19 and `container_definitions` at :29, so the claimed `= 0` at :29 in a 121-line module is not decidable at this checkout.
+B10-028	SUPPORTS	app/main.go:15 is the `msgflow "github.com/anthropos-work/app/internal/messenger/flow"` import, the flow member of the cited import triple.
+B10-029	SUPPORTS	app/main.go:285 is `messengerEnabled := mustSubsystemSwitch(envMessengerEnabled)` — MESSENGER_ENABLED resolved exactly there.
+B10-030	PARTIAL	:92-111 (resolveSubsystemSwitch) proves unset-on-a-laptop returns false, but unset-when-deployed only RETURNS an error; the log.Fatalf that makes it a BOOT FAILURE is in mustSubsystemSwitch at :87, outside the cited range.
+B10-031	SUPPORTS	app/terraform/main.tf:415-416 is the container-env pair `"MESSENGER_ENABLED"` / `"true"`, exactly the prod setting claimed.
+B10-032	SUPPORTS	docker-compose.yml:84-92 is the comment stating both subsystems deliberately have no variables and that pinning them to `false` would override .env and make opting in impossible.
+B10-033	SUPPORTS	docker-compose.yml:48 is `AUTHORIZATION_ADDRESS=http://sentinel:8087`; a full read of the 187-line file shows no other service RPC address, so the "only Connect-RPC edge" framing holds.
+B10-034	SUPPORTS	docker-compose.yml:57 is `GOTENBERG_URL=http://gotenberg:3200` in the backend env, the plain-HTTP cross-process edge claimed.
+B10-035	SUPPORTS	docker-compose.yml:183 is `profiles: [core, backend, all]` on the gotenberg service (image/ports at :170-180), so gotenberg is in the default core profile.
+B10-036	SUPPORTS	app/internal/converter/gotenberg.go:31 POSTs to gotenbergURL+"/forms/libreoffice/convert" — the consumer of GOTENBERG_URL claimed.
+B10-037	SUPPORTS	docker-compose.yml:59 is `JUDGE0_BASE_URL=...` on backend, backing "Judge0 directly via JUDGE0_BASE_URL".
+B10-038	SUPPORTS	messenger/cmd/root.go:120-140 reads all four named variables (CMS_RPC_ADDR :120, BACKEND_USERS_RPC_ADDR :125 and :130, SKILLER_RPC_ADDR :135, JOBSIMULATION_RPC_ADDR :140).
+B10-039	PARTIAL	repos.yml:2-10 supports "not deleted" ("None of them are deleted") but carries nothing at all about GitHub archive state, which the same parenthetical citation is offered for.
+B10-040	SUPPORTS	repos.yml:23-25 is the `- name: next-web-app / type: node-pnpm / migrations: false` entry, backing the "in repos.yml: yes" column.
+B10-041	SUPPORTS	docker-compose.yml:143 is the `next-web-app:` service block and :168 is `profiles: [frontend, all]`, both as cited.
+B10-042	SUPPORTS	docker-compose.yml:151 is the build arg `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT: http://${PUBLIC_HOST:-localhost}:8082/graphql/query`, exactly the baked value claimed.
+B10-043	SUPPORTS	repos.yml:26-28 is the `- name: studio-desk / type: node-npm / migrations: false` entry.
+B10-044	SUPPORTS	docker-compose.yml:112 is the `studio-desk:` service block and :141 is `profiles: [studio-desk, all]`, both as cited.
