@@ -154,12 +154,31 @@ internal/
 
 > These are the edges the engine has, **not** a reading of a compose block: there is no
 > `jobsimulation` service and therefore no `depends_on` list to quote. They are satisfied in-process inside
-> `backend` — with one exception on the RPC axis: the only cross-process **Connect-RPC** edge out of
-> `backend` on a `core` stack was **`backend → sentinel`** (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48`) — ⚠️ **RETRACTED at M258 iter-18 — there is no such edge.** Platform `766df6c` (v11.0) folded the Casbin PDP into `app` as `app/internal/sentinel/` and deleted the `sentinel` compose service; `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`, `common.yml` and `repos.yml`, and `app` deleted its own Connect-RPC listener with it (`app/main.go:1310`, *"NO RPC SERVER"*). **A `core` stack has NO cross-process Connect-RPC edge at all.** What survives of the old qualification, and is still the point: `backend` still calls `gotenberg` over **plain HTTP** (`GOTENBERG_URL`, `docker-compose.yml:34`; `gotenberg` is in the default `core` profile, `:161`) and Judge0 via `JUDGE0_BASE_URL` (`:36`) — *no RPC edge* does **not** mean *no cross-process edge*. Canonical statement: [`platform-migration-status.md`](../architecture/platform-migration-status.md) § the `sentinel` row., and there are **zero `*_RPC_ADDR` variables anywhere in compose**. **It is not the only cross-process edge, and compose does not set exactly one service address:** `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core` profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31`), and Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). All at platform `0c91421`; the correctly-scoped model wording is [`architecture_overview.md:343`](../architecture/architecture_overview.md).
+> `backend` — with one exception on the RPC axis *(historical, at platform `0c91421`)*: the only
+> cross-process **Connect-RPC** edge out of `backend` on a `core` stack was **`backend → sentinel`**
+> (`AUTHORIZATION_ADDRESS=http://sentinel:8087`, `docker-compose.yml:48`), and there were **zero
+> `*_RPC_ADDR` variables anywhere in compose**. **It was not the only cross-process edge, and compose did
+> not set exactly one service address:** `backend` also calls **`gotenberg` over plain HTTP**
+> (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the default `core`
+> profile at `docker-compose.yml:183`, consumed at `app/internal/converter/gotenberg.go:31`), and Judge0
+> directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The correctly-scoped model wording is
+> [`architecture_overview.md:343`](../architecture/architecture_overview.md).
+>
+> ⚠️ **RETRACTED at M258 iter-18 — there is no such edge, and the exception went with it.** Platform
+> `766df6c` (v11.0, 2026-08-11) folded the Casbin PDP into `app` as `app/internal/sentinel/` and deleted
+> the `sentinel` compose service; `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`,
+> `common.yml` and `repos.yml`, and `app` deleted its own Connect-RPC listener with it
+> (`app/main.go:1310`, *"NO RPC SERVER"*). **A `core` stack has NO cross-process Connect-RPC edge at all**,
+> and compose still sets zero `*_RPC_ADDR` variables — so every edge above is now satisfied in-process
+> inside `backend`, with no exception. The gotenberg and Judge0 halves stand and are still the point
+> (*no RPC edge* does **not** mean *no cross-process edge*), but **re-anchor them**: at `766df6c` they are
+> `docker-compose.yml:34` (`GOTENBERG_URL`), `:161` (gotenberg's `core` profile) and `:36`
+> (`JUDGE0_BASE_URL`). Canonical statement:
+> [`platform-migration-status.md`](../architecture/platform-migration-status.md) § the `sentinel` row.
 
 * **Backend (app)** — user context, organization scoping
 * **CMS** — simulation definitions, content, studio entities. **The engine holds no `DIRECTUS_BASE_ADDR`/`DIRECTUS_TOKEN` of its own**; it calls the cms domain **in-process** (same binary, no RPC hop). There is no husk container on either end of that edge any more, and no variable either: `CMS_RPC_ADDR` was read only by `messenger`, pointed at `http://backend:8083` by `d11a403` — **one of the MIDDLE TWO that commit moved, not one of four** (`BACKEND_USERS_RPC_ADDR` and `SKILLER_RPC_ADDR` already held that value at `d11a403^`) — and removed outright with the messenger block at `838d907`. **The M23 content cutover does NOT ride on a `cms` container.** `backend` is the in-process Directus reader (`app/cms_reader_switch.go`; `app/main.go:980-982` @ `app` `b948604` v1.366.0 `log.Fatalf`s without `DIRECTUS_BASE_ADDR`), so re-pointing `cms` alone leaves `backend` reading prod — measured live on `demo-1` at M257x iter-24 as 96 Directus log lines, all 403. rext therefore sets `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")` in both twins. No jobsimulation env change is needed, but the cutover must include `backend`.
-* **Sentinel** — authz
+* **Sentinel** — authz. Also **in-process** since the v11.0 fold (`766df6c`, the 8th merge): the Casbin PDP is `app/internal/sentinel/`, wired once at `app/main.go:305`, and `766df6c` removed the `sentinel` container, so this is not a service hop either. The policy tables stay in the `sentinel` schema
 * **Storage** — file uploads, recordings. Also **in-process** since the v9.0 fold: `app` owns the object-storage managers itself, and `838d907` removed the `storage` container, so this is not a service hop either
 * **Skiller RPC surface** — skill metadata; served by **Backend (app)** since the skiller→app merge (July 2026), and reached in-process. `SKILLER_RPC_ADDR` is set by no compose file: the last block to carry it was `messenger`'s, deleted at `838d907`
 * **Roadrunner** — **ORPHANED, no longer called** (v2.7 M247). Code execution moved **in-process into jobsimulation** (`internal/runner/runner.go`, an in-process Judge0 client — its header reads *"formerly the standalone 'roadrunner' service"*); `ROADRUNNER_RPC_ADDR` is dead config. See [`roadrunner.md`](roadrunner.md).

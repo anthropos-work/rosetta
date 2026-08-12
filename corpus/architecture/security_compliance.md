@@ -21,8 +21,11 @@ Key guarantees:
 - **VPC CIDR**: 10.0.0.0/16 with Multi-AZ deployment
 - **Public subnets**: Application Load Balancer (ALB). ⚠️ **The Cosmo Router was listed here until M257x
   iter-115 and the only readable evidence contradicts it.** Re-derived across **all eight** service terraform
-  trees in the clone set (`app`, `sentinel`, `graphql-wundergraph`, `messenger`, `cms`, `roadrunner`,
-  `storage`, `jobsimulation`): the token `public_subnet` occurs **0 times**, and **every one of the eight**
+  trees **then in the clone set** (`app`, `sentinel`, `graphql-wundergraph`, `messenger`, `cms`, `roadrunner`,
+  `storage`, `jobsimulation` — ⚠️ **`sentinel` left the clone set at platform `766df6c`**, v11.0, which folded
+  it into `app` and deleted its `repos.yml` entry; the tree was read when it was still cloned and the reading
+  is unaffected, but seven of the eight are now frozen repos rather than a live clone set):
+  the token `public_subnet` occurs **0 times**, and **every one of the eight**
   passes `private_subnets_ids = var.platform_private_subnets_ids` — the router at
   `graphql-wundergraph@60c229f3:terraform/main.tf:31`, with **no public-subnet argument of any kind**. The
   router uses the same `base_service` module as `app` (`:11`) and `app` passes the same private ids, so these

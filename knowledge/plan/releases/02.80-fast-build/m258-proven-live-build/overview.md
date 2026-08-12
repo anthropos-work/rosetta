@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M258
 title: "proven-live build (the closer)"
-status: planned
+status: archived
 release: v2.8 "fast build"
 exit_gate: "One cold command brings the stack up AND drives the full Playthrough batch to completion with ZERO standing red, at total p50 <= 480 s across 3 consecutive cold reset-to-seed cycles, reproducible, 0 platform-repo edits, AND the stack is left in a presenter-usable world (the world contract — see overview). The gate text names the host topology answered by M255 spike (e): a --public-host demo CANNOT be browsed from its own host (docker-proxy binds 0.0.0.0, bypassing tailscale serve), and --public-host is default-on, so 'one cold command on billion' may need a peer or --no-public-host. NOTE 480 s is a sum of two ceilings (360 + 200) and is reachable only if M257 lands nearer its ~240-300 s estimate, spending part of its ~93-158 s of unspent levers. Batch-gate semantics (D-v28-3): the suite always runs to completion — never halts at first red, never retries to mask a flake — and emits ONE consolidated red set at batch end; a non-empty set escalates to the user for renegotiation. The stack is left UP regardless; the bring-up exits non-zero and says so loudly."
 iteration_protocol_ref: corpus/ops/verification.md
@@ -11,12 +11,12 @@ depends_on: [M256, M257]
 parallel_with: []
 complexity: medium
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-08-12
 ---
 
 # M258 — proven-live build  (`iterative`, the closer)
 
-**Status:** `planned` · **Shape:** `iterative` (the closer) · **Complexity:** medium · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-08-12) · **Shape:** `iterative` (the closer) · **Complexity:** medium · **Release:** v2.8 "fast build"
 **Depends on:** M256, M257
 
 > **Revised 2026-07-27** after the adversarial plan review, which found the gate **passable while shipping a

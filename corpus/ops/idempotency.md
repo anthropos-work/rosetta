@@ -57,6 +57,37 @@ There are two correct ways to re-run a bring-up step. M17 makes the tooling supp
 `stackseed --reset` is the **middle ground**: it truncates the seeded tables (per-stack only) so a
 re-seed lands on an empty surface, without tearing the whole stack down.
 
+### ⚠️ Since v2.8 M258 a bring-up is itself DESTRUCTIVE-then-RESTORATIVE
+
+The two models above describe a re-run as something an operator chooses. **The bring-up now performs one
+on its own**, and that is a material change to this doc's contract, so it is stated here rather than left
+to be discovered.
+
+A `/demo-up N` that gates itself (i.e. `--no-public-host`, with the stories world and UI tier on) ends in
+the **Playthrough batch gate**, which runs `run-playthroughs.sh --reset` — the *real* reset, a full
+FK-ordered `TRUNCATE` bottoming out at `public.{organizations,users,memberships}` **with no
+`organization_id` predicate** — and re-seeds `pt-world.seed.yaml`. So model 3 fires inside model 1.
+
+What makes that safe rather than a footgun is the **restore leg** the gate always runs afterwards, on
+every path where the reset ran — including a red one, because a red batch must not *also* cost the
+presenter the demo world. It is **reset-then-seed, never additive** (an additive re-seed over `pt-world`
+leaves every test row in place — the M42e green-but-wrong trap, and forbidden as a reset), and it restores
+all three layers of the world: the DB, the Clerkenstein identities, and the cockpit's advertised menu —
+then **cross-checks the last two against each other**, because each layer reporting its own success is
+exactly the state in which the original defect shipped.
+
+Two properties worth carrying into any re-run reasoning here:
+
+- **The taxonomy is not repaid.** No catalog table is in `resetTables`, so the snapshot-replayed taxonomy
+  survives the reset and the ~78 s replay is not re-run. The measured restore leg is ~7 s, not the 20–45 s
+  originally assumed.
+- **A stack whose stories world is OFF is not put through this at all.** The gate skips (recording
+  `verdict: skipped`, never `green`) rather than TRUNCATing a `small-200` world and re-seeding stories
+  over it — which is precisely what it did until the M258 close on any box where an earlier stories
+  bring-up had left `$STACK/bin/stackseed` behind, since `--purge` does not clear the stack dir.
+
+Full contract: [`verification.md`](verification.md) § the Playthrough batch gate.
+
 ## For engineers
 
 ### migrate — SAFE, plus the first-run-race hardening (ISSUE-7 + M17)
@@ -74,6 +105,12 @@ leaving an empty `casbin_rules` and a blanket-403 stack (ISSUE-7). M17 closes th
   + `wait_sentinel_running` (`docker inspect`) — runs *before* the first `docker exec psql`, so postgres is
   accepting connections and sentinel has a window to create `casbin_rules` itself. A timeout logs a WARN and
   proceeds (the reactive guard still recovers), so the wait only ever *removes* flakiness.
+  > ⚠️ **The proactive half no longer occurs, and this said it did until the M258 close.** Since platform
+  > `766df6c` (v11.0) `sentinel` is folded into `app` and **there is no sentinel container**, so
+  > `wait_sentinel_running` — the call is still there — always runs out its bound to the WARN, and the
+  > **reactive `init_policy.sql` guard is the only path that creates `casbin_rules`**. That is exactly why
+  > the reactive guard was retained rather than replaced, so the outcome is unchanged and the *reason* it
+  > holds is not the one written here. Every bring-up now pays the wait's full timeout for nothing.
 - **The schema-create step** is `|| log`-guarded too: `ON_ERROR_STOP=0` makes psql continue past a failing
   statement internally, but the psql *process* still exits non-zero — which under `set -e` would abort the
   script (e.g. an unavailable extension). The schemas are the must-haves; a missing extension is non-fatal.

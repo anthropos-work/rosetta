@@ -763,7 +763,7 @@ right after the `UP.` line, so a single cold command brings the stack up **and p
 it** — the ambition being that this is the *normal* way to bring a stack up, not a ceremony reserved for
 a release gate.
 
-The batch-gate contract (`D-v28-3`) and its three fail-closed ledger rules are documented once, in
+The batch-gate contract (`D-v28-3`) and its **four** fail-closed ledger rules are documented once, in
 [`../verification.md`](../verification.md) § *The layer ABOVE autoverify* — read it there rather than
 here. What matters at **this** layer is what the gate does to the world the suite runs in:
 
@@ -772,10 +772,20 @@ here. What matters at **this** layer is what the gate does to the world the suit
 - **The reset that this suite needs is destructive to the presenter demo**, and the gate therefore owns
   the restore leg: `restore-presenter-world.sh` puts the stories world, the Clerkenstein roster and the
   cockpit/content manifests back, on **every** path where the reset ran — a red batch must not *also*
-  cost the presenter the demo world.
-- **The batch is skipped on a `--public-host` stack** and recorded as `skipped`, never `green`, because
-  such a demo cannot be browsed from its own host. Since `--public-host` is default-on, a bare
-  `/demo-up N` skips and `/demo-up N --no-public-host` gates.
+  cost the presenter the demo world. It ends in a **post-condition** that cross-checks the restored menu
+  against the identities that can serve it (`check-cockpit-roster.py`), because each layer reporting its
+  own success is exactly the state in which the original defect shipped: a stories roster beside a
+  pt-world menu, every export `ok`, exit 0.
+- **The restore's preset comes from the clone that OWNS the live stack**, and `DEMO_STORIES_PRESET` wins
+  over the default — so a bare `restore-presenter-world.sh N` restores what the bring-up actually seeded.
+  This is the one substitution the post-condition **cannot** catch, since the roster and the menu are both
+  exported from the same preset and a wrong one yields a wrong-but-self-consistent pair.
+- **The batch is skipped, and recorded as `skipped` (never `green`), wherever a documented knob removes
+  something it needs.** On a `--public-host` stack, because such a demo cannot be browsed from its own
+  host — and since `--public-host` is default-on, a bare `/demo-up N` skips while `/demo-up N
+  --no-public-host` gates. **Also on `DEMO_NO_STORIES=1` / `DEMO_STORIES=0`** (no heroes, no cockpit, and
+  no per-stack `stackseed`) **and on `DEMO_NO_UI=1`** (no browser surface at all). Running on either is
+  not a measurement: it is an error, or 30 false REDs describing the operator's own configuration.
 
 ## The lifecycle — reset-to-seed + the serial-default runner
 

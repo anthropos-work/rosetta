@@ -1,10 +1,25 @@
-# Bring-up Verification — the auto-verify safety net
+# Bring-up Verification — the auto-verify safety net, and the batch gate above it
 
-**The authoritative statement of how a stack proves itself *working* — not just *started*.** Every
-bring-up now ends with an automatic, scoped, **non-fatal** verification pass: a couple of decisive
-cheap-win asserts followed by the full black-box probe set, targeted at the stack's **own offset ports**
-and scoped to the **services actually brought up**. So when a bring-up says "UP", it means
-*verified-working* — not merely *containers-started*.
+**The authoritative statement of how a stack proves itself *working* — not just *started*.** A bring-up
+now ends in **two** layers, and they have deliberately opposite failure semantics:
+
+1. **`autoverify` — scoped, and NON-FATAL.** A couple of decisive cheap-win asserts followed by the full
+   black-box probe set, targeted at the stack's **own offset ports** and scoped to the **services
+   actually brought up**. It proves the stack is *reachable and healthy*. A verify bug never blocks a
+   good stack.
+2. **The Playthrough batch gate (v2.8 M258) — and it is LOUD, not silent.** It drives every seeded
+   hero's journey to completion and emits one consolidated red set; a non-empty set makes the bring-up
+   **exit non-zero**. It proves the stack is *functionally correct*. The stack is still left **UP**
+   regardless — clause 5 — but the shell gets a truthful exit code. § [The layer ABOVE
+   autoverify](#the-layer-above-autoverify--the-playthrough-batch-gate-v28-m258) is the contract.
+
+So "UP" no longer means *containers-started*, and no longer only means *verified-reachable*: it means
+**"UP, and every journey verified."**
+
+> ⚠️ **This lead said the bring-up ends in a non-fatal pass, full stop, until the M258 close.** The M258
+> section was appended without touching it, so a reader who stopped at the top of this file got the
+> pre-M258 model of the very thing the file is authoritative for. Three sibling indexes said the same
+> and are corrected with it: `CLAUDE.md`, [`README.md`](README.md), [`rosetta_demo.md`](rosetta_demo.md).
 
 > **Scope.** This doc covers the **v1.3b "dress rehearsal" / M18** verification net across the
 > `rosetta-extensions` stack tooling: the offset/project/scope awareness added to `stack-verify`, the
@@ -63,8 +78,23 @@ an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `d
 Everything above this line proves the stack is **reachable and healthy**. It cannot tell you whether a
 seeded hero can actually *play her journey* — a stack can pass every probe and still be functionally
 broken. So the bring-up now ends in a second, higher gate:
-`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2839` immediately after the `UP.` line.
-After it, **"UP" means "UP, and every journey verified"**.
+`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2903` immediately after the `UP.` line
+(`:2867`). After it, **"UP" means "UP, and every journey verified"**.
+
+> ⚠️ **This cited `up-injected.sh:2839` until the M258 close, and that line is neither the hook nor even
+> after the banner** — it is `verify_svcs="$verify_svcs $_u_probeable"`, inside the *autoverify* scope
+> union, **before** `UP.` prints. [`demo-up-defaults.md`](demo/demo-up-defaults.md) cited the guard
+> correctly all along, so the release's two M258 docs disagreed with each other about where its central
+> deliverable lives.
+
+**The hook decides nothing.** It invokes unconditionally and carries the exit code; every skip belongs
+to `batch-gate.sh`. That is not tidiness — the gate is what WRITES `$STACK/batch-gate.json`, and its
+invariant is that *a bring-up which produced no verdict must still leave a record saying so*. While the
+hook re-implemented the `DEMO_NO_BATCH` arm and short-circuited the call, an opted-out bring-up wrote
+nothing, and since `--purge` does not clear the stack dir the **previous** run's verdict survived to be
+read as this one's — a stale `verdict: green · red_count: 0` is byte-identical to a live one apart from
+its `ts`. The only condition the hook still tests is that the gate file *exists*, because an older
+`rosetta-extensions` pin predates it.
 
 **The contract is `D-v28-3`, and every clause is load-bearing:**
 
@@ -97,6 +127,23 @@ So on such a stack the gate skips, loudly, and records `verdict: skipped` — wh
 `--public-host` is default-on (`D-DESIGN-3`), **a bare `/demo-up N` skips the batch; `/demo-up N
 --no-public-host` gates it in one command.**
 
+### …and on any knob that takes away what it needs (M258 close)
+
+The same reasoning generalises, and it was missed for two knobs that were already documented opt-outs.
+**The rule, stated once: the gate skips wherever a documented knob removes something it needs, and it
+records `skipped` — never `green`, and never a red that describes the operator's own configuration.**
+
+| knob | what it removes | what the gate did before |
+|---|---|---|
+| `DEMO_NO_STORIES=1` / `DEMO_STORIES=0` | the heroes, the cockpit the Playthroughs log in through, **and** the per-stack `bin/stackseed` (built only on the stories path) | the reset arm exited 2, the restore exited 2, and the gate reported **ERROR rc=3 on a bring-up that was fine** |
+| `DEMO_NO_UI=1` | next-web + studio-desk + hiring — every browser surface | all 30 journeys RED against frontends the stack does not run: the same false-RED factory, other door |
+
+⚠️ **The stories case had a second, worse mode, and it is the reason this is a skip rather than a nicer
+error.** `$STACK/bin/` survives `--purge`, so on a box where an *earlier* stories bring-up left the
+binary behind, the reset **runs**: it TRUNCATEs the small-200 world the operator asked for and re-seeds
+`stories.seed.yaml` over it. That is the silent world-swap the restore leg exists to prevent, **caused by
+the restore leg**, on a stack whose operator opted out of stories in the first place.
+
 ### THE WORLD CONTRACT — why a batch gate needs a restore leg to be honest
 
 `run-playthroughs.sh --reset` is the *real* reset: a full FK-ordered `TRUNCATE` bottoming out at
@@ -125,9 +172,44 @@ it restores all three layers, because **the world is DB + identities + the cockp
 A failed restore is an **error**, not a green: the stack is UP but **not presenter-usable**, and the gate
 says so and names the recovery command.
 
-### Fail-closed on the ledger — three ways a batch can look green without having run
+#### The post-condition: the three `ok`s are cross-checked against each other
 
-All three are asserted by controls in `playthroughs/manifest/batch_gate_test.go`, which executes the real
+Each of those three layers reports its own success, and **that is not enough** — the incident that proves
+it is this milestone's own. Every export said `ok`, but the cockpit manifest had been written to a
+**second, stale `stacks/demo-N/`** belonging to the other `rosetta-extensions` clone. The live pair was
+therefore a 35-identity **stories roster beside an 11-seat pt-world menu**, and the restore exited 0
+announcing *"presenter world restored"*. No step-level check can see that, because no step did anything
+wrong *in isolation*.
+
+So the restore ends in `playthroughs/e2e/check-cockpit-roster.py`, which reads the **files on disk**
+rather than trusting the exports that produced them, and asks the one question that matters afterwards:
+**can every seat the cockpit advertises actually be logged into?** An orphaned seat is severe rather than
+cosmetic — the fake FAPI **signs an unknown identity in anyway, as whoever was last active**, so the
+failure is a silent WRONG login, not a broken button. An **empty** menu fails too: *"0 orphans out of 0
+seats"* is the absence of a cockpit wearing a healthy one's clothing.
+
+Three things the M258 close had to add for that verdict to be trustworthy, each of which had made it
+un-trustworthy in a different direction:
+
+- **The preset comes from the clone that OWNS the live stack**, never from whichever clone the script
+  sits in (and `DEMO_STORIES_PRESET` wins over both, so a bare invocation restores what the bring-up
+  actually seeded). **The post-condition is structurally blind to this one** — the roster and the menu are
+  both exported from the same preset, seconds apart, so a wrong preset yields a wrong but
+  *self-consistent* pair that passes. It is the single substitution a cross-check cannot catch, so it is
+  prevented at the source instead.
+- **"Docker could not answer" is not "this demo has no cockpit."** Both used to read as an empty roster
+  path, and *three* decisions keyed off that one emptiness: the stack dir fell back to the script's own
+  clone, the roster leg was skipped, and **the post-condition that would have caught the first was
+  disabled by the same condition** — then the restore exited 0. The verifier was switched off by exactly
+  the circumstance that made verification necessary. An unresolvable stack now **fails**, loudly.
+- **A malformed artifact is a diagnosis, not a traceback.** The roster is written by Go, and a nil slice
+  marshals as `null`, not `[]` — which raised `TypeError` *before* the empty-menu rule could fire, so the
+  severe verdict ("zero identities against N seats — every seat is a silent wrong login") was replaced by
+  a stack trace, identically on every re-run.
+
+### Fail-closed on the ledger — four ways a batch can look green without having run
+
+All four are asserted by controls in `playthroughs/manifest/batch_gate_test.go`, which executes the real
 script against a mirrored temp tree:
 
 - **A stale report.** `last-report.json` is written by ptreport *after* the suite. If the runner dies
@@ -140,6 +222,17 @@ script against a mirrored temp tree:
 - **A non-zero runner with an empty red set.** The runner exits non-zero when a Playthrough fails (the
   normal red path) *and* when it refuses to run at all. **"The suite failed and nothing is failing" is not
   a green.**
+- **A crash in the reader that decides all of the above** (added at the M258 close, and the sharpest of
+  the four). The verdict is graded on what the red-set reader **prints**: no RED lines and no ERROR lines
+  meant "red set empty", i.e. GREEN. An unhandled exception prints nothing — so **any** crash in the
+  reader was a green. Not hypothetical: ptreport builds its results as a Go slice that is `nil` when
+  nothing reconciles, and **Go marshals a nil slice as `null`, not `[]`**, so the real empty-ledger
+  payload made the reader raise `TypeError` — *two lines before the empty-ledger rule written for it*.
+  Every fixture had hand-written `[]`, the one shape the producer never emits, which is exactly why the
+  hole survived a full harden. Closed three ways at once, because one layer is not enough for a
+  fail-open on the central claim: the whole body is inside the try, the fields are normalised, and the
+  reader must print a terminating **`END` sentinel that the shell requires** — so *"produced no output"*
+  can never again be spelled the same way as *"produced an empty red set"*.
 
 ## The offset/scope model (why it targets the *right* ports)
 

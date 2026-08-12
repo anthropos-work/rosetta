@@ -877,7 +877,10 @@ Rules, in order of how often they actually catch something:
     **three containers**: Postgres answers, `docker ps` is non-empty, and the application is simply
     absent. The corpus had recorded this as *"starts zero containers"* — "zero"
     would at least be unambiguous; **three** presents as a partially-working stack and sends the reader
-    debugging the application instead of the invocation.
+    debugging the application instead of the invocation. ⚠️ **The floor is TWO since `766df6c`** (v11.0,
+    2026-08-11), which folded `sentinel` into `app` and deleted its compose service — the `0dab54d`
+    reading above is kept because it is the measurement the lesson was derived from, and the lesson is
+    unchanged: two containers present exactly the same way three did.
 
     Two corollaries, both learned the same afternoon:
 

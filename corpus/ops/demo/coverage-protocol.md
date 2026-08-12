@@ -509,13 +509,21 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page gated by a **missing entitlement/policy row** → `stack-seeding` (seed it); an empty page
   filled only by a **runtime server computation** (a sim/skill-path RESULT keyed by sessionId) → crawl-scope.
   Re-instating a skip on a seedable failure is a dishonest scope-out (the gate-honesty failure mode).
-- **A casbin/policy seed applied to a LIVE stack needs a Sentinel policy RELOAD before it takes effect (M42e
-  iter-09 lesson).** Sentinel's Casbin enforcer calls `LoadPolicy()` **once at startup** with **no watcher** —
-  a raw INSERT into `casbin_rules` (the seeder's path) is invisible to the running in-memory enforcer until it
-  reloads. On a fresh `/demo-up` the seed precedes Sentinel start, so this never bites; it bites only a
+- **A casbin/policy seed applied to a LIVE stack needs a Casbin policy RELOAD before it takes effect (M42e
+  iter-09 lesson).** The Casbin enforcer calls `LoadPolicy()` **once at startup** — a raw INSERT into
+  `casbin_rules` (the seeder's path) is invisible to the running in-memory enforcer until it
+  reloads. On a fresh `/demo-up` the seed precedes the PDP's start, so this never bites; it bites only a
   **re-seed of a running stack** (a Phase C re-apply of a casbin-touching seeder). Re-apply step: **restart the
-  demo's `<demo>-sentinel-1` container** (re-runs `LoadPolicy()` on startup) — or call the `Reload` RPC. The
+  demo's `<demo>-backend-1` container** (re-runs `LoadPolicy()` on startup). The
   app's 1-min in-process feature cache also expires on its own. Demo-local container op, zero platform edit.
+  > ⚠️ **This step said *"restart the demo's `<demo>-sentinel-1` container … or call the `Reload` RPC"* until
+  > M258 iter-18, and both halves are now dead.** Platform **`766df6c`** (v11.0) folded the PDP into `app` as
+  > `app/internal/sentinel/` and deleted the `sentinel` compose service, so there is no `<demo>-sentinel-1`
+  > container to restart; `app` deleted its Connect-RPC listener in the same release (`app/main.go:1310`,
+  > *"NO RPC SERVER"*), so there is no `Reload` RPC to call either. The enforcer now lives in the `backend`
+  > process — restart **that**. The *"no watcher"* premise also changed: cross-replica invalidation is Redis
+  > **Pub/Sub** on channel `sentinel:policy:invalidate` (`app/internal/sentinel/watcher.go:55`), so publishing
+  > to that channel is the no-bounce alternative. A single-replica demo still reloads fine on restart.
 - **Some pages render their real content OUTSIDE `<main>` — fall back to `<body>` innerText when `<main>` is
   below the floor (M42e iter-09 lesson).** The sim `/start` launch UI (`AISimulationStartWithoutSession`) mounts
   a sibling region with an EMPTY `<main>` while the visible launch content (~625 chars) lives in `<body>`. A

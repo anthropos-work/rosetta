@@ -431,6 +431,22 @@ make L1 look better than it is, and the arithmetic that predicted the win (~132.
 legs) is reported beside the realized 141.63 s rather than merged into it. The images went **4.04 GB → 417 MB**
 (next-web) and **3.94 GB → 380 MB** (hiring); `exporting to image` went **136.4 s → 3.8 s** combined.
 
+**studio-desk, the third UI image, followed at v2.8 M258 (`TIK-A`) — and its result refutes L1's premise
+rather than repeating it.** An rext-owned multi-stage `frontend/studio-desk.Dockerfile` (prune-and-copy,
+build shape 3; zero platform-repo edits) took it **1.7 GB → 1.35 GB — 350 MB per stack, 20.6 %**. That is
+roughly **one third** of what was predicted, and the reason is the useful part: **838 MB of the 1.04 GB
+dependency layer survives `--omit=dev`**, because `@clerk/clerk-js` carries a crypto-wallet tree (`viem`
+68.2 · `@solana` 20.6 · `ox` 9.2 · `@base-org` 8.2 MB) plus React-Native/Hermes as **runtime** deps. So
+**studio-desk's image is dominated by PRODUCTION dependencies, not by the toolchain**, which was only
+~20 % of it — the opposite of next-web, where `next build` *emits* a standalone tree and the toolchain is
+the bulk.
+
+⚠️ **The TIME axis is WITHDRAWN, not claimed** (`D75`). The 7–10 s estimate came from applying the
+**5.73–8.05 s/GB measured on `billion` (x86_64/containerd)** to an **arm64/overlayfs** host — the exact
+cross-host error this document's opening rule exists to prevent — and the one cold attempt to settle it
+was a BuildKit cache hit (a 1.5 s export). **Only the 350 MB space win is measured.** The Dockerfile
+header cites this file for the s/GB derivation; this paragraph is that citation returned.
+
 **The ranking moved underneath the plan, which is the finding worth carrying forward.** With the UI tier
 collapsed, **`set_dress` is the largest phase at 28.6 %** — a lever (L5, the taxonomy replay) that the M257
 plan priced at ~30–50 s and ranked **fifth**, and which is also *the chief win on the `/dev-up` path* because

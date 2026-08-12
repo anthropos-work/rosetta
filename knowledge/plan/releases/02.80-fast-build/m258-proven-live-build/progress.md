@@ -30,6 +30,95 @@
 > **And the corpus now knows what the platform did** — iter-18 landed `sentinel`-in-app, the **8th**
 > merge, across 26 files and took the alignment fence from **17 findings to 0**.
 
+## M258: Gate Outcome Ledger (close, 2026-08-12)
+
+### Gate
+
+| | |
+|---|---|
+| **Target** | one cold command brings the stack up **and** drives the full Playthrough batch to completion with **zero standing red**, at **total p50 ≤ 480 s** over 3 consecutive cold reset-to-seed cycles, 0 platform-repo edits, stack left presenter-usable |
+| **Status** | **`closed-incomplete` — ACHIEVED BY USER RULING, NOT ON GATE** |
+| **Clauses 1, 2, 4, 5** | **PROVEN** — 1, 2 and 5 re-proven on the final stack in its own bring-up |
+| **Clause 3 (the only TIMING clause)** | **NOT MET. It must never be recorded as met.** |
+
+**Clause 3, stated without softening.** The **840.01 s** figure `[811.06–859.06]` stays
+**instrument-rejected** — 3/3 reps `headroom=FAIL` (peak `load1` 40.09 / 74.77 / 51.80 against a limit of
+10), and `buildbench` itself calls those *"not usable measurements"*. **401.60 s is a PROJECTION**, composed
+from separately-measured halves and never measured as one cycle. **No clean p50 over 3 cold cycles has ever
+been taken.** The user ruled the goal achieved on the other four clauses plus that projection, having
+concluded the CPU contention on this box is not removable — the shape of M257x's `TOK-09`.
+
+⚠️ **The last iter's refusal to bank a flattering ~290 s cycle stands, and is preserved here deliberately
+as the honest reading.** That cycle was **warm-cache** (`#7 CACHED …`, no image-export leg — the phase
+`build-budget.md` prices at **46.2 %** of a cold one) on the quietest box of the milestone (`load1`
+2.3–2.5). It was not offered as a clause-3 measurement then and is not now.
+
+**Re-scope trigger: NOT fired, and the grading is deliberate.** The declared trigger reads *a composed p50
+exceeding 600 s after 3 tiks*. 840 > 600 — but the reps are instrument-rejected, **and** the remedy it
+prescribes (split the suite into a smoke lane + a full lane) misses the diagnosis: `batch_gate`'s own p50 is
+**179.37 s**, inside M256's 200 s budget, *while contended*. The batch half is not what is slow.
+
+### End state — `END-M258-one-stack`: **MET**
+
+`demo-4` is the **only** stack up, built by the **fixed** tooling from the newest platform mains
+(`platform` `766df6c` · `app` `c52dbc51e`), and it **proved itself in the same command**: `red_set: []` ·
+`runner_exit: 0` · 30/31 passing (the 1 is the declared `will-not-build` TODO) · `autoverify green: true /
+warnings: 0` · **12 of 12 cockpit seats**. Cockpit `http://localhost:47700`. The mandatory order held —
+build-and-verify first, teardown last, enforced *in code*. ⚠️ **`demo-4` is the user's stack.**
+
+### The two user reshapes, both load-bearing
+
+1. **Goal achieved on clauses 1/2/4/5** (the ruling above).
+2. **Space optimisation added as a NEW GOAL** (`TOK-02`, user-directed), with the binding constraint
+   *space must not be bought with time*, plus the hard end state above. **Both delivered:** 11.54 GB of
+   real SSD reclaimed at **zero build-time cost**, with the 21.03 GB reclaimable build cache **deliberately
+   untouched** — the constraint honoured rather than quoted.
+
+### Iter ledger
+
+**20 iters — 18 tiks + 2 toks** (`TOK-01` bootstrap at iter-01; `TOK-02` bootstrap-flavor, **user-directed**,
+at iter-12). 15 `closed-fixed`, 5 `closed-fixed-partial`. **0 orphan iters, 0 orphan commits** — 24 commits
+map 1:1 to 20 iters + 4 harden-pass ledger entries. One `user-blocker` grading (iter-07), resolved *within*
+the milestone by automating the trigger rather than by asking the user — see `deferrals-audit.md`.
+
+**The 15-red escalation was CLOSED, not carried.** Attributed to our own tooling: platform `766df6c` folded
+**sentinel into `app`** — the 8th merge — while three of our post-seed reload sites still drove the deleted
+container's RPC and logged the miss as *"non-fatal"*, which was false. A stale casbin enforcer refuses
+**every** org-scoped read and write with `forbidden` at HTTP 200. **The partition was the proof**: 15
+failing journeys all org-scoped, 15 passing all user-scoped. `batch_seconds` **629 → 129** —
+**the suite was slow because it was broken.**
+
+### Hardening
+
+**5 passes, graded STABILIZED** — the milestone's first and only harden, cumulative over 20 iters. **Four
+defects in its own youngest code**, including a fence **satisfied by its own comment** (corrupting the
+executed channel while leaving the comment intact kept it GREEN) and two of three reload sites unfenced —
+one of them the **restore leg**, whose miss costs a *user* a stack rather than a test batch.
+
+### Routes carried forward
+
+**0 escape-hatch deferrals.** M258 is the release's final milestone, so there is no later in-release
+milestone to annotate: the open set routes to **`/developer-kit:close-release`** as **one conscious block
+fate, named item by item** (precedent: M257x). Full inventory, fates and reasons:
+[`deferrals-audit.md`](deferrals-audit.md) · [`carry-forward.md`](carry-forward.md).
+
+**Nine items landed at this close instead of routing** — including `FIX-M257-content-stories-pair-count`,
+a chronic carried from the M256 audit through M257, **whose inherited description this close REFUTED**: the
+sweep was never blocked.
+
+### Protocol evolution
+
+- **A hand-sampled trigger cannot catch a window shorter than its own interval.** iter-07 polled ~30 min at
+  ~2-minute granularity and correctly found no window; iter-08's 15 s auto-arm fired **91 s** after arming,
+  into a dip that lasted **75 s**.
+- **Never quote a fence count without its invocation and its ref.** A naive `rc==0` sweep of the guards
+  reads **5 green / 10 red on a healthy corpus** (five invocation contracts; three fail closed on a missing
+  platform reference). The correct reading is **18/18 `rc=0` against `766df6c`** — and this close proved the
+  trap on itself, twice, in its own runner.
+- **A code read is not a measurement** (`FIX-M257-content-stories-pair-count`, three iterations).
+- **A comment can break a fence that counts a phrase** — the sibling of this milestone's own *a fence can be
+  satisfied by its own comment*.
+
 ## Running ledger
 
 - iter-01 (**tok**, bootstrap): Phase 0b gate **YELLOW** — 0 blind areas, but **13 stale line anchors in
