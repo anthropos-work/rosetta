@@ -418,3 +418,25 @@ for every inherited M257x / M257 item. Not deferrals.
   **`FIX-M258-iter15-hiring-under-set-dressed` does NOT reproduce** (50 rows vs 38) → re-scoped to WATCH.
   Converged to one stack; **`demo-3` untouched throughout**. rext `fast-build-m258-iter-17` on origin. —
   see iter-17/progress.md
+- iter-18 (tik): **the 8th merge reaches the corpus, and the fence that watches it goes green.**
+  Platform `766df6c` folded **sentinel into `app`** (v11.0) and the corpus described a topology the
+  platform no longer had. `platform_alignment_guard`, run **directly** against the new `repos.yml`,
+  was **`rc=1` / 17 findings** — the `[B departure]` arm firing exactly as designed (*"the map claims
+  sentinel is in repos.yml, and it is not"*) plus **16 citation failures**, 8 of them the class a
+  reader cannot see: still inside the file, but inside **another service's block**. Now **`rc=0`**,
+  with **nine** other corpus fences green beside it, **three repaired rather than exempted**. Six
+  structural classes corrected across **26 files**: floor **3 → 2** (and it lives in the *included*
+  `common.yml`, not `docker-compose.yml`) · `core` **5 → 4** containers · `repos.yml` **4 → 3** ·
+  cross-process Connect-RPC edges **1 → 0** (`app` deleted its listener *and* `rpc.go`) · Go services
+  of ours **2 → 1** · folded domains **7 → 8**. Prod graded **`mid-fold`**, not `merged-into-app`
+  (`D88`) — the first fold of the eight where **the tables did not move to `public`**. Three findings
+  worth more than the sweep: **quoting a retracted citation RE-ARMS it** and can satisfy the
+  declared-cross-block escape, so the fence goes green over the very citations it retracts (`D90`,
+  caught live by two independent guards); **`make bootstrap-dev` is BROKEN** in the platform (`D92`,
+  reported, 0 platform edits); and **two published backend ports bind nothing while the live one is
+  unpublished** — measured on demo-3's own compose network (`D89`). The suite was attributed with a
+  **pristine `git archive HEAD` extract** (`D96`): **46 pre-existing / 47 post-edit → exactly ONE
+  introduced**, and it was a real regression of mine — a fence whose negative control **named**
+  `sentinel.md` as its live specimen and expired with it. Fixed by **deriving** the specimen from the
+  map, RED-proven with a mutant, tagged `fast-build-m258-iter-18` **on origin** (`D97`).
+  `END-M258-one-stack` is UNCHANGED and still owed on a correctly-built stack. — see iter-18/progress.md

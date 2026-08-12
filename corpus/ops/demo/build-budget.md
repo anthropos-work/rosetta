@@ -98,7 +98,7 @@ unattributed and every attribution in it is suspect.
 > ```
 >
 > **Widened once** (Rule 57): `grep -rn "BRINGUP_ANCHORS" .` across the whole rext tree returns exactly two
-> hits — the definition at `buildbench.py:117` and its single consumer at `:276`. There is no second anchor
+> hits — the definition at `buildbench.py:130` (`BRINGUP_ANCHORS`) and its single consumer at `:327`. There is no second anchor
 > list, so the number does not move. Three of the twelve are conditional (`ui_*` on the UI tier,
 > `serve_and_egress` on `--public-host`) and are reported as *not applicable* rather than missing when their
 > feature is off — a conditional phase is still a declared phase.

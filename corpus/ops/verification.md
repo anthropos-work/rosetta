@@ -20,8 +20,9 @@ and scoped to the **services actually brought up**. So when a bring-up says "UP"
 > repo is modified.**
 >
 > **In scope:** the backend services the **default** profile starts — `core` at platform `0c91421`
-> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis`/`sentinel` floor; the same five as at
-> `0dab54d` — `838d907` deleted three services, none of which `core` selected). **Out of scope:** the
+> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis` floor — **four** at platform
+> `766df6c`, which folded `sentinel` into `app` and deleted its service. It was **five** at `0c91421`
+> and `0dab54d`; `838d907` deleted three services, none of which `core` selected). **Out of scope:** the
 > frontend tier — the frontends don't exist in the stack yet; **M19** adds them and extends the verify
 > service list. Deep behavioural / e2e flows remain the operator-driven `/test-platform` job; this
 > auto-run is the always-on *smoke net*.

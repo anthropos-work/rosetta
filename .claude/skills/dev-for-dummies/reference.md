@@ -169,14 +169,21 @@ Clerk — serve HTTPS with the tailscale cert on the offset port, never `tailsca
 
 There are exactly **two** Go targets left: `app` (the monolith — it serves the **seven** cms, jobsimulation,
 skiller, skillpath, storage, messenger and customerio-sync domains in-process; `roadrunner` was listed here
-as an eighth until M257x iter-137 and was *deleted*, not merged) and `sentinel`. Everything
+as an eighth until M257x iter-137 and was *deleted*, not merged). ⚠️ **`sentinel` was named here as a
+second Go target until M258 iter-18 and is no longer one** — platform `766df6c` folded it into `app`
+(v11.0) and removed it from `repos.yml`, so `make init` does not even clone it. Everything
 else that used to be on this list is a domain inside `app`, not a target.
 
 This is the **harder, more caveated path** — be honest with the user. One real problem:
 
 1. **Infra endpoints are NOT in `.env`.** `platform/.env` has no `DB_CONNECTION`/`REDIS_ADDR`/
-   `AUTHORIZATION_ADDRESS` — those are injected per-service in `docker-compose.yml` and point at **Docker
-   service names** (`postgresql:5432`, `redis:6379`, `sentinel:8087`) a host process can't resolve. A native
+   `SENTINEL_DB_CONNECTION` — those are injected per-service in `docker-compose.yml` and point at **Docker
+   service names** (`postgresql:5432`, `redis:6379`) a host process can't resolve. ⚠️ **This bullet named
+   `AUTHORIZATION_ADDRESS` and `sentinel:8087` until M258 iter-18**; platform `766df6c` folded the PDP into
+   `app`, so that variable is set nowhere and read by nothing. **The variable that replaced it is
+   `SENTINEL_DB_CONNECTION` — and it is FATAL, not optional**: `app/main.go:305` opens the in-process PDP
+   with it and `log.Fatalf`s on failure, so a native `go run .` without it does not degrade, it **refuses
+   to boot**. A native
    `go run .` therefore reaches **nothing** unless you **rewrite** them to the demo's offset host ports.
 
 > **There is no second caveat any more — and the one that used to be here would send you hunting a ghost.**
@@ -202,25 +209,28 @@ ENVF="$(pwd)/.agentspace/dev-for-dummies/env-app-$N.sh"; mkdir -p "$(dirname "$E
   echo ". $(pwd)/$STACK/.env.demo-$N 2>/dev/null || true"
   echo "DB_CONNECTION='postgresql://postgres@localhost:$((5432+OFF))/postgres?sslmode=disable&search_path=public'"
   echo "REDIS_ADDR='localhost:$((6379+OFF))'"
-  echo "AUTHORIZATION_ADDRESS='http://localhost:$((8087+OFF))'"   # the only cross-process Connect-RPC address
+  echo "SENTINEL_DB_CONNECTION='postgresql://postgres@localhost:$((5432+OFF))/postgres?search_path=sentinel&sslmode=disable'"   # MANDATORY since v11.0 — app IS the PDP; missing => log.Fatalf at boot
   echo "GOTENBERG_URL='http://localhost:$((3200+OFF))'"           # a SECOND container app reaches, over plain HTTP
   echo "PORT=$((8082+OFF))"
   echo "set +a"; } > "$ENVF"
-#   (Confirm the exact var NAMES + search_path against docker-compose.yml's `environment:` block: backend →
-#    search_path=public, sentinel → search_path=sentinel.
+#   (Confirm the exact var NAMES + search_path against docker-compose.yml's `environment:` block: backend
+#    reaches BOTH schemas — DB_CONNECTION search_path=public and SENTINEL_DB_CONNECTION search_path=sentinel.
+#    There is no separate sentinel service to configure.
 #
 #    Two separate facts, do not merge them:
 #     - ZERO `*_RPC_ADDR` variables exist in any compose file at 0c91421 (verified: 0 hits). Do NOT set
 #       SKILLER_RPC_ADDR / CMS_RPC_ADDR / JOBSIMULATION_RPC_ADDR / STORAGE_RPC_ADDR — their last consumer was
 #       the `messenger` container, deleted at 838d907, and app resolves those domains in-process. Nothing
 #       reads them, and the ports they used to name have no listener.
-#     - AUTHORIZATION_ADDRESS is the only Connect-RPC address, but it is NOT the only service address, and
-#       backend->sentinel is NOT the only cross-process edge. The same block also sets GOTENBERG_URL
-#       (docker-compose.yml:57 — gotenberg is on the default `core` profile), JUDGE0_BASE_URL (:59),
-#       REDIS_ADDR (:66) and the two DSNs SUPABASE_DB_CONN / COPILOT_DB_CONN (:93-94). Miss GOTENBERG_URL
-#       and a native app boots fine but every Office-doc -> PDF conversion fails.)
+#     - There is NO Connect-RPC service address left at all since 766df6c (v11.0): AUTHORIZATION_ADDRESS
+#       occurs 0 times in docker-compose.yml / common.yml / repos.yml, and app deleted its own RPC
+#       listener (app/main.go:1310). Do NOT set it. The service addresses the backend block still sets are
+#       GOTENBERG_URL (docker-compose.yml:34 — gotenberg is on the default `core` profile), JUDGE0_BASE_URL
+#       (:36), REDIS_ADDR (:43) and the DSNs SUPABASE_DB_CONN / COPILOT_DB_CONN (:70-71) +
+#       SENTINEL_DB_CONNECTION (:25). Miss GOTENBERG_URL and a native app boots fine but every
+#       Office-doc -> PDF conversion fails; miss SENTINEL_DB_CONNECTION and it does not boot.)
 tmux new-session -d -s dfd-app-$N -c "$(pwd)/$WT" \
-  "bash -lc '. $ENVF; make setup && make gen && go run .'"   # sentinel: same shape, search_path=sentinel
+  "bash -lc '. $ENVF; make setup && make gen && go run .'"   # app is the only Go target since 766df6c
 ```
 
 ---

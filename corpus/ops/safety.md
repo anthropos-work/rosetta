@@ -348,6 +348,10 @@ fenced twice over:
   > `STORAGE_S3_PUBLIC_BUCKET=production-storage-public…` right now. The same run confirmed three
   > claims this corpus makes about that container — `AUTHORIZATION_ADDRESS=http://sentinel:8087`,
   > `GOTENBERG_URL=http://gotenberg:3200`, and **zero** `*_RPC_ADDR` variables.
+  > ⚠️ **The first of those three has since expired** (M258 iter-18): platform `766df6c` folded the
+  > Casbin PDP into `app` and deleted the `sentinel` service, so a container built after 2026-08-11
+  > carries **no `AUTHORIZATION_ADDRESS` at all**. The measurement above stands as a measurement of the
+  > stack it was taken on; it is not a standing fact about a fresh one.
 
   > **⚠️ THE STRIP TAKES EFFECT AT THE NEXT `/demo-up`, NOT ON A RUNNING DEMO — and this document said
   > "now overridden" without saying when.** The override is written by the emitter at bring-up; a demo

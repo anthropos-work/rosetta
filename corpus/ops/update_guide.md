@@ -93,7 +93,7 @@ cd stack-dev/platform
 
 ### Update All Repositories
 
-The `make pull` command updates the **4** repos defined in `repos.yml` — `app`, `sentinel`, `next-web-app`, `studio-desk` (`Makefile:31-45`). It automatically:
+The `make pull` command updates the **3** repos defined in `repos.yml` — `app`, `next-web-app`, `studio-desk`. ⚠️ **It named `sentinel` and said 4 until M258 iter-18**; platform `766df6c` folded it into `app` and removed the entry. It automatically:
 - Stashes dirty changes before pulling
 - Checks out main/master branch
 - Pulls with rebase

@@ -325,7 +325,7 @@ make gen           # regenerates GraphQL resolvers + Ent code
 cd platform
 make up                  # the `core` profile — `backend` (app) serves the cms domain in-process
 # There is NO cms profile and no cms container. Asking for one does NOT fail: it exits 0
-# and starts postgresql, redis and sentinel — a stack with no application in it.
+# and starts postgresql and redis — a stack with no application in it.
 ```
 
 ### Run natively (single service)

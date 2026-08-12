@@ -111,7 +111,7 @@ make up-frontend                 # builds Dockerfile.dev (web app only), serves 
 ```
 
 > ⚠️ **`make up PROFILE=frontend` on its own EXITS 1 — it builds nothing.** `next-web-app` declares
-> `depends_on: backend` (`docker-compose.yml:165-167`) and `backend` is `profiles: [core, backend, all]`
+> `depends_on: backend` (`docker-compose.yml:143-145`; re-resolved M258 iter-18 from lines 165-167, past the end of a 164-line file at `766df6c`) and `backend` is `profiles: [core, backend, all]`
 > (`:110`), which the `frontend` profile does not select — so compose rejects the whole project with
 > *"service `next-web-app` depends on undefined service `backend`: invalid compose project."* Use
 > `make up-frontend` (which adds `core`), or `make up PROFILE=all`.

@@ -87,7 +87,7 @@ before/after each step, request confirmation before installs or destructive ops,
    changed to derive rather than hardcode (M257x iter-02/iter-16) precisely so this could not drift again.
    See `corpus/ops/setup_guide.md` § Full Database Reset.
 4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the containers are healthy
-   via `make ps` — **expect 5 on the default `core` profile** (`postgresql`, `redis`, `sentinel`, `backend`,
+   via `make ps` — **expect 4 on the default `core` profile** (`postgresql`, `redis`, `backend`,
    `gotenberg`); **re-derive it rather than trusting memory**, and know that the long-quoted "11" is three
    merge waves stale. This is the merged platform with **one subgraph** (no `skiller`, `skillpath`, `cms`,
    `jobsimulation` or `roadrunner` subgraph). **GraphQL is `backend` itself on

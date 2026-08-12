@@ -182,12 +182,24 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 **Core Backend Services (Tier 1)**: Go microservices
 
-> **⚠️ `app` is the backend monolith.** Eight services below left compose — **SEVEN of them were folded
+> **⚠️ `app` is the backend monolith.** Nine services below left compose — **EIGHT of them were folded
 > into `app`** and run in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
 > ("skillpath-in-app", M502→M507), **jobsimulation** ("jobsim-in-app"),
 > **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph **3→1**), and —
 > since the v9.0 "support-in-app" program, whose containers platform `838d907` (merged `0c91421`,
-> 2026-08-05) deleted outright — **storage**, **messenger** and **customerio-sync**.
+> 2026-08-05) deleted outright — **storage**, **messenger** and **customerio-sync**,
+> **and — the 8th, at v11.0 — `sentinel`** (platform `766df6c`, 2026-08-11; code at
+> `app/internal/sentinel/`, ported from the standalone repo at tag **v0.24.2**, wired once at
+> `app/main.go:305` under *"There is no switch and no RPC path: app IS the PDP"*).
+> **⚠️ THE SENTINEL FOLD REACHED THIS FILE ONLY AT M258 iter-18, and it moves five things this file
+> states elsewhere:** `repos.yml` is **three** repos, the always-on floor is **two** (`postgresql`,
+> `redis` — both in the **included** `common.yml`, not in `docker-compose.yml` at all), `core` starts
+> **four** containers, `app` is the **only** Go service a local stack builds, and there is **no
+> cross-process Connect-RPC edge left at all** — `app` deleted its RPC listener with the fold
+> (`app/main.go:1310`, *"NO RPC SERVER"*). Unlike the seven before it, **the tables did NOT move to
+> `public`**: the policy set stays in its own `sentinel` schema
+> (`docker-compose.yml:25`, `SENTINEL_DB_CONNECTION` with `search_path=sentinel`), which is why the
+> fenced map grades prod **`mid-fold`** rather than `merged-into-app`.
 > **⚠️ `roadrunner` is the eighth and it was NOT folded — this banner listed it among the seven until
 > M257x iter-137.** `app/internal/roadrunner/` **exists at no ref and was never added** (`git log --all
 > --diff-filter=A -- internal/roadrunner` → **0 commits, ever**, in a full 6,728-ref clone at `app`
@@ -225,15 +237,17 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
   - **Judge0 code execution** — reached directly via `JUDGE0_BASE_URL`, wired **inside the jobsimulation
     domain** (`internal/jobsimwiring/wiring.go:123` → `internal/jobsimulation/runner`). **This line read
     *"roadrunner domain"* until M257x iter-137; there is no such package** (see the banner above)
-- Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
+- ~~Sentinel~~: **folded into `app` at v11.0** (platform `766df6c`). Authorization is still Casbin RBAC/ABAC and authentication is still Clerk + `colony/authn` — what changed is *where*: the PDP is `app/internal/sentinel/`, reached by an ordinary Go call, and there is **no `sentinel` container, no `repos.yml` entry and no `AUTHORIZATION_ADDRESS`** (0 occurrences across `docker-compose.yml`, `common.yml`, `repos.yml`). See `corpus/services/sentinel.md`
+- Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`). **Since `766df6c` this is the only non-`app` service block in `docker-compose.yml` that a `core` stack starts**
 
 > **⚠️ Storage, Messenger and CustomerIO-Sync are ALL FOLDED INTO `app`.** The v9.0 program landed
 > 2026-08-04 (platform `0dab54d` / `app` `9d00a313` v1.367.0); one day later `838d907` (PR #26,
 > *"drop the support-service containers"*) **deleted all three compose services outright** and took
-> `storage` + `messenger` out of `repos.yml`, so `make init` no longer clones them. `core` starts
-> **five** containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`,
-> `sentinel`). There is **no local `storage` / `messenger` / `customerio-sync` container at all** — not
+> `storage` + `messenger` out of `repos.yml`, so `make init` no longer clones them. ⚠️ **`core` starts
+> FOUR containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`).** This read
+> *"**five** … (`postgresql`, `redis`, `sentinel`)"* until M258 iter-18: `766df6c` deleted the `sentinel`
+> service too, and the floor is now the **two** services in the **included** `common.yml` — neither of
+> which appears in `docker-compose.yml` at all. There is **no local `storage` / `messenger` / `customerio-sync` container at all** — not
 > even a rollback path, which is how `storage-legacy` and `messenger` read for the two commits between
 > `0dab54d` (which introduced both tokens) and `838d907` (which removed both); the old *"dangerous to
 > run alongside `backend`"* warning (two writers on one bucket, two consumers on one Redis group) is moot
@@ -301,9 +315,11 @@ picture: `corpus/architecture/shared_libraries.md`.
 > never as a standing fact.
 >
 > Since the merges these libraries are imported by **app**, **sentinel**, **storage** and **messenger**
-> only — but the last two are frozen legacy repos since `838d907` (no compose service, not in
-> `repos.yml`), so only **app** and **sentinel** are still built. **`storage` is a supplier as well as a
-> consumer here, and the old wording hid that.** **`customerio-sync` is not in that
+> only — and **all three of the others are now frozen legacy**: `storage` + `messenger` since `838d907`,
+> and **`sentinel` since `766df6c`** (no compose service, not in `repos.yml`, `make init` does not clone
+> it), so **`app` is the only repo in this list a local stack still builds** — a sentence that named two
+> until M258 iter-18. **`storage` is a supplier as well as a consumer here, and the old wording hid
+> that.** **`customerio-sync` is not in that
 > measurement either way**: its repo has never been in the clone set, so nothing here has read its
 > `go.mod` — the same blind spot the `customerio-sync` row of
 > `corpus/architecture/platform-migration-status.md` records.
@@ -329,7 +345,7 @@ is right for Studio-Desk/Studio-Room and WRONG for Ant Academy** — see its row
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. **The only cross-process *Connect-RPC* edge left in a local stack is `backend → sentinel`** — `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`), and **zero `*_RPC_ADDR` variables anywhere**. **⚠️ It is NOT the only cross-process edge, and compose does NOT set exactly one service address** — both of those stronger forms stood here until M257x iter-102 and both are false. `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the **default `core` profile**, `:183` `profiles: [core, backend, all]`; consumed at `app/internal/converter/gotenberg.go:31`, a plain `http.NewRequestWithContext(…"POST"…)`, not RPC), and reaches Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The qualified wording at `corpus/architecture/architecture_overview.md:343` is the model. The `messenger → backend` edge was not re-pointed, it is *gone*: the `messenger` block was the only thing that set `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` (`d11a403` had re-pointed the middle two at `backend` — M809), and `838d907` deleted the service and all four with it. **backend → storage is no longer mid-fold either** — `STORAGE_RPC_ADDR` is set nowhere *and* read nowhere; `app` serves object storage in-process and says so at `app/main.go:504` **@ `2035f9a4`** (**state that ref** — this sentence also cites `b948604f` below, and at `b948604f` line 504 is an unrelated jobsim-in-app comment; `2035f9a4` was origin/main on 2026-08-06, origin/main was `ad9f3c49` when this was written — it is **`3eaadae6`** as of 2026-08-09, and `ad9f3c49` is **28 commits behind** it (corrected M257x iter-228; the observability and shared-libraries docs both already recorded the newer ref, so this file disagreed with the corpus, not just with the platform), and `:504` is identical there). **`app` is both producer and consumer of FIVE streams**, not three — `backend`, `skillpath`, `jobsimulation`, `cms` and the `ai_usage` usage stream. *(This line named only the middle three until M257x iter-102; it omitted `backend` itself while asserting exhaustiveness.)* Watch the partition when quoting a number: **four** is the application-stream subtotal, **five** the both-ways total, **six** the subscriber count. **`skiller` is the exception and the sixth subscriber:** `app` subscribes to it (`app/main.go:1276` @ `b948604f`) but nothing publishes to it — the producer was the standalone skiller service and was **deleted, not re-hosted**. Full enumeration with both refs: `corpus/services/backend.md`
+- **Core Services ↔ Core Services**: Redis Streams (via Watermill) for async messaging — and, since v11.0, **NO cross-process Connect-RPC at all**. ⚠️ **This line read *“the only cross-process Connect-RPC edge left in a local stack is `backend → sentinel`”* until M258 iter-18. That edge is GONE, not re-pointed:** platform `766df6c` deleted the `sentinel` service, `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`, `common.yml` and `repos.yml`, and `app` deleted its Connect-RPC listener with it (`app/main.go:1310`, *“NO RPC SERVER”* — the port-8081 mux that carried Users / Organizations / Skiller / JobSimulation / CMS / lab). Authorization is now an ordinary in-process Go call into `app/internal/sentinel/`, and cross-replica policy invalidation is **Redis Pub/Sub fan-out** on `sentinel:policy:invalidate` (`app/internal/sentinel/watcher.go:55`) — deliberately not the Watermill consumer-group plumbing, which delivers to exactly one consumer. **Zero `*_RPC_ADDR` variables anywhere.** **⚠️ “No RPC edge” still does NOT mean “no cross-process edge”** — that stronger form stood here until M257x iter-102 and is false. `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:34`; `gotenberg` is in the **default `core` profile**, `:161` `profiles: [core, backend, all]`; consumed at `app/internal/converter/gotenberg.go:31`, a plain `http.NewRequestWithContext(…"POST"…)`, not RPC), and reaches Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:36`). **All three re-resolved at M258 iter-18** — they read 57 / 183 / 59, correct at `0c91421` and past the end of a 164-line file at `766df6c`. The qualified wording at `corpus/architecture/architecture_overview.md:343` is the model. The `messenger → backend` edge was not re-pointed, it is *gone*: the `messenger` block was the only thing that set `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` (`d11a403` had re-pointed the middle two at `backend` — M809), and `838d907` deleted the service and all four with it. **backend → storage is no longer mid-fold either** — `STORAGE_RPC_ADDR` is set nowhere *and* read nowhere; `app` serves object storage in-process and says so at `app/main.go:504` **@ `2035f9a4`** (**state that ref** — this sentence also cites `b948604f` below, and at `b948604f` line 504 is an unrelated jobsim-in-app comment; `2035f9a4` was origin/main on 2026-08-06, origin/main was `ad9f3c49` when this was written — it is **`3eaadae6`** as of 2026-08-09, and `ad9f3c49` is **28 commits behind** it (corrected M257x iter-228; the observability and shared-libraries docs both already recorded the newer ref, so this file disagreed with the corpus, not just with the platform), and `:504` is identical there). **`app` is both producer and consumer of FIVE streams**, not three — `backend`, `skillpath`, `jobsimulation`, `cms` and the `ai_usage` usage stream. *(This line named only the middle three until M257x iter-102; it omitted `backend` itself while asserting exhaustiveness.)* Watch the partition when quoting a number: **four** is the application-stream subtotal, **five** the both-ways total, **six** the subscriber count. **`skiller` is the exception and the sixth subscriber:** `app` subscribes to it (`app/main.go:1276` @ `b948604f`) but nothing publishes to it — the producer was the standalone skiller service and was **deleted, not re-hosted**. Full enumeration with both refs: `corpus/services/backend.md`
 - **Frontend/Studio → Backend**: GraphQL **straight to `backend`** at `:8082/graphql/query` — the Cosmo router was deleted at platform `2adcf71`, so there is no gateway hop and no federation
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: vendor selection implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library. **Not a fallback ladder** (`corpus/architecture/external_services.md:579`): an EU Azure client by DEFAULT, a US Azure client swapped in by the PostHog flag `flag_use_azure_us`, and direct-OpenAI as the RETRY target on HTTP 429 — three independent levers, not three ordered rungs; Anthropic always Bedrock `eu-west-1`, except Course Builder's `ANTHROPIC_API_KEY` path to `api.anthropic.com`. Cost tracking in `app/internal/aiusage`
@@ -368,7 +384,7 @@ The `platform` repository provides a Makefile as the single entry point for all 
 ```bash
 # First-time setup
 cd stack-dev/platform
-make init              # Clone the 4 repos in repos.yml: app, sentinel, next-web-app, studio-desk
+make init              # Clone the 3 repos in repos.yml: app, next-web-app, studio-desk
 make up                # Build from local code and start (core profile — the default)
 make migrate           # Apply all database migrations
 
@@ -387,9 +403,12 @@ Docker Compose profiles control which services start:
 
 > **⚠️ `graphql` is no longer a profile, and asking for it does NOT fail.** Platform `0dab54d`
 > (*"rename graphql -> core"*) renamed the profile and dropped the standalone storage; the `Makefile`
-> now reads `PROFILE ?= core`. **`postgresql`, `redis` and `sentinel` declare no `profiles:` key at
-> all**, so they are in *every* selection — which means asking for the old `graphql` token **exits 0
-> and starts those three**. Postgres answers, `docker ps` is non-empty, the stack looks alive, and
+> now reads `PROFILE ?= core`. ⚠️ **`postgresql` and `redis` declare no `profiles:` key at all** — and
+> since `766df6c` they are not even in `docker-compose.yml`: they live in the **included** `common.yml`,
+> which is why a top-level grep of the compose file finds no database. They are therefore in *every*
+> selection, which means asking for the old `graphql` token **exits 0 and starts those two**. (This read
+> *"`postgresql`, `redis` and `sentinel` … starts those three"* until M258 iter-18; `sentinel` is folded
+> into `app` and `766df6c` deleted its service.) Postgres answers, `docker ps` is non-empty, the stack looks alive, and
 > the application is simply absent. The retired `cms`, `jobsimulation`, `roadrunner` and `storage`
 > tokens behave identically — as do `storage-legacy`, `messenger` and `customerio-sync`, retired at
 > `838d907` (2026-08-05). **Only five profile tokens still exist**: `all`, `backend`, `core`,
@@ -398,12 +417,12 @@ Docker Compose profiles control which services start:
 > `rosetta-extensions/stack-core/platform_predicate_guard.py` (G1/G3), which is also why no retired
 > token is spelled here in runnable form — a copy-pasteable command for a silent no-op is the defect.
 
-| Profile | Services started (besides the always-on floor `postgresql`, `redis`, `sentinel`) |
+| Profile | Services started (besides the always-on floor `postgresql`, `redis` — **two**, both in the included `common.yml`; `sentinel` left the floor at `766df6c`) |
 |---------|----------|
 | `core` *(default — `PROFILE ?= core`)* | backend, gotenberg |
 | `backend` | backend, gotenberg |
 | `all` | backend, gotenberg, next-web-app, studio-desk |
-| `frontend` | next-web-app — **but selecting it alone exits 1**: `next-web-app` declares `depends_on: backend` (`docker-compose.yml:165-167`), which this profile does not select, so compose rejects the project as invalid |
+| `frontend` | next-web-app — **but selecting it alone exits 1**: `next-web-app` declares `depends_on: backend` (`docker-compose.yml:143-145`), which this profile does not select, so compose rejects the project as invalid. *(re-resolved M258 iter-18 from lines 165-167, past the end of a 164-line file at `766df6c`.)* |
 | `studio-desk` | studio-desk — **also exits 1**, same `depends_on: backend` reason (`docker-compose.yml:138-140`) |
 
 Usage: `make up PROFILE=core`
@@ -490,44 +509,54 @@ Usage: `make up PROFILE=core`
 
 ## Working with Service Code
 
-### Go Services — `app` and `sentinel` (there are only two, and they are NOT alike)
+### Go Service — `app` (since v11.0 there is exactly ONE)
 
-> **⚠️ This section described `app` and called it "Go services", plural — corrected M257x harden pass 57.**
-> The heading read *"Backend, CMS, Sentinel, etc."*: **`cms` is decommissioned** (no compose service, no
-> `repos.yml` entry, ECS destroyed — see the merge banner above), and of the four commands and five
-> directories below, **`sentinel` has one command and zero directories**. A developer told to `make setup`
-> in `sentinel` gets *"No rule to make target"*, and goes looking for an `rpc.go` that has never existed
-> there. Measured at `stack-demo/{app,sentinel}` with `platform` at `0c91421` (= `origin/main`).
-
-| step | `app` | `sentinel` |
-|---|---|---|
-| `make setup` (install toolchain) | ✅ installs **five** tools — mockgen, oapi-codegen, ent, atlas, gqlgen (not the three this file used to list) | ❌ **no such target** — its Makefile declares exactly `initdb` and `proto` |
-| `make gen` (codegen) | ✅ `go generate ./...` | ❌ **no such target** — regenerate protobuf with `make proto` |
-| `atlas migrate apply --env local` | ✅ `atlas.hcl` declares `env "local"` | ❌ **no `atlas.hcl` at all**; schema is seeded from `init_policy.sql` |
-| `go run .` · `go test ./...` | ✅ | ✅ (`main.go` at the repo root) |
+> **⚠️ This section was headed *"Go Services — `app` and `sentinel` (there are only two…)"* until M258
+> iter-18, and it is now down to one.** Platform `766df6c` folded `sentinel` into `app` and deleted its
+> compose service and `repos.yml` entry, so **`make init` does not clone `sentinel` at all** — a developer
+> following the old block gets `cd: no such file or directory` before any of its four commands can be
+> wrong. The block is kept below, struck through, because the repo still exists (frozen at v0.24.2,
+> `f2c46190` — the port source) and someone reading pre-fold source will still land in it.
+> Measured at `stack-demo/{app,sentinel}` with `platform` at `766df6c` and `app` at `c52dbc51e`
+> (both = `origin/main`, verified against the remote 2026-08-12T12:07Z).
 
 ```bash
-# app — the backend monolith
+# app — the backend monolith, and the only Go repo a local stack builds
 cd stack-dev/app
-make setup                       # first time only
+make setup                       # first time only — installs mockgen, oapi-codegen, ent, atlas, gqlgen
 make gen
 atlas migrate apply --env local  # or `make migrate` from platform/, which is the usual path
 go run . && go test ./...
-
-# sentinel — authorization only; a much smaller repo with a different shape
-cd stack-dev/sentinel
-make proto                       # NOT `make gen`
-go run . && go test ./...
 ```
 
-**Key directories — these are `app`'s, and `sentinel` matches none of them** (measured: 0 of 5):
-- `rpc.go`: Main RPC server implementation (entry point for API)
+**Key directories** — ⚠️ **the first entry below was `rpc.go` and that file NO LONGER EXISTS**, deleted at
+`app` `a85e8308d` (*"deseam the users + organizations edges; delete rpc.go"*) and pinned gone by
+`app/rpc_removal_test.go`. `app` runs **no Connect-RPC server** (`app/main.go:1310`); the handler objects
+survive and are called in-process:
+
 - `internal/data/ent`: Database schema and ORM code
 - `internal/app`: Component wire-up
+- `internal/sentinel`: the Casbin PDP (net-new at v11.0) — plus `internal/authorization` as its caller-side facade
 - Domain-specific folders: `internal/organization`, `internal/user`, etc.
 
-`sentinel`'s own layout is `main.go` + `cmd/` + `internal/`, with its Casbin policy bootstrapped from
-`init_policy.sql` — read `corpus/services/sentinel.md` rather than mapping `app`'s tree onto it.
+**The `sentinel` schema did not move to `public`** and `app` migrates it separately: `make
+migrations-sentinel` → `atlas migrate diff --env sentinel` (`app/Makefile:80-81`), alongside the ordinary
+`make migrations`. That is the one place the fold is visible in day-to-day commands.
+
+<details><summary>⚠️ historical — the standalone <code>sentinel</code> repo (not cloned since <code>766df6c</code>)</summary>
+
+`sentinel` is `main.go` + `cmd/` + `internal/`, Casbin policy bootstrapped from `init_policy.sql`, and its
+Makefile declares exactly `initdb` and `proto` — **no `make setup`, no `make gen`, no `atlas.hcl`**. It is
+not on disk after a fresh `make init`; clone it by hand if you need to read the pre-fold source. Read
+`corpus/services/sentinel.md` first.
+
+</details>
+
+> **⚠️ `make bootstrap-dev` is BROKEN at `766df6c`** — found by this sweep, not by running it. The target
+> hard-requires `$(PARENT_DIR)/sentinel/init_policy.sql` (`platform/Makefile:148-149`) and then runs
+> `$(COMPOSE) restart sentinel` (`:164`) and waits on *"sentinel RPC on localhost:8087"* (`:165`). None of
+> those three exist any more: `make init` does not clone the repo, and there is no such compose service.
+> Reported, **not fixed** — this is a platform-repo defect and this corpus takes **0 platform edits**.
 
 ### Frontend (Next.js Monorepo)
 

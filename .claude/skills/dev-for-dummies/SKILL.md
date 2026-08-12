@@ -189,8 +189,11 @@ the summary below is the shape, not a substitute.
      `tailscale serve` on that port**. Serving HTTPS **directly** keeps the origin consistent so Clerk's rewrite
      stays internal (no self-proxy loop); `tailscale serve` (HTTPS→HTTP) is what loops it. Recipe: reference.md § *frontend*.
    - **Backend (more caveated):** `go run .` reaches **nothing** until you **rewrite**
-     `DB_CONNECTION` / `REDIS_ADDR` / `AUTHORIZATION_ADDRESS` to `localhost:<base+off>` (they live in
-     `docker-compose.yml`, not `.env`). That is the **whole** caveat — there is no router to wire. The Cosmo
+     `DB_CONNECTION` / `REDIS_ADDR` / **`SENTINEL_DB_CONNECTION`** to `localhost:<base+off>` (they live in
+     `docker-compose.yml`, not `.env`). ⚠️ **The third was `AUTHORIZATION_ADDRESS` until M258 iter-18** —
+     platform `766df6c` folded the PDP into `app`, so that variable is dead and `SENTINEL_DB_CONNECTION`
+     (`search_path=sentinel`) is what replaced it. It is **mandatory**: `app/main.go:305` `log.Fatalf`s
+     without it, so the failure is a refusal to boot, not a degraded feature. That is the **whole** caveat — there is no router to wire. The Cosmo
      gateway was deleted at platform `2adcf71`, so `next-web-app` calls `backend` directly at
      `:8082/graphql/query` and a native `app` serves the browser's GraphQL itself. **Do not raise the old
      "router federation / host-gateway" tooling gap** — it describes a container that no longer exists.

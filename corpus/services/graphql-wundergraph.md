@@ -16,7 +16,7 @@
 > eight"* until platform `838d907`, 2026-08-05: `storage-legacy`, `customerio-sync` and `messenger`
 > were deleted along with the three services that declared them, so those three tokens are now
 > retired exactly as `graphql` is.) Asking for `graphql` therefore **exits 0** and starts only the
-> always-on floor (`postgresql`, `redis`, `sentinel`), which is worse than an error.
+> always-on floor (`postgresql`, `redis`), which is worse than an error.
 >
 > The supergraph is **ONE** subgraph: `915da06` (2026-07-29) folded the cms subgraph into `backend`
 > (cms-in-app v8.0) and deleted the `jobsimulation` entry in the **same commit** — a **3 → 1** step,
@@ -193,7 +193,7 @@ configs still contain these rows and a reader will find them there.
 `2adcf71` deleted the service while `Makefile:10` still read `PROFILE ?= graphql`, and `0dab54d`
 (*"rename graphql -> core"*) then renamed the profile itself — `Makefile:10` now reads `PROFILE ?= core`.
 **⚠️ At `0dab54d` the `graphql` token appears in no `profiles:` key at all**, so asking for it does not
-error: compose **exits 0** and starts only the always-on floor (`postgresql`, `redis`, `sentinel`) — a
+error: compose **exits 0** and starts only the always-on floor (`postgresql`, `redis`) — a
 silent no-op that looks like a live stack. Tailing a `graphql` service likewise has nothing to tail, and
 `http://localhost:5050` refuses the connection. If you are following an older runbook that says otherwise,
 the runbook predates 2026-07-31.

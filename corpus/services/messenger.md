@@ -146,7 +146,7 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
 
 `838d907` (merged `0c91421`, 2026-08-05) deleted the compose block, so no selection of profiles brings
 a messenger container up. Asking for the retired token does not error either: compose **exits 0** and
-starts only the always-on floor (`postgresql`, `redis`, `sentinel`), which looks like a live stack.
+starts only the always-on floor (`postgresql`, `redis`), which looks like a live stack.
 
 For the record, this is what it used to take, and why it was two flags rather than one: at `0dab54d`,
 selecting the opt-in profile **alone** exited 1 — the block declared `depends_on: backend`, which that

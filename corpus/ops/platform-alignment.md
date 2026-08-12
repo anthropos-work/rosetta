@@ -872,7 +872,7 @@ Rules, in order of how often they actually catch something:
 30. **Grade a documented command on "does it still SELECT something", not "does it still parse."** The
     dominant failure mode after a rename is not an error — it is a **successful command that does nothing
     visible**. And the measured version is worse than the reported one. `docker-compose.yml` at platform
-    `0dab54d` gives `postgresql`, `redis` and `sentinel` **no `profiles:` key at all**, so they belong to
+    `0dab54d` gave `postgresql`, `redis` and `sentinel` **no `profiles:` key at all**, so they belong to
     *every* selection. A `--profile` naming the retired `graphql` token therefore exits **0** and starts
     **three containers**: Postgres answers, `docker ps` is non-empty, and the application is simply
     absent. The corpus had recorded this as *"starts zero containers"* — "zero"
@@ -1503,6 +1503,13 @@ keep hitting the standalone cms via `CMS_RPC_ADDR` **until the M809 re-point**."
 > **zero** `*_RPC_ADDR` values and exactly one service address —
 > `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`). Three states in one week, and
 > the corrected form of the correction was wrong again within four days.
+> **⚠️ AND IT EXPIRED A FOURTH TIME — six days later, in this very passage.** Platform `766df6c`
+> (2026-08-11, v11.0) folded the Casbin PDP into `app` and deleted the `sentinel` service, so
+> `AUTHORIZATION_ADDRESS` is now set **nowhere**: compose sets **zero** `*_RPC_ADDR` values **and zero
+> Connect-RPC service addresses**, and `app` deleted its own RPC listener with the fold
+> (`app/main.go:1310`). Recorded at M258 iter-18, in the paragraph whose whole subject is that a
+> refutation expires like the claim it refuted — which is the strongest available evidence that the
+> lesson has to be **fenced**, not merely written down.
 > **A refutation is a measurement, and it expires exactly like the claim it refuted.**
 > Pin it (this passage names its ref in every sentence that depends on it) or it will be read as
 > standing. Fenced by `platform_predicate_guard.py` G4.
@@ -2436,7 +2443,7 @@ defect, it was arguing for it.*
     **The reach limit.** Rule 68(d) censuses a retired fact by grepping its token. That is exhaustive
     over *wrong* values and structurally blind to *missing* ones. iter-147's defect was an **empty**
     compose profile — `docker compose up -d` with no `--profile` selects only the services declaring
-    no `profiles:` key (here: postgresql, redis, sentinel), **exits 0**, and the stack looks alive
+    no `profiles:` key (at `0dab54d`: postgresql, redis, sentinel — **two** since `766df6c`), **exits 0**, and the stack looks alive
     with the application absent. There is no string to search for; the defect presents as
     `--profiles ` followed immediately by the next flag. **So invert the search: enumerate what the
     tooling ANNOUNCES or CHOOSES and grade each against the platform**, rather than hunting a
@@ -4218,7 +4225,7 @@ What followed was worse than the failure, and is the part to internalise:
 > and the injected-build set all held as hand-written literals, and the profile one is the most dangerous
 > thing in this document: a `--profile` naming a renamed token, run against the renamed platform, is a
 > **successful command that starts the always-on floor and nothing else** — measured at `0dab54d`: **three** containers
-> (`postgresql`, `redis`, `sentinel`), not zero, because those three declare no `profiles:` key. That is worse
+> (`postgresql`, `redis`, `sentinel` at the time — **two** since `766df6c`), not zero, because they declare no `profiles:` key. That is worse
 > than zero: Postgres answers, `docker ps` is non-empty, and the stack presents as *partially working*.
 > No error, no non-zero exit, nothing for a log-reader to catch. Prefer
 > a derivation whose correctness you can test at *two* refs — that is the only evidence that distinguishes a

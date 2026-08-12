@@ -8,7 +8,7 @@
 ## Role & Responsibility
 
 `platform` is **not a deployed service**. It is the dev-environment control plane: a
-**Makefile + Docker Compose** orchestrator that clones the 4 sibling repos and
+**Makefile + Docker Compose** orchestrator that clones the 3 sibling repos and
 builds/runs the services locally **from source**. It is the one repo you `cd` into to
 operate everything else. (The clone set shrank to 4 at `838d907` — see the `repos.yml`
 section below.)
@@ -46,7 +46,7 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 | `make dev S=svc` | Stop a service container and print native-run instructions (`cd ../svc && go run .`) |
 | `make build-frontend` | `pnpm install && pnpm build` in `../next-web-app` |
 | `make reset-db` | **Confirm-gated** wipe of `data/postgresql/`, restart Postgres, re-migrate (waits on `pg_isready`) |
-| `make bootstrap-dev` | End-to-end: up + migrate + seed Sentinel policy (`../sentinel/init_policy.sql`) + create a Clerk/DB admin user & org via `../app/cmd` CLIs (needs Go toolchain + `CLERK_SECRET_KEY`) |
+| `make bootstrap-dev` | ⚠️ **BROKEN at `766df6c`** — it hard-requires `../sentinel/init_policy.sql` (`Makefile:148-149`), then `docker compose restart sentinel` (`:164`) and waits on *"sentinel RPC on localhost:8087"* (`:165`). `make init` no longer clones `sentinel` and there is no such service, so the target exits at its own guard: *"Error: ../sentinel/init_policy.sql not found. Run 'make init' first"* — advice that cannot help. Found by the M258 iter-18 sweep; **reported, not fixed** (0 platform edits) |
 | `make help` | Auto-generated target listing from `## ` doc comments |
 
 > **`make migrate` (bulk)** runs each repo with `|| true` — a single repo's migration failure is logged but does **not** abort the run or fail the target, so scan the output for errors. Use `make migrate S=<repo>` to get a hard (non-zero) failure for one repo.
@@ -57,24 +57,29 @@ README.md / CLAUDE.md   In-repo docs (Make-target table, profile table, port map
 
 ## Compose Profiles
 
-`docker-compose.yml` defines **5 services** at platform `0c91421`: `sentinel`, `backend`,
-`studio-desk`, `next-web-app` and the third-party `gotenberg` image — **7 in the effective
-topology**, once `include: common.yml` adds the two always-on base services (`postgresql`,
-`redis`). The `graphql` service was **deleted** at platform `2adcf71`, and the `storage`,
+`docker-compose.yml` defines **4 services** at platform `766df6c`: `backend` (`:5`),
+`studio-desk` (`:90`), `next-web-app` (`:121`) and the third-party `gotenberg` image (`:148`) —
+**6 in the effective topology**, once `include: common.yml` adds the two always-on base services
+(`postgresql`, `redis`). ⚠️ **This read *"5 services … `sentinel`, `backend`, …  — 7 in the effective
+topology"* at `0c91421`, and was corrected at M258 iter-18:** `766df6c` folded `sentinel` into `app`
+(the 8th merge) and deleted its block, taking the file 190 → **164** lines. The `graphql` service was **deleted** at platform `2adcf71`, and the `storage`,
 `messenger` and `customerio-sync` service definitions were **deleted** at `838d907`
 (PR #26, 2026-08-05) — all three are now served in-process by `backend`. Corrected M257x
 iter-78 + iter-87, and fenced by `platform_predicate_guard` G10.
 
-> **SEVEN services were folded into `backend`** (this said **eight** and included `roadrunner` until
-> M257x iter-137 — roadrunner was **deleted, not folded**; no `app/internal/roadrunner/` at any ref).
-> `skiller`, `skillpath`,
+> **EIGHT services were folded into `backend`.** `skiller`, `skillpath`,
 > `jobsimulation` (jobsim-in-app), `cms` (cms-in-app v8.0), `storage` + `messenger`
-> (v9.0 support-in-app) and `customerio-sync` all run in-process inside `app`; their
-> compose services and profiles are gone, and the federation composes a single `backend`
-> subgraph. **Compose sets no `*_RPC_ADDR` variable at all** — the deleted `messenger`
-> block was the last thing that set one. The only service address `docker-compose.yml`
-> still sets is `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`),
-> so `backend → sentinel` is the single cross-process RPC edge of a local stack.
+> (v9.0 support-in-app), `customerio-sync`, **and `sentinel` (v11.0, `766df6c`)** all run in-process
+> inside `app`; their compose services and profiles are gone, and the federation composes a single
+> `backend` subgraph. (This said **seven** until M258 iter-18 — and **eight** for a *different and
+> wrong* reason before M257x iter-137, when it counted `roadrunner`, which was **deleted, not folded**;
+> there is no `app/internal/roadrunner/` at any ref.) **Compose sets no `*_RPC_ADDR` variable at all**
+> — the deleted `messenger` block was the last thing that set one. ⚠️ **And it now sets no service
+> address of any kind:** the last one was `AUTHORIZATION_ADDRESS`, which occurs **0** times across
+> `docker-compose.yml`, `common.yml` and `repos.yml` at `766df6c`. `app` deleted its Connect-RPC
+> listener with the fold (`app/main.go:1310`), so **a local stack has no cross-process Connect-RPC edge
+> at all** — the sentence that called `backend → sentinel` *"the single cross-process RPC edge of a
+> local stack"* is retracted.
 
 (The former `skiller` service was merged into `app`/`backend` in July 2026 — its RPC surface
 is now served by `backend`. `SKILLER_RPC_ADDR` is set **nowhere** in compose: the `messenger`
@@ -84,7 +89,7 @@ service was likewise merged into `app`/`backend` — "skillpath-in-app", M502→
 **gone from compose**; only the residual `SKILLPATH_STREAM=skillpath` env plumbing remains
 (`docker-compose.yml:72`).)
 
-| Profile | Services started (besides always-on `postgresql`, `redis`, `sentinel`) |
+| Profile | Services started (besides always-on `postgresql`, `redis` — **two**, not three; `sentinel` left the floor at `766df6c`) |
 |---------|------------------------------------------------------------------------|
 | `core` *(default — `PROFILE ?= core`)* | backend, gotenberg |
 | `backend` | backend, gotenberg |
@@ -98,7 +103,7 @@ them **exits 0**, starting only the always-on floor. Deliberately not spelled ab
 form — a copy-pasteable command for a silent no-op is the defect.
 
 > **Gotchas:**
-> * `sentinel`, `postgresql`, `redis` have **no `profiles:` line** → they start with *every* profile.
+> * `postgresql` and `redis` have **no `profiles:` line** → they start with *every* profile. They are not in `docker-compose.yml` at all — they are the whole of the **included** `common.yml`. (`sentinel` was named here too until M258 iter-18; `766df6c` deleted its service.)
 > * **There is no `graphql` gateway service any more.** Platform `2adcf71` (2026-07-31) deleted the Cosmo/WunderGraph router from `docker-compose.yml` outright — service, `repos.yml` entry and clone. GraphQL is served by **`backend` itself at `:8082/graphql/query`** (the `/graphql` path serves the Apollo Sandbox UI). The `graphql` **profile name did not survive either** — `0dab54d` renamed it to `core` — and asking for the retired token **exits 0**, starting only the always-on floor (`postgresql`, `redis`, `sentinel`), so nothing about the profile wiring warns you. `make up PROFILE=backend` therefore *does* give you a usable GraphQL endpoint — on `:8082`, not the retired `:5050`.
 > * `customerio-sync` **is no longer a compose service** — `838d907` deleted it, along with `storage` and `messenger`; `backend` serves all three in-process. While it existed it was the one service built straight from a GitHub URL (`context: git@github.com:anthropos-work/customerio-sync.git#main`) rather than from a local clone, which is why it was never in `repos.yml`.
 > * `backend` hardcodes build arg `ARCH: arm64` (Apple-Silicon-first) — x86 hosts must override it. It is now the **only** `ARCH` in the file (`docker-compose.yml:37`): `838d907` deleted the `storage` and `messenger` blocks, which carried the other two, and `sentinel` never had one.
@@ -108,14 +113,15 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 
 ## `repos.yml` (what `make init` clones)
 
-**Four entries** at `0c91421`, each with `name` / `type` / `migrations` (+ `schema` for Go services with migrations):
+**Three entries** at `766df6c` (a **13**-line file), each with `name` / `type` / `migrations` (+ `schema` for Go services with migrations). ⚠️ **It read "Four entries at `0c91421`" until M258 iter-18** — `766df6c` removed `sentinel`:
 
-* **Go**: `app` — `migrations: true`, `schema: public`, and the only migrating repo. `sentinel` — `migrations: false`, yet very much alive. **The second clause of what this line used to say — *"rather than going through `atlas`"* — is FALSE since 2026-08-04** (corrected M257x iter-130): `68272003` added a **second Atlas pipeline** and it lives in **`app`**, not in `sentinel`. `app/atlas.hcl:50-64` declares `env "sentinel"` (`revisions_schema = "sentinel"`, `dir = file://terraform/migrations-sentinel`, `src = file://terraform/sentinel/schema.sql`), and `app/Makefile:59-60` states that *"`atlas migrate apply --env sentinel` creates the schema itself, and that is what local/CI actually run"* (@ `ad9f3c498`). `migrations: false` is still right **about the `sentinel` repo** — it carries no `atlas.hcl` and no `terraform/migrations/` at `f2c461903` — which is exactly why the flag and the pipeline can both be true at once.
+* **Go**: `app` — `migrations: true`, `schema: public`, and **the only Go repo in `repos.yml` at all** since `766df6c` removed `sentinel`. It nonetheless migrates **two** schemas: `make migrations` for `public` and `make migrations-sentinel` (`atlas migrate diff --env sentinel`) for the surviving `sentinel` schema. **The second clause of what this line used to say — *"rather than going through `atlas`"* — is FALSE since 2026-08-04** (corrected M257x iter-130): `68272003` added a **second Atlas pipeline** and it lives in **`app`**, not in `sentinel`. `app/atlas.hcl:50-64` declares `env "sentinel"` (`revisions_schema = "sentinel"`, `dir = file://terraform/migrations-sentinel`, `src = file://terraform/sentinel/schema.sql`), and `app/Makefile:59-60` states that *"`atlas migrate apply --env sentinel` creates the schema itself, and that is what local/CI actually run"* (@ `ad9f3c498`). `migrations: false` is still right **about the `sentinel` repo** — it carries no `atlas.hcl` and no `terraform/migrations/` at `f2c461903` — which is exactly why the flag and the pipeline can both be true at once.
 * **Node**: `next-web-app` (node-pnpm), `studio-desk` (node-npm).
 
 > **What left the clone set, and when.** `intelligence` (`fdfa189`) · `chronos` (`045857c`) ·
 > `skiller` (`21429b7`) · `skillpath` (`a4db680`) · `graphql-wundergraph` (`360efd4`) ·
-> `cms` + `jobsimulation` + `roadrunner` (`d11a403`) · `storage` + `messenger` (`838d907`).
+> `cms` + `jobsimulation` + `roadrunner` (`d11a403`) · `storage` + `messenger` (`838d907`) ·
+> **`sentinel` (`766df6c`, 2026-08-11 — the 8th fold, v11.0)**.
 > **None of those repos were deleted** — `make init` simply no longer clones them; clone one
 > by hand if you need to read the pre-merge source. `customerio-sync` was never an entry at
 > all (it built from a git URL), and neither was `ant-academy`, which is cloned by hand or by
@@ -134,8 +140,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 | Service | Host port(s) |
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
-| backend (`app`) | 8081, 8082 (`PORT`), 8083 (RPC — one mux serving **six** Connect handlers: `BackendUsers`, `BackendOrganizations`, `SkillerService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`. **There is no `SkillPathSessionService`** — skillpath-in-app M506 *removed* the RPC rather than re-hosting it; likewise no RoadRunner service, `backend` calling Judge0 over plain HTTP), 8084 (`META_PORT`) |
-| sentinel | 8087 |
+| backend (`app`) | **published: 8081, 8082, 8083 — and only 8082 answers.** ⚠️ **Measured live on the compose network of a running stack (M258 iter-18, `demo-3`, platform `766df6c`): `8081` → no listener, `8083` → no listener, `8084` → 404 (alive).** `PORT=8082` (`docker-compose.yml:42`) is the web + GraphQL server and is the only published port with anything behind it. `RPC_PORT=8083` (`:46`) is dead config: `app` deleted its Connect-RPC listener at v11.0 (`app/main.go:1310`, *"NO RPC SERVER"* — the mux that carried `BackendUsers`, `BackendOrganizations`, `SkillerService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`; the handler objects survive and are called **in-process**). `8081` was that listener's port and binds nothing. **`META_PORT=8084` (`:41`) is the one live extra surface and compose does NOT publish it** — so the meta server is unreachable from the host. This row previously listed all four as if each were a live published surface. *(Still true and unchanged: there is no `SkillPathSessionService` — skillpath-in-app M506 removed the RPC rather than re-hosting it — and no RoadRunner service; `backend` calls Judge0 over plain HTTP.)* |
 | studio-desk | 9000 (backend), 9100 (frontend) |
 | next-web-app | 3000 |
 | gotenberg | 3200 |

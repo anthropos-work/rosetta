@@ -568,7 +568,7 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     ```bash
     make up
     ```
-    This builds from local repos and starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, roadrunner, skillpath, skiller, storage, messenger and customerio-sync all run in-process inside Backend/`app` — not one of them is a compose service any more, the last three having been deleted at `838d907`; the GraphQL/Cosmo router was deleted at platform `2adcf71`.)
+    This builds from local repos and starts **four** containers: PostgreSQL, Redis, Backend, Gotenberg. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* (cms, jobsimulation, roadrunner, skillpath, skiller, storage, messenger and customerio-sync all run in-process inside Backend/`app` — not one of them is a compose service any more, the last three having been deleted at `838d907`; the GraphQL/Cosmo router was deleted at platform `2adcf71`.)
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
 
@@ -645,14 +645,14 @@ Start specific service groups instead of the full stack:
 
 | Command | What it starts |
 |---------|---------------|
-| `make up` | the `core` profile (`PROFILE ?= core`): postgresql, redis, sentinel, backend, gotenberg |
+| `make up` | the `core` profile (`PROFILE ?= core`): postgresql, redis, backend, gotenberg — **four** |
 | `make up PROFILE=backend` | the same five — `backend` and `core` select identically |
-| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend` (`docker-compose.yml:165-167`), which the `frontend` profile does not select, so compose rejects the project as invalid |
+| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend` (`docker-compose.yml:143-145`), which the `frontend` profile does not select, so compose rejects the project as invalid. *(re-resolved M258 iter-18 from lines 165-167, past the end of a 164-line file at `766df6c`.)* |
 | `make up PROFILE=studio-desk` | **exits 1**, same `depends_on: backend` reason (`docker-compose.yml:138-140`) |
 | *(the retired `cms` / `graphql` / `storage` / `storage-legacy` / `messenger` / `customerio-sync` tokens)* | **exit 0 and start nothing but the floor** — not profiles any more; the last three were removed at `838d907` with the containers themselves. Deliberately not spelled runnably |
 | `make up-all` | Everything |
 
-Base services (PostgreSQL, Redis, Sentinel) always start regardless of profile.
+Base services (PostgreSQL, Redis) always start regardless of profile — **two**, and since `766df6c` they live in the included `common.yml`, not in `docker-compose.yml`. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)*
 
 ### Ongoing Operations
 

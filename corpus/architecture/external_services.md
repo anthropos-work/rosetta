@@ -854,7 +854,7 @@ docker compose ps backend
 # `cms`, `jobsimulation`, `storage`, `messenger` and `customerio-sync` are NOT among them, and none of
 # the five names anything startable — every one of those compose blocks has been deleted, so
 # `docker compose ps cms` exits 1 with "no such service".
-docker compose ps postgresql redis sentinel
+docker compose ps postgresql redis   # the floor is TWO since 766df6c — sentinel is folded into app
 ```
 > **`storage` was the exception until 2026-08-05, and no longer is.** At platform `0dab54d` it was still a
 > declared service, just not a default one — its own block, behind `profiles: [storage-legacy]` — so

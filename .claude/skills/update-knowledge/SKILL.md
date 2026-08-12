@@ -100,7 +100,7 @@ Plus `CLAUDE.md` — agent context, and its skill table (every row's guide-doc p
 A stale doc misleads; a stale skill **runs**. When platform evidence changes, check each skill for:
 service names · profile tokens · compose commands · `repos.yml` expectations · schema names · ports ·
 env vars · paths into a platform clone. **The most dangerous shape is a command that still exits 0 while
-selecting nothing** — `postgresql`, `redis` and `sentinel` declare no `profiles:` key, so a retired
+selecting nothing** — `postgresql` and `redis` declare no `profiles:` key, so a retired
 profile token starts the floor and the stack looks alive with the application absent. Grade a documented
 command on *"does it still select anything"*, never on *"does it still parse."*
 
