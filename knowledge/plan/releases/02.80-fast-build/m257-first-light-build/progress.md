@@ -207,6 +207,28 @@ and the live-container arms **fail identically**.
 **None of the 9 names a file this close or this milestone edited.** The `stack-core` files M257 authored
 were re-run individually and are green; `demo-stack`'s two milestone files are **124 passed**.
 
+### ⚠️ The whole-tree `stack-core` sweep did not complete — measured three times, and that IS the finding
+
+The final harden reported one sweep terminated at **55m12s**. This close attempted it **three more times**
+and **every one stalled in the same 54–56 % region**: ~40 min to 56 % · ~10 min to 54 % (with the seven
+`run_one`-calling files excluded) · ~22 min to 54 %. Each time the main `pytest` process was consuming
+**almost no CPU** (2:42 of CPU over 21:51 elapsed on the last attempt) while a child ran
+`python -m unittest -v tests.<module>` — `suite_census.run_one`'s unittest column, spawning a **full
+unittest run per module**.
+
+**So the harden's "it did not return" was not contention, or not only contention.** It is
+`ROUTE-M257x-...cluster-2` — *"the census arm is not only broken, it is **unaffordable**"* — and this close
+adds the measurement that item did not have: **the arm makes this section's suite unable to complete in a
+bounded window at all**, reproducibly, at the same point. That is a strictly stronger statement than "slow",
+and it belongs to M258 with cluster 2 and `FIX-M257-census-interpreter-namespace-import`.
+
+**This is NOT "swept clean", and no aggregate stack-core count is claimed.** What is claimed, and measured:
+every file this milestone or close touched is green when run individually; the corpus fence family is green
+on the live tree; the M255 mutation battery is green; `stack-injection` is **337 passed**; `demo-stack` is
+**1,089 passed / 9 attributed**; and the **six** Go sections are **58 packages, 0 FAIL** with `-count=1`
+(the harden reported "five sections / 44 packages" — a lower count, from a different invocation; state the
+invocation with the number).
+
 ### Decision Triage
 - [x] D-M257-C1 (claim-keyed fence) → blended into `build-budget.md` + the fence's own docstring.
 - [x] D-M257-C2 (the retraction that isn't) → blended into `frontend-tier.md` §12 GB prerequisite.
