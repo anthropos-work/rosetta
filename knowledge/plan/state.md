@@ -158,8 +158,9 @@ section and nothing else**, so no fate now depends on a field the next close ove
   EMPTY. Shadow the authoring build on `PATH` for any reset. Cost the M256 close one run before it was found.
 - **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
   on their own cadence. **v2.5** and **v2.6** are likewise local-only.
-- rext code-of-record: authoring copy on `main`; M256's tooling ships at **`fast-build-m256-close`** @ `ce345e1`
-  — **on origin, rung-zero verified** — which is `fast-build-m256-harden-final` plus the close's **3** commits.
+- rext code-of-record: authoring copy on `main`; **M257's tooling ships at `fast-build-m257-close` @ `679a5f7`
+  — on origin, rung-zero verified** (`main` pushed to the same sha), which is `fast-build-m257-harden-1`
+  plus the close's **2** commits.
 - **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
   prove-it-live step.
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
@@ -167,7 +168,7 @@ section and nothing else**, so no fate now depends on a field the next close ove
 
 _Last updated 2026-08-12 — the M257 close. Both trees clean; `rosetta-extensions` pushed + tagged, `rosetta` local-only by the user's cadence._
 
-> **Budgets: every one of them met** — file 14,686/15,360 · frontmatter 1,214/1,860 · body 13,466/13,500 ·
+> **Budgets: every one of them met** — file 14,709/15,360 · frontmatter 1,214/1,860 · body 13,489/13,500 ·
 > all six fields in budget. The body budget was **raised once against a measurement** at iter-129 (12,000 →
 > 13,500, and the frontmatter 2,600 → 1,860 so the two now sum *exactly* to the file cap, which the old
 > triple did not). Derivation, the two probes that were narrower than their own conclusion, and the
