@@ -96,6 +96,32 @@
   suite is `retries: 0` by contract, so a run at load 40–60 manufactures **false reds** that `D-v28-3`
   escalates to the user as if they described the product. `demo-1` **never torn down** — still
   presenter-usable. — see `iter-07/progress.md`
+- iter-08 (tik, `closed-fixed-partial`): **THE COMPOSED 3× COLD CAMPAIGN RAN** — the wait was ended by
+  **automating the trigger**, not by the box getting quieter. iter-07 hand-polled 30 min at ~2-minute
+  granularity and correctly found no window; `autoarm-campaign.sh` (15 s sampling, fire on 3 consecutive
+  `load1 ≤ 5.0`, safe-by-refusal so it re-arms) **armed 08:17:41Z and fired 08:19:12Z — 91 s later**,
+  into a dip below 5.0 that lasted **75 s** (`D29`). *A hand-sampled trigger cannot catch a window
+  shorter than its own interval.* Campaign 08:19:19Z → 09:02:12Z: **3/3 reps `up_rc=0 green=True
+  isolation=OK phases=complete`, `red_count 0 · passing 30 · failing 0` each time — and 3/3
+  `headroom=FAIL`** (`peak_load1` 40.09/74.77/51.80 vs 10), because anima8's next batch resumed **60 s
+  after launch** (`D30`). So **clause 3 stays NOT MET** — total p50 **840.01 s [811.06–859.06]** is the
+  p50 of reps buildbench itself calls *"not usable measurements"* (`D35`); the **spread is 1.06×**,
+  against the 2.04× M256 escalated as undecidable. **Clauses 1, 2, 5 are now proven on THREE consecutive
+  cold cycles** rather than one — clause 5 (**12/12 cockpit seats**) verified *after* the campaign, so the
+  world-contract restore leg held 3× running. `D27`'s prediction **held**: `autoverify` `green:true
+  warnings:0` on all three reps (`D31`). `D17` **passes in both directions** — `autoverify` 5.32 s vs
+  `batch_gate` 153.81 s attribute *separately* **and** Σ sub-phases = `P4_BRINGUP` exactly, with
+  `batch-gate.json`'s own `142+11=153` matching the anchor-derived 153.81 s (`D32`). Walked past a live
+  stale-artifact trap: the authoring clone still held iter-06's `batch-gate.json` reading *identical*
+  `verdict green · red_count 0` — only the `ts` betrays it (`D33`). **The iter's real deliverable was a
+  scare and its settlement:** `set_dress` measured **283.53 s vs iter-05's 81.23 s** (3.49× vs a 2.05×
+  cohort), which would have put the clean total at ~600 s and made L5 urgent — **refuted by two cheap
+  checks** (`D38`): all 3 reps do identical work (same digest `b4cb55bcee08 → ea2e187a1605`), and
+  `git diff --name-only iter-03..iter-06` filtered for `setdress|snapshot|stacksnap` returns **zero
+  files**, so the code path is **byte-identical**. Excess is environmental; **projection 401.60 s vs 480
+  holds**; L5 stays a reserve against a ~81 s phase. Re-scope graded **n** despite 840 > 600 (`D37`):
+  reps instrument-rejected, *and* the remedy (split the suite) misses the diagnosis — `batch_gate` p50
+  **179.37 s** is inside M256's 200 s budget *while contended*. — see `iter-08/progress.md`
 
 ## Next-iter routing
 
