@@ -123,6 +123,31 @@
   reps instrument-rejected, *and* the remedy (split the suite) misses the diagnosis — `batch_gate` p50
   **179.37 s** is inside M256's 200 s budget *while contended*. — see `iter-08/progress.md`
 
+- iter-09 (tik, `closed-fixed`): **`LEVER-M257-L5-setdress` HAS A TARGET** —
+  `FIX-M258-iter08-set-dress-has-no-internal-attribution` discharged, and **settled retroactively on
+  logs we already had, at zero host cost, on a box that never dropped below `load1` 19.72** (`D41`).
+  The 252.73 s span was **one operation, not two**: `sd_replay_taxonomy` is **249.69 / 258.63 /
+  266.66 s = 87–91 %** of `set_dress` across iter-08's three cold reps, every rep tiling the parent
+  with **residual 0.0**, everything else in the phase under 16 s (`D40`). The lever's real target is
+  a single `stacksnap replay --surface taxonomy` moving **~1.47 GB** (`skill_embeddings` 825 MB +
+  `job_role_embeddings` 364 MB) and rebuilding **two** pgvector indexes. ⚠️ Those seconds are
+  **contended**; the durable finding is the **share**, which prices the replay at ~70 s against
+  iter-05's quiet phase. Built **NESTED, not four more flat anchors** (`D39`) — children are not
+  siblings: that would double-count against `P4_BRINGUP` *and* redefine the `set_dress` series
+  `D38` had just used to settle the release's biggest scare; verified both ways (Σ `sub_phases`
+  still exact at 802.39/822.19/840.91, `set_dress` still 283.53). Level two landed too: `replay.Run`
+  now attributes verify/clear/**copy**/**reindex**/sequences per table with an **explicit**
+  unattributed residual (`D45`) — the copy-vs-reindex number L5 needs and no captured log can give.
+  **The thesis was made mechanical** (`D42`): a mutant billing the reindex to the copy leaves the
+  **sum test passing** and fails only the attribution test. A second mutant **SURVIVED** — a *test*
+  gap, not a code gap (`D43`) — and was fenced. Net-new finding: **the literal ratchets are polluted
+  by the demo stack dir** (DOCSTRING +10, TEST_MODULE +9 from `stacks/demo-1/clones/app/studio/**`),
+  a **third** consumer of the `guard-scans-its-own-scratch` family, so M257's recorded 254/663 may
+  itself be polluted (`D44`); own contribution paid to **+0 on all three**, never waived. Tagged
+  `fast-build-m258-iter-09`, **verified on origin**, consumption clone re-pinned with the
+  feature-present check. **Clause 3 armed, not awaited** (`D47`) against a **fresh** output dir.
+  — see `iter-09/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
@@ -138,6 +163,28 @@
 - ✅ **iter-07 discharged every PRECONDITION of `TOK-01` step 4** — the tag is on origin, the consumption
   clone is re-pinned to `fast-build-m258-iter-06` and carries the gate, and the `postgres-schemas`
   refusal is **proven satisfiable there** (`D27`). It also graded **4 of the gate's 5 clauses green**.
+- ✅ **iter-09 discharged `FIX-M258-iter08-set-dress-has-no-internal-attribution`** — and with it the
+  precondition on `LEVER-M257-L5-setdress`, which now has a named target (the taxonomy replay, ~88 %
+  of `set_dress`) instead of an opaque span. The lever itself is **still unspent and still not
+  needed**: the 401.60 s projection sits inside 480.
+- **iter-10 (tik, under `TOK-01`) — step 4, unchanged: a GATEABLE composed campaign.** The waiter is
+  **armed** at the `fast-build-m258-iter-09` pin against `campaign-iter09/`, so its ledgers will
+  carry the set-dress attribution live. ⚠️ **Use a FRESH output dir per campaign** — `build_report`
+  globs `rep-*/ledger.json`, so re-using a previous campaign's dir silently aggregates its reps into
+  the new p50 (`D47`). If a clean p50 lands **over** 480, L5's price is now known well enough to
+  spend it; if it lands under, L5 stays unspent.
+- **`SPLIT-M258-iter09-copy-vs-reindex`** (net-new) — the level-two instrument shipped but is
+  **unmeasured**: no run has yet produced a `replay "taxonomy" phase costs:` line. The first campaign
+  at this pin yields it for free. Until then, **do not assert whether the taxonomy replay is
+  COPY-bound or REINDEX-bound** — the remedies differ and the guess is not evidence.
+- **`ROUTE-M258-iter09-literal-ratchets-scan-the-demo-clone`** (net-new, `D44`) — the three
+  `derivation_registry` literal censuses `rglob("*.py")` from the repo root and so census
+  `demo-stack/stacks/demo-N/clones/app/studio/**`, the **platform's** source inside a demo's
+  ephemeral clone. Third consumer of `FIX-M258-iter03-guard-scans-its-own-scratch`'s root cause;
+  the shared fix is a root-selection change. **Consequence:** any ratchet figure measured on a box
+  that has run a demo, without excluding `stacks/`, is not a measurement of this repo.
+- <details><summary>superseded routing (iter-08's plan, kept for the audit trail)</summary>
+
 - **iter-08 (tik, under `TOK-01`) — step 4: the composed 3× cold campaign. NOTHING IS LEFT TO BUILD.**
   Run `.agentspace/scratch/work-m258/launch-iter07-campaign.sh` — one command; it asserts the user's
   stacks resident and **refuses** otherwise, asserts headroom **before** the teardown, tears `demo-1`
@@ -148,6 +195,8 @@
   running the batch contended** — `retries: 0` turns browser timeouts into a red set that `D-v28-3`
   escalates to the user as a product verdict (`D28`). Publish the **spread beside the p50** (`C2`) on
   both halves — the batch has 129 s (iter-04) and 160 s (iter-06) and still no p50.
+
+</details>
 
 <details><summary>superseded routing (iter-06's plan, kept for the audit trail)</summary>
 
