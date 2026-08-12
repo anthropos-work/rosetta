@@ -159,11 +159,13 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
 so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
-own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:594-589`), hiring's over
-**7** (`up-injected.sh:1135-1126` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
+own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:600-603`), hiring's over
+**7** (`up-injected.sh:1141-1143` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
 interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's over its own **5**
-(`:905`). Line refs at rext `415240f`; the `:1071-1075` this cited until M257x is now studio-desk's
-`--label` line. A test fences the hiring-side chain apply-order and the fingerprint union.
+(`up-injected.sh:922`). Line refs at rext `8956e69`, the commit that last touched the file; the
+`:1071-1075` this cited until M257x is now studio-desk's `--label` line. Each anchor names the
+`next_web_patchset_fp` **call**, not the `local …_manifest=` declarations above it — the call is where the
+count is legible. A test fences the hiring-side chain apply-order and the fingerprint union.
 
 > **⚠️ Corrected at v2.8 M255** (pre-milestone KB-fidelity audit). This paragraph previously said hiring's
 > fingerprint was over a **"4-manifest union"** — a C1 mirrored-count that drifted at **M232** (the interview
@@ -313,7 +315,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > (`next-hiring-role-remap`, `next-hiring-members-pagination`), the **2 chained shared `urls.ts`** patches
 > (`next-web-studio-url` → `next-web-public-website-url`), the **2 shared `packages/ui` interview flag-gates**
 > (`next-web-interview-flag-container` / `-result`, M232) and the **shared `next-web-back-to-cockpit`** item
-> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1135-1126` @ rext `415240f`,
+> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1141-1143` @ rext `8956e69`,
 > which passes exactly those seven manifests to `next_web_patchset_fp`. The `urls.ts` pair is
 > applied on the hiring build because the Studio nav
 > link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
