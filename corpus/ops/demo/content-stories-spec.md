@@ -155,7 +155,12 @@ real played sessions):
 **Coverage (shipped fixture):** 23 simulation sessions = the 13 base pins (11 italian + 2 english, now
 correctly labeled) + 10 EN/IT counterparts, so 11 of the 12 requirement tuples carry both languages; only
 INTERVIEW stays Italian-only. The landable-pair denominator moved **29 → 49** accordingly
-(`stack-verify/e2e/content-denominator.json`).
+(`stack-verify/e2e/content-denominator.json`). **It did not stop there — the chain is 29 → 49 → 47 → 45**:
+M244 iter-07 moved the 2 Bunny-absent voice cells to **player**-presence-only (49 → 47), and the **M254
+close** extended the same disposition to their **manager** views (47 → 45, = 24 player + 21 manager). The
+pin file is the source of truth and currently reads `expected_pairs=`**45** — **read the pin, never a number
+in this doc.** (Corrected at the v2.8 release close: the M254 step had reached the tooling and no corpus doc
+except `coverage-protocol.md`.)
 
 ## 3. The seat + route model (single-sourced with the seeder)
 

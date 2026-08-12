@@ -476,6 +476,63 @@ question (a UX nicety with no owner).
 > `release/02.20-panorama`). No longer dropped. The other three items above remain dropped (re-proposal requires
 > their own fresh design-roadmap run).
 
+## v2.8 "fast build" carry-forward — the escape-hatch destination
+
+Added at the **v2.8 release close (2026-08-12)**. Until this section existed there was **no destination for a
+cross-release deferral in v2.8**: zero `RELEASE-SCOPE-DEFER:` decisions existed release-wide, and this file's
+own last update (2026-07-23) **predated v2.8's design by four days**. An item cannot escape-hatch to nowhere —
+so anything not landed at the close and not routed inside the release lands here, by name, with the reason
+Fate 1/2/3 failed. This is the same structural failure this file already names at §"RETIRED reservations":
+*items living only in `state.md`'s rotating backlog are one close away from being unattributable.*
+
+**Carried to the next release (target assigned at its `design-roadmap` run):**
+
+- **`FIX-M256-studio-false-green`** (+ `NEGCTL-M256-studio-pair`, `DOC-M256-llm-lane-premise`) — the studio
+  Playthrough matches the **empty section scaffolding** at +2.1 s, before the LLM draft populates it
+  (`playthroughs/e2e/lib/studio-builder-page.ts:120`), so it passes without the generation completing. Routed
+  M256 → M258, reached M258's plan, never worked. **Why not Fate 1 here:** the fix changes a locator every
+  studio Playthrough resolves through, and validating it requires driving the suite, which resets the user's
+  only stack. **The highest-value carry in this list** — it is a false green inside the suite v2.8's headline
+  claim rests on.
+- **`BIND_HOST` / `D-M255-7`** — `up-injected.sh:146` binds `0.0.0.0` whenever `STACK_PUBLIC_HOST` is set;
+  remote reach is default-on, so **the batch gate skips on the default `/demo-up` path**. Routed at the M255
+  close, re-applied at M256, recorded In-scope at M258, never worked. Carries a disclosed safety consequence
+  (`safety.md` §3.1 non-tailnet LAN exposure). **Re-check the premise before landing:** `BIND_HOST` gates only
+  the two host-native servers; compose publishes the containers on `0.0.0.0` regardless, so a one-line change
+  may not be sufficient.
+- **`PT-M256-standing-mutant-Q1`** — 9 named standing mutants (~30 min of machine time).
+- **The 11 lower-severity harden-3 scan findings** — the promise made when `HARDEN-CAP-ACCEPTED-D105` was
+  accepted; unbacked until these are fated.
+- **M257x carry-forward clusters 1, 3, 5**, cluster 4's surviving half (**`buildbench` asserts no elapsed-time
+  threshold** — so a regression from 286.99 s to 900 s would pass every gate the tooling has), and the
+  215-token block fate. Cluster 1 is the **production-bucket pointer**, graded by M257x as its highest-stakes
+  open item and ranked #1 by the user under `TOK-09`.
+- **`F2` — `ptvalidate` unwired** (only occurrence outside its own package is a comment at
+  `run-playthroughs.sh:370`). **Why not Fate 1:** wiring it *binding* changes the gate behaviour of the runner
+  every bring-up now depends on, and validating that requires a full suite drive.
+- **`PROFILE-M257-provisional-fields`** — `projected_image_gib` is provisional in **prose only**; the loader
+  has no `provisional_fields` contract. Now cheaper than M258 assumed: `macmini.json` **is** measured.
+- **The two breached literal ratchets** — `DOCSTRING` 249 vs 240, and **`TEST_MODULE` 662 vs 653, which is
+  recorded in no milestone's `metrics.json`**. Whether the second predates v2.8 **cannot be stated from the
+  artifacts**; one `git archive` extract at the v2.7 close tag settles it. **No ceiling was ever raised** —
+  both M257's harden and its close deleted growth instead, and the discipline is worth preserving.
+- **`PERF-M256-parallel-lane`, `PT-M257-self-evaluation`, `PT-M257-talk-to-data`** — marked
+  `KEEP-DEFERRED-WITH-SIGNOFF` at the M256 close and **never signed**. `PT-M257-*` carry a target M256 itself
+  called a **mis-route**; they need re-homing, not re-reserving.
+- **The four use cases re-reserved to M206/M207** — which have no `overview.md` and are **not milestones**.
+  §"RETIRED reservations" says of these exact items: re-reserved across five consecutive releases,
+  *"do not re-reserve them a sixth time."* They were. **Design them or drop them; a sixth reservation is not
+  an option this file permits.**
+
+**Two mechanical checks this release earned and did not build** (each has cost three separate repairs):
+
+- **A routing is not a routing until the target's own doc says so** — fired ≥3× in v2.8 (`BIND_HOST`,
+  M257x's carry-forward, M255's four items to M257), each caught by the *next* close, never the routing one.
+  A fence asserting every Fate-3 item name appears in its named target's `overview.md` would end the class.
+- **A fence satisfied by its own comment** — three instances now. `shellInvocationLines` is the remedy and it
+  exists; what is missing is a guard asserting every fence reading a script body for an *executed* token
+  routes through it.
+
 ## Codename notes
 - _(v1.0 "body double" + v1.1 "show floor" + v1.2 "set dressing" + v1.3 "stack party" + v1.3b "dress rehearsal" + v1.5 "prop room" + v1.6 "stage door" + v1.7 "house lights" + v1.8 "understudy" shipped — their codenames are now permanent. **v1.8 "understudy"** continued the theatre lineage: an understudy is a fully self-contained substitute, ready to perform on its own without the lead — exactly the self-contained-demo thesis (`stack-demo/` becomes able to run with no `stack-dev/`). Chosen at the 2026-06-15 `/developer-kit:design-roadmap` run.)_
 - **v1.9 "storytelling"** (shipped 2026-06-23, tag `v1.9` — codename now permanent) continues the theatre lineage and names the thesis directly: the release is about making the seeded world **tell a story** — declarative *stories*, each with a cast of *heroes* whose verified-skill histories the product surfaces narrate. Chosen by the user at the 2026-06-22 `/developer-kit:design-roadmap` run (over the proposed "method acting" / "dramatis personae").

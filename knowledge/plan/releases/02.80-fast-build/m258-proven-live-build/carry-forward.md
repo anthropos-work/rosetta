@@ -49,8 +49,17 @@ projection or a warm cache.
 - **Scope to resolve:** one clean 3-rep campaign on a host that can hold `load1 < 10` for ~30 minutes.
   Not engineering — scheduling, or a different host. The auto-arm stays armed.
 - **Fate:** LAND-NEXT → release close. **Not an escape hatch** — nothing is punted past v2.8 unsigned.
-- ⚠️ **`billion` is DEMO-ONLY and `odysseus` is RETIRED** (`D-v28-15`). `hostprofiles/` holds only
-  `billion.json` and a retired laptop's, so **`build-budget.md`'s gate clause 1 is not gradeable today**.
+- ⚠️ **`billion` is DEMO-ONLY and `odysseus` is RETIRED** (`D-v28-15`).
+- ❌ **RETRACTED at the v2.8 release close.** This entry read: *"`hostprofiles/` holds only `billion.json`
+  and a retired laptop's, so `build-budget.md`'s gate clause 1 is not gradeable today."* **Measured false:**
+  `hostprofiles/` holds **three** profiles — `billion.json`, `laptop.json` and **`macmini.json`**, added at
+  **M257 iter-04** (`f607af1`) with its `gated_baseline` filled at **iter-08**. Clause 1 **is** gradeable
+  here, and M257 graded it — HEADROOM passed 3/3 on the campaign that met its gate.
+  **This is the release's most-repeated failure shape landing in the artifact release-close reads first:**
+  M257's close had already retracted the identical claim ~14 h earlier (`CLAUDE.md:465`, landed `63a199f8`),
+  and annotated `m257x/carry-forward.md:206-212` in place for exactly this reason. The claim was inherited,
+  not re-measured. **What remains true** is only the narrower statement above it: the clean 3-rep campaign
+  needs a host that can hold `load1 < 10` for ~30 minutes — a scheduling constraint, not a missing profile.
 
 ### Cluster 2 — Instrument items the gate reads its own number from
 
