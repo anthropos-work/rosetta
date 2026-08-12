@@ -395,3 +395,14 @@
 decidability, 2.04× spread) · `F1` (`FIX-M257-content-stories-pair-count`, verified open; gates the
 **content-stories sweep**, not the batch) · `F2` (`ptvalidate` unwired) · the **SUSPECT-UNROUTED** rule
 for every inherited M257x / M257 item. Not deferrals.
+
+- iter-16 (tik): **the 15-red batch verdict attributed AND fixed — one dangling reload, not fifteen
+  product failures.** Platform `766df6c` folded **sentinel into `app`** (v11.0, the 8th merge); our
+  three post-seed reload sites still drove the deleted container's RPC and logged the miss as
+  *"non-fatal — a non-AI-sim run is unaffected"*. A stale casbin enforcer refuses **every** org-scoped
+  read and write with `forbidden` at HTTP 200 (the silent-403 class) — 15 of 31 Playthroughs **and both
+  negative controls**. Contention, a partial seed, and "a table moved" are all **refuted**, from
+  artifacts already captured. Fixed by publishing to `sentinel:policy:invalidate` (app's own channel),
+  **proven live on demo-3 before the code was written**; pre-v11.0 RPC retained beneath. 0 platform
+  edits, 0 fences edited. rext `fcdc651` / tag `fast-build-m258-iter-16` **on origin**. —
+  see iter-16/progress.md
