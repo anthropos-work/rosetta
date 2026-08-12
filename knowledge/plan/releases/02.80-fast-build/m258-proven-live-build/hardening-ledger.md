@@ -167,3 +167,78 @@ surfaces came back already-sufficient. The finding rate is falling (5 → 3) but
 producing, so it has not stabilised. Pass 3 to sweep the last unexamined milestone code: iter-20's G1
 repair in `platform_predicate_guard.py` (the newest fence code in the milestone) and iter-06's
 `buildbench.py` batch wiring.
+
+## Pass 3 — 2026-08-12 — final
+
+**Iters hardened this pass:** the milestone's newest fence code — iter-20's G1 `(c) DOMAIN`
+discriminator (`stack-core/platform_predicate_guard.py`) and iter-06's batch-applicability wiring in
+`stack-core/buildbench.py`.
+
+**Coverage delta on touched files:** `platform_predicate` 190 → 191 · `buildbench` 152 → 159.
+
+**Tests added:** +1 G1 reach boundary (two directions, RED-proven by widening the window to the whole
+file) · +7 batch-applicability derivation.
+
+**Bugs surfaced:** **none.** Both probes came back sound, which is a result and is recorded as one — a
+harden pass that reports only what it changed hides how much of its scan came back clean.
+- G1's `(c)` discriminator: I expected a fail-open where a real dead compose token sits near a genuine
+  `hostprofiles/` mention, and **measured that it is not one**. The exemption reaches exactly
+  `_pin_window`'s two lines — the claim's own plus the preceding one, because prose WRAPS — and stops:
+  a mention two lines away, or across a blank line, still reports the token. A wrapped claim is
+  exempted; a neighbouring claim is not. That is `D-M257x-63-1` (*a pin bought silence for its
+  neighbour*) already correctly applied. Its battery pinned the discriminator's VOCABULARY and not its
+  REACH, so the reach is now pinned in both directions.
+
+**Testability gap closed (`5b86007`):** iter-06 gave the batch anchor five tests and every one passes
+`batch=` directly, while the derivation computing it from a rep's env snapshot lived as two inline
+expressions inside the 200-line campaign `run()` — exercisable only by running a real campaign. **A
+tested consumer fed by an untested producer is a covered call site and an uncovered decision:** get the
+derivation backwards and all five keep passing while every campaign silently excuses a missing batch
+phase. Extracted (semantics unchanged) to `knob_is_on` + `batch_is_expected` and pinned across all four
+`(public_host × knob)` combinations, plus absent-reads-as-ON (the `DEMO_*` family is opt-OUT, default
+`0`, so absent means ON — the other reading would excuse the anchor on every ledger predating the knob),
+a non-string value (a JSON ledger can carry `1` as an int, and `1 != "1"` reads as ON), and only an exact
+`"1"` switching a knob off, so `DEMO_NO_BATCH=""` does not excuse an anchor. Two mutants, 2 and 1 fails.
+
+**Stop condition:** continue-to-next-pass — zero defects, but two coverage gaps closed and the sweep had
+not yet reached `check-cockpit-roster.py`, `rosetta-demo`, `derivation_registry.py` or `stack-snapshot`.
+
+## Pass 4 — 2026-08-12 — final
+
+**Iters hardened this pass:** the remainder of the cumulative footprint — `check-cockpit-roster.py`
+(iter-06), `rosetta-demo`'s `down -v` (iter-14), `derivation_registry.py` (iter-10), `stack-snapshot`
+replay timings (iter-09).
+
+**Coverage delta on touched files:** `playthroughs/manifest` +4 subtests · census module +1.
+
+**Bugs surfaced + fixed inline:**
+- **A keyless seat was satisfied by a keyless identity** (`07177c1`). `check-cockpit-roster.py` is the
+  post-condition that stops a restored world advertising seats the roster cannot serve — it matters
+  because the fake FAPI signs an unknown identity in ANYWAY, as whoever was last active, so the failure
+  is a silent WRONG login rather than a broken button. Both sides read their key with
+  `dict.get("key")`, which yields `None` for a malformed entry, and `None in {None}` is True: a hero
+  with no `key` was satisfied by a roster entry with no `key`, and the check printed *"✓ all 2 cockpit
+  seats resolve"*. With a well-formed roster the same input **crashed** instead — `sorted()` over mixed
+  `None`/`str` raises TypeError, which escapes `main`'s try (it wraps `load`, not `check`) and prints a
+  traceback where a diagnosis belongs. Fail-open in one direction, unreadable in the other; neither is
+  a verdict. Keyless roster entries are now dropped (they can satisfy nothing) and a keyless hero is
+  named as the orphan it is. Two controls keep the fix from being blunt: a well-formed pair still
+  passes, and the LIVE defect's own shape is still named.
+
+**Claim converted to a measurement (`e96c437`):** `_CENSUS_SKIP`'s `stacks` entry is component-EXACT,
+justified by the comment *"these are the only two directories named `stacks` in the tree"* — true today
+(`git ls-files` shows no tracked path with that component; both are gitignored per-stack workspaces) and
+asserted nowhere. It fails silently: a section that ever adds tracked source under a `stacks/` component
+drops out of the census, the denominator shrinks, and every ratchet built on it keeps passing against a
+smaller subject. Now measured, with the module's required anti-vacuity floor.
+
+**Examined and found sufficient:** `rosetta-demo`'s `-v` (already covered by pass 1's fact-based fence,
+which reads every `stack-*/platform` clone and so covers the demo path too, plus the existing twin
+fence) · `stack-snapshot` replay timings (4 tests over 232 lines; whole section green) ·
+`derivation_registry`'s skip rules (behavioural venv/dot-rule tests already in place).
+
+**Flakes stabilized:** none. **Flake gate: PASSED** — 3 consecutive clean runs of every test added this
+session, across Go and Python, run sequentially.
+
+**Stop condition:** continue-to-next-pass — one real fail-open closed, and the cumulative scope is now
+fully swept, so pass 5 is the cross-iter composition check rather than new ground.
