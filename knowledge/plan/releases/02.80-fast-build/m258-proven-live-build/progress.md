@@ -474,3 +474,27 @@ for every inherited M257x / M257 item. Not deferrals.
   that outlived its service (`D102`); and a `49100` probe reading 000 was **the probe, not the stack**
   — a demo publishes studio-desk's backend port only, and `demo-3`'s `39100` read 000 too (`D103`).
   — see iter-19/progress.md
+- iter-20 (tik): **the corpus fence set is FULLY GREEN — eleven of eleven — and the last RED was the
+  fence's defect, not the corpus's.** `platform_predicate_guard`'s G1 was reading **host** profiles
+  (`hostprofiles/*.json`, M255) as compose profiles: `_PROSE_PROFILE` had negation, postfix-negation
+  and ref-pin discriminators and **no domain discriminator**, so every *"a `X` profile"* in the corpus
+  was graded as a compose token. The finding it produced was accurate and useless — it described what
+  `--profile docker-desktop-vm` would do, about a command nobody would type, and *a fence with a floor
+  above zero gets quietly un-run*. Repaired with a **third discriminator, symmetrical with the other
+  two** and deliberately narrow (it will **not** exempt on the bare word "host" — `--public-host`,
+  `host-gateway`, `STACK_PUBLIC_HOST` are all real compose prose), **RED-proven with three tests
+  including an always-true mutant** that launders a live `cms` claim — without which a discriminator
+  that never matched would have passed by accident. One site still fired afterwards for a **window**
+  reason, not a rule reason (*"host profile"* sat two lines up across a blank line, which
+  `_pin_window` treats as a boundary **by design**); the sentence now names its domain inline, which
+  is an improvement to ambiguous prose and **not** the forbidden edit-prose-to-green-a-wrong-fence
+  move — recorded explicitly at `D105` because the two are indistinguishable from an exit code.
+  Second half: **`ROUTE-M258-iter18-app-row-anchors-are-at-2035f9a` discharged** — the map's `app` row
+  pinned seven `app/main.go` wiring anchors at `2035f9a` and **every one had drifted 12–20 lines** at
+  `c52dbc51e`; re-resolved and **verified 8/8 by reading the target line**, with `sentinel.Open` `:305`
+  added as the eighth domain. **The finding is that no fence could see it** (`D106`): `app/main.go:NNN`
+  citations are graded **range-only** — a Go file has no blocks to attribute a line to — and a
+  1,635-line file swallows a 20-line slip. rext `fast-build-m258-iter-20`, **verified on origin**,
+  declaration re-pinned. ⚠️ **`D107` states the scope of the green explicitly**: eleven *corpus*
+  fences, not the suite — the ~46 pre-existing rext-internal census failures iter-18 **measured**
+  stay open. — see iter-20/progress.md

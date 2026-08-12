@@ -194,7 +194,7 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 >    describe the run under test"* — the same discipline was simply not applied to the host profile.
 >
 >    **A related units defect outlived that fix and was found at M257 iter-06**: the identity check grades
->    a `docker-desktop-vm` profile's `cores` against **engine NCPU**, correctly — but HEADROOM **clause 1**
+>    a `docker-desktop-vm` **host** profile's `cores` against **engine NCPU**, correctly — but HEADROOM **clause 1**
 >    was grading the **host's** `os.getloadavg()` against that same VM-allocation `cores`. On this machine
 >    that is a 12-core load against an 8-core limit: a threshold of **6** where the correct one is **10**,
 >    failing **closed**. Fixed by `load1_core_basis()`; a profile must now declare `kind`, and a
