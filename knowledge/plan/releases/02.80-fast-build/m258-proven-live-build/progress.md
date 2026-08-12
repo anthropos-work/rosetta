@@ -1,5 +1,23 @@
 # M258 — progress
 
+> ## ⚠️ STATUS — ACHIEVED BY USER RULING (2026-08-12), NOT `gate-met`
+>
+> The user ruled M258 has achieved its goal, accepting it on clauses **1, 2, 4, 5** plus the **~402 s
+> clean projection**, having concluded the CPU contention on this box is not something he can remove.
+> Record it as **achieved by user ruling, timing clause unmeasured under load** — the shape of M257x's
+> `TOK-09`. **Clause 3 is NOT met and must never be recorded as met.** Specifically, and not to be
+> softened: the **840.01 s** figure stays **instrument-rejected** (3/3 `headroom=FAIL`), **401.60 s is
+> a PROJECTION** never measured as one cycle, and no clean p50 over 3 cold cycles has ever been taken.
+> The auto-arm stays armed; clause 3 is now an opportunistic bonus. (`iter-10/decisions.md` `D52`.)
+>
+> **Remaining scope, in order (user ruling):** ~5 iters of build-time fruit → **then fire `TOK-02`, a
+> new goal: SPACE optimisation** (`iter-11/decisions.md` `D57`) → **end state `END-M258-one-stack`:
+> exactly ONE stack up, built with the new mechanism from the newest platform repos.** Currently three
+> (`demo-1`, `demo-2`, dev). ⚠️ **Build-and-verify the new stack FIRST, then tear the others down** —
+> never teardown-first; this is the one sanctioned exception to "never touch `demo-2`", and `demo-2` is
+> *not* the one to keep (it is on **pre-L1** images). **Space must never be bought with time** (`D58`):
+> no `-af`, `--filter until=24h` only, every cache policy argued on both axes with measurements.
+
 ## Running ledger
 
 - iter-01 (**tok**, bootstrap): Phase 0b gate **YELLOW** — 0 blind areas, but **13 stale line anchors in
@@ -147,6 +165,24 @@
   `fast-build-m258-iter-09`, **verified on origin**, consumption clone re-pinned with the
   feature-present check. **Clause 3 armed, not awaited** (`D47`) against a **fresh** output dir.
   — see `iter-09/progress.md`
+
+- iter-11 (tik, `closed-fixed`): **THE SPACE AXIS HAS ITS FIRST MEASUREMENT — and post-teardown was
+  indeed the defect.** **178 of 184 volumes dangling, 5.297 GB, 100 % reclaimable**; reclaimed after
+  proving **OVERLAP 0** against the six in-use volumes (which resolve to `demo-1`/`demo-2`/dev
+  postgres — both of the user's stacks), all three stacks verified resident afterwards (`D54`).
+  **Producer named:** the bitnami Postgres image declares three `VOLUME`s and compose binds only
+  `/bitnami/postgresql`, so **every container start mints two anonymous volumes**
+  (`/docker-entrypoint-{pre,}initdb.d`) that a non-`-v` teardown or a container recreate orphans —
+  three stacks × five days = 178 (`D55`). **`--purge` is EXONERATED by measurement**, not assumed: it
+  runs `down -v --remove-orphans` and today's 3-rep campaign produced **zero** orphans while the newest
+  orphan predates it by five hours (`D56`). Two traps recorded so nobody re-derives them wrong:
+  **`docker images` SIZE overstates reclaimable ~5×** — the four `m257-*:probe` leftovers read 8.88 GB
+  but share 5 of 10 layers with an in-use image, and `system df` says **1.754 GB** (`D53`); and
+  **host-side stack dirs are invisible to `docker system df`** — **4.2 GB** under
+  `stack-demo/…/stacks/` plus an orphan `demo-4/`, which upgrades
+  `ROUTE-M258-iter02-purge-did-not-clear-the-stack-dir` from a curiosity to a space finding. Build
+  cache **deliberately NOT pruned** (19.28 GB reclaimable) — space must not be bought with time
+  (`D58`). — see `iter-11/progress.md`
 
 ## Next-iter routing
 
