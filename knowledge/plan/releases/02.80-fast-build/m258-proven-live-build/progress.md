@@ -246,6 +246,34 @@
   G1 path-assert, minutes before the milestone's binding end state, is the wrong trade; `TIK-C` measures
   it for free. — see `iter-14/progress.md`
 
+- iter-15 (tik, `closed-fixed`): **`END-M258-one-stack` ACHIEVED — exactly ONE stack up (`demo-3`),
+  built with the new mechanism from the newest platform mains** (`platform` `766df6c` · `app`
+  `c52dbc51e` **+76** · `next-web-app` `3379072e9` **+59** · `ant-academy` `7ae25e95`), in the
+  **mandatory order**: build-and-verify first, teardown last, and the **user's own stack torn down LAST
+  of all** — enforced *in code* (`teardown-others.sh` refuses unless demo-3 is up, and re-checks between
+  every step), not by discipline. Survivor verified presenter-usable: **4 orgs / 591 users / 42,790
+  skills / 12 of 12 cockpit seats** across 4 stories, cockpit 200 · web 307 · studio 302 · backend
+  health 200, UI tier **2.15 GB vs demo-2's pre-L1 9.68 GB**. **SPACE: 11.54 GB of real SSD reclaimed
+  at ZERO build-time cost** (Docker.raw **53.84 → 42.30 GB**, images 25.71 → 14.02, free **170 →
+  182 GiB**) — **with the 21.03 GB reclaimable build cache deliberately UNTOUCHED**, which is `TOK-02`'s
+  constraint honoured rather than quoted. **`D70` validated to within 1 MB** (predicted ≈276 MB survives
+  `--purge`; measured **277 MB**), and **`D59` held again** (host file fell 11.54 GB against an in-VM
+  11.69 GB — real SSD, not VM bookkeeping). **The batch gate returned `verdict: red`, `red_count: 15`
+  — ESCALATED, not swept — and the reading that decided the milestone is `D74`: it grades `pt-world`,
+  the DECOUPLED TEST SEED, not the presenter world** the restore leg rebuilt and that was measured
+  healthy. Its causes are **left unresolved and labelled**: 4 plain timeouts at `load1` 26–33 with
+  `retries: 0` (`D28`'s false-red condition) + 11 data-shape assertions agreeing with autoverify's
+  under-set-dress warning, and **no `SQLSTATE 42P01` anywhere**, so the "newest platform moved a table"
+  story is **unproven and must not be reported as diagnosed**. Three more findings: the **rext pin FATAL
+  fired on a half-completed re-pin** and *both* remedies it offered were wrong — `rext.tag` is an intent,
+  not a lock (`D71`); the **clause-3 waiter was disarmed** before the transition because a firing
+  campaign tears `demo-1` down and could have left the user stackless (`D72`); and **`compose down`
+  FAILED on both demos** (*"service sentinel has neither an image nor a build context"*) — **the label
+  sweep is what actually removed all 22 containers**. ⚠️ **`SETTLE-M258-iter13-studio-desk-cold-time` did
+  NOT settle** (`D75`): BuildKit reused iter-13's probe layers, so the "free" cold number was a cache hit
+  (1.5 s export). The studio-desk TIME axis stays **UNMEASURED**; only the 350 MB space win is measured.
+  — see `iter-15/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
