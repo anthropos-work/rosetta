@@ -108,3 +108,117 @@ reset either): `demo-down --purge` + `demo-up --no-public-host`, then the full P
 Deliverable: **the first measured batch half**, its **spread**, the restore-leg cost, and a composed
 figure against 480 s — reported with `load1` and the environment, never as a clean baseline on a
 host that is permanently contended.
+
+---
+
+## TOK-02: spend the space that time does not charge for — 2026-08-12
+
+**Tok type:** bootstrap (**user-directed**, iter-12). Neither automatic rule fired: `TOK-01` already
+holds iter-01, and the 3-no-prog streak did not fire (iter-09/10/11 all `closed-fixed`). This tok fires
+on a **third cause the skill does not enumerate — the user added a GOAL** (`D57`). A new goal with no
+prior strategy is the bootstrap situation, and the bootstrap semantics are the right ones: author a
+first strategy, and **do not terminate the call**. Named as a deliberate extension of rule 1, never as a
+"stall" under rule 2, so the strategy chain records no false stall.
+
+**Initial strategy.**
+
+> **Partition the disk by each byte's COUPLING TO TIME, then spend only where the coupling is zero or
+> favourable — and prove the coupling with a measurement before spending, in both directions.**
+
+The user set the constraint himself: *as little disk as possible on `up`/`down`, **not** at the cost of
+time — "account for this on the cache consideration"* (`D58`). Applied as a tiebreaker at the end, that
+constraint only ever vetoes. Applied **first**, it sorts the entire surface into three classes and the
+sort *is* the strategy (`D60`):
+
+| class | coupling | what is in it | measured basis | policy |
+|---|---|---|---|---|
+| **A** | **zero** | orphaned volumes · dead images · leftover stack dirs · **a stack that is going away anyway** | reclaiming costs no build second | **take all of it** |
+| **B** | **favourable** | **image size** | export/unpack is size-proportional at **5.73–8.05 s/GB** on this host class (`build-budget.md:65,167`) | **this is where the leverage is** |
+| **C** | **adverse** | the **build cache** — 19.28 GB, the largest single reclaim on the box | one 356.8 MB eviction cost **173 s** | **forbidden as a default** |
+
+**Class B is the insight worth the tok.** Space and time are assumed to trade against each other, and for
+the cache they do. For image size they **move together**: this host pays an export/unpack leg
+proportional to image bytes, so shrinking an image makes the build *faster*. L1 already proved it at
+scale — next-web went **4.04 GB → 417 MB and 114.7 s → 53.31 s** with one lever. The user's constraint
+does not bind on Class B at all; it rewards it. So the strategy leads with B, not with deletion.
+
+**Class C is the constraint doing real work.** 19.28 GB is more than every other reclaim on the box
+combined, and a space-only strategy takes it on day one. This one never does — by default. `--filter
+until=24h`, never `-af`, and any policy argued on both axes with numbers.
+
+**Rationale.** The foundation had to be measured first, and was (`D59`): on this host `Docker.raw` is
+allocated **50.68 GB** against a docker-logical **51.56 GB** — 1.7 % agreement — so in-VM reclaim really
+does return SSD. Had the sparse file not tracked, every reclaim figure in this milestone would have been
+fiction and the strategy would have had to start by fixing TRIM instead. Total M258-attributable disk is
+**≈ 63.5 GB** (50.68 Docker + 12.8 host tree).
+
+**The design rule the constraint produced** (`D61`) — carried into every tik, because it generalises:
+
+> **Prune-and-copy, never re-install.** A multi-stage that re-resolves dependencies in the runner buys
+> space with time. Reuse the tree the builder already populated.
+
+**Strategy class:** `new-direction` (bootstrap — no prior space strategy). `TOK-01` is **not superseded**;
+it is complete-by-ruling and `TOK-02` runs beside it.
+
+**Distance-to-gate context.** There is **no gate on space** — the user set a goal, not a threshold, and
+none is invented here. The milestone's binding end state is `END-M258-one-stack` (`D57`), which is a
+*state*, not a number. Space is therefore reported as a **before/after with its environment**, never
+graded against a manufactured ceiling.
+
+Baseline, `macmini`, 2026-08-12 10:06Z, `load1` 19.76, three stacks resident, 173 GiB free:
+
+| axis | value | class |
+|---|---|---|
+| Docker, host-allocated | **50.68 GB** | — |
+| ├ images | 23.83 GB (1.754 reclaimable) | A + **B** |
+| ├ build cache | 27.45 GB (19.28 reclaimable) | **C — out of bounds** |
+| └ volumes | 6 / **0 B** | A (cleared iter-11) |
+| host tree | **12.8 GB** | A |
+| ├ `stack-demo/` | 7.1 GB (`stacks/` 4.2 · `ant-academy/` 2.4) | A |
+| ├ `stack-dev/` | 3.8 GB | A |
+| └ `.agentspace/` | 1.9 GB | A |
+| **total** | **≈ 63.5 GB** | |
+
+**Three tiks, ordered — and the order is load-bearing.**
+
+1. **`TIK-A` — studio-desk, the Class B flagship.** An rext-owned **multi-stage** `studio-desk.Dockerfile`
+   in the shape `next-web.Dockerfile` already sanctions (`up-injected.sh:584` — the clone stays a build
+   CONTEXT only; **zero platform-repo edits**, and not even a demopatch). **Prune-and-copy per `D61`.**
+   Target **≈ 1.25 GB and ≈ 7–10 s per stack** — the trimmed figure from `D62`, *not* iter-11's 115 s.
+   **This runs FIRST because `END-M258-one-stack` requires the surviving stack to be built with the new
+   mechanism** — the lever must exist before the final stack is built, or the final stack is built
+   without it and the tik has to run twice.
+2. **`TIK-B` — the Class A free wins.** `FIX-M258-iter11-postgres-anonymous-volumes` (declare the two
+   undeclared bitnami volumes, or make every teardown path pass `-v` — time-neutral, `D55`) and the
+   F-9 stack-dir survival (`clones/` 220 MB per stack outliving `--purge`). Both cost nothing on the
+   time axis, which is the entire reason they are in scope.
+3. **`TIK-C` — `END-M258-one-stack`.** The hard end state, and **also the largest Class A reclaim
+   available**: two of three stacks stand down, and `demo-2` carries the **pre-L1** pair (next-web
+   4.04 GB + hiring 3.94 GB) that the release's biggest win never reached.
+   ⚠️ **Order is mandatory and is not an optimisation: BUILD AND VERIFY THE NEW STACK FIRST, THEN TEAR
+   THE OTHERS DOWN.** Never teardown-first — the user must never be left without a stack to validate on.
+   Heartbeat before each teardown, naming the stack and why. This is the one sanctioned exception to
+   "never touch `demo-2`", **only at the end, only in that order**.
+   Report the reclaim as a **`system df` before/after**, never from the SIZE column (`D53`).
+
+**Known-context carried into every tik under this strategy:**
+
+1. **`D53` and its siblings** — three different numbers overstate reclaimable space: `docker images`
+   SIZE (~5×, shared layers), `ls -l Docker.raw` (2.7×, sparse apparent size, `D59`), and `docker system
+   df` **not seeing host bind mounts at all** (4.2 GB invisible). **Quote `system df` for Docker and `du`
+   for the host tree; never mix them and never quote SIZE as reclaimable.**
+2. **Every figure carries its host and its `load1`.** The release has paid for this repeatedly — the same
+   Dockerfile yields 4.84 GB on `billion` and 2.88 GB on the retired laptop.
+3. **Ownership is proven by intersection before anything is deleted** (`D54`) — enumerate what every
+   container actually mounts, require overlap **0**. The volumes were anonymous shas; no naming
+   convention would have been safe.
+4. **Clause 3 stays armed and opportunistic** — the auto-arm waiter is alive against `campaign-iter09/`;
+   `load1` minimum since is 14.21 against a threshold of 5.0. A bonus, never the objective (`D52`).
+
+**Next-tik direction (iter-13, a tik).** `TIK-A`. Author `demo-stack/frontend/studio-desk.Dockerfile`
+(multi-stage, prune-and-copy), wire it at the studio-desk build site the way `next-web.Dockerfile` is
+wired, carry over L1's two hard-won lessons — **an anti-silence assert** so a silently non-pruned build
+cannot reach a measurement, and **re-declare any `ENV` the cache validator inspects in the final stage**
+(a multi-stage starts the runner from a fresh base, which is how L1 nearly disarmed its own offset check)
+— then rebuild `demo-1`'s studio-desk and measure **both** axes against 1.7 GB / 115.35 s. Publish the
+environment and `load1` with both numbers.

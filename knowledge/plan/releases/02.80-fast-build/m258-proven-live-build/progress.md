@@ -184,6 +184,27 @@
   cache **deliberately NOT pruned** (19.28 GB reclaimable) — space must not be bought with time
   (`D58`). — see `iter-11/progress.md`
 
+- iter-12 (**tok**, bootstrap flavor — **user-directed**, `closed-fixed`): **`TOK-02` authored — space
+  partitioned by its COUPLING TO TIME**, which is what turns the user's constraint from a veto into a
+  sort (`D60`): **Class A** zero-coupling (orphaned volumes, dead images, stack dirs, *a stack that is
+  going away anyway*) — take all of it; **Class B** *favourable* coupling — **image size**, because
+  export/unpack is size-proportional at a measured **5.73–8.05 s/GB** on this host class, so a smaller
+  image is a **faster** build (L1 proved it: next-web **4.04 GB → 417 MB AND 114.7 s → 53.31 s**, one
+  lever); **Class C** adverse — the **build cache**, 19.28 GB and the largest single reclaim on the box,
+  **out of bounds by default** at a measured 173 s per 356.8 MB evicted. Two unmeasured axes opened.
+  **The host axis (`D59`): `Docker.raw` is allocated 50.68 GB against a docker-logical 51.56 GB — 1.7 %
+  agreement — so in-VM reclaim really does return SSD**; this had to be measured, because on a host whose
+  sparse file does not TRIM every reclaim figure in this milestone would have been fiction. Total
+  M258-attributable disk **≈ 63.5 GB** (50.68 Docker + 12.8 host tree). **studio-desk attributed to a
+  layer:** single-stage Dockerfile, `npm ci` = **1.04 GB = 61 % of the image**, shipped to produce
+  **63.2 MB** of output and run a bare `node dist/index.js` (30 prod deps vs **33 dev**). **The
+  constraint changed the fix** (`D61`): prune-and-copy, **never re-install** — the naive runner's
+  `npm ci --omit=dev` buys space with time, and L1 escaped that only because `next build` *emits*
+  standalone. **And it trimmed the claim** (`D62`): studio-desk's time prize is **≈ 7–10 s**, not
+  iter-11's 115 s — the other ~105 s is `npm ci` + `tsc` + `vite build`, which no runtime shape removes.
+  Third trap sibling recorded: **`ls -l Docker.raw` reads 137.44 GB, 2.7× the truth.** `demo-4/` orphan
+  corrected to **8 KB — a hygiene item, not a space finding** (`D63`). — see `iter-12/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
