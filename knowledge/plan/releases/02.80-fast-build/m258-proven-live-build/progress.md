@@ -24,19 +24,44 @@
   **Not caused by the re-pin** (its whole `up-injected.sh` diff is comments + `log` strings) and
   **`demo-2` is clean** (last key minted). — see `iter-02/progress.md`
 
+- iter-03 (tik, `closed-fixed-partial`): **the routed diagnosis was refuted in all three claims** — the
+  key is **Clerkenstein-minted** (`pk_test_bWFy…` = `marcos-mac-mini.taildc510.ts.net`), **no demo ever
+  reached production auth**; `demo-1` was **public-host** (auto-discovered), not localhost-bound; and the
+  `|| true` is a deliberate `set -e` guard, not a swallow. Real chain found and fixed (rext
+  `fast-build-m258-iter-03`, **on origin**): `inject.py` appends → 24 blocks → **`_stack_minted_pk` reads
+  first-wins while every consumer reads last-wins** → false RED; plus **`buildbench` could not express
+  `--no-public-host`**, so campaigns silently ran the one mode in which the batch **cannot be driven from
+  this host**. **Live-proven with no rebuild**: ISOLATION on the stack that reded went `FAIL (3×
+  foreign_pk)` → **`ok: True`, 0 failures**; the real 128-line/24-block env replays to **37/1**,
+  idempotent. **Batch half still unmeasured** — blocker discharged, but `load1` 39–46 vs 12 cores from
+  **third-party** load (Spotlight + the user's own project) and the headroom gate correctly refuses.
+  — see `iter-03/progress.md`
+
 ## Next-iter routing
 
-- **iter-03 (tik, under `TOK-01`)** — **`FIX-M258-iter02-inject-appends-and-swallows` first**: it gates
-  the milestone's primary unknown. Two defects, one symptom — `inject.py:89` appends a Clerkenstein
-  block per bring-up (24 in `.env.demo-1`, so the file's history outranks its intent) and
-  `up-injected.sh:2036` swallows the mint's stderr and tolerates its failure. **Fix both** — repairing
-  the append alone would mask the swallow. Then re-run the cold cycle and **take the batch half**, which
-  is still the deliverable `TOK-01` step 1 owes.
+- ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
+  cause **retracted** (see the ledger entry above and `iter-03/decisions.md` D8).
+- **iter-04 (tik, under `TOK-01`)** — **`MEASURE-M258-batch-half`**, unchanged as `TOK-01` step 1's
+  outstanding deliverable and still the milestone's primary unknown. The defect blocker is **gone and
+  live-proven gone**; what it now needs is **headroom**. Pre-flight `assert-headroom --profile macmini`
+  (name the host — never bare), then
+  `buildbench run 1 --reps 1 --profile macmini --no-public-host --label m258-iter04` and the full
+  Playthrough batch. **State `load1` and the environment with both halves**, and publish the batch's
+  **spread** beside any p50 (`C2`, the 2.04× decidability caveat).
+- **`FIX-M258-iter03-guard-scans-its-own-scratch`** (net-new) — `test_decommissioned_instruction_guard`
+  walks `demo-stack/stacks/**`, which `demo-stack/.gitignore:8` ignores, and reports the *platform's*
+  source inside a demo's ephemeral clone as a rext named-consumer list. **Proven pre-existing** by
+  running it in the pristine clone at `fast-build-m257-close`: identical 2 failures. Fires on any box
+  that has ever run a demo. Plausibly the same root as M257's *"the stack-core sweep did not complete."*
 - Then, unchanged: wire the batch-gate at `up-injected.sh:2810` under `D-v28-3` semantics → land the
   world-contract restore leg (b) → the composed 3× cold campaign, **spread published beside the p50**.
 - ⚠️ `demo-2` (11 containers) and the 5-container dev stack are the **user's**: do not tear down,
-  re-seed, restart or reset either. **`demo-1` is left UP as iter-03's reproduction and must not be
-  browsed** — its UI tier would talk to a real Clerk app (`iter-02/decisions.md` D7).
+  re-seed, restart or reset either. `demo-1` is left UP as iter-04's reproduction.
+  ✅ **The "must not be browsed — it talks to a real Clerk app" warning is WITHDRAWN** (`iter-03/
+  decisions.md` D10): the premise was refuted and the live ISOLATION assert returns `ok: True` over all
+  8 images. `demo-1` **is** tailnet-reachable (auto-discovered public host, `0.0.0.0`, real LE cert) —
+  which `iter-02` D7 denied — but that is the **documented** demo posture (`safety.md` Part 3), not an
+  exposure of production auth.
 
 ### Also routed from iter-02 (smaller, same tik or later)
 

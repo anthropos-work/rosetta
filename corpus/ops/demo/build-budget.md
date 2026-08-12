@@ -796,18 +796,31 @@ cd <the rext clone>
 #    worst-first. Measure your own host; still do not borrow another's numbers.
 python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
         --public-host <magicdns> --label baseline
+# ⚠️ THE HOST-MODE FLAG IS NOT OPTIONAL INFORMATION — OMITTING BOTH IS NOT "LOCAL" (M258 iter-03).
+# `up-injected.sh:110-114` AUTO-DISCOVERS a MagicDNS host unless it is given `--public-host` OR
+# `--no-public-host`, and that discovery is DEFAULT-ON. A campaign that passes neither runs public-host:
+# 0.0.0.0 binds, https, a tailscale-served origin baked into the bundles. Measured, not theorised —
+# M258 iter-02 ran a whole cycle that way while its own record said `--no-public-host`.
+# It decides what is MEASURABLE, not just what is reachable: a --public-host demo cannot be browsed from
+# its own host (docker-proxy bypasses `tailscale serve` — `run-playthroughs.sh:88-108`), so any campaign
+# that also drives a browser on that box MUST pass --no-public-host or the browser half cannot run.
+python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
+        --no-public-host --label single-box      # the single-box mode; mutually exclusive with the above
+# Every rep ledger records `bringup_argv`, so which mode produced a number is readable from the record
+# itself — it used to have to be recovered by grepping a progress line out of `cycle.log`.
 python3 stack-core/buildbench.py report stack-core/.buildbench/baseline-<ts>
 python3 stack-core/buildbench.py assert-headroom --profile laptop --lanes 2   # exit 1 = plan oversubscribes
 python3 stack-core/buildbench.py env-snapshot                                 # every knob + where it is read
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse constructed at `buildbench.py:2054`). The ones above are the
+**The full flag surface** (verified against the argparse constructed at `buildbench.py:2123`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |
 |---|---|---|---|
 | `run` | `--out <dir>` | `<rext>/stack-core/.buildbench/<label\|campaign>-<utc-ts>` | where the campaign dir is written |
+| `run` | `--no-public-host` | off | **force the single-box mode.** ⚠️ *Off is not "local"* — with neither host flag, `up-injected.sh` **auto-discovers** a MagicDNS host (default-on), so the campaign runs public-host. This flag is REQUIRED for any campaign that also drives a browser on the same box, because a `--public-host` demo cannot be browsed from its own host. Mutually exclusive with `--public-host`, refused before any teardown (M258 iter-03) |
 | `run` | `--no-reclaim` | off | **skip the between-reps reclaim.** Changes the variant — reps then accumulate cache |
 | `run` | `--reclaim-until <dur>` | `24h` | the `docker builder prune --filter until=` window (§*The campaign protocol* step 3) |
 | `run` | `--dry-run` | off | plan the campaign without running a cycle |
