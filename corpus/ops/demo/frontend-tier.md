@@ -47,7 +47,27 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 > `NEXT_PRIVATE_STANDALONE` is **not** among the 44 names there. Without the flag the variable never reaches
 > `next build`, `output` stays undefined, **the build still exits 0**, and the image is the old ~4 GB one.
 > Both Dockerfiles therefore assert `test -d apps/<app>/.next/standalone` and fail loudly rather than trust
-> it.
+> it — and at the M257 final harden that assert stopped being trusted too. It had been fenced by *string
+> presence*: two tests checked the text was in the file, which is exactly as strong as the reader's shell
+> grammar. `test_the_standalone_assert_ACTUALLY_FAILS_a_build_not_merely_appears_in_one` now extracts the
+> shipped `RUN` line, runs it under `sh` against a tree with no standalone output, and requires a non-zero
+> exit naming `NEXT_PRIVATE_STANDALONE`. Mutation control: losing the `exit 1` makes the fragment exit 0 and
+> every string assert still passes.
+>
+> **⚠️ The next-web image carries `apps/web/.env` — a real-Clerk publishable key and `CLERK_SECRET_KEY` —
+> and it is loaded at runtime, not merely carried** (measured at the M257 final harden on the real post-L1
+> image: 19,087 bytes at `/app/apps/web/.env`, with **no** `.env.local` beside it; the hiring image has
+> neither). It reaches the runner stage inside `.next/standalone`, and standalone's `server.js` calls
+> `loadEnvConfig` at boot. What keeps a demo honest is that `@next/env` never overwrites an already-set
+> variable and the injected override sets the four `CLERK_*` explicitly — so the residual is the **set
+> difference**: anything in that file compose does not name. The cause is one missing pattern in a
+> **tooling-owned** file: `demo-stack/frontend/next-web.dockerignore` excludes `.env*`, Docker matches
+> `.dockerignore` patterns from the **context root**, and that rule therefore covers `./.env` and nothing
+> nested — while every other rule in the file is deliberately paired with a `**/` twin. **Do not take the
+> one-line fix:** `**/.env*` also excludes `apps/web/.env.local`, the overlay carrying the *minted* key into
+> `next build`, so the tidy repair bakes the **real** Clerk key — the M218 iter-03 incident, re-created by
+> its own fix. Routed as `FIX-M257-dockerignore-env-pattern-unpaired`; the net under it is the ISOLATION
+> gate clause, which books a non-minted key in the bundle as `foreign_pk` and reds the campaign.
 
 ## What `/demo-up` brings up (UI tier)
 
