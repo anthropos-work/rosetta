@@ -325,3 +325,40 @@ with the precondition absent), then open `BASELINE-M257-macmini-n3`: the `n ≥ 
 `demo-down --purge` + `demo-up` campaign on a **free** demo slot, every rep labelled with its load1, filling
 `macmini.json`'s `gated_baseline`. Heartbeat before disturbing the user's `demo-2` or the dev stack; prefer a
 slot that is already free.
+
+## HARDEN-M257-1 — the final harden pass's routed handler + the two it re-affirmed — 2026-08-12
+
+Recorded at milestone-root level so `/developer-kit:audit-deferrals` sees them; the pass's full findings
+are in `hardening-ledger.md` (Pass 1).
+
+**NEW, routed forward — `FIX-M257-dockerignore-env-pattern-unpaired`.**
+`demo-stack/frontend/next-web.dockerignore` excludes `.env*`. Docker matches `.dockerignore` patterns from
+the **context root**, so that rule covers `./.env` and nothing nested — while every other rule in the file is
+deliberately paired with a `**/` twin. Consequence, measured on the real post-L1 image: `apps/web/.env`
+ships into the runner carrying the platform's real Clerk publishable key and `CLERK_SECRET_KEY`, with no
+`.env.local` beside it, and standalone's `server.js` **loads it at boot** — it is not an inert build
+leftover. The Clerk vars are masked by `gen_injected_override.py` setting them explicitly plus `@next/env`'s
+never-overwrite rule; the residual is the set difference.
+
+**Why it was not fixed inline (three-fate rule, Fate 3 with a named handler).** The one-line repair
+(`**/.env*`) also excludes `apps/web/.env.local` — the overlay carrying the **minted** key into
+`next build` — so it would bake the **real** Clerk key: the M218 iter-03 incident, re-created by its own
+fix. A correct repair needs a re-include and a real build to validate, which a harden pass cannot do
+without a bring-up. The net under it is iter-09's ISOLATION clause: a bundle carrying a non-minted key is
+the `foreign_pk` arm, so the naive repair reds the campaign rather than reaching a presenter.
+
+**Corrected, not deferred — `FIX-M257-committed-env-ships-real-clerk-pk`.** Its description says
+*committed*. The file is untracked (`git ls-files 'apps/*/.env*'` returns only `.env.example`), so a fixer
+follows it into the platform repo, finds no tracked file, and concludes the finding was mistaken. The
+handler is superseded by the one above, which names the real mechanism in a file this repo owns.
+
+**Re-affirmed, unchanged — `FIX-M257-anchor-guard-content-drift`.** Still Fate 3: a new detection mode on a
+pre-commit fence grading the whole corpus's citations, late in a milestone. The harden pass did not land it
+and did not widen it; it made the limit executable (`TheContentDriftBlindSpot`, which goes RED when the
+handler lands and hands over its fixture) and moved the statement of the limit into the guard's own
+docstring, where an auditor reads it.
+
+**Not deferred and explicitly not raised — the two literal ratchets.** `DOCSTRING_LITERAL_CEILING` and
+`TEST_MODULE_LITERAL_CEILING` are breached against ceilings of 240 / 653. The breach is pre-existing and
+whole-tree. This pass's own prose added to both and that growth was **deleted**, returning each to exactly
+iter-09's closing reading, per the standing rule that a ceiling one has not attributed is never raised.
