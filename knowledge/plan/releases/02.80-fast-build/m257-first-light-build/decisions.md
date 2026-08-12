@@ -362,3 +362,40 @@ docstring, where an auditor reads it.
 `TEST_MODULE_LITERAL_CEILING` are breached against ceilings of 240 / 653. The breach is pre-existing and
 whole-tree. This pass's own prose added to both and that growth was **deleted**, returning each to exactly
 iter-09's closing reading, per the standing rule that a ceiling one has not attributed is never raised.
+
+## HARDEN-M257-2 — the stack-core failure roster, attributed — 2026-08-12
+
+The orchestrator's standing instruction was to **re-verify** iter-09's attribution of the whole-tree
+`stack-core` reading rather than inherit it. Done, against iter-09's own sweep log on disk.
+
+**8 of the roster were fixed by this harden pass, and none of them was about this repo's code.**
+`test_suite_census_collection.py` (6) and `anchor_construct_guard`'s two live-tree arms were RED before
+the pass and are green after — the first from a demo's persistent platform clone leaking into the census
+population, the second from five inverted range citations. Both are recorded in `hardening-ledger.md`.
+
+**The largest remaining cluster now has a named cause, and it is the BOX.** `test_suite_census.py`'s four
+`TestBucketsFire` arms plus `test_suite_census_population.py`'s health arm fail because `run_one`'s
+**unittest** column cannot import a test module under the interpreter `pytest` resolves to on this box.
+Measured across all three interpreters present, on a real module:
+
+    /usr/bin/python3            3.9.6    OK
+    homebrew python@3.12        3.12.13  ModuleNotFoundError: No module named 'tests.<mod>'
+    /opt/homebrew/bin/python3   3.14.6   OK
+
+`*/tests/` carries no `__init__.py` anywhere, so those directories are namespace packages, and only 3.12
+declines to resolve `tests.<mod>` from a section root. `suite_census`'s own docstring is headed *"THERE ARE
+TWO INTERPRETERS"* and names 3.9.6 and 3.14.6 — both still true individually — while `stack-core/README.md`
+instructs *"run it with the `pytest` entrypoint"*, and that entrypoint is a **third** interpreter neither
+document names. So the suite is routinely driven by the one configuration in which the census's second
+runner reports an ImportError for everything.
+
+**Routed forward — `FIX-M257-census-interpreter-namespace-import`.** Fate 3, not Fate 1: the three candidate
+repairs (section root on `PYTHONPATH` inside `run_one`; switch the arm to `unittest discover`; add
+`__init__.py` across every `tests/`) each change either what this census MEASURES or what pytest treats as a
+rootdir, and picking between them is a decision about which interpreter is canonical for this repo. It is
+also not M257's code — no iter of this milestone touched `run_one`. The finding is recorded in the module's
+own docstring, where the stale two-interpreter heading was.
+
+**Attribution verdict:** the residual `stack-core` failures do not name any file this milestone authored.
+The milestone's own test files were re-run individually and are green; `stack-injection` is 329 passed /
+8 skipped; the five Go sections are 44 packages with 0 FAIL, uncached.
