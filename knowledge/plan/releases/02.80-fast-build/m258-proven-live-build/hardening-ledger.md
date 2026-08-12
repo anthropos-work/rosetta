@@ -242,3 +242,50 @@ session, across Go and Python, run sequentially.
 
 **Stop condition:** continue-to-next-pass — one real fail-open closed, and the cumulative scope is now
 fully swept, so pass 5 is the cross-iter composition check rather than new ground.
+
+## Pass 5 — 2026-08-12 — final
+
+**Iters hardened this pass:** none — final mode's defining work, the **cross-iter composition check**.
+The cumulative scope was fully swept by pass 4, so this pass asks the only question left: do this
+session's seven changes, which touch four sections and two files twice each, compose?
+
+**The interactions checked, not assumed:**
+- `restore-presenter-world.sh` was edited twice (the casbin-invalidation fence in pass 1, the
+  `STACK_BIN` live-resolution fix in pass 1) — both fences green together.
+- `buildbench.py` was edited twice (the dotenv decision in pass 2, the batch-applicability extraction in
+  pass 3) — 159 buildbench + 57 isolation green together.
+- `check-cockpit-roster.py` was made STRICTER in pass 4 while `restore-presenter-world.sh` invokes it as
+  a post-condition — the restore-leg fences and the roster fences pass together, and the live defect's
+  own shape is still reported.
+- `services.sh` and the unscoped-run disclosure were changed as a pair — caught by a coupled fence at
+  the time, and still agreeing.
+
+**Verification (all re-run after every fix was in):** corpus fence set **15/15 `rc=0`** ·
+`playthroughs` 4/4 Go packages · `stack-injection` 342 · `dev-stack` 166 · `stack-verify` 275 ·
+`stack-snapshot` 6/6 packages · `stack-core` scoped modules green (buildbench 159, isolation 57,
+platform-predicate 191, service-registry 38, bringup-verify-scope 15, emphasis-reach) ·
+`demo-stack` 1119 run with **the same 9 failures, byte-identical to the pass-1 list** — `diff` of the
+two failure sets is empty.
+
+**⚠️ ONE RATCHET GREW, and it is recorded rather than absorbed.** `test_the_population_does_not_GROW`
+counts measurement literals outside a `print()`. Measured on both trees: **pristine `5566538` = 248
+(dated 120), HEAD = 249 (dated 121)** against a ceiling of **240**. So the ratchet was **already
+breached by 8 before this session** — it is part of the pre-existing census family iter-18 measured and
+iter-20 routed forward — and this session added **exactly one** literal: the `range(24)` in the
+injection-collapse test, reconstructing the measured 24-block shape. The delta is **entirely in the
+`dated` class** (120 → 121; `doc-relative` 7 and `standing` 121 are unchanged), which is the instrument's
+own sanctioned remedy — *"derive it, date it, or raise the ceiling with a reason"*. **No ceiling was
+raised.** The literal is load-bearing: 24 is the count measured on the live `demo-1`, and the test exists
+to prove the collapse works at that size.
+
+**Pre-existing failure attribution, re-derived for the census family:** `frozen_expectation` reports
+**11** failures at HEAD and **11 at pristine `5566538`** — the **same eleven by name**. Checked
+deliberately, because this session added ~600 lines of heavily-documented test code and the ceiling
+tests are exactly the shape that would notice: nothing was introduced. My own added test
+(`test_no_TRACKED_file_lives_under_a_stacks_component`) is not among them.
+
+**Flakes stabilized:** none. Flake gate re-confirmed in pass 4 (3 consecutive clean runs, both languages).
+
+**Stop condition:** stabilized — the cumulative scope is fully swept, this pass introduced no new tests
+and found no new defects, every touched suite is green, and the `demo-stack` failure set is
+byte-identical to where the session started.
