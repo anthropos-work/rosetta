@@ -187,6 +187,26 @@ Findings from the close's scope / code-quality / adversarial / docs / tests / de
 - [x] `_ledger`, the fixture claiming to be "the shape `run_campaign` really writes", carried no isolation
       block. Repaired the fixture, not the assertions it was hiding.
 
+### Known carries — pre-existing failures, flagged rather than elided (Phase 4 step 1)
+
+The full `demo-stack` suite reads **9 failed / 1,089 passed / 1 skipped**. **None is attributable to this
+milestone**, and the attribution was measured rather than asserted — the 9 were re-run at the pre-close ref
+`7516fa8` in a detached worktree, where the live-clone arms **skip** (no `demo-stack/stacks/` beside them)
+and the live-container arms **fail identically**.
+
+- **6 = `FIX-M257-demopatch-sha-baselines-drifted`**, already routed → M258 (`test_ssr_origin_chain` ×3,
+  `test_demopatch` ×2, `test_ant_academy` ×1). Whole-file `pre_sha256` baselines stale against the live
+  clone; **every anchor contract still holds** (probed at iter-08), so this is the self-healing freshness
+  gate working as designed. The count is **exactly the 6** that item recorded, unchanged.
+- **3 = live-container arms** (`test_migrate_race_live`) — fail at the pre-close ref too, and belong to
+  M257x's `ROUTE-M257x-h73-demo-stack-live-arms-red-while-a-demo-is-up`: they assert against a real clone
+  and a live stack, and **the user's `demo-2` (11 containers) is up and holding both**. As that route says,
+  the defect is not the red — it is that nothing in the suite's output distinguishes an in-use clone from a
+  broken patch chain.
+
+**None of the 9 names a file this close or this milestone edited.** The `stack-core` files M257 authored
+were re-run individually and are green; `demo-stack`'s two milestone files are **124 passed**.
+
 ### Decision Triage
 - [x] D-M257-C1 (claim-keyed fence) → blended into `build-budget.md` + the fence's own docstring.
 - [x] D-M257-C2 (the retraction that isn't) → blended into `frontend-tier.md` §12 GB prerequisite.
