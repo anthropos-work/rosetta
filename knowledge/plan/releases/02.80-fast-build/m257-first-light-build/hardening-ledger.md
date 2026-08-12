@@ -232,8 +232,10 @@ the six dimensions over the cumulative scope again and found nothing new to writ
   ephemeral `docker run --rm` reads against **`demo-1`** images, whose stack slot was already free
 
 **One item did not return, and it is stated rather than waited out.** The whole-tree `stack-core` pytest
-sweep launched at the start of Pass 1 was still running at close, 53+ minutes in against a 32–57 minute
-measured band on this permanently-contended box — and its own runs of this session's tests were competing
+sweep launched at the start of Pass 1 was still running at close — **55m12s** in against a 32–57 minute
+measured band on this permanently-contended box, versus 34m56s for the same section in iter-09's sweep —
+and was **terminated as part of session cleanup** rather than left as an orphan on a box the user is
+working on — and its own runs of this session's tests were competing
 with it for the box. It is **not load-bearing for the attribution**, which was answered on stronger
 per-item evidence and is recorded as `HARDEN-M257-2`: iter-09's roster read off its own on-disk sweep log,
 every previously-failing census file re-run individually, and the largest remaining cluster's cause measured
