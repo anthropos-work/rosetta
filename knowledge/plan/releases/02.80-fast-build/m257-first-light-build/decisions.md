@@ -399,3 +399,148 @@ own docstring, where the stale two-interpreter heading was.
 **Attribution verdict:** the residual `stack-core` failures do not name any file this milestone authored.
 The milestone's own test files were re-run individually and are green; `stack-injection` is 329 passed /
 8 skipped; the five Go sections are 44 packages with 0 FAIL, uncached.
+
+---
+
+## CLOSE-M257 — the close's own decisions + the deferral re-audit — 2026-08-12
+
+### D-M257-C1 — the §8.5 retraction reached a site the plan never enumerated, and the fence is keyed to the CLAIM, not to a site list
+
+`D-v28-10`'s work list named `frontend-tier.md` ×4 + `README.md` + `CLAUDE.md`. Two of those cites were
+wrong on arrival (`CLAUDE.md:318` is a Clerk bullet; the real row is `:444`), all four `frontend-tier.md`
+cites had drifted **+61 lines**, and grepping the claim strings found a **seventh** live site the
+enumeration never contained — `tailscale-serve.md`'s *"the next-web build spikes to ~3.7 GB"*, the last
+live copy in the corpus. Two more (`verification.md`, `demopatch-spec.md`) carried the *"~3 min build"*
+magnitude inside arguments that survive but whose number does not.
+
+**Decision: the fence greps the CLAIM across a scoped file set, and a hand-written site list is never the
+gate.** `stack-core/tests/test_section85_retraction_fence_m257.py`. A site list is a snapshot of where a
+claim was **on the day someone looked**; the claim is what propagates. (`§5` rule 54.)
+
+**And the fence is POSITIONAL, not absence-based** — the design call worth recording. Every retraction in
+this corpus quotes what it retracts; `build-budget.md:10` opens by quoting all three stale numbers on
+purpose. A "these strings must not appear" fence is therefore unsatisfiable, and satisfying it would trade
+*being wrong* for *being silent* — silence being what let these survive four releases. The rule is: a
+retracted claim may appear only where a reader is being **told** it is retracted (marker on the line or
+within three preceding non-blank lines). It caught two of my own sentences immediately, plus a
+case-sensitivity hole in its own marker list.
+
+### D-M257-C2 — one of the four "retracted" claims is NOT retracted, and reading it settled it
+
+The plan lists *"pure memory starvation, not a slow build"* among the claims to retract, on M255's
+evidence that a cold cycle spent 288.4 s in export/unpack on a box under no memory pressure.
+
+**Decision: it is half true and wrongly EXCLUSIVE, and only the exclusivity is retracted.** Swap-thrashing
+on an undersized VM holding a second stack is real and reproducible; the build was *also* genuinely slow,
+independently of memory. Both were true and the sentence asserted one. L1 removed the I/O half, which makes
+the 12 GB prerequisite matter **more** now, not less. Deleting a true observation to satisfy a work list
+would have been a worse outcome than the stale sentence.
+
+**The related and larger finding:** the *"~3.7 GB"* beside it was an **image size quoted as a memory
+figure**, and the measured per-lane heap peak is per-host — 3,116 / 3,900 / 4,223 MiB. That band
+**brackets** 3.7 GB, which is why it survived: approximately right, for a reason nobody had checked.
+
+### D-M257-C3 — the gate instrument's own review found three fail-opens, and the gate was re-graded rather than assumed
+
+Cross-cutting review over M257's 12 rext commits. All three must-fixes were in code this milestone
+authored, and each is the milestone's own lesson turned back on it: clause 3 fell back to the **host**
+filesystem on a VM profile (the two-machines substitution `load1_core_basis` exists to refuse, with the two
+clauses of one assert holding opposite policies); `isolation_ok` was computed in `build_report` and read by
+nothing, so `buildbench report <dir>` printed `gateable: true` over a directory with no isolation block;
+and the RED reason string enumerated six causes, none of them isolation.
+
+**Decision: fix all three, then RE-GRADE the three gate-met reps under the fixed code before believing the
+headline.** `rep_is_ok` True ×3, `ok`/`gateable` true, p50 **286.99** unchanged, identity `match` ×3. The
+fallback was never exercised in those reps (they recorded ~65 GiB, the VM's own figure, not the host's 173),
+so the fix does not retroactively disturb the gate — **and that was measured, not assumed.**
+
+### D-M257-C4 — the fixture that hid finding 2 had hidden the same class one iter earlier
+
+`_ledger` calls itself *"a rep ledger in the shape `run_campaign` really writes"* and its docstring narrates
+how omitting `host_identity` let the aggregate ignore that field for a whole iter. It then omitted
+`isolation` for exactly as long. **Decision: repair the FIXTURE, not the assertion** — including the
+identity control named *"…so the clause is not an identity"*, which would otherwise have been "fixed" by
+weakening the very control it exists to be.
+
+## Deferral re-audit at close (Phase 1b) — 2026-08-12
+
+**Verdict: YELLOW.** No escape-hatch deferral, no unfated item, and one genuine repeat-deferral pattern
+found and half-discharged.
+
+**Landed during the milestone** (no fate needed): `FIX-M256-demo2-service-self-termination` ·
+`FIX-M256-autoverify-fapi-libressl` (both iter-02, the two inherited from M256) ·
+`FIX-M257-seeders-local-mirror-drop` + `FIX-M257-app-studio-acquisition` (B1/B2, iter-03) ·
+`PROFILE-M257-odysseus-json` → satisfied as `macmini.json` (iter-04) · `DOC-M257-hostclass-retraction`
+(iter-05) · `FIX-M257-load1-units-vm` (iter-06) · `BASELINE-M257-macmini-n3` (iter-08) ·
+`LEVER-M257-L1-multistage-next` + `ASSERT-M257-isolation-with-L1` (iter-09).
+
+**Landed at the final harden but never recorded as discharged** — corrected here so the audit does not
+carry a fixed item forward: **`FIX-M257-sweep-scratch-pollutes-census`** was fixed by harden pass 1
+(`ca9baff`, the shared ephemeral-clone predicate), which described the fix without naming the token it
+closed. *(This close then found that predicate matched an **absolute** path substring — any checkout under
+an ancestor named `stacks` published a census of zero — and that the comment claiming "a shared predicate
+now" was declaring a unification it had not performed. Both fixed.)*
+
+**DROPPED, with reason:** `INVESTIGATE-M257-load1-48` — the 48.7 reading was taken on `odysseus`, retired
+by `D-v28-15`, and is **un-reproducible**. Narrowed twice before dropping (the units mismatch is not its
+cause; a load1 far above core count was later observed on a *second* host, which weakens the
+odysseus-specific reading). The surviving hypothesis is recorded at `buildbench.py:349-350`, and the
+companion suspicion — *"was clause 1 ever actually asserted?"* — is answered: it was, on `macmini`, six
+campaigns' worth. **Superseded:** `FIX-M257-committed-env-ships-real-clerk-pk` by
+`FIX-M257-dockerignore-env-pattern-unpaired`; the original said *committed*, the file is untracked, and a
+fixer would follow it into the wrong repo.
+
+### ⚠️ The repeat-deferral pattern, named: FOUR items inherited from the M255 close (2026-07-28)
+
+M255 routed four items to M257 with the explicit rationale that *M257 is the milestone that actually
+exercises each of them*. **M257 landed none of them across nine iters.** That is the pattern the audit
+exists to catch, so it gets an explicit per-item fate rather than a fourth silent carry:
+
+1. **`_manifest_lists` body extraction — LANDED NOW (Fate 1).** Measured first: the old
+   `text.find("\n}\n")` rule returns the **identical** offset as a correct next-function-bounded parse on
+   the shipped script, and the tail between them is 0 lines / 0 manifest declarations. So the defect was
+   **latent, not live** — nothing published was ever computed from a short body. That is exactly why it
+   became a *fence* rather than a correction: the answer was right and **nothing was keeping it right**.
+   Body now bounded by the next top-level function; `_SHORT_BODY` records a disagreement rather than
+   absorbing it; +4 tests including a mutation control that plants a column-0 `}` in a copy of the real
+   script, and a refusal control for an unterminated function.
+2. **`demo_knob_guard` anchor-fence mutants — Fate 3 → M258, with a MEASURED reason replacing the
+   original one.** The item read "add mutants for the anchor comparison and the `--fix` regenerator". I
+   wrote them, and they cannot be attributed: `test_demo_knob_guard.py` is **RED before any mutation** in
+   the battery's staged tree (measured: 27 passed in the real tree; **8 failed / 14 skipped** in a staged
+   copy, because the staged tree has no `up-injected.sh` sibling and no rosetta root). So the blocker is
+   not a missing entry — **it is that the battery's staging cannot host this guard's tests at all**, and a
+   mutant that "goes RED for whatever unrelated reason measures nothing" (`§5` rule 53, which is what
+   flagged it). The mutants were **reverted** rather than left passing-for-the-wrong-reason. Routed with
+   this finding attached, which is a better statement of the work than the original.
+3. **`run_campaign` rep-body coverage — Fate 3 → M258, partially discharged.** Real coverage now exists and
+   arrived from a different direction: iter-229's identity work drives `run_campaign` end-to-end under a
+   faked `pre_rep_assert` / `host_facts` / `demo_env_snapshot` / `docker_system_df` set. What the M255 item
+   named and is **still** unproven end-to-end is the **staleness** and **dead-sampler** paths. Reported as
+   partial rather than closed.
+4. **`PROFILE-M257-provisional-fields` — Fate 3 → M258.** Still not machine-declared; `projected_image_gib`
+   is provisional in **two** profiles now. Partially mitigated at this close: `macmini.json` gained an
+   explicit `notes.build_shape` recording that its `lane_heap_measured_peak_mib` and `projected_image_gib`
+   describe the **pre-L1 single-stage** build L1 deleted, so both now over-reserve — conservative in the
+   safe direction, and no longer silently so. The general mechanism is what remains.
+
+### Routed forward (Fate 3 → M258), all recorded at the destination
+
+`M258/overview.md` now carries an *"Inherited from the M257 close"* section naming every one:
+`LEVER-M257-L5-setdress` (**the ranking moved: `set_dress` is now the largest phase at 28.6 %**) ·
+`FIX-M257-dockerignore-env-pattern-unpaired` · `FIX-M257-anchor-guard-content-drift` ·
+`FIX-M257-census-interpreter-namespace-import` · `RATCHET-M257-literal-ceilings-breached` ·
+`FIX-M257-demopatch-sha-baselines-drifted` · `FIX-M257-campaign-kill-orphans-bringup` ·
+`FIX-M257-sampler-disk-units-vm` · `MEASURE-M257-macmini-true-idle` · the four M255-inherited above · and
+**two net-new at this close**: `FIX-M257-frontend-floor-is-billion-shaped` and
+`FIX-M257-image-listing-conflates-empty-and-unreadable`.
+
+### ⚠️ And a routing that had never reached its destination — fixed here
+
+**M257x closed on 2026-08-11 routing 11 items / 5 clusters + 1 block fate to M258, and
+`grep M257x m258…/overview.md` returned ZERO hits.** That is verbatim the `BIND_HOST` / `D-M255-7` failure
+recorded *in that same file*: **a routing written in a closing milestone's decisions is not a routing until
+the target's own doc says so.** The lesson was already written down there, one section above where the gap
+was, and the very next close repeated it. M258's `overview.md` now carries an M257x section, and M257x's
+`carry-forward.md` cluster 4 is annotated in place with the half M257 discharged (the measured `macmini`
+profile; clause 1 now gradeable) so M258 does not inherit a claim that has stopped being true.

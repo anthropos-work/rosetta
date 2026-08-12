@@ -796,8 +796,58 @@ platform ships coordinated multi-repo changes — `repos.yml` moved **39 minutes
 
 ### M257: First-light build
 
-**Status:** `in-progress` (resumed 2026-08-11 at iter-04) · **Shape:** `iterative`
-> ▶️ **RESUMED.** It was paused behind M257x after 3 closed iters; M257x's close unpaused it, and iter-04's
+**Status:** `done` — **closed 2026-08-12, `closed-on-gate`.** · **Shape:** `iterative`
+
+> ✅ **THE GATE FIRED, on its own terms.** **p50 286.99 s** on `macmini` (n=3 — 286.99 / 303.44 / 280.99)
+> against a **360 s** gate and **under the 300 s stretch**, with `autoverify green:true / 0 warnings`,
+> **HEADROOM OK 3/3** and **ISOLATION OK 3/3**, host identity `match` ×3, **0 platform-repo edits** and 0
+> refused demo-patches. Not a user ruling and not a narrowed definition of done — distinct from M257x, which
+> closed `closed-incomplete` by ruling one day earlier. **9 iters (7 tiks + 2 toks); ONE lever landed of
+> eight priced, and it cleared the gate alone.**
+>
+> **L1** — multi-stage the two Next images to `.next/standalone` from **rext-owned** Dockerfiles (`next-web`
+> moved build shape 1 → 3, so no platform-repo edit was needed): images **4.04 GB → 417 MB** and
+> **3.94 GB → 380 MB**, `exporting to image` **136.4 s → 3.8 s**, UI tier **246.23 → 104.60 s (−141.63)**
+> against a pre-lever `macmini` baseline of **449.51 s** (n=3, *contended and labelled*, and RED by contract
+> on headroom — a baseline, never a gate pass). `backend_builds`' −12.37 s is booked as **variance**, not
+> credited to the lever. **billion's 666.29 s was never the denominator and does not transfer.**
+>
+> **Both falsifiable clauses actually fired during the milestone**, which is what makes the pass mean
+> something: HEADROOM failed 2 of 3 reps on the baseline campaign (peak load1 19.48 / 14.52 vs 10);
+> ISOLATION was proven able to fail by 19 unit + 3 live controls after two fail-opens only a live artefact
+> could reveal. The headline was **re-graded twice under code that changed after it was taken** — at the
+> final harden, and again at the close under three instrument fixes — and did not move.
+>
+> **The close landed the milestone's remaining declared scope** (`D-v28-10` / `D121`): the §8.5 corpus
+> retraction and the achieved-numbers rewrite of `frontend-tier.md` + `build-budget.md`, **once**, plus the
+> grep gate `D-v28-10` promised and that had never existed. Two of the plan's cites were wrong on arrival,
+> four had drifted **+61 lines**, and a **seventh live site was never enumerated at all** — so the fence is
+> keyed to the **claim**, not to a site list. It is **positional, not absence-based**: this corpus quotes
+> what it retracts, so demanding absence would trade being wrong for being silent.
+>
+> **And the close found three fail-opens in the gate instrument itself**, all in code this milestone wrote,
+> none caught by nine iters of per-commit review or three harden passes — visible only when the code was
+> read as a whole. Clause 3 fell back to the **host** filesystem on a VM profile (the two-machines
+> substitution `load1_core_basis` exists to refuse — the two clauses of one assert held opposite policies);
+> `isolation_ok` was computed in `build_report` and **read by nothing**, so `buildbench report <dir>` printed
+> `gateable: true` over a directory with no isolation block; the RED reason string named six causes and not
+> isolation. **The fixture that hid the second had hidden the same class one iter earlier.**
+>
+> **The ranking moved underneath the plan:** with the UI tier collapsed, **`set_dress` is the largest single
+> phase at 82.04 s = 28.6 %**, where L5 was priced ~30–50 s and ranked **fifth**. Routed to M258 as
+> `LEVER-M257-L5-setdress` with 14 other Fate-3 items — **0 escape-hatch deferrals**, no `carry-forward.md`
+> (a `closed-on-gate` close produces none), everything recorded **at the destination**. The close also fixed
+> a routing that had never reached one: **M257x's carry-forward had zero mentions in M258's `overview.md`**,
+> the `BIND_HOST` failure recorded in that same file.
+>
+> **The lesson worth keeping:** *a gate that names a dead thing does not fail — it abstains, and abstention
+> is invisible.* Three iters closed an accurate "metric delta 0" and none could say "and no delta is
+> achievable", because the gate's **subject** (`odysseus`) was retired one day after `TOK-01` named it.
+> **Check a gate for GRADEABILITY before checking it for satisfaction.** Full record:
+> [`m257…/retro.md`](releases/02.80-fast-build/m257-first-light-build/retro.md) · `metrics.json` ·
+> `progress.md` § Gate Outcome Ledger.
+
+> ▶️ **RESUMED (history).** It was paused behind M257x after 3 closed iters; M257x's close unpaused it, and iter-04's
 > re-survey found **both** premises the pause rested on were **stale**. (1) iter-03's architectural blocker was
 > already fixed by M257x (`c0e075e`), verified by fence and live DB rather than by commit subject. (2) The
 > host-class premise — *"the Mac pays no unpack leg"* — is **measured false** (see the retraction under
@@ -880,7 +930,10 @@ removes **5 hidden images** that `compose up` then rebuilds inline with no per-s
 cache-reuse checks (`:562`, `:849`, `:1077`) can **never** hit on a purge cycle.
 
 **Depends on:** M256 · **Parallel with:** none by default · **Estimated complexity:** very-large
-**Re-scope trigger:** if after L1 + L2 + L3 the p50 is still > 480 s, the remaining cost is structural — escalate.
+**Re-scope trigger:** ~~> 480 s~~ → **re-derived to 400 s at iter-08** against `macmini`'s measured
+`gated_baseline`, exactly as the overview demanded the moment that field was filled. *(This line said
+**480 s** and `:491` below said **420 s** — two values for one trigger, both scaled from `billion`'s
+666.29 s. Corrected at the M257 close; the trigger never fired, because L1 alone landed at 286.99 s.)*
 **KB dependencies:** `corpus/ops/demo/build-budget.md` (M255) · `corpus/ops/demo/frontend-tier.md` ·
 `corpus/ops/demo/demopatch-spec.md` · `corpus/ops/rosetta_demo.md` · `corpus/ops/idempotency.md` ·
 `corpus/ops/safety.md` · `corpus/ops/snapshot-spec.md`

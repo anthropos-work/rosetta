@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M257
 title: "first-light build"
-status: in-progress
+status: archived
 release: v2.8 "fast build"
 exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **the local Mac mini** (`macmini` — the M4 Pro host D-v28-15 moved ALL dev/test to; profile `stack-core/hostprofiles/macmini.json`) — the host changed at D-v28-14 and AGAIN at D-v28-15, and this line named **odysseus** until M257 iter-05 re-pointed it: odysseus is RETIRED from this project and billion is demo-only, so a gate naming either could not be graded at all. **The baseline must be RE-MEASURED here (n >= 3) and `macmini.json`'s `gated_baseline` filled BEFORE any lever is priced** — the profile itself landed at iter-04 and deliberately ships WITHOUT that field. billion's 666.29 s does not transfer, and iter-04 measured how far it does not: the identical hiring image compiles in 30.4 s here vs 42.6 s there, and pays 56.6 s export + 19.3 s unpack here vs 99.0 + 37.6 there - materially cheaper, but NOT free (see the retraction in this file's HOST CLASS section). This release's own rule is *state the environment with every number*. This host is a PERMANENTLY CONTENDED workstation (observed load1 ~2.9-13), so every baseline figure must be LABELLED contended and carry its load1; that labelling waives NOTHING - the HEADROOM clause below still FAILS the gate when tripped. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if this host's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted') — where `cores` means the logical-core count OF THE MACHINE THE LOAD1 SAMPLE IS TAKEN ON, which on a docker-desktop-vm host is the HOST's count and NOT the VM allocation (`FIX-M257-load1-units-vm`); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
@@ -11,12 +11,12 @@ depends_on: [M256]
 parallel_with: []
 complexity: very-large
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-08-12
 ---
 
 # M257 — first-light build  (`iterative`)
 
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-08-12) · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
 **Depends on:** M256 (sharpen the detector before changing what it detects)
 
 > **Revised 2026-07-27** after the adversarial plan review: the gate's headroom clause became **falsifiable**
