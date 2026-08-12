@@ -389,7 +389,8 @@ bring-up reports success. The bundle is unpatched. Nothing anywhere says so.
 is image metadata, so it needs **no Dockerfile edit** — the zero-platform-edit line holds (the repo stays a build
 *context* only). Change a patch, re-pin a hash, add a manifest, or flip `DEMO_NO_PATCH` ⇒ the label moves ⇒
 **rebuild**. An image with **no** label predates the fingerprint and is treated as a mismatch (fail-safe: a
-needless ~3 min build is far cheaper than serving an unpatched demo to a customer).
+needless rebuild is far cheaper than serving an unpatched demo to a customer — and since v2.8 M257's L1 that
+rebuild is **53.31 s on `macmini`**, n=3 p50, where this line used to say "~3 min").
 
 It fired on its first live run:
 

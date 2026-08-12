@@ -119,7 +119,7 @@ write, replace, or delete one.
 > | the claim | measured |
 > |---|---|
 > | the secret-coverage DNA carries the key names | `grep -n BUNNY stack-secrets/secretdna/secret-dna.json` → **2 genes, neither of them a recording key**: `BUNNY_STREAM_API_KEY` (`:425`) and `BUNNY_CDN_TOKEN_KEY` (`:779`). **`BUNNY_RECORDING_*` = 0 occurrences in all of rext.** `provision.go:120` writes only DNA-declared genes, so a gene that does not exist is a key that is never written |
-> | the demo env bridge carries them | `bridge_bedrock_creds` (`demo-stack/up-injected.sh:1377`) iterates a **fixed five-key list** at `:1368` — `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN`, `CLAUDE_CODE_USE_BEDROCK`. No Bunny key, and the function is Bedrock-specific by name and by body |
+> | the demo env bridge carries them | `bridge_bedrock_creds` (`demo-stack/up-injected.sh:1389`) iterates a **fixed five-key list** at `:1393` — `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN`, `CLAUDE_CODE_USE_BEDROCK`. No Bunny key, and the function is Bedrock-specific by name and by body |
 >
 > **Widened once (§5 rule 57):** `grep -rniE bunny` over rext moved the count **0 → 39** — so the
 > narrow regex was not the reason. None of the 39 is a recording-key provisioning site; the hits are

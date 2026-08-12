@@ -25,6 +25,17 @@ script that existed on a single box and was never in version control._
 >   the laptop uses **overlay2** and pays **none**. A measured 37.6 s unpack on one host is 0 s on the other.
 >
 > A bare "the frontend image is ~4.7 GB" is not a fact about the platform. It is a fact about one host.
+>
+> **The third host is what turns this rule from an illustration into a discipline (M257).** `macmini` is an
+> arm64 Mac *like the laptop* — and it runs the **containerd** store and **pays the unpack leg** (measured:
+> 0.8 s @ 256 MB → 3.0 s @ 1024 MB; **56.6 s export + 19.3 s unpack** on the real 4.12 GB hiring image). The
+> two-host table above invites the inference *arm64 Mac ⇒ overlay2 ⇒ no unpack leg*, **and that inference is
+> false** — the image store is a per-machine Docker Desktop toggle, not a property of the host class. That
+> exact generalisation, made from `docker info` printing `Storage Driver: overlayfs`, **paused M257 for
+> eleven days** on the belief that its biggest lever was worthless locally. It was worth ~141 s.
+> **Name the machine, not the class, and grade a hardware question with a probe rather than a config
+> string.** The same identical hiring Dockerfile: **4.84 GB on `billion`**, **4.12 GB on `macmini`**,
+> **2.88 GB on the laptop**.
 
 ---
 
@@ -127,20 +138,29 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 
 ## The baseline
 
-> 🛑 **SUPERSEDED — `D-v28-15` (2026-07-31) retired `odysseus` too, and NOTHING below has been re-pointed.
-> Measured M257x iter-225.** `D-v28-15` supersedes `D-v28-14` in the same day: `billion` is demo-deployment
-> only, **`odysseus` is retired**, and dev/test is **LOCAL to the new Mac**. Read every `odysseus` sentence
-> below as *"the host this doc was written for, which no longer exists for this purpose"* — this doc names
-> `billion` 44 times, `odysseus` 26 and `laptop` 22, and **named the sanctioned dev host zero times.**
-> *(That last count was true when measured and is no longer: `macmini` appears from M257 iter-09, which
-> corrected the harness section's claim that no profile existed for this host. **The banner's substance is
-> untouched** — the baseline section below is still `billion`'s and still un-re-pointed; what changed is that
-> the host now has a measured profile and a landed `gated_baseline` (iter-04, iter-08) to re-point it TO.
-> The re-pointing itself is the M257 close's job, in one rewrite rather than two — D121.)*
+> ✅ **RE-POINTED at the M257 close (2026-08-12) — this banner was the standing IOU and it is now discharged.**
+> It read *"`D-v28-15` retired `odysseus` too, and **NOTHING below has been re-pointed**"*, and that was true
+> from M257x iter-225 until this close. The re-pointing was deliberately held for one rewrite rather than two
+> (**D121**), and it lands here together with the achieved numbers.
 >
-> **⚠️ TWO CORRECTIONS TO THIS BANNER'S OWN TEXT (M257 iter-05/iter-07). The supersession still stands** —
-> the 25 `odysseus` sentences below are still un-re-pointed — **but items 1 and 2 have since been fixed, and
-> the parenthetical below got a hardware fact wrong.**
+> **What the supersession says, unchanged:** `billion` is demo-deployment only, **`odysseus` is retired**, and
+> dev/test is **LOCAL to the new Mac** — `macmini`, an M4 Pro Mac mini (`Mac16,11`).
+>
+> **What has changed since the banner was written, each measured rather than assumed:**
+>
+> - **`macmini` has a measured profile** (`hostprofiles/macmini.json`, M257 iter-04) **and a filled
+>   `gated_baseline`** (iter-08). Three profiles ship, not two.
+> - **The pre-lever baseline on `macmini` is p50 449.51 s** (n=3, min 410.80 / max 542.94) — **contended and
+>   labelled**, because this is a permanently-busy workstation and 2 of its 3 reps failed HEADROOM on peak
+>   load1. See §*The n ≥ 3 campaign on `macmini`* below for what that label does and does not waive.
+> - **Gate clause 1 IS gradeable here**, and the old *"not gradeable on the sanctioned host today"* verdict at
+>   the end of this banner is **retracted**. Two things unblocked it: the profile above, and iter-06's units
+>   fix (below). M257's gate then graded **HEADROOM OK on 3 of 3** reps.
+> - **The `odysseus` sentences below are re-pointed at `macmini`** where they were forward-looking, and left
+>   alone where they record where a *`billion`* number was measured — those stay true as history.
+>
+> **⚠️ AND ONE HARDWARE FACT THIS BANNER ITSELF GOT WRONG (M257 iter-04/iter-05). Kept, because the error is
+> the lesson and it is the premise M257 was paused on for eleven days.**
 >
 > - **`overlay2` is WRONG for this machine.** It runs the **containerd image store**
 >   (`docker info` DriverStatus `io.containerd.snapshotter.v1`) and **pays a size-proportional unpack leg**:
@@ -197,20 +217,32 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 > unblocks it is a `buildbench` measurement run on a quiet box producing a checked-in `Mac16,11` profile.
 > Do not grade a cycle here against `laptop.json` or `billion.json`: a wall-clock figure never transfers
 > between hosts, which is this section's own standing rule.
+>
+> ✅ **DISCHARGED (M257 close).** That paragraph's demand was met, though not on its own terms: the profile
+> landed at iter-04 and the `n ≥ 3` campaign that filled its `gated_baseline` at iter-08 was taken **on a
+> loud box, not a quiet one** — waiting for quiet on a permanently-busy workstation is waiting forever, so
+> `TOK-02` chose to measure and **label** instead. **Labelling waives nothing**: 2 of those 3 reps failed
+> HEADROOM on peak load1 and the campaign exits RED by contract. The gate campaign that followed L1 did not
+> need the label — it passed every clause on its own terms.
 
-> ⚠️ **Host change — `D-v28-14` (2026-07-31): the gate host is `odysseus`, not `billion`.** Everything in this
-> section records **where the M255 baseline was measured**, and stays true as such. It is **not** a statement
-> about where v2.8's gates are graded: `billion` is the demo machine now (deploy-only, never dev/test), and
-> every `buildbench` campaign from here on runs on **`odysseus.taildc510.ts.net`** — 8 cores · 7,780 MB RAM ·
-> **zero swap** · 189 G free of 193 G · x86_64 · Linux 6.8.0-117 · Docker 29.6.2 · the **containerd image
-> store** (`Storage Driver: overlayfs` with `io.containerd.snapshotter.v1`, the same class as `billion`, so the
-> unpack leg is paid there too — *not* the laptop's classic overlay2 graphdriver).
+> ⚠️ **Host change — the gate host is `macmini`.** *(This banner named `odysseus` under `D-v28-14` until the
+> M257 close; `D-v28-15` retired that host the same day it was named, and the sentences below are re-pointed
+> here.)* Everything in the section that follows records **where the M255 baseline was measured**, and stays
+> true as such. It is **not** a statement about where v2.8's gates are graded: `billion` is the demo machine
+> (deploy-only, never dev/test), and every `buildbench` campaign runs on **`macmini`** — the local M4 Pro Mac
+> mini (`Mac16,11`), 12 logical cores / 24 GiB, Docker Desktop with the VM at 8 CPU / 11.67 GiB / 125.4 GiB
+> disk · **3 GiB swap** · arm64 · the **containerd image store** (`Storage Driver: overlayfs` with
+> `io.containerd.snapshotter.v1`, the same class as `billion`, so **the unpack leg is paid here too** — *not*
+> the retired laptop's classic overlay2 graphdriver, and that distinction is the whole of §*HOST CLASS* in
+> M257's `overview.md`).
 >
 > **`billion`'s figures do not transfer.** This doc's own first rule is why: the same Dockerfile and context
-> yield **4.84 GB on `billion`** and **2.88 GB on the arm64 laptop** (§*The rule that comes first*).
-> **`odysseus`'s own baseline is UNMEASURED at time of writing** — M257 owes it (`n ≥ 3`, plus a checked-in
-> `odysseus.json` host profile), and until it exists there is **no odysseus number to quote**, projected or
-> otherwise. A reduction target is measured against **the baseline of the host it runs on**.
+> yield **4.84 GB on `billion`** and **2.88 GB on the arm64 laptop** (§*The rule that comes first*), and the
+> identical hiring image is **4.12 GB on `macmini`** — a third point that fixes the shape of the rule rather
+> than merely illustrating it.
+> **`macmini`'s own baseline IS measured** — p50 **449.51 s** (n=3, contended and labelled), M257 iter-08;
+> see §*The n ≥ 3 campaign on `macmini`* below. A reduction target is measured against **the baseline of the
+> host it runs on**, and M257's ≤ 360 s gate was graded against that one, never against 666.29 s.
 
 **`billion.taildc510.ts.net`** — 8 vCPU · 7.3 GiB RAM · **16 GiB** swap · x86_64 · Linux 6.8.0-134 · Docker 29.6.2
 with the **containerd image store** · demo-1 at offset 10000 with `--public-host`.
@@ -244,8 +276,9 @@ OK.**
 > **`billion`'s baseline is `n=3 p50 = 666.29 s (11 m 06 s)`.** It supersedes the same host's annotation figure
 > of **672.4 s on `billion`** — which was `n=1` and, it turns out, an unusually representative one: the two
 > differ by **0.9 %**. **A v2.8 reduction target is measured against the baseline of the host it runs on** — on
-> `billion`, against its 666.29 s; on `odysseus`, against `odysseus`'s own baseline, which per `D-v28-14` is
-> **not yet measured**.
+> `billion`, against its 666.29 s; on `macmini`, against `macmini`'s own **449.51 s** (M257 iter-08, below).
+> *(This read "on `odysseus`, against `odysseus`'s own baseline, which is not yet measured" until the M257
+> close — a host retired before it was ever measured on.)*
 
 > 📌 **Provenance — read before quoting or re-deriving these numbers.** The campaign ran **09:59–11:37Z on
 > 2026-07-27** (reps completed 11:11 / 11:26 / 11:37; `campaign.json` written 11:37), on an otherwise-idle
@@ -256,15 +289,17 @@ OK.**
 > 206 s of its 215 s excess sits in two sub-phases, matched to a reclaim that evicted 7 cache records /
 > 356.8 MB. Host contention smears across sub-phases; it does not concentrate like that.
 >
-> **Re-confirm on `odysseus`'s baseline campaign.** This note used to say *"re-confirm on the first post-freeze
-> campaign"* — that freeze has expired, and `D-v28-14` has since made `billion` demo-only, so there is no
-> "first post-freeze campaign on `billion`" to wait for. The three timing-derived claims re-home to the
-> `odysseus` baseline campaign M257 owes, and they **ride along free**: that campaign already runs `n ≥ 3` cold
-> cycles with per-phase attribution, which is the whole instrument each of them needs. The three: the **n=3 p50
-> of 666.29 s on `billion`**, spike (a)'s **146.8 s → 2.9 s** export cut, and spike (d)'s **disk-bound**
-> attribution. **What a different host can re-confirm is the SHAPE, not the seconds** — an `odysseus` figure
-> corroborates *that export dominates* or *that the run is not I/O-ceilinged*; it can never restate `billion`'s
-> numbers.
+> **Re-confirmed on `macmini`'s baseline campaign — D122, discharged at the M257 close.** This note first said
+> *"re-confirm on the first post-freeze campaign"*, then re-homed to `odysseus`; that freeze expired and that
+> host was retired, so the re-confirmation landed on **`macmini`**'s campaigns (iter-08 pre-lever, iter-09
+> post-L1) exactly as D122 intended — riding along free on `n ≥ 3` cold cycles with per-phase attribution.
+> **What a different host re-confirms is the SHAPE, not the seconds**, and that is what happened to each of
+> the three. (1) The **n=3 p50 of 666.29 s on `billion`** is not restated and cannot be; what `macmini`
+> corroborates is that a cold cycle on a containerd host is dominated by the UI tier — **54.8 %** here
+> pre-lever against 65.5 % there. (2) Spike (a)'s **146.8 s → 2.9 s** export cut re-confirms in the shipped
+> form: **136.4 s → 3.8 s** for the two Next images on `macmini` (iter-09). (3) Spike (d)'s **disk-bound**
+> attribution re-confirms — the export/unpack legs L1 deleted were the largest block on both hosts, and the
+> box was never CPU-saturated in the three gate reps (peak load1 5.47 / 6.16 / 8.72 against a limit of 10).
 >
 > The **barrier verdict needs no re-confirmation**: `4.84 GB → 379 MB` is bytes on disk, not a stopwatch, and
 > a 50× export reduction cannot be produced by host contention.
@@ -340,11 +375,82 @@ Three consequences, all of which are why the campaign protocol reads the way it 
    campaign is in steady state (rep-01 658–666 s ≈ rep-03). **Budget a warm-up rep** — or read `min` alongside
    `p50`, which here agree to within 1.2 %.
 
+### The n ≥ 3 campaign on `macmini` — **that host's gated baseline, and the M257 result**
+
+`macmini` is the M4 Pro Mac mini (`Mac16,11`) that `D-v28-15` moved all dev/test to: **12 logical cores /
+24 GiB**, Docker Desktop VM at **8 CPU / 11.67 GiB / 125.4 GiB disk**, **arm64**, **containerd image store**.
+Profile: `stack-core/hostprofiles/macmini.json` (measured M257 iter-04).
+
+> **⚠️ This host is a PERMANENTLY-CONTENDED WORKSTATION and every figure below carries that label.** It
+> cannot be freed — it is the machine the work happens on — and `TOK-02`'s call was that *waiting for a quiet
+> box is waiting forever*, which is exactly what `laptop.json` did: it records a cycle **refused by its own
+> clause 1** at load1 10.69 and **no cycle number at all**. Labelling is how the release's *state the
+> environment with every number* rule is satisfied by a contended measurement. **Labelling waives nothing** —
+> the HEADROOM clause still FAILS the gate when it trips, and below it did.
+
+**Two campaigns, and they must not be conflated.** The first is this host's **baseline** — what a cycle cost
+before any lever. The second is the **M257 gate result** — the same cycle after L1.
+
+| on `macmini` | **pre-lever baseline** (iter-08) | **post-L1** (iter-09) |
+|---|---|---|
+| total cycle p50 on `macmini` | **449.51 s** | **286.99 s** |
+| min / max | 410.80 / 542.94 | 280.99 / 303.44 |
+| reps | 3 | 3 |
+| `autoverify green / 0 warnings` | 3 / 3 | 3 / 3 |
+| HEADROOM | **1 of 3** (peak load1 19.48 / 14.52 / 4.82 vs 10) | **3 of 3** (peak load1 5.47 / 6.16 / 8.72 vs 10) |
+| ISOLATION | *(clause not yet implemented)* | **3 of 3** (8 images/rep, 0 failures) |
+| host identity | `match` ×3 | `match` ×3 |
+| campaign verdict | **RED by contract** — a gate number measured without headroom is not a number (D-M255-1) | **`ok` / `gateable`** |
+
+**The baseline exits RED and is still the baseline.** That is not a contradiction: `gated_baseline` records
+*what this host costs*, which is what a lever is priced against; `gateable` records *whether a number may be
+quoted as a gate pass*. Rep-03 (410.80 s at load1 4.82) is the one fully-clean cycle the pre-lever campaign
+produced, and the distance to the 360 s gate reads **19.9 %** from the p50 or **12.4 %** from that rep —
+against the **46 %** `billion` would have needed. **Do not compare the two wall-clocks**: different arch,
+different image sizes (**4.12 GB** vs **4.84 GB** for the identical Dockerfile), different snapshotter cost.
+
+**Per-sub-phase p50, both campaigns** — the ranking is the interesting part, not the totals:
+
+| sub-phase | pre-lever | post-L1 | share of the post-L1 cycle |
+|---|---|---|---|
+| `set_dress` | 81.61 s | **82.04 s** | **28.6 % — now the largest single phase** |
+| `ui_next_web` | 120.79 s | **53.31 s** | 18.6 % |
+| `ui_hiring` | 117.45 s | **44.21 s** | 15.4 % |
+| `compose_up` | 44.43 s | 43.65 s | 15.2 % |
+| `host_preflight` | 33.79 s | 33.74 s | 11.8 % |
+| `ui_studio_desk` | 7.99 s | 7.08 s | 2.5 % |
+| `backend_builds` | 16.26 s | 3.89 s | 1.4 % |
+| `autoverify` | 2.26 s | 2.34 s | 0.8 % |
+| `clones_and_inject` | 1.83 s | 1.75 s | 0.6 % |
+| `secrets_provision` | 1.79 s | 1.49 s | 0.5 % |
+| `seed_tooling` | 1.29 s | 1.28 s | 0.4 % |
+
+**What L1 is credited with, and what it is not.** The UI-tier block went **246.23 → 104.60 s (−141.63 s)** and
+that is L1's. `backend_builds` also fell 12.37 s and **that is variance, not the lever** — crediting it would
+make L1 look better than it is, and the arithmetic that predicted the win (~132.6 s from the export/unpack
+legs) is reported beside the realized 141.63 s rather than merged into it. The images went **4.04 GB → 417 MB**
+(next-web) and **3.94 GB → 380 MB** (hiring); `exporting to image` went **136.4 s → 3.8 s** combined.
+
+**The ranking moved underneath the plan, which is the finding worth carrying forward.** With the UI tier
+collapsed, **`set_dress` is the largest phase at 28.6 %** — a lever (L5, the taxonomy replay) that the M257
+plan priced at ~30–50 s and ranked **fifth**, and which is also *the chief win on the `/dev-up` path* because
+`dev-setdress.sh` runs the same `stacksnap replay`. Routed as `LEVER-M257-L5-setdress`. **Note what did NOT
+move:** `compose_up` and `host_preflight` are within noise of their pre-lever values, so the remaining cycle
+is no longer dominated by anything the UI tier can explain.
+
+Campaign artefacts: `.agentspace/scratch/work-m257/baseline-n3-pinned/` (pre-lever) and
+`.../baseline-n3-postL1/` (post-L1). **Both were driven from the PINNED consumption clone**, never the
+authoring copy — iter-07 spent a whole `n=3` campaign learning why: driven from the authoring copy,
+`rext_root()` resolves one tree away from the stack, **17 of 17 demo-patches are REFUSED** (G6 arm 1) and the
+`postgres-schemas` probe cannot find `repos.yml`, so `autoverify` goes red and all three reps are disqualified.
+It reads like a broken stack and it is a wrong working directory.
+
 ### The informational laptop run
 
 **M1 Pro · macOS 25.1 · Docker Desktop 28.5.1 · 10 VM CPUs · 9,937 MiB VM RAM · 58 GiB VM disk · arm64 ·
 overlay2 · BuildKit cache EMPTY (truly cold).** Not gated — a v2.8 gate is measured on the release's dedicated
-bench host (`billion` for the M255 baseline; **`odysseus`** since `D-v28-14`), never on a workstation.
+bench host (`billion` for the M255 baseline; **`macmini`** for every v2.8 gate since `D-v28-15`) — and
+note that `macmini` IS a workstation, which is why its numbers are labelled contended rather than clean.
 
 > **What was measured, and what was not — because the assert said no.** The intent was a full `n=1` cycle
 > here. It did not run: `buildbench assert-headroom --profile laptop` **FAILED clause 1** —
@@ -355,7 +461,7 @@ bench host (`billion` for the M255 baseline; **`odysseus`** since `D-v28-14`), n
 > A cycle measured on a host at load 10.7/10 would have produced a number whose slowness says nothing about
 > the bring-up — precisely the class of number D-M255-1 exists to refuse. The lesson generalises: **a
 > developer workstation is not a bench.** It has other jobs. A **dedicated** bench host is used because it does
-> not — `billion` for the M255 baseline, and **`odysseus`** for every v2.8 gate since `D-v28-14`.
+> not — `billion` for the M255 baseline, and **`macmini`** for every v2.8 gate since `D-v28-15`.
 >
 > What *is* measured below is one real `hiring.Dockerfile` build taken on a quiet box — the dominant leg, and
 > enough to fix the laptop profile's per-lane memory peak and to expose three host-shape differences that
@@ -383,16 +489,20 @@ One real `hiring.Dockerfile` build, 2026-07-27:
 > baseline build; `up-injected.sh:300` hedges *"4.67-4.84 GB"*. **4.84 GB is the profile's value** — it is the
 > divisor behind `laptop.json`'s `projected_image_gib: 12` (billion's measured 18 GiB cycle peak scaled by
 > 2.88/4.84), and it is what §*The rule that comes first* and the spike (a) barrier verdict already use. An
-> `odysseus.json` `projected_image_gib` must be derived from a **measured odysseus** image, not from either.
+> `macmini.json`'s `projected_image_gib` is derived from a **measured `macmini`** image (4.12 GB hiring,
+> iter-04), not from either — and it now carries a note saying it describes the PRE-L1 build shape.
 
 **Three things a laptop comparison teaches, and none of them is "the laptop is faster":**
 
 1. **Compilation is 3.3× SLOWER here** (140.4 s vs 42.6 s) despite ten cores and more RAM. A laptop is not a
    faster `billion`; it is a differently-shaped host. This is why a v2.8 gate is measured on a **dedicated**
-   bench host — `billion` for the M255 baseline, `odysseus` since `D-v28-14` — and never on a workstation.
+   bench host — `billion` for the M255 baseline, `macmini` since `D-v28-15`, the latter a workstation whose
+   figures are therefore labelled contended.
 2. **There is no unpack leg** — overlay2, not containerd. Lever L9 is a **containerd-image-store** phenomenon,
-   not a `billion` one: it is paid on `billion` **and on `odysseus`** (both use the containerd image store) and
-   on neither the laptop nor any other classic-overlay2 host.
+   not a `billion` one: it is paid on `billion` **and on `macmini`** (both use the containerd image store) and
+   on neither the retired laptop nor any other classic-overlay2 host. **`macmini` is the case that breaks the
+   tempting shortcut**: it is an arm64 Mac like the laptop and it pays the leg anyway, because the image store
+   is a per-machine Docker Desktop toggle and not a property of the host class. Grade it with a probe.
 3. **The image is 40 % smaller** for arch reasons alone.
 
 ---
@@ -400,7 +510,7 @@ One real `hiring.Dockerfile` build, 2026-07-27:
 ## The headroom contract
 
 **Four clauses** — three thresholds plus a **clause zero** — evaluated against a **measured, checked-in host
-profile** (`rosetta-extensions/stack-core/hostprofiles/{billion,laptop}.json`; M257 adds `odysseus.json`). Any
+profile** (`rosetta-extensions/stack-core/hostprofiles/{billion,laptop,macmini}.json` — M257 added the third). Any
 failure fails the whole assert.
 
 | # | clause | fails when |
@@ -425,8 +535,8 @@ failure fails the whole assert.
 > assert working, not a broken profile.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
-> peak (`max` over the sampler's rows, `buildbench.py:1246`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1908`) — and the failure message still
+> peak (`max` over the sampler's rows, `buildbench.py:375`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:2124`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
 >
@@ -447,7 +557,9 @@ failure fails the whole assert.
 `4096` — so `ENV NODE_OPTIONS` is **not** a usable seam for lowering it). But a ceiling is not a reservation:
 against a 7,500 MiB budget, a ceiling-based test would "prove" that `billion` cannot run the single lane it
 demonstrably runs every day. The profiles therefore record both, and the assert uses the measured one —
-**3,900 MiB** on billion, **4,223 MiB** on the laptop.
+**3,900 MiB** on billion, **4,223 MiB** on the laptop, **3,116 MiB** on `macmini` (the third profile,
+measured at M257 iter-04 — and it now carries a note saying it describes the PRE-L1 single-stage build,
+so post-L1 it over-reserves, which is the safe direction).
 
 **And the measured one held up.** Clause 2's arithmetic predicts a whole-host commitment of **5,400 MiB** for
 one lane on billion; the n=3 campaign peaked at **5,446 / 5,579 / 5,398 MB**. A headroom model that is right
@@ -457,19 +569,28 @@ to ~3 % across three independent cycles is a model, not a guess — which is wha
 **The derived consequence M257 has to price in:**
 
 > `max_parallel_ui_lanes = max(1, min(ui_image_count, floor((0.8 × budget − idle) / measured-lane-peak)))`
-> = **1 on billion**, **1 on the laptop.** Neither host fits two concurrent Next.js build lanes in RAM.
+> = **1 on billion**, **1 on the laptop**, **2 on `macmini`.**
+
+**That third value is the one that matters, and it arrived after this sentence was written.** This line read
+*"Neither host fits two concurrent Next.js build lanes in RAM"* — true of the two profiles that existed at
+M255, and **not a general fact**, which is exactly the over-reach the formula's own guards were written
+against. `macmini`'s larger VM budget against a smaller measured lane peak derives **2**, so on this host
+**L2 changes character rather than merely shrinking**: the two compile legs *can* run concurrently here,
+where on `billion` they provably cannot. L2 remains unlanded — M257's gate was met by L1 alone — so this is
+a priced opportunity, not a result.
 
 **Both guards in that formula are load-bearing, and an earlier draft of this doc omitted them.** The code
 (`buildbench.py:430-436`) clamps at `ui_image_count` (3) and **floors at 1**; the bare `floor(…)` returns **0**
 on an undersized host where the code returns **1**. `billion` and the laptop agree with the bare version by
-coincidence (1.153 → 1, 1.736 → 1) — **a third host need not**, which matters now that `odysseus` is the gate
-host and its profile is unwritten.
+coincidence (1.153 → 1, 1.736 → 1) — **a third host need not**, and the third host duly did not: `macmini`
+derives **2**. That is the reasoning vindicated rather than merely preserved.
 
 > **The floor of 1 is NOT a claim that one lane FITS** (`buildbench.py:425-428`, verbatim intent). A host too
 > small for a single lane still has to build one, so the *plan* is 1 either way — on such a host it is
 > `headroom_assert(lanes=1)` **clause 2** that fails, and that is where the fact gets reported. Do not read a
 > return of 1 as "headroom verified"; read it as "the plan is one lane". The two are checked in different
-> places on purpose. This is load-bearing for **L2**, whose entire premise is `max_parallel_ui_lanes = 1`.
+> places on purpose. This is load-bearing for **L2** — whose premise on `billion` is
+`max_parallel_ui_lanes = 1`, and on `macmini` is **not** (see above). Read L2's pricing against the host.
 
 **On macOS the budget is the Docker VM allocation — never host totals.** A 16 GiB laptop has a 9,937 MiB
 engine. Reading host `free`/`df` there over-states RAM by ~60 % and disk without bound; that is precisely how
@@ -504,7 +625,8 @@ is comfortable and 25 GiB is the floor.
 >
 > The gated variant is *cold images, **warm** layer cache* (§*The variant*), and v2.8 deliberately **cut** the
 > truly-cold run from the gate (`D-v28-8`) because it is *a different, slower thing*. **A brand-new host has no
-> layer cache at all** — `odysseus` was probed on 2026-07-31 with **0 images, 0 containers, 0 build cache** — so
+> layer cache at all** — the now-retired `odysseus` was probed on 2026-07-31 with **0 images, 0 containers,
+> 0 build cache** (a dated record; the RULE it supports is host-independent and applies to `macmini`) — so
 > **rep 1 there measures the truly-cold variant the gate excludes.** That is a different *measurement class*,
 > not an unlucky rep, and a `p50` computed over it **restates the excluded variant as the gated one**.
 >
@@ -680,7 +802,7 @@ python3 stack-core/buildbench.py env-snapshot                                 # 
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse constructed at `buildbench.py:1838`). The ones above are the
+**The full flag surface** (verified against the argparse constructed at `buildbench.py:2054`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |
@@ -700,7 +822,7 @@ common path; these are the rest, and two of them decide whether a campaign is co
 
 | knob | read at | default | note |
 |---|---|---|---|
-| `BUILDBENCH_PROFILE` | `:1472`, `:1484` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so an `odysseus` campaign must pass `--profile odysseus` explicitly or export `BUILDBENCH_PROFILE=odysseus`, or it will grade itself against the wrong host's profile |
+| `BUILDBENCH_PROFILE` | `:1472`, `:1484` | — | supplies the default for `--profile` on **both** `run` and `assert-headroom`. **With it unset, `--profile` defaults to `billion`** — so a `macmini` campaign must pass `--profile macmini` explicitly or export `BUILDBENCH_PROFILE=macmini`, or it will grade itself against the wrong host's profile. The identity check (iter-229) now catches that after the fact; the flag is what prevents it |
 | `BUILDBENCH_LANES` | `:873` | `1` | the lane count `run` asserts headroom for. **Env-only — there is no `--lanes` flag on `run`** (`--lanes` exists on `assert-headroom` alone) |
 
 *(`--public-host` also falls back to `STACK_PUBLIC_HOST` (`:1405`) — the same stack-wide knob the rest of the
@@ -761,13 +883,15 @@ not evidence.
 A campaign writes `campaign.json` plus a `rep-NN/` per rep holding `ledger.json` (the full phase/build/sample
 ledger), `samples.tsv`, and `cycle.log`. **The M255 baseline lives at
 `billion:/home/devops/panorama/m255/campaign/`** and is what a comparison **on `billion`** re-derives from; per
-`D-v28-14`, a comparison on another host re-derives from **that host's own** campaign dir (`odysseus`'s is owed
+`D-v28-15`, a comparison on another host re-derives from **that host's own** campaign dir (`macmini`'s campaigns are owed
 by M257). Either way: re-read the ledger with `buildbench report`, don't re-type numbers out of this doc.
 
 ### Rung zero applies here too
 
 A remote stack consumes `rosetta-extensions` **at a tag fetched from origin** (the M217 FATAL pin guard). A
-`buildbench` that exists only in the authoring copy is **unreachable** to the remote bench host — `odysseus`
+`buildbench` that exists only in the authoring copy is **unreachable** to the bench host — and M257 iter-07
+proved the premise survives the host becoming LOCAL: a campaign driven from the authoring copy refused 17/17
+demopatches and could not find `repos.yml`, disqualifying all three reps. The pin is not about distance
 since `D-v28-14` — and the failure looks like a missing feature rather than a missing tag. `git push --tags` is
 part of shipping the harness. See
 [`../verification.md`](../verification.md) pre-flight rung zero.

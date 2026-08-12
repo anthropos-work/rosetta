@@ -768,8 +768,11 @@ inherited. It is **strictly narrower**, and it should feel narrower:
      provisioning is skipped — **the ref is now stated because this was the site that proved the rext anchors
      in this corpus are on undecidable clocks.** `demo/media-substrate-spec.md` cites this same function at a
      DIFFERENT line of the same script, and for four releases neither sentence said which tree it had read.
-     Re-measured 2026-08-11 at rext `e64a3cd3b`, the definition is `demo-stack/up-injected.sh:1377` and the
-     call `demo-stack/up-injected.sh:1595`; the numbers in this bullet are the OLDER reading and are kept,
+     Re-measured **again at the v2.8 M257 close (2026-08-12)**: the definition is
+     `demo-stack/up-injected.sh:1389` and the call `demo-stack/up-injected.sh:1607`. *(The 2026-08-11 reading
+     at rext `e64a3cd3b` was `:1377` / `:1595`; the M257 close's own §8.5 retraction edits to that script's
+     comments shifted both by **+12** within a day — this bullet's thesis, demonstrated on this bullet.)*
+     The numbers earlier in this bullet are the OLDEST reading and are kept,
      dated, rather than silently renumbered — `D-M257x-278-3`,
      `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks`. ⚠️ **Every line number in
      this parenthesis names its file, and that is not stylistic**: harden pass 70's first draft wrote them

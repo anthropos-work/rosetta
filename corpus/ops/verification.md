@@ -310,7 +310,9 @@ the **wrong, real-Clerk key** *passed the guard and got silently reused*. Conseq
 
 The fix asserts the minted pk is **present in the built bundle** (`docker run --rm … grep -rqs "$PK_DEMO"
 /app/apps/web/.next/static`), **fail-safe toward rebuild**: anything unverifiable rebuilds, because a needless
-~3 min build is strictly cheaper than shipping a real-Clerk-wired demo. All four overlay-borne constants come from
+rebuild is strictly cheaper than shipping a real-Clerk-wired demo. *(The magnitude here used to read "~3 min";
+after v2.8 M257's L1 a next-web rebuild is **53.31 s on `macmini`**, n=3 p50 — the argument is unchanged and the
+trade is now cheaper still.)* All four overlay-borne constants come from
 that one file, so a single probe covers the class.
 
 > **The general rule:** *if a constant is inlined into an artifact, validate it by reading the artifact.* Build-time

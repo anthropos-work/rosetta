@@ -39,8 +39,9 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 > "out of scope / forbidden upstream PR" section at the end of this page predates shape 3 and lists
 > `output:'standalone'` among the things only an upstream PR could deliver. That is no longer true** —
 > M255 proved it needs **zero** source edits and **zero** demo-patches via `ENV NEXT_PRIVATE_STANDALONE=1`
-> in a tooling-owned Dockerfile, and M257 iter-09 shipped exactly that. That section is rewritten with
-> achieved numbers at the **M257 close** (D121: one rewrite, not two).
+> in a tooling-owned Dockerfile, and M257 iter-09 shipped exactly that. **That section has now been rewritten
+> with the achieved numbers at the M257 close** (D121: one rewrite, not two) — see §"What's out of scope" at
+> the end of this page for the two-host table.
 >
 > **One flag in that Dockerfile is load-bearing and easy to drop: `turbo … --env-mode=loose`.** Turbo 2
 > defaults to `strict` and forwards only the variables named in `turbo.json`'s `globalEnv`/task `env`;
@@ -313,11 +314,21 @@ image. The tooling makes this cheap-where-it-can:
 - **Built once per `demo-N`, then cached.** The build is **tag-guarded** (`docker image inspect demo-N-next-web`):
   a re-up of the same demo reuses the cached image in **seconds**. Only a **brand-new** `demo-N` (or a frontend
   code/dep change) pays the build.
-- **The residual (honest):** a new `demo-N` costs **one ~3-minute, ~3.7 GB cached build per frontend**
-  (next-web is the heavy one; studio-desk is light). That's the price of zero-platform-edit + per-stack pk/URL
-  baking. *True* zero-rebuild would need runtime-configurable URLs + pk in the platform source — an **optional
-  upstream PR you'd own**, explicitly **out of scope** here (it edits platform repos → forbidden). See §"What's
-  out of scope".
+- **The residual (honest) — rewritten with ACHIEVED numbers at the M257 close (D-v28-10 / D121).** This bullet
+  read *"one ~3-minute, ~3.7 GB cached build per frontend"*. **Both halves are retracted, and it named no
+  host** — which is the defect v2.8's own standing rule (*state the environment with every number*) exists to
+  catch. **Measured on `macmini`** — the local M4 Pro Mac mini, **arm64 with the containerd image store**, a
+  permanently-contended workstation — at M257 iter-09, n=3 cold cycles: a brand-new `demo-N` costs
+  **104.60 s for the whole UI tier**, which is **THREE images, not "per frontend"** (`ui_next_web` 53.31 s ·
+  `ui_hiring` 44.21 s · `ui_studio_desk` 7.08 s, sub-phase p50s). The two Next images weigh **417 MB**
+  (next-web) and **380 MB** (hiring), against **4.04 GB** and **3.94 GB** before L1; the same block on the same
+  host cost **246.23 s** pre-lever. So the retracted *"~3.7 GB"* was an **image size** (roughly right for one
+  image, of three) and the retracted *"~3 minutes"* was per-image wall-clock on a slower host, no longer a
+  figure for anything here. **Seconds do not transfer between
+  hosts** — the pre-L1 UI tier is **436.1 s on `billion`** (x86_64), and that number stays `billion`'s.
+  What is unchanged is *why* a per-demo build exists at all: zero-platform-edit + per-stack pk/URL baking.
+  *True* zero-rebuild would need runtime-configurable URLs + pk in the platform source — see §"What's out of
+  scope", **which is itself re-cut at the end of this page**: `output:'standalone'` is no longer on it.
 - **Built serially, before `compose up`.** The two frontend builds run **one at a time, before** the stack
   starts — kept out of the parallel Go-service fan-out so the build RAM spike never overlaps anything else.
 - **Non-fatal — actually true now (v1.10b M49 #7).** A frontend build failure **warns** but never aborts the
@@ -331,8 +342,27 @@ image. The tooling makes this cheap-where-it-can:
 ## The 12 GB Docker-VM prerequisite
 
 **Runtime is cheap** — measured **~0.66 GiB for BOTH stacks** (dev + demo, 27 containers). The only spike is the
-**build**: a ~3.7 GB next-web compile. On an undersized Docker VM already holding the dev stack, that spike
-**swap-thrashes** (the original "the build takes an hour" symptom was pure memory starvation, not a slow build).
+**build**: a next-web compile lane whose **measured** heap peak is **3,116 MiB on `macmini`** (**3,900 MiB** on
+`billion`, **4,223 MiB** on the retired M1 Pro `laptop`). On an undersized Docker VM already holding the dev
+stack, that spike **swap-thrashes**.
+
+> **⚠️ Retracted at the M257 close (D-v28-10): this prerequisite was reasoned from an IMAGE SIZE used as a
+> MEMORY figure, and the diagnosis beside it was wrongly exclusive.** The paragraph said *"a ~3.7 GB next-web
+> compile"*. **3.7 GB was never a memory measurement** — it was an image size, and post-L1 the next-web *image*
+> is **417 MB on `macmini`**, so the number is now wrong in both readings. The figure this floor actually rests
+> on is the per-lane heap peak in `stack-core/hostprofiles/*.json` (`lane_heap_measured_peak_mib`), which is
+> **measured per host and differs by host**: 3,116 / 3,900 / 4,223 MiB. That band **brackets 3.7 GB**, which is
+> precisely why the wrong number survived four releases — it was approximately right for a reason nobody had
+> checked. **The 12 GB floor itself stands**; it is the derivation that was broken, not the conclusion.
+>
+> The second half — *"the original 'the build takes an hour' symptom was pure memory starvation, **not** a slow
+> build"* — is **half true and wrongly exclusive.** Swap-thrashing on an undersized VM holding a second stack
+> is real, reproducible, and still the thing this section exists to prevent. But M255 measured a cold cycle on
+> a box under **no** memory pressure (`billion`, peak load1 **4.90 of 8**) that still spent **288.4 s** in
+> image export/unpack alone: the build genuinely *was* slow, independently of memory. **Both were true and the
+> sentence asserted only one.** M257's L1 removed the I/O half — `exporting to image` for the two Next images
+> is **136.4 s → 3.8 s** combined on `macmini` — which leaves memory as the dominant remaining build risk, so
+> this prerequisite matters *more* after L1, not less.
 
 > **Set the Docker Desktop VM to 12 GB / swap 3 GB** (Settings → Resources). `/demo-up` runs a **non-fatal
 > pre-flight assert**: below 12 GB it prints a clear warning (raise the VM, or run `DEMO_NO_UI=1`) but continues
@@ -344,7 +374,9 @@ image. The tooling makes this cheap-where-it-can:
 > full 12 GB to the Docker Desktop VM on a **16 GB Mac** *fails to boot* the VM (`no route to host
 > 192.168.65.7:2376`; `context deadline exceeded`) — macOS + Docker Desktop overhead leaves no room. The
 > practical ceiling on a 16 GB box is **~10 GB VM / 2 GB swap** (~9.7 GiB usable), which boots reliably but
-> **cannot co-host the full UI tier** (the ~3.7 GB next-web build spike) alongside a backend stack. On a 16 GB
+> **cannot co-host the full UI tier** (a next-web build lane peaking at **~3.0–4.2 GiB depending on host** —
+> see the retraction above; this parenthetical used to cite the ~3.7 GB *image* size) alongside a backend
+> stack. On a 16 GB
 > host, run the UI tier with **only one stack resident**, or use `DEMO_NO_UI=1` and verify the local-Directus
 > serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
 > A 12 GB VM needs a **≥24 GB host** to be comfortable.
@@ -745,20 +777,42 @@ It's documented here as an **optional upstream PR you own** (a deferred/unschedu
 **not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted cost of
 staying tooling-only.
 
-> **⚠️ Two of the four items above have since been delivered WITHOUT an upstream PR, and the list is being
-> re-cut.**
+> **⚠️ Two of the four items above have since been delivered WITHOUT an upstream PR, and the list is now
+> re-cut — with ACHIEVED numbers (M257 close, D-v28-10 / D121: one rewrite, not two).**
 > - **The SSR origin** landed at v2.3 **M218** as the sha-pinned `next-web-ssr-graphql-origin` demo-patch —
 >   shape 2, not a PR. It was worth 37.5 s of every authenticated render.
-> - **`output:'standalone'`** was listed here as PR-only. It is not: Next 16's frozen `defaultConfig` reads
+> - **`output:'standalone'`** was listed here as PR-only. **It is not, and it is now SHIPPED for both Next
+>   apps.** Next 16's frozen `defaultConfig` reads
 >   `output: !!process.env.NEXT_PRIVATE_STANDALONE ? 'standalone' : undefined`, and no app `next.config` sets
 >   `output` — so **`ENV NEXT_PRIVATE_STANDALONE=1` in a tooling-owned Dockerfile (shape 3) is sufficient**,
->   with zero source edits and zero demo-patches. **Measured at v2.8 M255** on `hiring.Dockerfile`: the image
->   goes **4.84 GB → 379 MB** and the export leg **146.8 s → 2.9 s**, and the resulting image boots and
->   Clerkenstein-redirects correctly. (One gotcha: turbo 2 defaults to `--env-mode=strict`, which filters the
->   variable out before `next build` sees it, so the flag silently no-ops without `--env-mode=loose`.)
+>   with zero source edits and zero demo-patches. M257 iter-09 landed it as multi-stage builds in
+>   `demo-stack/frontend/{next-web,hiring}.Dockerfile`, `next-web` moving shape 1 → shape 3 to get there.
+>   (Gotcha, still load-bearing: turbo 2 defaults to `--env-mode=strict`, which filters the variable out
+>   before `next build` sees it, so the flag silently no-ops without `--env-mode=loose` and the build stays
+>   green with the old image.)
 >
-> This whole section is rewritten with achieved numbers in **M257** (D-v28-10). See
-> [`build-budget.md`](build-budget.md) for the measurement and the budget it feeds.
+> **The achieved numbers — two hosts, stated separately, because seconds do not transfer.**
+>
+> | | `billion` (x86_64, containerd) | `macmini` (arm64, containerd) |
+> |---|---|---|
+> | when / what | **M255 spike (a)** — `hiring.Dockerfile`, a proof of the mechanism | **M257 iter-09** — both Next apps, shipped in the gated bring-up |
+> | hiring image | **4.84 GB → 379 MB** | **3.94 GB → 380 MB** |
+> | next-web image | not measured there | **4.04 GB → 417 MB** |
+> | export leg | **146.8 s → 2.9 s** (hiring alone) | **136.4 s → 3.8 s** (both Next apps combined) |
+> | UI-tier phase | 436.1 s pre-lever (n=3 p50) | **246.23 s → 104.60 s** (n=3 p50, **−141.63 s**) |
+>
+> **What that bought at the cycle level, on `macmini` only:** the cold `demo-down --purge` + `demo-up` p50 went
+> **449.51 s → 286.99 s** (n=3, min 280.99 / max 303.44), under M257's **360 s** gate *and* its **300 s**
+> stretch, with `autoverify green:true / 0 warnings`, HEADROOM OK and ISOLATION OK on all three reps, host
+> identity `match` ×3, **0 platform-repo edits** and 0 refused demo-patches. Both images were proven
+> **behaviourally identical** to the ones they replace before the numbers were believed — hiring's `/login`
+> is byte-for-byte **426,914** bytes in both. `billion`'s own post-L1 cycle has **not** been measured; do not
+> infer it from these.
+>
+> **And the ranking moved underneath the plan.** With the UI tier collapsed, the largest single phase is now
+> **`set_dress` at 82.04 s = 28.6 %** of the cycle — a lever (L5) that had been priced at ~30–50 s and ranked
+> **fifth**. Routed as `LEVER-M257-L5-setdress`. Full derivation, the per-phase attribution table and the
+> campaign protocol: [`build-budget.md`](build-budget.md).
 
 ## Related
 - [Demo family index](README.md) · [Lifecycle](../rosetta_demo.md) · [Safety contract](../safety.md) · [Verification](../verification.md)
