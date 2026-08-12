@@ -4165,7 +4165,7 @@ Three riders, each paid for in the same iter:
    known-and-dismissed finding deserves the same re-derivation as a new one: the dismissal is a claim too.**
 3. **When a conjunction test fails, check whether it encodes a real requirement before changing the code to
    satisfy it.** iter-90's first double-revert test failed against the fix; the premise was checked against
-   `up-injected.sh:741` (one revert per `RETURN` trap, then `trap - RETURN`) and found false. It was replaced
+   `up-injected.sh:749` (one revert per `RETURN` trap, then `trap - RETURN`) and found false. It was replaced
    by the chain pair rather than satisfied by bending the design. **A design bent to satisfy a wrong test is
    worse than either.**
 

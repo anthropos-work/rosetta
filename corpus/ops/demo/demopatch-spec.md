@@ -159,8 +159,8 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
 so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
-own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:586-589`), hiring's over
-**7** (`up-injected.sh:1124-1126` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
+own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:594-589`), hiring's over
+**7** (`up-injected.sh:1135-1126` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
 interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's over its own **5**
 (`:905`). Line refs at rext `415240f`; the `:1071-1075` this cited until M257x is now studio-desk's
 `--label` line. A test fences the hiring-side chain apply-order and the fingerprint union.
@@ -224,10 +224,10 @@ interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's o
 
 The `next-web` patches are reverted by a `RETURN` trap so the persistent clone is left git-clean — **but not
 in LIFO order**, and this sentence used to say it was. The next-web trap
-(`demo-stack/up-injected.sh:741` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
+(`demo-stack/up-injected.sh:749` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
 aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
 *studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
-back-to-cockpit* (`:763`, `:768`, `:787`, `:799`, `:811`, `:823`, `:837`, `:848`, `:861`): **only two adjacent
+back-to-cockpit* (`:771`, `:776`, `:795`, `:807`, `:819`, `:831`, `:845`, `:856`, `:869`): **only two adjacent
 pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
 reverted in apply order.** That is the same
 finding the §4 correction box above records — see its table for the hiring lane, whose revert
@@ -313,7 +313,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > (`next-hiring-role-remap`, `next-hiring-members-pagination`), the **2 chained shared `urls.ts`** patches
 > (`next-web-studio-url` → `next-web-public-website-url`), the **2 shared `packages/ui` interview flag-gates**
 > (`next-web-interview-flag-container` / `-result`, M232) and the **shared `next-web-back-to-cockpit`** item
-> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1124-1126` @ rext `415240f`,
+> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1135-1126` @ rext `415240f`,
 > which passes exactly those seven manifests to `next_web_patchset_fp`. The `urls.ts` pair is
 > applied on the hiring build because the Studio nav
 > link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
@@ -321,7 +321,7 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > client chunks were `docker exec`-grep-verified to carry **0** `studio.anthropos.work`; the trustworthy render
 > probe of iter-12 had surfaced the eject the earlier broken probe hid). All seven ride `build_frontend_hiring`'s
 > transient apply/revert, fenced by a **7-manifest patch-set fingerprint union** (§5-bis) that forces a
-> rebuild if any of the seven moves. **The revert is not LIFO** — `up-injected.sh:1202` reverts
+> rebuild if any of the seven moves. **The revert is not LIFO** — `up-injected.sh:1213` reverts
 > *interview-result · interview-container · pagination · rolemap · pubweb · studio · back-to-cockpit* against
 > an apply order of *studio · pubweb · rolemap · pagination · interview-container · interview-result ·
 > back-to-cockpit*; only the `urls.ts` chain is inverted, which is the only ordering that matters (§4's

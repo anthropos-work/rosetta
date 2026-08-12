@@ -257,7 +257,7 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
   an honest preview.
 
 > **⚠️ The demo bring-up ALWAYS passes `--force`, so on that path a re-run is NOT idempotent — it appends a
-> full block every time, without bound** (measured M257x iter-269). `up-injected.sh:1538` runs
+> full block every time, without bound** (measured M257x iter-269). `up-injected.sh:1551` runs
 > `provision … --force` unconditionally, and `--force` skips the copy-if-absent check above while the merge
 > stays **append-only** — so each bring-up adds one block. Measured on this box's `stack-demo/platform/.env`
 > after 31 bring-ups: **471 lines · 18 distinct keys · 13 of them present 31 times · 0 keys whose value
@@ -266,7 +266,7 @@ non-prod value must still pass coverage. A **prod** target (N=0 + `--prod`) is r
 > **It is not a bug in either half, and that is why it survived.** Append-only is what makes the tool
 > values-blind — `provision/io.go:173-175`: *"an existing line is never re-read for its value or rewritten,
 > so provision can never corrupt or echo a value already in the target."* And `--force` is deliberate:
-> `up-injected.sh:1529` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
+> `up-injected.sh:1542` says it *"overwrites stale keys **AND blanks the `DIRECTUS_TOKEN` family via
 > last-wins** (the strip-on-non-prod class)."* **Compose's last-wins resolution is therefore LOAD-BEARING,
 > not incidental** — the blank is delivered *by being appended last*.
 >

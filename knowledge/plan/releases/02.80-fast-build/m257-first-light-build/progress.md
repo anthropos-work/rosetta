@@ -66,6 +66,22 @@
   `re_scope_trigger` re-derived 420 → **400 s**. `closed-fixed`; exits `budget-exhausted`.
   — see `iter-08/progress.md`
 
+- iter-09 (tik): **L1 LANDED AND THE EXIT GATE IS MET.** Both Next images are multi-stage
+  `.next/standalone` builds from **rext-owned** Dockerfiles (`next-web.Dockerfile` net-new; next-web moved
+  from build shape 1 to shape 3 so the change needed **no platform-repo edit**): **4.04 GB → 417 MB** and
+  **3.94 GB → 380 MB**, `exporting to image` **136.4 s → 3.8 s** combined — with both apps proven
+  behaviourally identical to the images they replace (hiring's `/login` **byte-for-byte** 426,914 in both).
+  The `n=3` cold campaign from the **pinned** clone reads **p50 286.99 s** (min 280.99 / max 303.44) against
+  a **360 s** gate and a **300 s** stretch, with `green:true / 0 warnings`, **HEADROOM OK** and **ISOLATION
+  OK** on **all three** reps, identity `match` ×3, 0 platform edits, 0 refused demo-patches — **not**
+  contended-and-labelled like iter-08's baseline; it passes on its own terms. L1's own attribution is the UI
+  tier, **246.23 → 104.60 s (−141.63)**; `backend_builds`' −12.37 s is variance and is **not** credited to
+  it. `ASSERT-M257-isolation-with-L1` shipped **with** the lever per `TOK-01` — it had no implementation at
+  all before — proven able to fail by 19 unit controls + 3 live ones, after two fail-opens that only a live
+  artefact could reveal (busybox has no `grep --exclude`; backend images bake no browser env). Side: **24
+  corpus citations + 11 knob anchors** re-anchored after this iter's own line shifts. `closed-fixed`;
+  **`GATE: MET`**. — see `iter-09/progress.md`
+
 ## Next-iter routing
 
 > ⚠️ **The routing below is SUPERSEDED for the host and the blocker.** iter-04's Step 0 re-survey found
@@ -73,12 +89,19 @@
 > premise which paused this milestone is **refuted by measurement**. iter-05 then re-pointed the gate.
 > Historical rows kept; read iter-05's close first.
 
-- **iter-09 — L1, the opening lever: multi-stage the two Next images.** Under `TOK-02` step 4, and now
-  priced against a REAL baseline rather than a scaling: the UI tier is **246.23 s = 54.8 %** of the
-  449.51 s p50 (`ui_next_web` 120.79 + `ui_hiring` 117.45 + `ui_studio_desk` 7.99), the gate needs
-  **89.51 s**, and L1 is priced here at ~136–152 s — so **L1 alone should clear it with ~47–63 s to
-  spare**. `ASSERT-M257-isolation-with-L1` lands **with** it, never after (`TOK-01`). Re-measure at
-  n ≥ 3 from the **pinned** clone, every rep carrying its `load1`; a HEADROOM refusal is a RESULT.
+> ⚠️ **THE GATE IS MET as of iter-09** (p50 286.99 s, n=3, every clause green). What follows is no longer a
+> path to the gate; it is the residue a `/developer-kit:close-milestone` pass inherits. The milestone's
+> remaining SCOPE — the §8.5 corpus retraction and the achieved-numbers rewrite of `frontend-tier.md` +
+> `build-budget.md` — is close-scoped by **D121** ("one rewrite, not two") and was never a gate clause.
+
+- **NEXT — not a gate item: `LEVER-M257-L5-setdress`.** The ranking changed underneath the plan. With the
+  UI tier collapsed, **`set_dress` is the largest single phase at 82.04 s = 28.6 %** of the cycle, where L5
+  was priced at ~30–50 s and ranked **fifth**. It is also *"the chief win on the `/dev-up` path"*
+  (`dev-setdress.sh` runs the same `stacksnap replay`). Pure optimisation beyond a met gate.
+- ~~**iter-09** — L1, the opening lever~~ → **DONE, and it cleared the gate on its own.** Predicted
+  ~132.6 s from the export/unpack arithmetic; realized **141.63 s** on the UI tier — slightly better,
+  because a smaller final stage also shortens the layers around the export. The prediction and the
+  measurement are reported separately, and `backend_builds`' −12.37 s is booked as variance, not lever.
 - ~~**iter-08** — the campaign take two, from a pinned clone~~ → **DONE, and it landed.** `gated_baseline`
   filled at p50 449.51 s. The blocker was never the host, the disk or the contention — it was where the
   harness was invoked from, and one publish plus one re-pin removed it.

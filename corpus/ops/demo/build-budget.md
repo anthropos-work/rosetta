@@ -71,7 +71,9 @@ sub-phases from `up-injected.sh`'s **own** progress lines against a checked-in a
 unattributed and every attribution in it is suspect.
 
 > **The count is TWELVE, not eleven** — corrected M257x. `BRINGUP_ANCHORS`
-> (`rosetta-extensions/stack-core/buildbench.py:115-131`, entries at `:118-130`, @ rext `415240f`) holds **12**:
+> (`rosetta-extensions/stack-core/buildbench.py:117-133`, entries at `:120-132`, @ rext tag
+> `fast-build-m257-iter-09` — re-anchored there from `415240f` at M257 iter-09, which added two imports above
+> this block and shifted every line under them) holds **12**:
 > `host_preflight · secrets_provision · clones_and_inject · backend_builds · seed_tooling · ui_next_web ·
 > ui_studio_desk · ui_hiring · compose_up · serve_and_egress · set_dress · autoverify`. The **4.1–4.12 table
 > immediately below already listed all twelve**, and so does the p50 table in "The baseline" — only this
@@ -85,7 +87,7 @@ unattributed and every attribution in it is suspect.
 > ```
 >
 > **Widened once** (Rule 57): `grep -rn "BRINGUP_ANCHORS" .` across the whole rext tree returns exactly two
-> hits — the definition at `buildbench.py:115` and its single consumer at `:250`. There is no second anchor
+> hits — the definition at `buildbench.py:117` and its single consumer at `:276`. There is no second anchor
 > list, so the number does not move. Three of the twelve are conditional (`ui_*` on the UI tier,
 > `serve_and_egress` on `--public-host`) and are reported as *not applicable* rather than missing when their
 > feature is off — a conditional phase is still a declared phase.
@@ -129,7 +131,12 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 > Measured M257x iter-225.** `D-v28-15` supersedes `D-v28-14` in the same day: `billion` is demo-deployment
 > only, **`odysseus` is retired**, and dev/test is **LOCAL to the new Mac**. Read every `odysseus` sentence
 > below as *"the host this doc was written for, which no longer exists for this purpose"* — this doc names
-> `billion` 44 times, `odysseus` 26 and `laptop` 22, and **names the sanctioned dev host zero times.**
+> `billion` 44 times, `odysseus` 26 and `laptop` 22, and **named the sanctioned dev host zero times.**
+> *(That last count was true when measured and is no longer: `macmini` appears from M257 iter-09, which
+> corrected the harness section's claim that no profile existed for this host. **The banner's substance is
+> untouched** — the baseline section below is still `billion`'s and still un-re-pointed; what changed is that
+> the host now has a measured profile and a landed `gated_baseline` (iter-04, iter-08) to re-point it TO.
+> The re-pointing itself is the M257 close's job, in one rewrite rather than two — D121.)*
 >
 > **⚠️ TWO CORRECTIONS TO THIS BANNER'S OWN TEXT (M257 iter-05/iter-07). The supersession still stands** —
 > the 25 `odysseus` sentences below are still un-re-pointed — **but items 1 and 2 have since been fixed, and
@@ -419,7 +426,7 @@ failure fails the whole assert.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
 > peak (`max` over the sampler's rows, `buildbench.py:1246`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1608`) — and the failure message still
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:1908`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
 >
@@ -595,7 +602,50 @@ flipping union-apply on.**
 
 Stacks share the BuildKit **layer cache**. Stacks never share **images** — every image is tagged `demo-N-*`
 and a bring-up refuses to reuse one whose baked offset endpoint, minted publishable key, or demo-patch-set
-fingerprint does not match. **Cache layers, never images.** M257 asserts it.
+fingerprint does not match. **Cache layers, never images.**
+
+**M257 iter-09 turned *"M257 asserts it"* from an intention into `isolation_assert()`** — the gate's second
+falsifiable clause (D-v28-11), landed **with** the lever that can trip it (L1 multi-stages both Next images,
+which rewrites exactly the layers carrying these values). It sits beside `headroom` in every rep's ledger and
+is read by `rep_is_ok`, so a leak **fails the campaign** rather than being noted:
+
+- **`foreign_pk`** — every publishable key in a `demo-N` image's **build output** must be that stack's minted
+  key. Reported values-blind (prefix + sha256 tag). *Build output, not the whole tree*: the gate's word is
+  **baked**, and a committed `apps/<app>/.env` is an input carried as a file. That file does ship a
+  real-Clerk publishable key into every demo image — measured identically **before and after** L1, so
+  pre-existing — and the bundle nonetheless bakes only the minted key, because `.env.local` wins at build
+  time. Tracked separately rather than folded into this clause.
+- **`foreign_origin`** — every origin in the image's baked `NEXT_PUBLIC_*`/`VITE_*` env must resolve to this
+  stack under `base + N*10000`, and the failure **names the stack it leaked from**.
+- **fail-closed arms** — zero images, unknown own key, and unreadable bundle are each a FAILURE. An
+  isolation verdict over nothing inspected is not a verdict.
+
+> **Two traps this assert paid for on the way in, and both generalise to any probe in this harness.**
+>
+> **1. `[]` and `None` are different answers.** The first bundle probe returned an empty list both when it
+> scanned and found nothing *and* when it could not scan at all — so the assert pronounced an image CLEAN
+> having read nothing. "No measurement" must be a distinct value from "measured, clean", or every
+> probe failure reads as a pass.
+>
+> **2. The probe runs inside the image under test, so it gets THAT image's tools.** The first version used
+> `grep --exclude=`, a GNU flag; the images are `node:24-alpine`, whose **busybox** grep answers
+> `grep: unrecognized option: exclude=.env` and matches nothing. **15 unit tests were green over the broken
+> probe** — correctly, because a fixture's injected reader never touches busybox. Only running it against a
+> real image found it, in about a minute. Depend on no flag beyond POSIX inside a container probe, and prove
+> a new assert against a real artefact and not only against fixtures you also wrote.
+
+### A/B-ing two Dockerfiles: the cache makes the second arm free
+
+Measuring "old Dockerfile vs new Dockerfile" back-to-back from one context does **not** produce two
+comparable numbers. BuildKit keys the dependency-install layer on the context hash, so **whichever arm runs
+first pays the cold install and the second inherits it** — and if the second arm's instructions are identical
+to a build already in the cache, it returns in **about a second having executed nothing at all**. M257
+iter-09 hit exactly that: its baseline arm came back in 1.12 s and measured nothing.
+
+Two rules follow. **Run a discarded warm-up build first**, so both arms are warm — the same reasoning as the
+campaign's discarded warm-up rep, one layer down. And **prefer figures that are properties of the ARTEFACT**
+— image size, the export leg, the unpack leg — over wall-clock totals, because those do not move with cache
+state. A wall-clock A/B needs the arms to be cache-equivalent; an artefact A/B does not.
 
 ---
 
@@ -613,10 +663,15 @@ fingerprint does not match. **Cache layers, never images.** M257 asserts it.
 cd <the rext clone>
 # --profile names a checked-in hostprofiles/<name>.json; an unknown name exits 2.
 # ⚠️ M257x iter-226: `odysseus.json` will NEVER land — `D-v28-15` retired that host on 2026-07-31.
-# Name the profile of the host you are ACTUALLY on. `hostprofiles/` currently holds only
-# `billion.json` (8-core x86_64, containerd) and `laptop.json` (10-core/16 GiB M1 Pro) — so on the
-# sanctioned dev host there is NO applicable profile yet, and nothing in buildbench compares the
-# profile you name to the machine you are on (M257x iter-225). Measure one first; do not borrow.
+# Name the profile of the host you are ACTUALLY on.
+# ✅ CORRECTED at M257 iter-09 — the two claims below this line were both true when written and are
+#    both stale now. `hostprofiles/` holds THREE profiles: `billion.json` (8-core x86_64, containerd),
+#    `laptop.json` (the RETIRED M1 Pro), and `macmini.json` — landed at M257 iter-04 for the host
+#    D-v28-15 actually moved dev/test to, and carrying a real `gated_baseline` since iter-08. So the
+#    sanctioned dev host DOES have an applicable profile. And buildbench DOES now compare the profile
+#    you name to the machine you are on: `profile_describes_host()` writes a `host_identity` verdict
+#    into every rep's ledger (`match` / `mismatch` / `unmeasured`) and the campaign rolls it up
+#    worst-first. Measure your own host; still do not borrow another's numbers.
 python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
         --public-host <magicdns> --label baseline
 python3 stack-core/buildbench.py report stack-core/.buildbench/baseline-<ts>
@@ -625,7 +680,7 @@ python3 stack-core/buildbench.py env-snapshot                                 # 
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse constructed at `buildbench.py:1464`). The ones above are the
+**The full flag surface** (verified against the argparse constructed at `buildbench.py:1838`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |

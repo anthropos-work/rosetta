@@ -27,23 +27,33 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 >
 > | shape | who owns the Dockerfile | platform repo is | example |
 > |---|---|---|---|
-> | 1 | the platform | build context, Dockerfile consumed as-is | `next-web` (`Dockerfile.dev`), `studio-desk` |
+> | 1 | the platform | build context, Dockerfile consumed as-is | `studio-desk` (`Dockerfile.dev`) — **and, until M257 iter-09, `next-web` too** |
 > | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the demo-patches — **23** on disk (`ls demo-stack/patches/*/*.yaml \| wc -l` at rext `415240f`), of which **18** are image-baked (11 `next-web-app` · 5 `studio-desk` · 2 `app`) and 5 are `ant-academy`, patched-then-reverted around a **native** `next dev` rather than a build. *(This cell read "the 11 demo-patches" — the M224-era distinct-manifest total, four milestones stale. The authoritative inventory is [`demopatch-spec.md` §5](demopatch-spec.md), directory-fenced by `TestPatchInventory`.)* |
-> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`) |
+> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`) **and `next-web`** (`frontend/next-web.Dockerfile`, net-new at M257 iter-09) |
 >
 > Shape 3 is *stronger* on the hard line than shape 2, not weaker: nothing in the platform repo is touched at
-> all, not even transiently. It is the shape v2.8's largest speed lever (L1, the multi-stage
-> `.next/standalone` image) will use — see [`build-budget.md`](build-budget.md). **The
+> all, not even transiently. **It is the shape v2.8's largest speed lever uses — and as of M257 iter-09 that
+> is no longer a forecast.** L1 landed: both Next images are multi-stage `.next/standalone` builds, and
+> `next-web` moved from shape 1 to shape 3 to get there, because making the platform's own `Dockerfile.dev`
+> multi-stage would have been a platform-repo edit. See [`build-budget.md`](build-budget.md). **The
 > "out of scope / forbidden upstream PR" section at the end of this page predates shape 3 and lists
 > `output:'standalone'` among the things only an upstream PR could deliver. That is no longer true** —
-> M255 proved it needs **zero** source edits and **zero** demo-patches, via `ENV NEXT_PRIVATE_STANDALONE=1`
-> in a tooling-owned Dockerfile. That section is rewritten with achieved numbers in **M257**.
+> M255 proved it needs **zero** source edits and **zero** demo-patches via `ENV NEXT_PRIVATE_STANDALONE=1`
+> in a tooling-owned Dockerfile, and M257 iter-09 shipped exactly that. That section is rewritten with
+> achieved numbers at the **M257 close** (D121: one rewrite, not two).
+>
+> **One flag in that Dockerfile is load-bearing and easy to drop: `turbo … --env-mode=loose`.** Turbo 2
+> defaults to `strict` and forwards only the variables named in `turbo.json`'s `globalEnv`/task `env`;
+> `NEXT_PRIVATE_STANDALONE` is **not** among the 44 names there. Without the flag the variable never reaches
+> `next build`, `output` stays undefined, **the build still exits 0**, and the image is the old ~4 GB one.
+> Both Dockerfiles therefore assert `test -d apps/<app>/.next/standalone` and fail loudly rather than trust
+> it.
 
 ## What `/demo-up` brings up (UI tier)
 
 | App | How it runs | Port (base + offset) | Auth in the demo |
 |-----|-------------|----------------------|------------------|
-| **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `core` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
+| **next-web-app** (Workforce) | per-demo **Docker** image from the **rext-owned** `frontend/next-web.Dockerfile` (build shape 3 above), built from the unmodified `next-web-app` clone, in the demo's `core` profile. *Built from the platform's own `Dockerfile.dev` until M257 iter-09; L1 moved it so the image could be multi-stage without a platform-repo edit.* | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
 | **hiring** (the real `apps/hiring`) | per-demo **Docker** image from the **rext-owned** `frontend/hiring.Dockerfile` (build shape 3 above), built from the same unmodified `next-web-app` clone; a **net-new** compose service `hiring-app` with `profiles: [<derived-default>]` | **3001** + N×10000 | Clerk-free (minted pk baked; `CLERK_API_URL` → the fake BAPI alias) |
 | **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `core` profile — **same as next-web** (see the profile note below) | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | **Clerkenstein-wired (v2.3 M220)** — the demo's minted pk + the disarmed fake BAPI, read from `<stack>/.env.demo-N`. It **shares the demo's session**: a hero who clicks through from next-web arrives at the academy **signed in as herself**. *Was keyless via the `e2e_persona` bypass — see the box below; that is now removed.* |

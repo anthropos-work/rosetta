@@ -54,7 +54,7 @@
 >   (`platform` `0c91421` `docker-compose.yml` declares `sentinel`, `backend`, `studio-desk`, `next-web-app`,
 >   `gotenberg` — the frontend service is `apps/web` only, at `:143`), and the repo ships one
 >   `Dockerfile.dev`. But a **demo** builds `apps/hiring` as a **second UI container** from the same unmodified
->   clone using rext's own `demo-stack/frontend/hiring.Dockerfile` (`demo-stack/up-injected.sh:1076-1085`, image
+>   clone using rext's own `demo-stack/frontend/hiring.Dockerfile` (`demo-stack/up-injected.sh:1087-1085`, image
 >   `demo-<N>-hiring`, port `3001`+offset) — still zero platform-repo edits. `❌ Vercel-only` was therefore too
 >   strong as well.
 >

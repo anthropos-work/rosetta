@@ -327,7 +327,7 @@ fenced twice over:
   both are now forced to `""`: `PreflightEnv` blanks **both** on every target
   (`isolation/audit.go:153-154`) — that is the **seeder's** environment — and the demo's injected compose
   override strips both on every emitted service (`stack-injection/gen_injected_override.py:771-772`, emitted
-  by `demo-stack/up-injected.sh:1969`) — that is the **running container's**. The seeder pointer alone was
+  by `demo-stack/up-injected.sh:1982`) — that is the **running container's**. The seeder pointer alone was
   never enough, and the incident proved it: the `s3:PutObject` came from `backend`, which reads its own
   compose env and never sees the seeder's. (Snapshot media is carried as **refs only** today — the byte
   payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
@@ -364,7 +364,7 @@ fenced twice over:
   > `stack-injection/gen_injected_override.py:651-652`, dev `stack-core/gen_override.py:195-196`, each deriving
   > the target set from the compose text (rext `415240f`; the dev side only since M257x iter-129). What supplies
   > credentials on a **demo** is the M239 env bridge instead — `bridge_bedrock_creds`
-  > (`demo-stack/up-injected.sh:1358-1385`, `:1362` for the five-key list) writes them into the demo's
+  > (`demo-stack/up-injected.sh:1371-1385`, `:1362` for the five-key list) writes them into the demo's
   > `platform/.env`, which `env_file: .env` (`docker-compose.yml:44-45`) loads into `backend`. So the exposure
   > above is **live via env, not via the mount** — do not conclude from "the mount is gone" that the bucket
   > exposure is closed. §3.4 residual #4 states the Part 3 (exposure-side) half of the same facts.
@@ -764,12 +764,12 @@ inherited. It is **strictly narrower**, and it should feel narrower:
      `"jobsimulation"`, so a `dev-N` `backend` kept the operator's real `~/.aws/credentials` mounted
      (`gen_override.py:184-190` records it).
    - **The demo re-supplies the same class by ENV, on purpose.** `bridge_bedrock_creds`
-     (`demo-stack/up-injected.sh:1358-1385` **@ rext `d739952`**, called unconditionally at `:1575` unless
+     (`demo-stack/up-injected.sh:1371-1385` **@ rext `d739952`**, called unconditionally at `:1575` unless
      provisioning is skipped — **the ref is now stated because this was the site that proved the rext anchors
      in this corpus are on undecidable clocks.** `demo/media-substrate-spec.md` cites this same function at a
      DIFFERENT line of the same script, and for four releases neither sentence said which tree it had read.
-     Re-measured 2026-08-11 at rext `e64a3cd3b`, the definition is `demo-stack/up-injected.sh:1364` and the
-     call `demo-stack/up-injected.sh:1582`; the numbers in this bullet are the OLDER reading and are kept,
+     Re-measured 2026-08-11 at rext `e64a3cd3b`, the definition is `demo-stack/up-injected.sh:1377` and the
+     call `demo-stack/up-injected.sh:1595`; the numbers in this bullet are the OLDER reading and are kept,
      dated, rather than silently renumbered — `D-M257x-278-3`,
      `ROUTE-M257x-278-thirteen-unpinned-rext-anchors-are-on-undecidable-clocks`. ⚠️ **Every line number in
      this parenthesis names its file, and that is not stylistic**: harden pass 70's first draft wrote them
@@ -1167,7 +1167,7 @@ video facet, by the VPN scope alone.
 > MEASURABLE gene targeting this file"* (`stack-secrets/provision/provision.go:120`) — so
 > `/stack-secrets --provision` cannot deliver a key it has no gene for. And the **M239 bridge is a fixed
 > five-key list** — `AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
-> CLAUDE_CODE_USE_BEDROCK` (`demo-stack/up-injected.sh:1362`) — with no Bunny key in it and no extension seam.
+> CLAUDE_CODE_USE_BEDROCK` (`demo-stack/up-injected.sh:1375`) — with no Bunny key in it and no extension seam.
 > Provisioning these keys is therefore **net-new work** (a DNA gene + a `next-web-app` target-file route), not
 > an existing path waiting on a value. The status note below is right that the feature is blocked; it is blocked
 > on **two** things, the values *and* the path.
