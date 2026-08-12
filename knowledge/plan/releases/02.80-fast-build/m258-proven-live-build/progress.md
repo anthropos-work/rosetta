@@ -81,6 +81,22 @@
   undiscoverable) and is now OK both ways; **8 pre-existing stale anchors** + a live
   `FIX-M257-anchor-guard-content-drift` instance repaired. — see `iter-06/progress.md`
 
+- iter-07 (tik, `closed-fixed-partial`): **the campaign's last blocker discharged BY MEASUREMENT, not by
+  a campaign** — and then the host refused. `D27`: iter-06's `green:false` is proven to be **clone
+  topology alone**, from two path expressions (`readiness.sh:65,71` — `_ry` = `<rext>/../platform/
+  repos.yml`, absent for the authoring clone, present for the consumption one) plus one query (demo-1
+  has all four derived schemas `extensions/sentinel/public/directus`), so the probe will **assert and
+  pass** and `green` flips `false → true` for topology reasons alone. Consumption clone re-pinned
+  `iter-03 → iter-06`; the gap was **exactly the feature under test** (all four batch-gate files absent,
+  no hook) — the M236 shape. **4 of the gate's 5 clauses proven** (1 batch-drives ✅ · 2 red set EMPTY ✅ ·
+  4 **0 platform edits PASS**, measured across all six peer clones ✅ · 5 **12/12 cockpit seats resolve**
+  in the 35-identity roster ✅); **clause 3 — the only TIMING clause — NOT TAKEN.** `load1` minimum
+  **11.93** vs a limit of **10** across ~30 min of polling, trending **up to 62.88**, saturated by a
+  **different user project's** parallel campaign. **Deliberately not run as an operator** (`D28`): the
+  suite is `retries: 0` by contract, so a run at load 40–60 manufactures **false reds** that `D-v28-3`
+  escalates to the user as if they described the product. `demo-1` **never torn down** — still
+  presenter-usable. — see `iter-07/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
@@ -93,13 +109,19 @@
   the world-contract restore leg ships with it, both proven live. **`RESTORE-M258-world-contract` is
   CLOSED**: the restore is now a mechanism every bring-up carries (7 s), not a one-off repair, and
   `demo-1` is verified presenter-usable (4 story orgs / 591 users / 12 cockpit seats all resolving).
-- **iter-07 (tik, under `TOK-01`) — step 4: the composed 3× cold campaign.** Unblocked; both halves are
-  wired into one command. ⚠️ **Run it from the CONSUMPTION clone at a PUSHED tag** — iter-06 measured that
-  an authoring-copy bring-up has no sibling `platform/`, so `autoverify`'s `postgres-schemas` probe
-  refuses to assert and **every rep grades `green:false` and unusable regardless of its timings**. Publish
-  `fast-build-m258-iter-06` to origin, re-pin `stack-demo/rosetta-extensions`, then campaign. Publish the
-  **spread beside the p50** (`C2`), on both halves — the batch is now 129 s (iter-04) and 160 s (iter-06)
-  with no p50 yet.
+- ✅ **iter-07 discharged every PRECONDITION of `TOK-01` step 4** — the tag is on origin, the consumption
+  clone is re-pinned to `fast-build-m258-iter-06` and carries the gate, and the `postgres-schemas`
+  refusal is **proven satisfiable there** (`D27`). It also graded **4 of the gate's 5 clauses green**.
+- **iter-08 (tik, under `TOK-01`) — step 4: the composed 3× cold campaign. NOTHING IS LEFT TO BUILD.**
+  Run `.agentspace/scratch/work-m258/launch-iter07-campaign.sh` — one command; it asserts the user's
+  stacks resident and **refuses** otherwise, asserts headroom **before** the teardown, tears `demo-1`
+  down from its **owning** (authoring) clone, then runs 3 reps from the consumption clone.
+  ⚠️ **The ONLY remaining input is ~30 minutes of a host at `load1 < 10`.** iter-07 watched for ~30 min
+  and the minimum was **11.93**, trending to **62.88**, because a *different user project*
+  (`hyperspace/anima8`) is running a parallel campaign on this box. **Do not route around this by
+  running the batch contended** — `retries: 0` turns browser timeouts into a red set that `D-v28-3`
+  escalates to the user as a product verdict (`D28`). Publish the **spread beside the p50** (`C2`) on
+  both halves — the batch has 129 s (iter-04) and 160 s (iter-06) and still no p50.
 
 <details><summary>superseded routing (iter-06's plan, kept for the audit trail)</summary>
 
@@ -131,9 +153,22 @@
   `demo_knob_guard`) were run against a **pristine `HEAD` extract** and are RED there too. Both tests
   fire only on a box that has ever run a demo — which is why they surface here and skip in a clean
   checkout, and why they keep being mistaken for regressions.
+- **`ROUTE-M258-iter07-demopatch-G5-does-not-revert-the-native-clone`** (net-new, iter-07 `D26`) —
+  `stack-demo/ant-academy` carries **4 modified tracked files**, all self-identifying demo-patches.
+  Structural, not a per-patch bug: `demopatch`'s apply-then-revert assumes an **ephemeral build-scratch
+  clone** the image build discards, but **ant-academy runs NATIVELY** and is never imaged, so its clone
+  is the durable peer clone and G5 has nothing to throw away. Matters because **G2 is drift-refuse** — a
+  later patch baselined against a pristine file can read DRIFTED against a clone an earlier run patched
+  (the silent-refusal class that shipped a 76 s members grid for four releases). **Not repaired:**
+  reverting tracked files is a forbidden op, *and* this clone is what the **user's demo-2** serves from.
 - ⚠️ `demo-2` (11 containers) and the 5-container dev stack are the **user's**: do not tear down,
-  re-seed, restart or reset either. `demo-1` is left UP, **restored and presenter-usable** (verified at
-  iter-06: 4 story orgs, 591 users, 12 cockpit seats all resolving in a 35-identity roster).
+  re-seed, restart or reset either. **⚠️ NOTE (iter-07 `D23`): `demo-2` is owned by the CONSUMPTION
+  clone** (`stack-demo/rosetta-extensions`) while **`demo-1` is owned by the AUTHORING clone** —
+  resolved from the docker mount, not from any script's location. Re-pinning the consumption clone is
+  therefore an operation *near* the user's stack; it is safe only because `demo-stack/.gitignore:8`
+  ignores `stacks/` (verified with `git check-ignore -v`). `demo-1` is left UP, **restored and
+  presenter-usable** (verified again at iter-07: 12 cockpit seats all resolving in a 35-identity
+  roster; never torn down).
   ✅ **The "must not be browsed — it talks to a real Clerk app" warning is WITHDRAWN** (`iter-03/
   decisions.md` D10): the premise was refuted and the live ISOLATION assert returns `ok: True` over all
   8 images. `demo-1` **is** tailnet-reachable (auto-discovered public host, `0.0.0.0`, real LE cert) —
