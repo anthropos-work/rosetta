@@ -230,6 +230,22 @@
   extract at the same directory depth: **the same nine by name**, 9 failed / 131 passed.
   — see `iter-13/progress.md`
 
+- iter-14 (tik, `closed-fixed`): **`TIK-B` — the orphaned-volume leak stopped AT ITS PRODUCER, at zero
+  time cost.** `--purge` was already innocent (`D56`); the **plain `down`** was the leak — it passed no
+  `-v`, so the two undeclared bitnami anonymous volumes outlived every non-purge teardown and every
+  container recreate (178 volumes / 5.297 GB over five days). Now `down -v`. **The one-flag fix still
+  needed a measurement** (`D69`): `-v` also removes NAMED volumes, which would make a plain teardown
+  destructive — so a live census of every container in the project was taken, and the **only volume-type
+  mounts in an entire demo stack are those two anonymous ones**. Zero named volumes to lose, and the
+  database is a **host bind mount** `-v` never touches. Fenced by
+  `test_down_plain_removes_anonymous_volumes`, which asserts both branches pass `-v`, that no bare
+  `down ||` survives, **and the rationale sentence** — so a future named volume re-opens the decision
+  rather than silently making teardown destructive. Second half **priced and deliberately NOT taken**
+  (`D70`): `purge_data_dir` is scoped to `data/` alone, so **≈276 MB per stack survives a full `--purge`**
+  (`clones/` 220 MB · `bin/` 37 MB · fake-Clerk 18.5 MB) — widening a `rm -rf` whose safety rests on a
+  G1 path-assert, minutes before the milestone's binding end state, is the wrong trade; `TIK-C` measures
+  it for free. — see `iter-14/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
