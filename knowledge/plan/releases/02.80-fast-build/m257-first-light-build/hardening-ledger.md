@@ -132,3 +132,70 @@ there.
 
 **Stop condition:** continue-to-next-pass — the whole-tree sweep that grades the cumulative scope has not
 returned yet, so the milestone's failure roster is unattributed and the dimension scan is incomplete.
+
+---
+
+## Pass 2 — 2026-08-12 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative, continued from Pass 1)
+**Tiks covered since prior pass:** n/a — same cumulative scope, second sweep over it
+
+**Coverage delta on touched files:** +6 tests (isolation 34 → 40). The delta is small by count and that is
+the point: Pass 1 took the surface from *"the assert's logic is fenced, its edge with the world is not"* to
+fenced-on-both-sides, and Pass 2 found the two remaining seams on that same edge rather than new territory.
+
+**Tests added:**
+
+- `stack-core/tests/test_isolation_assert_m257.py`: **+6** — five on `_stack_minted_pk` (the third live
+  probe, and the one that decides what *foreign* means) and one static fence on the ledger emit
+
+**Bugs surfaced + fixed inline:**
+
+- **a rendered FINGERPRINT was adoptable as this stack's own key.** `pk_fingerprint` renders a key as
+  `pk_test_MTI3…61fbfaf4` and `_PK_RE` matches the twelve-character prefix inside it; the discovery's
+  fallback globs every `*.json` in the stack dir. The failure mode is the one the fail-closed arms do NOT
+  cover: a MISSING key refuses to grade, a WRONG key reds every image against a truncation nobody can look
+  up. **Wrong-and-loud is not fail-closed.** Fixed by skipping matches followed by the fingerprint
+  separator, through one `_first_key` used by both arms (`45d8d1f`, sharpened at `a9869e7`)
+- **the one tolerated `absent` in `rep_is_ok` was a promise, not a check.** A missing `isolation` block
+  reads as consent — correctly, so iter-08's baseline is not retro-failed — and its safety rests entirely on
+  the live path always emitting it, which was asserted in prose. Move the emit behind a condition and a rep
+  that SKIPPED the assert scores like a rep that PASSED it, with nothing going red. Now a static fence
+  requires the emit in the same dict-merge as `headroom` (`8d90b20`)
+- **this pass's own prose breached both literal ratchets** — DOCSTRING 254 → 256, TEST_MODULE 663 → 667,
+  because the findings were written up with their measured counts inside docstrings. The growth was
+  **deleted**, not ceilinged: both are back at exactly iter-09's closing reading, with the counts moved to
+  this ledger. The pre-existing breach (+14 / +10) is untouched (`474dff7`)
+
+**Cross-iter / whole-tree verification:**
+
+- **the gate is NOT retracted by any of this, and that was checked rather than assumed.** The three gate-met
+  reps were re-graded with the post-harden code: `rep_is_ok` True ×3, campaign `ok=True`, identity `match`.
+  Their ISOLATION blocks were real measurements, not fail-opens — 8 images checked per rep, a real
+  `own_pk_fingerprint`, empty `foreign_pks`/`foreign_origins`. None of the four fail-opens closed this pass
+  was active in them. The headline verifies against the raw ledgers exactly: p50 286.99 / min 280.99 /
+  max 303.44, `green:true` + 0 warnings + HEADROOM OK + ISOLATION OK + phases complete + `rc_up=0` on all
+  three
+- **the `stack-core` roster is attributed** (`HARDEN-M257-2` in `decisions.md`) — 8 of iter-09's roster were
+  fixed by Pass 1, and the largest remaining cluster is the BOX: `run_one`'s unittest column ImportErrors
+  under the interpreter `pytest` resolves to here, a THIRD one that neither the census docstring (headed
+  *"THERE ARE TWO INTERPRETERS"*) nor the README instructing its use names. Measured on a real module:
+  3.9.6 OK, 3.12.13 `ModuleNotFoundError`, 3.14.6 OK
+- **the other sections are green**: `stack-injection` 329 passed / 8 skipped; the five Go sections 44
+  packages, 0 FAIL, run with `-count=1` after a first pass came back entirely cache hits (a cached green is
+  not a reading); `demo-stack`'s milestone file 105 passed; B2's studio-acquisition fence 19 passed with its
+  live arm actually running rather than skipping
+
+**Flakes stabilized:** none needed. Flake gate: 3 consecutive clean runs of every test added this pass,
+with pytest's random ordering plugin ENABLED (identical counts each time).
+
+**Routed forward:** `FIX-M257-census-interpreter-namespace-import` — Fate 3. Each candidate repair changes
+either what the census MEASURES or what pytest treats as a rootdir, and choosing between them is a decision
+about which interpreter is canonical for this repo. It is also not M257's code — no iter of this milestone
+touched `run_one`.
+
+**Knowledge backfill:** `suite_census.py`'s two-interpreter heading, corrected in place with the third
+interpreter, the measured import behaviour across all three, and why the repair is deferred.
+
+**Stop condition:** continue-to-next-pass — Pass 2 still surfaced new material (the fingerprint hazard, the
+emit seam, the interpreter cause), so the dimension scan has not yet come back empty. One confirmation pass.
