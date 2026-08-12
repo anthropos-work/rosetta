@@ -105,3 +105,65 @@ fence count must state the invocation and the platform ref with it.
 found new defects in every one of the five scoped areas, so coverage has not stabilised. Pass 2 to sweep
 the cross-iter hotspots not yet reached (`up-injected.sh`'s other three iters, `buildbench.py`'s three)
 and the corpus-sweep class.
+
+## Pass 2 — 2026-08-12 — final
+
+**Iters hardened this pass:** the cross-iter hotspots pass 1 identified but did not reach —
+`stack-core/buildbench.py` (iter-03, iter-06, iter-09), `stack-injection/inject.py` (iter-03), and the
+`demo-stack/up-injected.sh` batch-gate hook (iter-06).
+
+**Tiks covered since prior pass:** n/a (same final-mode session, cumulative scope).
+
+**Coverage delta on touched files:** `stack-core` isolation 47 → 53 · `stack-injection` 341 → 342 ·
+`demo-stack` 1109 → 1119. Mutation coverage +7 (the batch-gate hook, previously **zero** tests of any
+kind). Two surfaces were examined and found **already sufficient**, which is also a result:
+`parse_setdress_attribution` (iter-09) already tests both failure modes its own docstring names —
+out-of-span cuts in both directions and segment overlap — and `write_injection_block`'s three existing
+tests cover non-accumulation, foreign-content survival and byte-idempotence.
+
+**Tests added:**
+- `stack-core/tests/test_isolation_assert_m257.py` +6 (3 unparseable-last-value shapes, the
+  fallback-cannot-undo-the-refusal case, and 2 narrowing controls).
+- `stack-injection/tests/test_injection.py` +1 (collapse from the measured 24-block state).
+- `demo-stack/tests/test_batch_gate_hook_m258.py` (**new**) 3 contract + 7 mutants.
+
+**Bugs surfaced + fixed inline:**
+- **Last-wins won the assignment but not the decision** (`7d58990`). iter-03 made a dotenv read
+  last-wins; the loop still only overwrote `found` when the value *parsed*, so a later assignment with
+  an unparseable value left the earlier key standing. Measured on the shipped function, three shapes did
+  exactly that and all three returned the **foreign** key: a later blank (`KEY=`), a trailing inline
+  comment (compose takes it literally), and a placeholder written over the real value. That is
+  first-wins returning by another door, inside the one function written to end it, with the same
+  consequence — the false RED that cost iter-02 its measurement. The subtler half was one line lower:
+  `_key_of` read `_dotenv_key(text) or _first_key(text)`, so a refusal **fell through to the first token
+  in the file**, reinstating the original bug beneath its own fix. The last assignment now always
+  decides, including when it decides "unparseable"; the fallback survives only where no such assignment
+  exists at all.
+- **The batch GATE was fenced; the HOOK that carries its verdict was not** (`f398c1b`). Three contract
+  properties live only in `up-injected.sh` and had no test of any kind. The sharpest: replacing the
+  `if/else BATCH_RC=$?` capture with `|| true` — the idiom the surrounding script uses for genuinely
+  optional steps — discards the deliverable, so a bring-up with a **fully red batch exits 0 under an UP
+  banner**, inverting the milestone's central claim with no failing signal anywhere. Also fenced: a bare
+  call (which `set -e` turns into clause 5's worst violation, a test bug costing a good demo), the UP
+  banner's ordering, the verdict reaching `exit "$BATCH_RC"`, no teardown between gate and exit, and the
+  opt-out's polarity.
+
+**Test-only gap closed:** *"never accumulates" is not "repairs an accumulation"* (`60bb4f6`). iter-03's
+three tests all start from a clean file and prove the injection block never stacks **going forward** —
+but `--purge` does not clear the stack dir, so every stack dir predating the fix still carries its stack
+of blocks today, and the ISOLATION false RED persists there until a re-up collapses them. Added at the
+measured size (24 blocks): 123 lines → 8, one header, no previous key surviving, fixed point in ONE
+pass. The fixture carries a blank `DIRECTUS_TOKEN=` deliberately — it ships blank and filling it is the
+classic *stack boots, catalog empty* fix, so a rewrite dropping empty-valued foreign lines would
+silently undo a user's repair.
+
+**Flakes stabilized:** none surfaced.
+
+**Verification:** `stack-injection` 342 green · `stack-core` isolation 53 + buildbench 152 green ·
+`demo-stack` 1119 run, the same **9** pre-existing failures as pass 1 — **nothing introduced**.
+
+**Stop condition:** continue-to-next-pass — two production defects and one coverage gap landed, and two
+surfaces came back already-sufficient. The finding rate is falling (5 → 3) but the scan is still
+producing, so it has not stabilised. Pass 3 to sweep the last unexamined milestone code: iter-20's G1
+repair in `platform_predicate_guard.py` (the newest fence code in the milestone) and iter-06's
+`buildbench.py` batch wiring.
