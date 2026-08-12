@@ -535,8 +535,8 @@ failure fails the whole assert.
 > assert working, not a broken profile.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
-> peak (`max` over the sampler's rows, `buildbench.py:375`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:2124`) — and the failure message still
+> peak (`max` over the sampler's rows, `buildbench.py:393`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:2227`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
 >

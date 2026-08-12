@@ -755,6 +755,28 @@ against is materialized by the seed. It is covered by the **same datadna conform
 > precondition-coverage is that a missing precondition surfaces at **validate-time** instead of as a SETUP
 > failure masquerading as a capability break.
 
+## The BAKED-IN lifecycle — the suite now runs at the tail of every bring-up (v2.8 M258)
+
+Until M258 the suite was something you *went and ran*. It is now the last thing a bring-up does:
+`up-injected.sh` invokes [`e2e/batch-gate.sh`](../../../.agentspace/rosetta-extensions/playthroughs/e2e/batch-gate.sh)
+right after the `UP.` line, so a single cold command brings the stack up **and proves every journey on
+it** — the ambition being that this is the *normal* way to bring a stack up, not a ceremony reserved for
+a release gate.
+
+The batch-gate contract (`D-v28-3`) and its three fail-closed ledger rules are documented once, in
+[`../verification.md`](../verification.md) § *The layer ABOVE autoverify* — read it there rather than
+here. What matters at **this** layer is what the gate does to the world the suite runs in:
+
+- **The suite is driven UNSCOPED and un-retried**, so the run is **binding** (a `--grep`'d run is
+  advisory — see the SCOPED split at the bottom of `run-playthroughs.sh`).
+- **The reset that this suite needs is destructive to the presenter demo**, and the gate therefore owns
+  the restore leg: `restore-presenter-world.sh` puts the stories world, the Clerkenstein roster and the
+  cockpit/content manifests back, on **every** path where the reset ran — a red batch must not *also*
+  cost the presenter the demo world.
+- **The batch is skipped on a `--public-host` stack** and recorded as `skipped`, never `green`, because
+  such a demo cannot be browsed from its own host. Since `--public-host` is default-on, a bare
+  `/demo-up N` skips and `/demo-up N --no-public-host` gates.
+
 ## The lifecycle — reset-to-seed + the serial-default runner
 
 P1 mandates the action-under-test **mutates real state**; P6 demands *same inputs → same result*. These hold

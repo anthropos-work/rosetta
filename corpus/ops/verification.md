@@ -57,6 +57,89 @@ an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `d
 > later visit still finds them alive. Previously a bare `nohup` left them in the launcher's process group,
 > so a backgrounded `/demo-up` task's reaping took them down with it.
 
+## The layer ABOVE autoverify — the Playthrough batch gate (v2.8 M258)
+
+Everything above this line proves the stack is **reachable and healthy**. It cannot tell you whether a
+seeded hero can actually *play her journey* — a stack can pass every probe and still be functionally
+broken. So the bring-up now ends in a second, higher gate:
+`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2839` immediately after the `UP.` line.
+After it, **"UP" means "UP, and every journey verified"**.
+
+**The contract is `D-v28-3`, and every clause is load-bearing:**
+
+| clause | why it is there |
+|---|---|
+| the suite **always runs to completion** | halting at the first red gives you one symptom and hides the other twenty-nine |
+| it **never retries** to mask a flake | `retries: 0` stays; a retry converts a real defect into an intermittent one |
+| **ONE consolidated red set**, at batch end | the operator reads a complete verdict instead of assembling one from scrollback |
+| a non-empty set **escalates to the user** | each item is fixed or given an explicit **written disposition** — red NEVER accumulates silently across runs |
+| the stack is **left UP regardless** | the autoverify precedent: **a test bug must never cost a good demo**. The gate stops, restarts and tears down nothing |
+| the bring-up **exits non-zero, loudly** | loud, not fatal. The stack stays up; the shell gets a truthful exit code |
+
+The order is deliberate: `UP.` prints **before** the batch runs, so "left UP regardless" is visible rather
+than merely true. Verdict artifact: `$STACK/batch-gate.json` (`verdict`, `red_set`, `batch_seconds`,
+`restore_seconds`). Opt out with `DEMO_NO_BATCH=1` — see
+[`demo/demo-up-defaults.md`](demo/demo-up-defaults.md).
+
+### It SKIPS on a `--public-host` stack, and the skip is not a green
+
+A `--public-host` demo **cannot be browsed from its own host**: docker-proxy binds `0.0.0.0`, so a
+connection from the demo host to its own tailscale IP hits the kernel socket and **bypasses
+`tailscale serve`**, which is what terminates TLS (`run-playthroughs.sh:92-105`; M255 spike (e)). Running
+the batch there would fail all 30 Playthroughs for a reason that has **nothing to do with the product** —
+a false-RED factory, and **a false RED is not the safe direction of this bug: it trains its operator to
+disbelieve the gate.**
+
+So on such a stack the gate skips, loudly, and records `verdict: skipped` — which is **never** `green`.
+**The gate is never reported as met where it was never taken.** The skip prints the peer path
+(`--reset-only` on the host, the browser half from a tailnet peer, then the restore). Since
+`--public-host` is default-on (`D-DESIGN-3`), **a bare `/demo-up N` skips the batch; `/demo-up N
+--no-public-host` gates it in one command.**
+
+### THE WORLD CONTRACT — why a batch gate needs a restore leg to be honest
+
+`run-playthroughs.sh --reset` is the *real* reset: a full FK-ordered `TRUNCATE` bottoming out at
+`public.{organizations,users,memberships}` **with no `organization_id` predicate**, then a fresh seed of
+`pt-world.seed.yaml`. The showcase orgs, the heroes, their sessions and the content-story fan-out all go.
+Meanwhile `cockpit-manifest.json` and `content-manifest.json` were projected **once at bring-up** and the
+runner never refreshes them.
+
+So the naive composition — bring up, then batch — ends with a **test world behind a presenter cockpit
+still advertising heroes whose rows no longer exist**. Not a silent absence: **a cockpit full of dead
+CTAs.** And that state fully satisfies *"the stack is left UP regardless"*, which is why M258's gate had
+to name a world contract at all — **as first drafted it was passable while shipping a broken demo.** It
+is not hypothetical: M254 left `billion` in exactly that state, with no restoration recorded anywhere.
+
+`playthroughs/e2e/restore-presenter-world.sh` closes it (resolution **(b) restore after**), and the batch
+gate invokes it on **every** path where the reset ran — including a RED one, because a red batch must not
+*also* cost the presenter the demo world. It is **reset-then-seed, never additive** (an additive re-seed
+over pt-world leaves every test row in place — the M42e green-but-wrong trap, forbidden as a reset), and
+it restores all three layers, because **the world is DB + identities + the cockpit's advertised menu**:
+
+1. `stackseed --reset` then a fresh seed of the stories preset;
+2. the Clerkenstein **roster** + a fake-service restart — a stale roster does not merely 400, it produces
+   a **successful-looking WRONG login** (the fake FAPI establishes a session for an unknown identity);
+3. the **cockpit and content manifests** — pure functions of the seed, so no DB is needed.
+
+A failed restore is an **error**, not a green: the stack is UP but **not presenter-usable**, and the gate
+says so and names the recovery command.
+
+### Fail-closed on the ledger — three ways a batch can look green without having run
+
+All three are asserted by controls in `playthroughs/manifest/batch_gate_test.go`, which executes the real
+script against a mirrored temp tree:
+
+- **A stale report.** `last-report.json` is written by ptreport *after* the suite. If the runner dies
+  **before** the suite — a missing `stackseed` exits 2 at the reset arm, a documented, reachable path —
+  ptreport never runs and the file on disk is the **previous, possibly green** run's. The report is
+  refused unless its mtime is at or after the batch start (integer epoch on purpose: M236's age check
+  parsed a UTC string as local time and **failed OPEN west of UTC**).
+- **An empty ledger.** `total == 0` is an **error**. *"0 failing out of 0"* is not a pass — it is the
+  absence of a measurement wearing a pass's clothing.
+- **A non-zero runner with an empty red set.** The runner exits non-zero when a Playthrough fails (the
+  normal red path) *and* when it refuses to run at all. **"The suite failed and nothing is failing" is not
+  a green.**
+
 ## The offset/scope model (why it targets the *right* ports)
 
 A `demo-N`/`dev-N` stack publishes its host ports at **base + N×10000** (the offset engine in

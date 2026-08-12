@@ -158,7 +158,7 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   **state the environment with every number** — the same Dockerfile yields a 4.84 GB image on `billion` and
   2.88 GB on an arm64 laptop, which also pays no unpack leg at all.
 - [`demo-up-defaults.md`](demo-up-defaults.md) — **the defaults contract** (v2.3 "cue to cue" M220): every
-  knob and flag that controls a bring-up — **all 31 env knobs + 10 CLI flags**, with real defaults and the exact
+  knob and flag that controls a bring-up — **all 32 env knobs + 10 CLI flags**, with real defaults and the exact
   `file:line` that reads each. **Derived from the parsers, and fenced against them in both directions** (a
   doc-promised flag with no parser entry is a *false promise*; a parser flag with no doc row is
   *undiscoverable*). States the fact that had never been written down: **there are TWO entry points** —

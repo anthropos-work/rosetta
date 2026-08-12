@@ -34,7 +34,7 @@ necessary.
 
 ---
 
-## Env knobs — all 31
+## Env knobs — all 32
 
 `0` = feature ON (the knob is an **opt-out**); `1` = disable it. Read the `DEMO_NO_*` names as *"do not…"*.
 
@@ -47,8 +47,8 @@ necessary.
 | `DEMO_STORIES_PRESET` | `stack-seeding/presets/stories.seed.yaml` | the preset the stories seed reads | `up-injected.sh:261` |
 | `DEMO_NO_SETDRESS` | `0` | **set-dress is ON** — cache-first snapshot replay (taxonomy + directus + sim-embeddings) then the seed | `up-injected.sh:233` |
 | `DEMO_NO_LOCAL_CONTENT` | `0` | **per-stack Directus is ON** — content is self-contained. `=1` reads content **live from prod** (the documented fallback) | `up-injected.sh:239` |
-| `DEMO_NO_DIRECTUS_DRIFT_FIX` | `0` | the local-content Directus drift fix runs (only when local content is on) | `up-injected.sh:2536` |
-| `DEMO_NO_CONTENT_URL_REWRITE` | `0` | the `demo_web` content-URL rewrite runs (only when local content is on) | `up-injected.sh:2573` |
+| `DEMO_NO_DIRECTUS_DRIFT_FIX` | `0` | the local-content Directus drift fix runs (only when local content is on) | `up-injected.sh:2544` |
+| `DEMO_NO_CONTENT_URL_REWRITE` | `0` | the `demo_web` content-URL rewrite runs (only when local content is on) | `up-injected.sh:2581` |
 
 ### The UI tier & the presenter cockpit
 
@@ -56,7 +56,7 @@ necessary.
 |---|---|---|---|
 | `DEMO_NO_UI` | `0` | **full UI tier is ON** — next-web + studio-desk (containers) + ant-academy (native) | `up-injected.sh:227` |
 | `DEMO_NO_ACADEMY_FILL` | `0` | **the academy grid is FILLED** — applies the `academy-fs-published-fallback` demo-patch to the demo's own ant-academy clone before launch, so the home grid renders the committed FS catalog as **published** (production-faithful, **no "Draft" chip**). Default-on for EVERY demo (localhost + public-host); idempotent + drift-refuse + **NON-FATAL** — a refused patch just leaves the grid empty. **This is the knob that gates Thread A**: set it to `1` and the demo academy renders 0 cards. Both halves are required (the patched code reads `ACADEMY_DEMO_FS_PUBLISHED`, which is added to the launch env *only* when the patch actually applied) | `ant-academy.sh:159` |
-| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:2598` |
+| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:2606` |
 
 ### Demo-patches (platform-source fixes applied to the demo's own ephemeral clone)
 
@@ -67,8 +67,8 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | `DEMO_NO_PATCH` | `0` | **all demo-patches applied** | `up-injected.sh:566` |
 | `DEMO_NO_AUTHZ_SKIP` | `0` | ⚠️ **the `app-targetrole-authz-skip` patch is APPLIED** — authorization is short-circuited on the per-member target-role write path. Part of what makes a demo an **authz-weakened build** ([`../safety.md`](../safety.md) §3.2) | `up-injected.sh:1669` |
 | `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND` | `0` | the `app-aireadiness-snapshot-loadmembers` read-path patch is applied | `up-injected.sh:1670` |
-| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:2495` |
-| `DEMO_NO_SENTINEL_RELOAD` | `0` | the sentinel casbin-policy reload runs (the silent-403 catcher) | `up-injected.sh:2465` |
+| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:2503` |
+| `DEMO_NO_SENTINEL_RELOAD` | `0` | the sentinel casbin-policy reload runs (the silent-403 catcher) | `up-injected.sh:2473` |
 
 ### Remote access
 
@@ -147,11 +147,12 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | Knob | Default | Effect at default | Read at |
 |---|---|---|---|
 | `DEMO_NO_HOST_PREFLIGHT` | `0` | the host pre-flight runs (non-fatal — warns, never blocks) | `up-injected.sh:428` |
-| `DEMO_ALLOW_MISSING_HOST_MOUNTS` | `0` | **the host bind-mount pre-flight runs, and it is FATAL** (v2.8 M257x iter-56 — the only fatal member of this section). Every host-absolute bind source the default profile's services declare must exist **and not be an empty directory**: `docker-compose.yml` mounts `$HOME/.aws/credentials`, and when that path is absent Docker neither fails nor warns — it **creates the source as an empty DIRECTORY** and mounts it, after which `backend` dies on `is a directory` and **exits 0 in 137 ms**, which every log-reader and supervisor reads as an orderly shutdown. Measured three ways on one image: no mount → starts; the auto-created directory → the exact 2-line dead signature; a regular empty file → starts and stays up. The set is **derived** from the compose file, not written down (`stack-injection/platform_topology.py check-host-mounts`). `=1` proceeds anyway — for the operator who knows the mount is genuinely unneeded | `up-injected.sh:2227` |
+| `DEMO_ALLOW_MISSING_HOST_MOUNTS` | `0` | **the host bind-mount pre-flight runs, and it is FATAL** (v2.8 M257x iter-56 — the only fatal member of this section). Every host-absolute bind source the default profile's services declare must exist **and not be an empty directory**: `docker-compose.yml` mounts `$HOME/.aws/credentials`, and when that path is absent Docker neither fails nor warns — it **creates the source as an empty DIRECTORY** and mounts it, after which `backend` dies on `is a directory` and **exits 0 in 137 ms**, which every log-reader and supervisor reads as an orderly shutdown. Measured three ways on one image: no mount → starts; the auto-created directory → the exact 2-line dead signature; a regular empty file → starts and stays up. The set is **derived** from the compose file, not written down (`stack-injection/platform_topology.py check-host-mounts`). `=1` proceeds anyway — for the operator who knows the mount is genuinely unneeded | `up-injected.sh:2235` |
 | `DEMO_VM_MIN_GIB` | `12` | Docker-VM RAM floor asserted by the pre-flight | `up-injected.sh:298` |
 | `DEMO_DISK_MIN_GIB` | `25` | free-disk floor asserted by the pre-flight. **Re-sized from `20` at v2.8 M255** — the old value was reasoned from a "~3.7 GB frontend build / ~3.7 GB build cache" that is stale by an order of magnitude. It is now **derived from measurement**: one cold-images cycle peaks at **18 GiB** of consumption and leaves ~2 GiB behind, + a 7 GiB reserve. Same arithmetic as `stack-core/hostprofiles/billion.json` (`projected_image_gib` 18 + `disk_floor_gib` 7), fenced by a test. Still **non-fatal** — the hard-failing twin lives in `buildbench` (see [`build-budget.md`](build-budget.md)) | `up-injected.sh:385` |
 | `DEMO_CERT_RENEW_DAYS` | `30` | the FAPI TLS cert is **re-minted when it expires inside this window** (also when absent, or minted for a different host). **Net-new at v2.8 M255:** `$STACK/certs` survives `--purge` and the mint used to be guarded on file-absence alone, so the first bring-up on a host was the only one that ever minted — a 90-day Let's Encrypt cert then silently expired and only a *remote* browser noticed. See [`../safety.md`](../safety.md) §3.5.4 | `up-injected.sh:1437` |
-| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:2762` |
+| `DEMO_NO_VERIFY` | `0` | **the bring-up auto-verify runs** on the stack's own offset ports (non-fatal). See [`../verification.md`](../verification.md) | `up-injected.sh:2770` |
+| `DEMO_NO_BATCH` | `0` | **the bring-up drives the full Playthrough batch** at its tail and leaves the stack in a presenter-usable world (v2.8 M258). The layer above `DEMO_NO_VERIFY`: autoverify proves the stack is *reachable and healthy*, this proves it is *functionally correct* — so "UP" means **"UP, and every journey verified"**. Under **`D-v28-3`**: runs to completion, **never** halts at first red, **never** retries, **ONE** consolidated red set at batch end, the stack left **UP regardless**, and the bring-up exiting **non-zero and loudly** on a non-empty set. ⚠️ **It SKIPS itself on a `--public-host` stack** — such a demo cannot be browsed from its own host (docker-proxy binds `0.0.0.0`, bypassing `tailscale serve`), so running it there would red every Playthrough for a reason unrelated to the product. The skip records `verdict: skipped`, which is **never** `green`; the peer path (`--reset-only` here, browser half from a tailnet peer) is printed. Since `--public-host` is default-on, **a bare `/demo-up N` skips; `/demo-up N --no-public-host` gates.** Verdict artifact: `$STACK/batch-gate.json`. See [`../verification.md`](../verification.md) + [`playthroughs.md`](playthroughs.md) | `up-injected.sh:2839` |
 
 ---
 

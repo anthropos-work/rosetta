@@ -62,6 +62,25 @@
   **Composed ≈ 376.8 s vs the 480 s ceiling** (247.79 + 129, two separate n=1 runs — *not* the gate) —
   the first evidence the ceiling is reachable. — see `iter-05/progress.md`
 
+- iter-06 (tik, `closed-fixed`): **THE BATCH GATE IS WIRED — the gate is measurable for the first
+  time.** `TOK-01` steps **2 + 3** landed together (`D16`: a batch without a restore leg is a
+  *regression*, not a partial delivery — it would make every bring-up end in the dead-CTA world the
+  overview warns about). New in rext: `batch-gate.sh` (the `D-v28-3` contract), `restore-presenter-world.sh`
+  (world contract (b)), `check-cockpit-roster.py`, `stack-paths.sh`; hooked at `up-injected.sh:2839`
+  **after** the `UP.` line. **Proven live end-to-end**: 215 passed, 31 use cases, `passing=30
+  unimplemented=1`, **red set EMPTY**, restore **7 s** (vs the 20–45 s assumed), phase table complete with
+  **`batch_gate` 166.36 s beside `autoverify` 2.41 s** — without the new anchor those two were one
+  168.77 s phase that still *summed* (`D17`). **The live run found a real defect in this iter's own
+  restore leg** (`D19`): on a box with **two** rext clones it resolved the stack dir from its own
+  location, so the roster went to the live path while the cockpit/content manifests went to a **stale**
+  one — a 35-identity stories roster beside an 11-seat pt-world menu, while the gate printed "restored"
+  and exited 0. Fixed by asking **docker** where the stack's files are, plus a **post-condition** (`D20`),
+  because the defect passed every step-level check. Composed **545.22 s** — n=1, **cold-cache**, rep
+  `green:false` and correctly **not gate-usable**; against iter-05's gateable bring-up the projection is
+  **414.15 s** vs 480. Knob fence went RED in the direction it exists for (`DEMO_NO_BATCH`
+  undiscoverable) and is now OK both ways; **8 pre-existing stale anchors** + a live
+  `FIX-M257-anchor-guard-content-drift` instance repaired. — see `iter-06/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
@@ -70,6 +89,20 @@
 - ✅ **iter-05 discharged `MEASURE-M258-gateable-composition`** (bring-up side) **and closed
   `CHECK-M258-iter02-studio-desk-is-the-untouched-leg`** with a finding: it is a **cold-cache** cost, not
   a lever.
+- ✅ **iter-06 discharged `TOK-01` steps 2 AND 3** — the batch gate is wired at `up-injected.sh:2839` and
+  the world-contract restore leg ships with it, both proven live. **`RESTORE-M258-world-contract` is
+  CLOSED**: the restore is now a mechanism every bring-up carries (7 s), not a one-off repair, and
+  `demo-1` is verified presenter-usable (4 story orgs / 591 users / 12 cockpit seats all resolving).
+- **iter-07 (tik, under `TOK-01`) — step 4: the composed 3× cold campaign.** Unblocked; both halves are
+  wired into one command. ⚠️ **Run it from the CONSUMPTION clone at a PUSHED tag** — iter-06 measured that
+  an authoring-copy bring-up has no sibling `platform/`, so `autoverify`'s `postgres-schemas` probe
+  refuses to assert and **every rep grades `green:false` and unusable regardless of its timings**. Publish
+  `fast-build-m258-iter-06` to origin, re-pin `stack-demo/rosetta-extensions`, then campaign. Publish the
+  **spread beside the p50** (`C2`), on both halves — the batch is now 129 s (iter-04) and 160 s (iter-06)
+  with no p50 yet.
+
+<details><summary>superseded routing (iter-06's plan, kept for the audit trail)</summary>
+
 - **iter-06 (tik, under `TOK-01`) — `TOK-01` step 2: wire the batch-gate at the tail hook**
   (`up-injected.sh:2810`, beside the `autoverify.sh` invocation) under `D-v28-3` semantics: runs to
   completion, never halts at first red, **never retries**, ONE consolidated red set at batch end, the
@@ -89,8 +122,18 @@
   that has ever run a demo. Plausibly the same root as M257's *"the stack-core sweep did not complete."*
 - Then, unchanged: wire the batch-gate at `up-injected.sh:2810` under `D-v28-3` semantics → land the
   world-contract restore leg (b) → the composed 3× cold campaign, **spread published beside the p50**.
+
+</details>
+
+- **`FIX-M258-iter03-guard-scans-its-own-scratch`** — **still open**, re-confirmed pre-existing at
+  iter-06 (identical 2 failures). iter-06 adds a **second member of the same family**:
+  `test_fence_provenance::test_the_escape_accepts_and_records`, whose two RED guards (`dev_flag_guard`,
+  `demo_knob_guard`) were run against a **pristine `HEAD` extract** and are RED there too. Both tests
+  fire only on a box that has ever run a demo — which is why they surface here and skip in a clean
+  checkout, and why they keep being mistaken for regressions.
 - ⚠️ `demo-2` (11 containers) and the 5-container dev stack are the **user's**: do not tear down,
-  re-seed, restart or reset either. `demo-1` is left UP as iter-04's reproduction.
+  re-seed, restart or reset either. `demo-1` is left UP, **restored and presenter-usable** (verified at
+  iter-06: 4 story orgs, 591 users, 12 cockpit seats all resolving in a 35-identity roster).
   ✅ **The "must not be browsed — it talks to a real Clerk app" warning is WITHDRAWN** (`iter-03/
   decisions.md` D10): the premise was refuted and the live ISOLATION assert returns `ok: True` over all
   8 images. `demo-1` **is** tailnet-reachable (auto-discovered public host, `0.0.0.0`, real LE cert) —
