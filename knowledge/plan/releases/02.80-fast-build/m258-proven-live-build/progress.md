@@ -37,17 +37,34 @@
   **third-party** load (Spotlight + the user's own project) and the headroom gate correctly refuses.
   — see `iter-03/progress.md`
 
+- iter-04 (tik, `closed-fixed`): **THE BATCH HALF EXISTS** — `TOK-01` step 1's outstanding deliverable,
+  discharged. **129 s**, `Running 215 tests using 1 worker` → **215 passed**, ptreport
+  **`passing=30 failing=0 unimplemented=1`** (the known `will-not-build` TODO), **red set EMPTY**,
+  `BATCH_RC=0`. ⚠️ **n=1, not a p50** — `C2`'s 2.04× spread stands, and it is **not** comparable to
+  M256's 56.6 s (18 specs vs 215). The headroom gate **refused a `buildbench` cycle outright** (`load1`
+  16 → 62, third-party), so the cold cycle was driven as an **operator** (`up-injected.sh`'s pre-flights
+  are advisory by design) for the halves contention cannot corrupt. **All four iter-03 fixes confirmed
+  live**: single-box mode engaged (`up-injected demo-1 (localhost)`), the minted-host line **visible** in
+  the log, `.env.demo-1` **24 → 1**, ISOLATION **ok** on fresh images with `own_pk` decoding to
+  `127.0.0.1:15400`. Composed **910 s** vs the 480 s ceiling — **contended, and NOT a gate reading; it
+  did not fire the re-scope trigger** (which reads a *p50 after 3 tiks*). The shape it does support: the
+  batch half is **small** (~14 %), so M257's 286.99 s + ~129 s ≈ **416 s** would sit inside 480 s.
+  — see `iter-04/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
   cause **retracted** (see the ledger entry above and `iter-03/decisions.md` D8).
-- **iter-04 (tik, under `TOK-01`)** — **`MEASURE-M258-batch-half`**, unchanged as `TOK-01` step 1's
-  outstanding deliverable and still the milestone's primary unknown. The defect blocker is **gone and
-  live-proven gone**; what it now needs is **headroom**. Pre-flight `assert-headroom --profile macmini`
-  (name the host — never bare), then
-  `buildbench run 1 --reps 1 --profile macmini --no-public-host --label m258-iter04` and the full
-  Playthrough batch. **State `load1` and the environment with both halves**, and publish the batch's
-  **spread** beside any p50 (`C2`, the 2.04× decidability caveat).
+- ✅ **iter-04 discharged `MEASURE-M258-batch-half`** — 129 s, red set empty (n=1, contended).
+- **iter-05 (tik, under `TOK-01`)** — **`MEASURE-M258-gateable-composition`**. `load1` fell to **6.17**
+  right after the batch (the user's workload ended), which is **inside** the cores−2 floor of 10, so the
+  gate instrument can finally run. `buildbench run 1 --reps 1 --profile macmini --no-public-host`
+  (host **named**) for a **gateable** bring-up half, then the batch again — which also yields the
+  **second** batch sample toward the spread `C2` demands. Then `TOK-01` steps 2–4.
+- **`RESTORE-M258-world-contract`** (`TOK-01` step 3) — **now owed in FACT**: iter-04's batch `--reset`
+  TRUNCATEd the demo world and re-seeded **pt-world**, so `demo-1` is currently a Playthrough world
+  behind a cockpit projected from the stories preset — verbatim the state `overview.md` § *The world
+  contract* warns about, and the reason resolution **(b) restore after** was chosen.
 - **`FIX-M258-iter03-guard-scans-its-own-scratch`** (net-new) — `test_decommissioned_instruction_guard`
   walks `demo-stack/stacks/**`, which `demo-stack/.gitignore:8` ignores, and reports the *platform's*
   source inside a demo's ephemeral clone as a rext named-consumer list. **Proven pre-existing** by
