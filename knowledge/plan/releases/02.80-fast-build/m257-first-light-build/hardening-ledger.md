@@ -199,3 +199,49 @@ interpreter, the measured import behaviour across all three, and why the repair 
 
 **Stop condition:** continue-to-next-pass — Pass 2 still surfaced new material (the fingerprint hazard, the
 emit seam, the interpreter cause), so the dimension scan has not yet come back empty. One confirmation pass.
+
+---
+
+## Pass 3 — 2026-08-12 — final
+
+**Iters hardened this pass:** all milestone-touched code (cumulative) — the confirmation pass
+**Tiks covered since prior pass:** n/a — same cumulative scope, third sweep over it
+
+**Coverage delta on touched files:** **0 tests added.** That is the result, not an omission: the pass ran
+the six dimensions over the cumulative scope again and found nothing new to write.
+
+**Bugs surfaced + fixed inline:** none. Nothing new surfaced.
+
+**Verification performed:**
+
+- **flake gate, 3 consecutive clean runs** of every test this session added, with pytest's random-ordering
+  plugin ENABLED rather than suppressed: 201 passed / 11 subtests, identical each run
+- **the corpus fence family, green on the live tree**: `anchor_construct_guard` rc=0 (*"every resolvable
+  anchor names a construct; 363 range citations lie inside their file"*), `corpus_index_guard` rc=0 over 86
+  docs, `markdown_structure_guard` rc=0, `derived_value_guard` rc=0, `demo_knob_guard` rc=0 (*"the defaults
+  table and the parsers agree, both directions"*). Three of these first returned **rc=2** under a wrong
+  invocation of mine — they take positional arguments, not `--repo-root` — and exiting 2 (CANNOT RUN) rather
+  than 0 is the fail-closed behaviour those guards are supposed to have. Re-run correctly, all green
+- **`demo-stack`'s milestone files**: 124 passed / 7 subtests (`test_frontend_build` + the B2
+  `test_studio_acquisition_m257`, whose live clone-walking arm RAN rather than skipping)
+- **both literal ratchets unmoved** at 254 / 663, with COMMENT at 236 exact — the pass contributed nothing
+  to any of the three
+- **the user's environment untouched**, verified by container census at close: `demo-2`'s 11 containers and
+  the 5-container dev stack (`anthropos-{backend,gotenberg,postgresql,redis,sentinel}`) all still up. No
+  bring-up, teardown, seed or reset was run at any point; the only containers this session started were
+  ephemeral `docker run --rm` reads against **`demo-1`** images, whose stack slot was already free
+
+**One item did not return, and it is stated rather than waited out.** The whole-tree `stack-core` pytest
+sweep launched at the start of Pass 1 was still running at close, 53+ minutes in against a 32–57 minute
+measured band on this permanently-contended box — and its own runs of this session's tests were competing
+with it for the box. It is **not load-bearing for the attribution**, which was answered on stronger
+per-item evidence and is recorded as `HARDEN-M257-2`: iter-09's roster read off its own on-disk sweep log,
+every previously-failing census file re-run individually, and the largest remaining cluster's cause measured
+directly across all three interpreters on the box. An aggregate count from a run whose tree changed
+underneath it mid-flight would be *less* interpretable than that, not more.
+
+**Publication:** `rosetta-extensions` `main` pushed to origin at `7516fa8`, tagged
+**`fast-build-m257-harden-1`**, and the tag verified **on origin** (`git ls-remote --tags`) rather than
+merely created — *tagging is not publishing*.
+
+**Stop condition:** stabilized — coverage delta 0 across the pass, and the dimension scan found nothing new.
