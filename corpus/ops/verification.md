@@ -310,7 +310,9 @@ the **wrong, real-Clerk key** *passed the guard and got silently reused*. Conseq
 
 The fix asserts the minted pk is **present in the built bundle** (`docker run --rm … grep -rqs "$PK_DEMO"
 /app/apps/web/.next/static`), **fail-safe toward rebuild**: anything unverifiable rebuilds, because a needless
-~3 min build is strictly cheaper than shipping a real-Clerk-wired demo. All four overlay-borne constants come from
+rebuild is strictly cheaper than shipping a real-Clerk-wired demo. *(The magnitude here used to read "~3 min";
+after v2.8 M257's L1 a next-web rebuild is **53.31 s on `macmini`**, n=3 p50 — the argument is unchanged and the
+trade is now cheaper still.)* All four overlay-borne constants come from
 that one file, so a single probe covers the class.
 
 > **The general rule:** *if a constant is inlined into an artifact, validate it by reading the artifact.* Build-time
@@ -679,7 +681,7 @@ What that looks like from the outside is the part worth internalising:
 
 **The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
 not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
-carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2732`), and an
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2745`), and an
 `Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
 rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
 the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,

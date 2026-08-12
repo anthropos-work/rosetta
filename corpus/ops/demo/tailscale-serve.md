@@ -169,7 +169,11 @@ The canonical prereq list + these install commands also live in
 > (`billion` had **none** — hence the Go host-prereq above). That doc lives in a **different repo, out of the
 > rosetta corpus** — flagged here for whoever owns the odyssey KB to refresh; not fixed from here.
 
-> **12 GB Docker-VM floor (UI tier).** The full UI tier's next-web build spikes to ~3.7 GB. The
+> **12 GB Docker-VM floor (UI tier).** The full UI tier's next-web build lane spikes to a **measured
+> 3.0–4.2 GiB depending on host** (`lane_heap_measured_peak_mib`: 3,116 on `macmini` · 3,900 on `billion` ·
+> 4,223 on the retired `laptop`). *Retracted at the v2.8 M257 close: this line said "~3.7 GB", an **image
+> size** quoted as a memory figure — and it was the last live copy of that claim anywhere in the corpus,
+> outside the enumerated mirror set the retraction was planned against.* The
 > [`frontend-tier.md`](frontend-tier.md) §"The 12 GB Docker-VM prerequisite" floor applies; on the M215 run RAM
 > held (5.7 GB free) with next-web + studio-desk up. A RAM-tight VM can do a backend-only first pass with
 > `DEMO_NO_UI=1` (Step 5).

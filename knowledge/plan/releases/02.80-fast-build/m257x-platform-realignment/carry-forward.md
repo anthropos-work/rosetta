@@ -200,6 +200,30 @@ was not reused); medium for a wall-clock threshold, which needs a negotiated tar
 that asserts no time target, on a host with no profile. This is a **precondition of M258's own gate**, not
 an adjacent nicety.
 
+> ✅ **PARTLY DISCHARGED BY M257 — updated at the M257 close (2026-08-12), so M258 does not inherit a
+> claim that has stopped being true.** Two of this cluster's four items are closed:
+> - *"`hostprofiles/` holds only `billion.json` and a `laptop.json` describing a different, retired Mac"* →
+>   **`macmini.json` was measured and checked in at M257 iter-04**, and its `gated_baseline` filled at
+>   iter-08 (p50 449.51 s on `macmini`, n=3, contended and labelled). Three profiles ship.
+> - *"gate clause 1 of the build budget is NOT gradeable today"* → **it is.** iter-06 fixed the clause's
+>   units (`load1_core_basis`: it was grading a 12-core host's `load1` against an 8-core VM allocation, a
+>   limit of 6 where 10 is correct, failing **closed**), and M257's own gate then graded **HEADROOM OK on
+>   3 of 3** reps. The related *"`build-budget.md` still argues throughout for a gate host that no longer
+>   exists"* is also closed — that doc is re-pointed at `macmini` at the M257 close.
+>
+> **What M258 still inherits from this cluster, unchanged:**
+> - **`buildbench` asserts nothing about elapsed build time.** Still true, and still the sharper half:
+>   M257 met a 360 s gate by reading `campaign.json` in a close, not by a threshold the harness enforces,
+>   so a regression from 286.99 s to 900 s would pass every gate the tooling has. M258's gate is a p50
+>   number and needs the threshold to be machine-owned.
+> - **`demo-stack/tests/test_frontend_build.py` hardcodes `billion.json`** (now `:711-712`). And it is
+>   **worse than stale**: it asserts the shipped 25 GiB disk floor equals `billion`'s
+>   `projected_image_gib + disk_floor_gib` (18 + 7), while the gate host's arithmetic is **15 + 7 = 22**.
+>   The floor is billion-derived and therefore conservative on `macmini` — the safe direction — but
+>   `up-injected.sh` carried a comment asserting the two *"cannot drift"*, which is why nobody checked
+>   whether they had. Corrected there at the M257 close and routed as
+>   **`FIX-M257-frontend-floor-is-billion-shaped`**.
+
 **Provenance:** iter-225, iter-226; this close's Phase 4 review. Two stale `buildbench.py` line citations
 in `build-budget.md` were re-derived **at this close** (`:1205`/`:1217` → `:1472`/`:1484`; `:1470` →
 `:1538`).

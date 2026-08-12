@@ -134,15 +134,23 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   catcher, then the full probe set), so "UP" means *verified-working* — offset/scope-aware, never blocks a good
   stack. (v1.3b M18)
 - [`frontend-tier.md`](frontend-tier.md) — the **UI tier**: how `/demo-up` brings up next-web-app +
-  studio-desk (per-demo cached Docker image from the **unmodified** Dockerfile, offset ports, minted-pk +
-  offset-URL baked) + ant-academy natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight,
-  the honest "one ~3-min cached build per new demo-N" residual, and the `--no-ui` escape. (v1.3b M19)
+  studio-desk (per-demo cached Docker image, offset ports, minted-pk + offset-URL baked) + ant-academy
+  natively (Clerk-free), the 12 GB Docker-VM prereq + non-fatal pre-flight, and the `--no-ui` escape.
+  (v1.3b M19) **Two claims that stood here for four releases are retracted at the v2.8 M257 close:** the
+  image no longer comes *"from the unmodified Dockerfile"* — since M257 iter-09 both Next apps build from
+  **rext-owned** Dockerfiles (build shape 3), and only `studio-desk` still uses the platform's own; and the
+  *"one ~3-min cached build per new demo-N"* residual is now **104.60 s for all THREE UI images on
+  `macmini`** (`ui_next_web` 53.31 · `ui_hiring` 44.21 · `ui_studio_desk` 7.08, n=3 p50s), the images having
+  gone 4.04 GB → **417 MB** and 3.94 GB → **380 MB**. *State the host: those are `macmini` seconds and they
+  do not transfer to `billion`.*
 - [`build-budget.md`](build-budget.md) — **the bring-up build budget** (v2.8 "fast build" M255): what *fast*
   means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it. Defines **READY**
   (exit 0 **and** a green `autoverify.json`), the per-phase attribution model, the measured baseline
   (**n=3 p50 666.29 s on `billion`**, of which **65.5 % is UI-tier image builds and 46 % is export/unpack**), the
-  **headroom contract** (**four** clauses — a **clause zero** (`require_measured`) plus CPU/memory/disk — against a *measured, checked-in* host profile, and the derived fact
-  that neither host fits two concurrent Next.js build lanes), the **campaign protocol** (the binding
+  **headroom contract** (**four** clauses — a **clause zero** (`require_measured`) plus CPU/memory/disk — against a *measured, checked-in* host profile, and the derived lane count,
+  which is **1 on `billion`** and **1 on the retired `laptop`** but **2 on `macmini`** — the *"neither host
+  fits two concurrent Next.js build lanes"* wording here was true of the two profiles that shipped at M255
+  and is retracted at the M257 close, where a third profile landed), the **campaign protocol** (the binding
   constraint is the ~18 GiB mid-cycle TRANSIENT, not the ~2 GiB a steady rep nets; reclaim is explicit and
   `until=24h` is **not** a guarantee that rep-touched records survive — one eviction cost 173 s; the pre-rep assert
   hard-fails), and the **union-apply** parallelism rule. Carries two things worth knowing before you debug

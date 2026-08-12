@@ -1,10 +1,10 @@
 ---
-active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → M257x → **M257** → M258, strictly serial. **3 of 5 closed.** Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
+active_release: "v2.8 «fast build» — IN DEVELOPMENT (branch release/02.80-fast-build, designed 2026-07-27). Time-to-ready: from nothing, to live, to provably live, fast. **5** milestones M255 → M256 → M257x → M257 → **M258**, strictly serial. **4 of 5 closed.** Tooling + docs only, 0 platform edits. Detail: roadmap.md § v2.8."
 active_branch: "release/02.80-fast-build"
-active_milestone: "(between milestones — M257 «first-light build» is next, UNPAUSED by M257x's close; see Next up)"
-last_closed: "M257x — 2026-08-11"
-phase: "Between milestones. M257x closed 2026-08-11 by USER RULING (`TOK-09`), NOT on gate — clauses 1–4 met and proven, **clause 5 OUT OF SCOPE by that ruling and never met**. M257 is next and its gate needs re-cutting before it starts (it names a retired host). Carry-forward from M257x → M258: 11 items / 5 clusters + 1 block fate."
-last_updated: "2026-08-11"
+active_milestone: "M258 «proven-live build» (`iterative`, the closer) — NOT STARTED. Gate: one cold command brings the stack up AND drives the full Playthrough batch to completion, zero standing red, total p50 ≤ 480 s over 3 cold cycles."
+last_closed: "M257 — 2026-08-12"
+phase: "Between milestones. **M257 closed 2026-08-12 `closed-on-gate` — the gate FIRED**, p50 286.99 s on `macmini` vs a 360 s gate (under the 300 s stretch), every clause green on all 3 reps including both falsifiable ones. Do not read it like M257x, which closed by ruling. One lever landed of eight priced. Next: M258, the closer — and it inherits from BOTH: M257x's 11 items / 5 clusters + 1 block fate, and M257's 15 Fate-3 items led by `LEVER-M257-L5-setdress` (`set_dress` is now the largest phase at 28.6 %)."
+last_updated: "2026-08-12"
 ---
 
 # State
@@ -16,10 +16,15 @@ last_updated: "2026-08-11"
 
 - 🎬 **`billion` — the OFFICIAL host.** Demo deployment only. Not for development or testing.
 - 💻 **dev/test = LOCAL to the new Mac.** The old laptop and **`odysseus` are both retired** from this project.
-- ⚠️ **Host-class mismatch, and it blocks M257:** billion is **x86_64/containerd**, a Mac is **arm64/overlay2**.
-  M255 measured **4.84 GB vs 2.88 GB** for the same Dockerfile — **the Mac pays no unpack leg**, which is exactly
-  what M257's L1 (~200–250 s) optimises. **M257's speed gate is un-measurable on the sanctioned hosts as
-  written.** M257x is largely unaffected: its gate is correctness, not seconds.
+- ✅ **~~Host-class mismatch blocks M257~~ — RETRACTED, and M257 then MET its gate here.** It read *"a Mac
+  is arm64/**overlay2** … pays no unpack leg … the gate is **un-measurable**."* **False for this machine**:
+  it runs the **containerd image store** and pays a size-proportional unpack leg (**56.6 s export + 19.3 s
+  unpack** on the real 4.12 GB hiring image). The generalisation came from the **retired M1 Pro laptop** —
+  *"a Mac"* is a class; the fact that mattered is a per-machine Docker Desktop toggle. **Never re-derive
+  this from `docker info`**, which prints `Storage Driver: overlayfs` here and is what made the wrong
+  reading look right — **grade it with a probe.** L1 was worth **−141.63 s**; the cycle closed at **p50
+  286.99 s**. Still true: **4.84 vs 4.12 GB** for the identical Dockerfile, and **seconds here do not
+  transfer to billion**, whose post-L1 cycle is **unmeasured**.
 - 🔧 **New-Mac bootstrap:** `.agentspace/rext.tag` is **git-ignored** → a fresh clone has no pin, and a mismatch
   is **FATAL** in `ensure-clones.sh:94-101`. Create it deliberately. (On the old box the SoT was 63 commits
   behind `main`, so `/demo-up` aborted there.)
@@ -27,29 +32,37 @@ last_updated: "2026-08-11"
 
 ## Next up
 
-**M257 — first-light build** (`iterative`), **UNPAUSED** by M257x's close. **Its exit gate must be re-cut
-before it starts:** it names `odysseus`, which `D-v28-15` retired from this project on 2026-07-31, and no
-host profile has ever been measured for the Mac that replaced it — so the gate is not gradeable as written.
-Banked from its 3 closed iters, not to be redone: both gate-honesty instruments landed with
-mutation-proven controls, B1+B2 fixed, the mirror fence parameterised by host. Still owed: a baseline on a
-host that exists, and `INVESTIGATE-M257-load1-48` (peak `load1` **48.7** vs HEADROOM clause 1's limit of
-**6**).
+**M258 — proven-live build** (`iterative`, **the closer**). Gate: one cold command brings the stack up **and**
+drives the full Playthrough batch to completion with **zero standing red**, at **total p50 ≤ 480 s** over 3
+consecutive cold reset-to-seed cycles, 0 platform-repo edits, **and the stack left in a presenter-usable
+world** (the world contract — decide (a) pt-world-native vs (b) restore-after at iter-01).
 
-**M257x carry-forward lands in M258**, not M257 — 11 items in 5 root-cause clusters + 1 block fate. Owner:
-[`m257x…/carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md).
-The one with an operational deadline: **the tooling fixes from M257x's close are NOT on a pushed tag**, so
-no stack can obtain them until someone tags and `git push --tags`. *Tagging is not publishing.*
+**480 s is a sum of two ceilings** (360 + 200), reachable *"only if M257 spends part of its unspent
+levers."* **M257 landed at 286.99 s on ONE lever**, so that reserve is real — the largest piece being
+`LEVER-M257-L5-setdress` (**`set_dress` is now the largest phase at 82.04 s = 28.6 %**, priced ~30–50 s and
+ranked fifth).
+
+**M258 inherits from BOTH, and both now appear in its own `overview.md`** — which was the gap: M257x's
+routing had **zero** mentions there until this close (the `BIND_HOST` failure, from the file documenting
+it). From **M257x**: 11 items / 5 clusters + 1 block fate
+([`carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md)); **cluster 4 is
+half-discharged** — what survives is that **`buildbench` asserts no elapsed-time threshold** and M258's gate
+is a p50 number. From **M257**: 15 Fate-3 items, **0 escape-hatch**, led by L5 and
+`FIX-M257-dockerignore-env-pattern-unpaired`, whose tidy one-line fix **bakes the real Clerk key**.
 
 ## Phase
 
-Between milestones. **M257x closed 2026-08-11 by USER RULING (`TOK-09`) — not on gate.** Clauses 1–4 met
-and proven; **clause 5 is OUT OF SCOPE by that ruling, was never met, and must never be reported as
-"measured clean".** Full closure narrative: [`roadmap.md`](roadmap.md) § M257x. Clause-by-clause table,
-metrics and routing live in that milestone's own `carry-forward.md` / `metrics.json` / `retro.md`.
+Between milestones. **M257 closed 2026-08-12 `closed-on-gate` — the gate FIRED on its own terms.** p50
+**286.99 s** on `macmini` (n=3) against a **360 s** gate and **under the 300 s stretch**, with `autoverify
+green:true / 0 warnings`, **HEADROOM OK 3/3** and **ISOLATION OK 3/3**, identity `match` ×3, 0 platform-repo
+edits. **Both falsifiable clauses actually fired earlier in the milestone**, and the headline was re-graded
+twice under code that changed after it was taken. ⚠️ **Do not read this close like M257x's**, which closed
+`closed-incomplete` **by user ruling** one day earlier with **clause 5 never met**. Full narrative:
+[`roadmap.md`](roadmap.md) § M257.
 
-⚠️ **Open safety item, routed to M258 and not closed:** a demo reached the **production** S3 bucket and only
-an **IAM policy on an account we do not control** refused it. The containment is proven by a unit test on
-the emitter and **on no running stack**; both currently-running stacks still carry the pointer, and the
+⚠️ **Open safety item, routed to M258 and still not closed:** a demo reached the **production** S3 bucket and
+only an **IAM policy on an account we do not control** refused it. The containment is proven by a unit test
+on the emitter and **on no running stack**; both currently-running stacks still carry the pointer, and the
 dev-side strip is demo-only. Owner: `corpus/ops/safety.md` + M257x `carry-forward.md` cluster 1.
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
@@ -90,8 +103,7 @@ numbered rules in full.
 ## v2.8 shape
 
 **M255 build-bench & host-headroom** (section, HARD barrier) ✅ **done 2026-07-28, VERDICT GO** →
-**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257x platform re-alignment** ✅ **done 2026-08-11, `closed-incomplete` (user ruling, not gate)** → **M257 first-light build**
-(`billion` 666 s → ≤ 360 s p50) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
+**M256 playthrough sharpening** ✅ **done 2026-07-30, `closed-on-gate`** → **M257x platform re-alignment** ✅ **done 2026-08-11, `closed-incomplete` (user ruling, not gate)** → **M257 first-light build** ✅ **done 2026-08-12, `closed-on-gate`** (`macmini` 449.51 → **286.99 s** p50, gate 360) → **M258 proven-live build** (up AND self-proven, ≤ 480 s p50). Strictly serial by the
 user's order — *sharpen the detector before changing what it detects*.
 
 ## Binding user decisions (2026-07-27, + later)
@@ -106,6 +118,12 @@ M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in tha
 
 _Trimmed to the last 3 days per the state.md contract; older entries live in `roadmap.md`'s `### M{N}` blocks._
 
+- **M257 — 2026-08-12** · first-light build (iterative) · **`closed-on-gate` — THE GATE FIRED.** p50
+  **286.99 s** on `macmini` vs 360 s (under the 300 s stretch), n=3, every clause green on all three reps
+  **including both falsifiable ones**. 9 iters (7 tiks + 2 toks); **one lever of eight priced (L1) cleared it
+  alone** (UI tier −141.63 s; images 4.04 GB → 417 MB and 3.94 GB → 380 MB). The close also landed the §8.5
+  corpus retraction with achieved numbers + the grep gate that had never existed, and found **three
+  fail-opens in the gate instrument itself**. 0 escape-hatch deferrals. `roadmap.md` § M257.
 - **M257x — 2026-08-11** · platform re-alignment (iterative) · **`closed-incomplete` — CLOSED BY USER
   RULING (`TOK-09`), NOT on gate.** Clauses 1–4 met and proven; **clause 5 out of scope by that ruling —
   never met, never measured clean.** 288 iters / 73 harden passes. The microservices→`app` map is now
@@ -147,9 +165,9 @@ section and nothing else**, so no fate now depends on a field the next close ove
 - **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
   (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
 
-_Last updated 2026-08-07 — M257x iter-129. Both trees clean and pushed; `demo-1` up._
+_Last updated 2026-08-12 — the M257 close. Both trees clean; `rosetta-extensions` pushed + tagged, `rosetta` local-only by the user's cadence._
 
-> **Budgets: every one of them met** — file 14,935/15,360 · frontmatter 1,656/1,860 · body 13,281/13,500 ·
+> **Budgets: every one of them met** — file 14,686/15,360 · frontmatter 1,214/1,860 · body 13,466/13,500 ·
 > all six fields in budget. The body budget was **raised once against a measurement** at iter-129 (12,000 →
 > 13,500, and the frontmatter 2,600 → 1,860 so the two now sum *exactly* to the file cap, which the old
 > triple did not). Derivation, the two probes that were narrower than their own conclusion, and the

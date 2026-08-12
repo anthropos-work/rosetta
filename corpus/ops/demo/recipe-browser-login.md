@@ -64,7 +64,7 @@ on `127.0.0.1:5401+offset` (loopback-bound deliberately — see [`frontend-tier.
 >    `extra_hosts: !override / - "api.clerk.com:<ip>"` snippet — into `<stack>/docker-compose.inject.yml`,
 >    against a service named **`app`** (which does not exist; the service is `backend`). That file is passed
 >    to `docker compose` **nowhere**: the bring-up composes `-f "$PLAT/docker-compose.yml" -f
->    "$STACK/docker-compose.injected.yml"` and nothing else (`up-injected.sh:2217-2219`), and
+>    "$STACK/docker-compose.injected.yml"` and nothing else (`up-injected.sh:2258-2260`), and
 >    `grep -rn "docker-compose.inject.yml"` over rext returns only `inject.py` itself and its unit test. It
 >    is a leftover M3 artifact, not the live path.
 > 3. **No TLS cert is involved on this seam.** The step that said the app container must *"trust the fake

@@ -2,21 +2,21 @@
 milestone_shape: iterative
 milestone: M257
 title: "first-light build"
-status: paused
+status: archived
 release: v2.8 "fast build"
-exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **odysseus** (`devops@100.110.67.14` / `odysseus.taildc510.ts.net`) — the host CHANGED at D-v28-14 (billion is demo-only now), so **the baseline must be RE-MEASURED there (n >= 3) and an `odysseus.json` host profile checked in BEFORE any lever is priced**. billion's 666.29 s does not transfer: odysseus is a near-twin on paper (8 cores / 7 GiB / x86_64 vs 8 vCPU / 7.3 GiB / x86_64) and this release's own rule is *state the environment with every number*. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if odysseus's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted'); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
+exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **the local Mac mini** (`macmini` — the M4 Pro host D-v28-15 moved ALL dev/test to; profile `stack-core/hostprofiles/macmini.json`) — the host changed at D-v28-14 and AGAIN at D-v28-15, and this line named **odysseus** until M257 iter-05 re-pointed it: odysseus is RETIRED from this project and billion is demo-only, so a gate naming either could not be graded at all. **The baseline must be RE-MEASURED here (n >= 3) and `macmini.json`'s `gated_baseline` filled BEFORE any lever is priced** — the profile itself landed at iter-04 and deliberately ships WITHOUT that field. billion's 666.29 s does not transfer, and iter-04 measured how far it does not: the identical hiring image compiles in 30.4 s here vs 42.6 s there, and pays 56.6 s export + 19.3 s unpack here vs 99.0 + 37.6 there - materially cheaper, but NOT free (see the retraction in this file's HOST CLASS section). This release's own rule is *state the environment with every number*. This host is a PERMANENTLY CONTENDED workstation (observed load1 ~2.9-13), so every baseline figure must be LABELLED contended and carry its load1; that labelling waives NOTHING - the HEADROOM clause below still FAILS the gate when tripped. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if this host's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted') — where `cores` means the logical-core count OF THE MACHINE THE LOAD1 SAMPLE IS TAKEN ON, which on a docker-desktop-vm host is the HOST's count and NOT the VM allocation (`FIX-M257-load1-units-vm`); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
 iteration_protocol_ref: corpus/ops/demo/build-budget.md
-re_scope_trigger: "If after L1 + L2 + L3 the p50 is still > 420 s, escalate rather than grind. RE-DERIVED at the M255 harden against the real arithmetic: the gate needs 666.29 - 360 = 306.29 s, and once M255 re-priced L2 from ~200 s to <=45 s the three big levers are worth 200-250 (L1) + <=45 (L2) + ~55 (L3) = 300-350 s -- so at L1's conservative end they miss the gate BY THEMSELVES. A p50 above 420 s means the three delivered under ~250 s, i.e. at least 50 s short of even their low estimate, and the remaining small levers (L4/L5/L7/L8/L10, ~93-158 s combined) are then being asked to cover a shortfall they were never priced for: the residual is structural (host I/O, the containerd snapshotter) or a lever did not land. The ORIGINAL trigger was 480 s, set when L2 looked like ~200 s and the three looked like ~505 s against a 306 s need -- against the measured prices it would only have fired if the levers returned under 186 s, barely half, so a 60 s gate miss could never have tripped it."
+re_scope_trigger: "If after L1 + L2 + L3 the p50 is still > 400 s, escalate rather than grind. **RE-DERIVED at M257 iter-08 against `macmini.json`'s now-filled `gated_baseline` (p50 449.51 s, n=3, contended-and-labelled), exactly as the previous text demanded the moment that field was filled.** The derivation, stated so it can be re-done: the gate needs 449.51 - 360 = **89.51 s** here, a **19.9 %** cut where billion needed 46 %; the measured UI-tier block is 246.23 s = **54.8 %** of the cycle (`ui_next_web` 120.79 + `ui_hiring` 117.45 + `ui_studio_desk` 7.99, n=3 p50s), and L1 is priced on this host at ~136-152 s - so **L1 alone should clear the gate with ~47-63 s to spare**. A p50 above 400 s therefore means the three big levers delivered under ~50 s combined, barely a third of L1's LOW estimate on its own: the residual is structural (host I/O, the containerd snapshotter) or a lever did not land, and the small levers were never priced to cover that. The trigger's SEMANTICS are unchanged from the billion form; only its arithmetic is re-hosted. **The superseded reading, kept because the milestone's opening lesson is in it:** this line read *> 420 s* and every number under it was scaled from BILLION's 666.29 s, and it also warned **do NOT substitute iter-04's ~420-455 s estimate for a baseline** - a scaling of billion's phase table by ONE measured image here. That estimate turns out to have been good (449.51 s measured, inside its range), and it was still not a measurement. RE-DERIVED at the M255 harden against the real arithmetic: the gate needs 666.29 - 360 = 306.29 s, and once M255 re-priced L2 from ~200 s to <=45 s the three big levers are worth 200-250 (L1) + <=45 (L2) + ~55 (L3) = 300-350 s -- so at L1's conservative end they miss the gate BY THEMSELVES. A p50 above 420 s means the three delivered under ~250 s, i.e. at least 50 s short of even their low estimate, and the remaining small levers (L4/L5/L7/L8/L10, ~93-158 s combined) are then being asked to cover a shortfall they were never priced for: the residual is structural (host I/O, the containerd snapshotter) or a lever did not land. The ORIGINAL trigger was 480 s, set when L2 looked like ~200 s and the three looked like ~505 s against a 306 s need -- against the measured prices it would only have fired if the levers returned under 186 s, barely half, so a 60 s gate miss could never have tripped it."
 depends_on: [M256]
 parallel_with: []
 complexity: very-large
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-08-12
 ---
 
 # M257 — first-light build  (`iterative`)
 
-**Status:** `planned` · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-08-12) · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
 **Depends on:** M256 (sharpen the detector before changing what it detects)
 
 > **Revised 2026-07-27** after the adversarial plan review: the gate's headroom clause became **falsifiable**
@@ -124,8 +124,11 @@ conflict `build-budget.md` resolves to the profile's **4.84 GB** · studio *"pur
 build"* → refuted (export/unpack is 288.4 s on `billion`; the box never exceeded load 4.90/8).
 
 > **Every retraction written here must NAME ITS HOST** (`D120`): the numbers being retracted are `billion`
-> measurements, M257's achieved numbers will be `odysseus` measurements, and the two must not be mixed in one
-> sentence without saying which is which.
+> measurements, M257's achieved numbers will be **`macmini`** measurements (this line said `odysseus` until
+> iter-05 re-pointed the gate), and the two must not be mixed in one sentence without saying which is which.
+> `D120` earned its keep twice over — the fence it produced flagged this milestone's own un-hosted gate line,
+> and the very claim that paused the milestone (*"the Mac pays no unpack leg"*) was a **host-less
+> generalisation from a third machine**. Naming the host is not bookkeeping here; it is the control.
 
 ## Dev path
 
@@ -210,16 +213,47 @@ milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report t
 anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
 **Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
 
-## ⚠️ HOST CLASS PROBLEM (D-v28-15, 2026-07-31) — read before resuming
+## ⚠️ ~~HOST CLASS PROBLEM~~ — **RETRACTED 2026-08-11 (iter-05, `DOC-M257-hostclass-retraction`)**
 
-Dev moved to a **Mac (arm64/overlay2)**; billion (**x86_64/containerd**) is demo-only. M255 measured the same
-Dockerfile at **4.84 GB on billion vs 2.88 GB on an arm64 laptop** — the Mac **pays no image-unpack leg**. **L1,
-this milestone's biggest lever at ~200–250 s, targets exactly that leg**, so its headroom on a Mac is near zero
-and **local seconds will not transfer to billion**. This gate is **un-measurable on the sanctioned hosts as
-written**. Resolve deliberately — re-cut against a Mac-native baseline (arguably a different milestone), or take
-an explicit exception to measure on billion — do not resume and grind.
+> **The claim below is FALSE on the machine it was written about, and it is the premise this milestone was
+> paused on for eleven days.** It read: *"Dev moved to a Mac (arm64/**overlay2**); … the Mac **pays no
+> image-unpack leg**. L1, this milestone's biggest lever at ~200–250 s, targets exactly that leg, so its
+> headroom on a Mac is near zero … This gate is **un-measurable on the sanctioned hosts as written**."*
+>
+> **Measured on the actual host (iter-04, 2026-08-11): this Mac mini runs the CONTAINERD image store and
+> pays a size-proportional unpack leg.**
+>
+> | probe | export | **unpack** |
+> |---|---|---|
+> | controlled 256 MB layer | 3.5 s | **0.8 s** |
+> | controlled 1024 MB layer | 14.3 s | **3.0 s** |
+> | the real `hiring.Dockerfile` image (4.12 GB) | 56.6 s | **19.3 s** |
+>
+> **The evidence that settles it is the probe, NOT `docker info`.** `docker info` reports `Storage Driver:
+> overlayfs` here, which reads at a glance exactly like the laptop's classic `overlay2` graphdriver — the
+> trap `spec-notes.md` F1 writes down in so many words. A config string is not a hardware measurement, and
+> grading a hardware question on one is how the wrong claim got made in the first place. The two-size probe
+> is evidence of a different kind: the leg **exists** and **scales with bytes**, so it cannot be a naming
+> coincidence.
+>
+> **Where the false generalisation came from:** the **retired M1 Pro laptop** (`laptop.json`, classic
+> overlay2, `unpack_s_observed: null`). *"A Mac"* was treated as a host CLASS when the fact that mattered is
+> a **per-machine setting** — the containerd image store, a toggle in Docker Desktop. Name the machine, not
+> the class.
+>
+> **Consequence for this milestone, which is the opposite of the pause's:** L1 keeps a substantial price
+> here (~136–152 s by iter-04's arithmetic), the gate is **measurable on the host that exists**, and the
+> ≤ 360 s cut looks *more* reachable than the pause assumed, not less. The gate was re-pointed at this host
+> at iter-05.
+>
+> **Same retraction landed at:** `knowledge/plan/state.md` § Hosts · `knowledge/plan/roadmap.md` `D-v28-15`.
 
-## ⏸️ PAUSED 2026-07-31 — blocked behind M257x
+What survives from the original note, because it is still true and still binding: **billion is
+x86_64/containerd and this host is arm64/containerd**, the image sizes differ (**4.84 GB** vs **4.12 GB** for
+the identical Dockerfile — a ~15 % gap, *not* the ~40 % the laptop comparison suggested), and **seconds
+measured here still do not transfer to billion**. *State the environment with every number* is unaffected.
+
+## ⏸️ ~~PAUSED 2026-07-31~~ — **UNPAUSED** by M257x's close; resumed at iter-04, gate re-pointed at iter-05
 
 **Paused after iter-03, at 3 closed iters, on the user's call.** Not a failure: iter-03's own exit blocker
 (`DECIDE-M257-jobsim-schema-ownership`) turned out to be the visible edge of a platform-wide migration whose
@@ -232,21 +266,38 @@ one. Neither is the number v2.8 wants.
 
 **What is already banked and must NOT be redone:**
 - The Phase 0b RED cleared; `TOK-01` authored (*instrument before baseline, baseline before levers*).
-- **odysseus provisioned** as a working bench — rc=0 bring-up, 16/16 containers, remote HTTPS, Go present
-  (`go1.26.5`, off PATH — the "no Go" reading was a login-shell false negative).
+- ~~**odysseus provisioned** as a working bench~~ — rc=0 bring-up, 16/16 containers, remote HTTPS, Go present
+  (`go1.26.5`, off PATH — the "no Go" reading was a login-shell false negative). **MOOT since `D-v28-15`
+  retired that host**; kept as history so a future reader does not re-provision it. The finding that
+  *survives* is the login-shell false negative, which is a host-independent lesson.
 - **Both gate-honesty instruments landed** with mutation-proven negative controls — the autoverify check could
   previously pass on a half-dead stack AND fail on a working one.
 - **B1 + B2 fixed** (dropped `local_*` mirrors → 34 sites/20 files; the unobtainable studio).
 - The baseline mirror fence **parameterised by host** (4 → 28 tests); on its first run it flagged 12 un-hosted
   baseline claims, one of them this milestone's own gate line.
 
-**Still owed when it resumes:** the odysseus baseline itself (`PROFILE-M257-odysseus-json` — ship without a
-`gated_baseline`; `lane_heap_measured_peak_mib` must be measured, never guessed, because clause 2 consumes it),
-and **`INVESTIGATE-M257-load1-48`** — peak `load1` measured **48.7** against HEADROOM clause 1's limit of **6**
-(billion read 4.06–4.56). If that is real, **the gate's own clause cannot pass on this host**. Unstarted by
-design: it must be measured with `buildbench`'s sampler against a host running *this* tooling. Worth noting the
-hypothesis to test first — Linux load average counts tasks in uninterruptible sleep, so an I/O-heavy build can
-show a huge `load1` with the CPU nowhere near oversubscribed; and the gate text's own insistence on *"read from
-the sampler (NOT 'sampled, not asserted')"* raises the possibility that clause 1 was never actually asserted on
-billion either.
+**Still owed** (updated at iter-05; the odysseus half of the original list is moot):
+
+- **The baseline itself** — `BASELINE-M257-macmini-n3`. The profile landed at iter-04
+  (`PROFILE-M257-odysseus-json` → satisfied as `macmini.json`, deliberately without a `gated_baseline`;
+  `lane_heap_measured_peak_mib` was **measured** at 3116 MiB, never guessed, because clause 2 consumes it).
+  What is owed is the `n ≥ 3` cold campaign that fills `gated_baseline` — and it will be taken on a
+  **permanently contended** box and labelled as such, because waiting for a quiet workstation is waiting
+  forever.
+- **`FIX-M257-load1-units-vm`** — the *live* form of what `INVESTIGATE-M257-load1-48` was chasing.
+  `buildbench.py` clause 1 grades **host** `os.getloadavg()` against `profile["cores"]`, which for a
+  `docker-desktop-vm` profile is the **VM allocation**. On this host that is **12-core load vs an 8-core
+  limit** → a limit of **6** where the correct one is **10**, so clause 1 currently **fails CLOSED** and
+  would refuse cycles this host is fine to run. Note the same file already draws this exact distinction
+  correctly in `engine_facts()` and `profile_describes_host()` — the instrument knows the difference in two
+  places and forgets it in a third.
+- ~~**`INVESTIGATE-M257-load1-48`**~~ — peak `load1` **48.7** against clause 1's limit of **6** on
+  **odysseus**. **Now un-reproducible: that host is retired.** Narrowed at iter-04 — the units mismatch above
+  is *not* its cause (odysseus was `native-linux`, where host and engine core counts are the same number),
+  so the standing hypothesis remains the one already written at `buildbench.py:349-350`: Linux load average
+  counts tasks in uninterruptible sleep, so an I/O-heavy build can show a huge `load1` with the CPU nowhere
+  near oversubscribed. Re-aim it at `macmini` as part of the baseline campaign, or close it as moot. The
+  companion suspicion is host-independent and still live: the gate's own insistence on *"read from the
+  sampler (NOT 'sampled, not asserted')"* raises the possibility that clause 1 was never actually asserted
+  on billion either.
 

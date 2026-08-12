@@ -184,6 +184,84 @@ anything.
   destination: *a routing written in a closing milestone's decisions is not a routing until the target's own
   doc says so.* See M255 `decisions.md:156` for the original.
 
+## Inherited from the M257x close (LAND-NEXT, 2026-08-11 — recorded here at the M257 close, 2026-08-12)
+
+> ⚠️ **This section exists because it did not.** M257x closed `closed-incomplete` and routed **11 items in
+> 5 root-cause clusters + 1 block fate** to M258 — and until now `grep M257x` in this file returned **zero
+> hits**. That is verbatim the `BIND_HOST` / `D-M255-7` failure recorded at the end of the previous section:
+> *a routing written in a closing milestone's decisions is not a routing until the target's own doc says
+> so.* The lesson was already written down here, one section up, and the very next close repeated it.
+
+**Owner:** [`m257x…/carry-forward.md`](../m257x-platform-realignment/carry-forward.md) — read it, not this
+paragraph; it carries the per-cluster root cause, scope estimate and provenance. The clusters:
+
+1. **The production-bucket pointer is contained in CODE, not on either running stack** — a demo reached the
+   **production** S3 bucket and only an IAM policy on an account we do not control refused it. Containment
+   is proven by a unit test on the emitter and **on no running stack**. The standing safety item.
+2. **The whole-section instrument is partially blind on this host** — and M257's close added a third
+   interpreter finding to the same area (`FIX-M257-census-interpreter-namespace-import`, below); read the
+   two together.
+3. **Fences that are not RED-proven**, and two that no census can see. Expect triage, not exhaustion.
+4. **The benchmark harness cannot grade the host the release names** — ⚠️ **M257 discharged half of this
+   cluster**; the carry-forward is annotated in place with what survives. What survives is the sharp half:
+   **`buildbench` still asserts no elapsed-time threshold**, and M258's gate is a p50 number.
+5. **Residual per-item content work**, deliberately not absorbed — the scope-creep tripwire working.
+
+Plus the **block fate** over the long tail of carried tokens, taken as one conscious routing.
+
+## Inherited from the M257 close (Fate 3, 2026-08-12)
+
+M257 met its exit gate (p50 **286.99 s** on `macmini` against 360 s, every clause green). These are what it
+did **not** land, each with a named handler. **The first is the only one that is about speed** — the rest are
+instrument and hygiene, and they land here because M258 *drives the same harness for its own gate*.
+
+- **`LEVER-M257-L5-setdress` — the ranking moved and this is now where the seconds are.** With the UI tier
+  collapsed by L1, **`set_dress` is the largest single phase at 82.04 s = 28.6 %** of the cycle, where the
+  v2.8 plan priced L5 at ~30–50 s and ranked it **fifth**. It is also *"the chief win on the `/dev-up`
+  path"* (`dev-setdress.sh` runs the same `stacksnap replay`). M258's 480 s ceiling is a **sum of two
+  ceilings** and is explicitly reachable *"only if M257 lands nearer its ~240–300 s estimate, spending part
+  of its unspent levers"* — M257 landed at 286.99 s and spent exactly one lever, so this is the reserve
+  that paragraph was talking about.
+- **Harness items M258's own gate reads.** `FIX-M257-campaign-kill-orphans-bringup` (`run_campaign`'s
+  `Popen` has no process group, so killing the harness orphans `up-injected.sh`; with a 7200 s hostlock TTL
+  an interrupted campaign blocks its own slot) · `FIX-M257-sampler-disk-units-vm` · `MEASURE-M257-macmini-
+  true-idle` (`idle_mem_mib` 2272 is an upper bound taken with two stacks resident) ·
+  `PROFILE-M257-provisional-fields` (make `provisional_fields` machine-declared so a provisional number
+  cannot be quoted as measured — **inherited from the M255 close, carried through all of M257 unlanded**;
+  see the audit note in M257's `decisions.md`) · **`FIX-M257-frontend-floor-is-billion-shaped`** (net-new
+  at the M257 close: the shipped 25 GiB disk floor is `billion`'s arithmetic, the gate host's is 22, and
+  the fence pinning them together reads `billion.json` by name) · **`FIX-M257-image-listing-conflates-
+  empty-and-unreadable`** (net-new: `_image_sizes` returns `[]` for both "no such images" and "the daemon
+  could not be reached", so the ISOLATION refusal can name the untrue cause — fail-closed, wrong reason).
+- **`FIX-M257-dockerignore-env-pattern-unpaired`.** `next-web.dockerignore` excludes `.env*`, Docker matches
+  from the **context root**, so that rule covers `./.env` and nothing nested while every sibling rule is
+  paired with a `**/` twin. Measured on the real post-L1 image: `/app/apps/web/.env` ships in, carrying the
+  platform's real Clerk publishable key and `CLERK_SECRET_KEY`, and standalone's `server.js` **loads it at
+  boot**. Masked for the Clerk vars by the injected override plus `@next/env`'s never-overwrite rule; the
+  residual is the set difference. ⚠️ **The tidy fix is a trap and must not be taken blind:** `**/.env*` also
+  excludes `apps/web/.env.local`, the overlay carrying the *minted* key into `next build`, so the one-line
+  repair bakes the **real** key — the M218 iter-03 incident re-created by its own fix. Needs a re-include
+  **and a real build to validate**, which is why it lands in a milestone that brings stacks up. *(It
+  supersedes `FIX-M257-committed-env-ships-real-clerk-pk`, whose description said "committed"; the file is
+  untracked, so a fixer followed it into the platform repo and found nothing.)*
+- **`FIX-M257-anchor-guard-content-drift`** — `anchor_construct_guard` books a citation that lands on a
+  *non-construct*; one that slides onto a **different** construct passes silently. **The M257 close hit this
+  live**: of the citations its own edits moved, the guard caught six and a seventh had quietly re-pointed
+  onto an unrelated function. Mechanically detectable with the same ~15-line positional line map.
+- **`FIX-M257-census-interpreter-namespace-import`** — `run_one`'s **unittest** column cannot import a test
+  module under the interpreter `pytest` resolves to on this box (3.9.6 OK · **3.12.13 `ModuleNotFoundError`**
+  · 3.14.6 OK), while `suite_census`'s docstring is headed *"THERE ARE TWO INTERPRETERS"* and the README
+  instructs the third. Deferred because the three candidate repairs each change either what the census
+  MEASURES or what pytest treats as a rootdir — a decision about which interpreter is canonical for this
+  repo, not a bug fix. Pairs with cluster 2 above.
+- **`RATCHET-M257-literal-ceilings-breached`** — `DOCSTRING_LITERAL_CEILING` 254 > 240 and
+  `TEST_MODULE_LITERAL_CEILING` 663 > 653. Pre-existing and whole-tree. **Deliberately never raised**: both
+  M257's final harden and its close added prose that fed them and then **deleted the growth** rather than
+  move a ceiling. Either attribute and raise with a reason, or pay the debt down.
+- **`FIX-M257-demopatch-sha-baselines-drifted`** — 6 whole-file `pre_sha256` baselines stale against live
+  clones. Every **anchor** contract still holds (probed), so this is the self-healing freshness gate working
+  as designed; re-pin the baselines.
+
 ## Iteration protocol
 
 The **prove-on-billion** lineage (M221 → M236 → M244 → M254):
