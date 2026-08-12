@@ -17,6 +17,18 @@
 > never teardown-first; this is the one sanctioned exception to "never touch `demo-2`", and `demo-2` is
 > *not* the one to keep (it is on **pre-L1** images). **Space must never be bought with time** (`D58`):
 > no `-af`, `--filter until=24h` only, every cache policy argued on both axes with measurements.
+>
+> ### ✅ END STATE HELD, on the correct stack — iter-19 (2026-08-12)
+>
+> **`demo-4` is the one stack up**, built by the **fixed** tooling at `fast-build-m258-iter-18` from
+> the newest platform mains (`platform` `766df6c` · `app` `c52dbc51e`), and it **proved itself in the
+> same command**: `red_set: []`, `runner_exit: 0`, 30/31 passing, `autoverify green: true /
+> warnings: 0`, 12 of 12 cockpit seats. **Cockpit: `http://localhost:47700`.** `demo-3` was retired
+> **after** that verdict, in the mandatory order. ⚠️ Clause 3 is still **NOT MET**: iter-19's cycle
+> was warm-cache and is not a clean cold measurement (`iter-19/decisions.md` `D100`).
+>
+> **And the corpus now knows what the platform did** — iter-18 landed `sentinel`-in-app, the **8th**
+> merge, across 26 files and took the alignment fence from **17 findings to 0**.
 
 ## Running ledger
 
@@ -440,3 +452,25 @@ for every inherited M257x / M257 item. Not deferrals.
   `sentinel.md` as its live specimen and expired with it. Fixed by **deriving** the specimen from the
   map, RED-proven with a mutant, tagged `fast-build-m258-iter-18` **on origin** (`D97`).
   `END-M258-one-stack` is UNCHANGED and still owed on a correctly-built stack. — see iter-18/progress.md
+- iter-19 (tik): **`END-M258-one-stack` re-established ON THE CORRECT STACK.** Exactly one stack is
+  up — **`demo-4`**, built by the **fixed** tooling (consumption clone re-pinned to
+  `fast-build-m258-iter-18`) from the newest platform mains — and it **proved itself in the same
+  command**: `red_set: []` · `runner_exit: 0` · 30/31 passing (the 1 is the declared TODO) ·
+  `autoverify green: true / warnings: 0` · **12 of 12 cockpit seats** · *"UP, and every journey
+  verified."* Rung zero was done against **files, not a tag** — the batch-gate hook plus all three
+  invalidation sites verified present in the clone before the run (the M236 shape). `--no-public-host`
+  was mandatory, not preferred: `--public-host` is default-on and turns the gate off on its own host,
+  so a bare `/demo-up 4` would have printed a clean bring-up with the thing under test unrun.
+  **`demo-3` — the stack the BUGGY tooling built, whose own `batch-gate.json` still read
+  `verdict: red, red_count: 15` — was torn down AFTER that verdict**, never before, with a heartbeat
+  naming the stack and the reason; the survivor was re-probed on all four surfaces afterwards.
+  **Cockpit: `http://localhost:47700`.** ⚠️ **The ~290 s cycle is NOT a clause-3 measurement and is
+  not offered as one** (`D100`): warm-cache (`#7 CACHED …`, no image-export leg — the phase
+  `build-budget.md` prices at 46.2 %) on the quietest box of the milestone (`load1` 2.3–2.5). Clause 3
+  stays NOT MET, waiter disarmed. Three findings: the teardown reclaimed **0 GB of Docker images**
+  because two same-ref stacks share every layer — the real reclaim was `stacks/demo-3` **2.1 GB →
+  131 MB** on the host tree, which `docker system df` cannot see (`D101`, and a second data point for
+  `FIX-M258-iter14-purge-leaves-276MB`); **`anthropos-sentinel:latest` is still on the box**, an image
+  that outlived its service (`D102`); and a `49100` probe reading 000 was **the probe, not the stack**
+  — a demo publishes studio-desk's backend port only, and `demo-3`'s `39100` read 000 too (`D103`).
+  — see iter-19/progress.md
