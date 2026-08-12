@@ -406,3 +406,15 @@ for every inherited M257x / M257 item. Not deferrals.
   **proven live on demo-3 before the code was written**; pre-v11.0 RPC retained beneath. 0 platform
   edits, 0 fences edited. rext `fcdc651` / tag `fast-build-m258-iter-16` **on origin**. —
   see iter-16/progress.md
+- iter-17 (tik): **the fix PROVEN END-TO-END — 15 reds → 0, cold, on a fresh `demo-4` from the newest
+  platform mains.** `red_set: []` · `runner_exit: 0` · 30/31 passing (the 1 is the declared TODO) ·
+  `215 passed` · `autoverify green: true, warnings: 0` · *"UP, and every journey verified."* All three
+  invalidation sites fired; **both previously-failing negative controls pass** — the tests that separate
+  *correctly isolated* from *uniformly blind*. `batch_seconds` **629 → 129** (the old batch was slow
+  BECAUSE it was broken). The dev half asked six pieces three questions each and found **one real gap**:
+  the anonymous-volume leak fixed for demo at iter-14 was **never carried to dev**, which runs the same
+  image through the same compose — fixed, fenced four ways, 159 dev tests green. Recorded not changed:
+  **`--public-host` is default-on and turns the batch gate OFF on its own host**, and
+  **`FIX-M258-iter15-hiring-under-set-dressed` does NOT reproduce** (50 rows vs 38) → re-scoped to WATCH.
+  Converged to one stack; **`demo-3` untouched throughout**. rext `fast-build-m258-iter-17` on origin. —
+  see iter-17/progress.md
