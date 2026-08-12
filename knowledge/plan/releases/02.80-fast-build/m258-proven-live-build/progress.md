@@ -51,16 +51,33 @@
   batch half is **small** (~14 %), so M257's 286.99 s + ~129 s ≈ **416 s** would sit inside 480 s.
   — see `iter-04/progress.md`
 
+- iter-05 (tik, `closed-fixed`): **the first GATEABLE single-box bring-up half — 247.79 s** (rep 3:
+  headroom OK, green, ISOLATION ok, identity match, phases complete), corroborated by rep 2 at 249.13 s
+  (missed headroom by **0.62**) with a contended outlier at 344.82 s (`peak_load1` 21.77). Campaign RED
+  **on headroom only** — every rep was green + isolated + identity-matched. **The inherited 395-vs-287
+  question is ANSWERED**: `ui_studio_desk` is **115.35 s cold vs 7.12 s warm = 108.23 s**, against a
+  delta of **108.32 s** — they agree to 0.09 s. **Both prior figures were `--public-host`**, so neither
+  was ever the single-box half, and studio-desk is a **cache** effect, not a lever. `set_dress` is still
+  the largest phase (**81.23 s**, vs M257's 82.04) — `LEVER-M257-L5-setdress` remains the real reserve.
+  **Composed ≈ 376.8 s vs the 480 s ceiling** (247.79 + 129, two separate n=1 runs — *not* the gate) —
+  the first evidence the ceiling is reachable. — see `iter-05/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
   cause **retracted** (see the ledger entry above and `iter-03/decisions.md` D8).
 - ✅ **iter-04 discharged `MEASURE-M258-batch-half`** — 129 s, red set empty (n=1, contended).
-- **iter-05 (tik, under `TOK-01`)** — **`MEASURE-M258-gateable-composition`**. `load1` fell to **6.17**
-  right after the batch (the user's workload ended), which is **inside** the cores−2 floor of 10, so the
-  gate instrument can finally run. `buildbench run 1 --reps 1 --profile macmini --no-public-host`
-  (host **named**) for a **gateable** bring-up half, then the batch again — which also yields the
-  **second** batch sample toward the spread `C2` demands. Then `TOK-01` steps 2–4.
+- ✅ **iter-05 discharged `MEASURE-M258-gateable-composition`** (bring-up side) **and closed
+  `CHECK-M258-iter02-studio-desk-is-the-untouched-leg`** with a finding: it is a **cold-cache** cost, not
+  a lever.
+- **iter-06 (tik, under `TOK-01`) — `TOK-01` step 2: wire the batch-gate at the tail hook**
+  (`up-injected.sh:2810`, beside the `autoverify.sh` invocation) under `D-v28-3` semantics: runs to
+  completion, never halts at first red, **never retries**, ONE consolidated red set at batch end, the
+  stack left **UP** regardless, and the bring-up exiting **non-zero and loudly** on a non-empty set.
+  **This is now the only thing between the milestone and a composed measurement** — both halves are
+  measured separately and the arithmetic (≈377 s) fits, but the gate is a p50 over 3 cold cycles of the
+  *composed* thing, which cannot be taken until the batch runs inside the bring-up.
+  Then step 3 (world-contract restore) and step 4 (the 3× cold campaign).
 - **`RESTORE-M258-world-contract`** (`TOK-01` step 3) — **now owed in FACT**: iter-04's batch `--reset`
   TRUNCATEd the demo world and re-seeded **pt-world**, so `demo-1` is currently a Playthrough world
   behind a cockpit projected from the stories preset — verbatim the state `overview.md` § *The world
