@@ -205,6 +205,31 @@
   Third trap sibling recorded: **`ls -l Docker.raw` reads 137.44 GB, 2.7× the truth.** `demo-4/` orphan
   corrected to **8 KB — a hygiene item, not a space finding** (`D63`). — see `iter-12/progress.md`
 
+- iter-13 (tik, `closed-fixed`): **`TIK-A` — studio-desk stops being the demo's largest UI image:
+  1.7 GB → 1.35 GB (350 MB/stack, 20.6 %)**, via an **rext-owned multi-stage prune-and-copy** Dockerfile
+  in the shape L1 sanctioned — clone as build CONTEXT only, **zero platform-repo edits**, not even a
+  demopatch — **verified booting and serving identically to the live `demo-1` control** (302/302/302 on
+  `/`, `/home`, `/assets`; minted pk still greppable at `/app/dist`, so `buildbench`'s ISOLATION probe
+  keeps its contract). **The headline is one-THIRD of what was predicted, and the refutation is the more
+  useful result** (`D64`): **838 MB of the 1.04 GB dependency layer survives `--omit=dev`** because
+  `@clerk/clerk-js` carries a crypto-wallet tree (`viem` 68.2 · `@solana` 20.6 · `ox` 9.2 · `@base-org`
+  8.2 MB) plus React-Native/Hermes as **runtime** deps — **studio-desk's image is dominated by PRODUCTION
+  dependencies, not by the toolchain**, which was only ~20 % of it. Three things this iter is worth
+  reading for: **(1) the anti-silence assert fired on a prune that had WORKED** — `typescript` is a real
+  production transitive (`@clerk/clerk-js → @base-org/account → ox → abitype`), so the *sentinel* was
+  wrong, not the prune (`D65`; corrected to `vite`, which `npm ls --omit=dev` proves empty). **(2) The
+  Dockerfile had to go INTO the cache key or the lever would have shipped NOTHING** — the reuse check
+  keys on endpoint + patchset, **neither of which moves when the Dockerfile changes**, so every box
+  holding a single-stage image would have reused it under a green log (`D66`; the "applied is not
+  shipped" class in a new costume). **(3) The TIME half is WITHDRAWN, not claimed** (`D67`): `D62`'s
+  7–10 s came from **5.73–8.05 s/GB measured on `billion` (x86_64/containerd)** applied to an
+  **arm64/overlayfs** host — the exact cross-host error `build-budget.md`'s opening rule exists to
+  prevent — and the available logs compare a **cold** export (33.2 s) against a **warm** one (9.6 s
+  unpack), so they settle nothing. `TIK-C`'s cold bring-up yields it for free. Suite **9 failed / 1080
+  passed**, and the nine were **PROVEN pre-existing** (`D68`) by re-running them from a `git archive HEAD`
+  extract at the same directory depth: **the same nine by name**, 9 failed / 131 passed.
+  — see `iter-13/progress.md`
+
 ## Next-iter routing
 
 - ✅ **iter-03 discharged `FIX-M258-iter02-inject-appends-and-swallows`** — in substance, with its stated
