@@ -108,7 +108,7 @@ gh repo clone anthropos-work/customerio-sync
 
 **There is nothing to start.** `838d907` deleted the compose service, so no selection of profiles
 brings a `customerio-sync` container up — and asking for the retired token does not error: compose
-**exits 0** and starts only the always-on floor (`postgresql`, `redis`, `sentinel`), which looks like
+**exits 0** and starts only the always-on floor (`postgresql`, `redis`), which looks like
 a live stack.
 
 The domain is inside `backend` and **off unless you say otherwise**:

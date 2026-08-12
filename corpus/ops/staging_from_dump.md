@@ -19,7 +19,7 @@ It is the bridge between "the stack starts" and "I can log in as my own admin ac
 ## Prerequisites
 
 You should already have, per `setup_guide.md`:
-- `platform/` plus the four `repos.yml` entries — `app/`, `sentinel/`, `next-web-app/`, `studio-desk/` — cloned as siblings. (`skiller`, `skillpath`, `cms`, `jobsimulation`, `roadrunner`, `storage`, `messenger` and `customerio-sync` are all folded into `app` and no longer cloned or built; `graphql-wundergraph` went with the router at `2adcf71`.)
+- `platform/` plus the **three** `repos.yml` entries at `766df6c` — `app/`, `next-web-app/`, `studio-desk/` — cloned as siblings. ⚠️ **This read *"the four `repos.yml` entries — `app/`, `sentinel/`, …"* until M258 iter-18** — true at platform `0c91421`, and RETRACTED at `766df6c` (v11.0, 2026-08-11), which folded `sentinel` into `app` as `app/internal/sentinel/` and deleted its `repos.yml` entry with its compose service, so `make init` no longer clones it. (`skiller`, `skillpath`, `cms`, `jobsimulation`, `roadrunner`, `storage`, `messenger`, `customerio-sync` **and now `sentinel`** are all folded into `app` and no longer cloned or built; `graphql-wundergraph` went with the router at `2adcf71`.)
 - `platform/.env` with `GH_PAT`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` filled in.
 - `make up postgresql` succeeds and Postgres is healthy.
 
@@ -236,7 +236,13 @@ docker compose -f platform/docker-compose.yml exec -T postgresql psql -U postgre
 
 ### 3c. Sync sentinel casbin grants
 
-The dump's `sentinel.casbin_rules.g2` is sometimes inconsistent with `public.memberships` — you'll be `admin` in N orgs in the DB but only have casbin grants for fewer. Without the casbin grant, sentinel rejects every `org:feature:*` check (members:list, workforce, etc.) with `forbidden`, which the UI surfaces as empty Members tables, empty Activity Dashboard, etc.
+The dump's `sentinel.casbin_rules.g2` is sometimes inconsistent with `public.memberships` — you'll be `admin` in N orgs in the DB but only have casbin grants for fewer. Without the casbin grant, the Casbin PDP rejects every `org:feature:*` check (members:list, workforce, etc.) with `forbidden`, which the UI surfaces as empty Members tables, empty Activity Dashboard, etc.
+
+> **⚠️ Since `766df6c` the PDP is in-process and there is no `sentinel` container to restart.** v11.0
+> folded it into `app` as `app/internal/sentinel/` (wired once at `app/main.go:305`, *"There is no switch
+> and no RPC path: app IS the PDP"*) and deleted the compose service. The **policy tables did not move** —
+> they stay in the `sentinel` schema (`SENTINEL_DB_CONNECTION`, `search_path=sentinel`), so the SQL below
+> is unchanged and still correct. Only the reload step changed.
 
 Sync them in one shot:
 
@@ -250,9 +256,17 @@ docker compose -f platform/docker-compose.yml exec -T postgresql psql -U postgre
   ON CONFLICT DO NOTHING;
 "
 
-# Restart sentinel so it reloads policies
-docker compose -f platform/docker-compose.yml restart sentinel
+# Reload the policies. The enforcer calls LoadPolicy() at startup, so restarting the process
+# that HOSTS it is the reload — and since 766df6c that process is `backend`, not `sentinel`.
+# `restart sentinel` now ERRORS ("no such service"); it does not silently no-op, so you will see it.
+docker compose -f platform/docker-compose.yml restart backend
 ```
+
+> Non-restart alternative on a live stack: the in-process PDP subscribes to the Redis **Pub/Sub** channel
+> `sentinel:policy:invalidate` for cross-replica invalidation (`app/internal/sentinel/watcher.go:55` —
+> deliberately Pub/Sub fan-out, *not* the Watermill consumer-group plumbing, which would deliver to one
+> consumer only). Publishing to that channel reloads without a bounce. `restart backend` is the blunter
+> path and always works.
 
 ### 3d. (Optional, recommended) Customize the dev Clerk session token
 
@@ -331,7 +345,7 @@ return ""
 
 `authn/provider/clerk/clerk_user.go` `GetOrganization()` — fall back to v2 claim names + lazy-fetch `public_metadata.eid` via Clerk API with a process-wide cache (Clerk rate-limits otherwise).
 
-Each consuming service needed the steps below. On a current stack the Go services are **`app` and `sentinel`** — when this recipe was written it also covered `cms`, `jobsimulation`, `messenger` and `storage`, all since folded into `app`. **Do not run these; see the box at the top of § 4.** Reproduced so you can recognise and unwind a `vendor-colony/` on an old host:
+Each consuming service needed the steps below. On a current stack the Go service is **`app`, and only `app`** (this said *"the Go services are **`app` and `sentinel`**"* until M258 iter-18 — `766df6c` folded `sentinel` in as the 8th merge) — when this recipe was written it also covered `cms`, `jobsimulation`, `messenger` and `storage`, all since folded into `app`. **Do not run these; see the box at the top of § 4.** Reproduced so you can recognise and unwind a `vendor-colony/` on an old host:
 
 1. `cp -r <patched-colony> <service>/vendor-colony`
 2. Append to `<service>/go.mod`:
@@ -359,9 +373,12 @@ Wait for all services to report healthy:
 docker compose ps --format "table {{.Service}}\t{{.Status}}"
 ```
 
-You should see **7** services running at platform `0c91421` — `--profile all` now selects the whole
+You should see **6** services running at platform `766df6c` — `--profile all` selects the whole
 effective topology (`backend`, `gotenberg`, `next-web-app`, `studio-desk` + the always-on
-`postgresql`/`redis`/`sentinel` floor). The count was ~14 before the cms/jobsimulation/roadrunner
+`postgresql`/`redis` floor). ⚠️ **This read *"**7** services … at platform `0c91421` … the always-on
+`postgresql`/`redis`/`sentinel` floor"* until M258 iter-18** — true at that ref, and RETRACTED at
+`766df6c` (v11.0), which deleted the `sentinel` service, taking the floor from three to two and the
+`--profile all` count from 7 to 6. The count was ~14 before the cms/jobsimulation/roadrunner
 fold and the `graphql` deletion, 8 at `0dab54d`, and 7 since `838d907` dropped the `storage`,
 `messenger` and `customerio-sync` containers (corrected M257x iter-78, re-measured iter-87). If any
 service crashes on boot, check its logs (`docker compose logs <svc> --tail 30`) — most failures are missing env vars in `.env` or a Dockerfile gap; see Troubleshooting below.
@@ -445,7 +462,8 @@ docker compose logs backend --since 1m | grep -i "organization mismatch\|colony:
 ```
 
 ### "forbidden" on members/workforce queries
-Casbin doesn't know you're an admin of the active org. Re-run step 3c and restart sentinel.
+Casbin doesn't know you're an admin of the active org. Re-run step 3c and restart **`backend`** — since
+`766df6c` the PDP is in-process, there is no `sentinel` container, and `restart sentinel` errors out.
 
 ### Members table shows skeleton rows forever
 The query is panicking on the backend with `nil pointer dereference` — the colony nil-client bug, same root cause as "organization mismatch", different code path. **Fixed upstream at colony `v0.34.4`**; if you are seeing it, `app` is pinned below that. Bump `~/app/go.mod` and rebuild backend — do not vendor (§ 4).

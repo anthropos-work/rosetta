@@ -62,11 +62,21 @@ exact file that repo reads at runtime:
 <root>/                              # default: .agentspace/secrets
   platform/.env
   app/.env
-  sentinel/.env
+  sentinel/.env                      # ⚠️ STALE since 766df6c — see below; the repo is no longer cloned
   studio-desk/.env
   next-web-app/apps/web/.env         # next-web reads apps/web/.env, NOT the repo root
   ant-academy/code/.env.local        # the exact file Next.js precedence reads (.env is absent)
 ```
+
+> **⚠️ The `sentinel/` leg is stale as of platform `766df6c`** (v11.0, 2026-08-11), which folded the
+> Casbin PDP into `app` as `app/internal/sentinel/` and deleted **both** the compose service and the
+> `repos.yml` entry — so `make init` no longer clones `sentinel` and there is no `sentinel/` directory
+> on a fresh stack for `provision` to write into. **The checked-in DNA (`secret-dna.json`, version
+> `fast-build-m256`) still declares the repo**, which is measured here and not yet re-measured against a
+> post-`766df6c` tooling tag; treat every `sentinel` row below as a **dated reading at platform
+> `0c91421`**. Its two genes are the least disruptive possible casualty — `DB_CONNECTION` was already
+> `waived-config` (compose-injected, never read from a `.env`) and `SENTRY_DSN` is optional — so this is a
+> stale target, not a missing secret. Do not hand-create a `sentinel/` directory to satisfy it.
 
 Ingestion is **DNA-driven, not glob-driven** (`source.FromDir` / `source.FromZip` in
 `stack-secrets/source/source.go`): the reader is handed the set of `(repo, target_file)` pairs the
@@ -104,7 +114,7 @@ The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are uni
 |---|---|---|---|
 | **platform** | `.env` | 32 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants (incl. the M256 `SKILLER_AZURE_OPENAI_KEY`/`_ENDPOINT_URL` pair), `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
 | **app** | `.env` | 10 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) + **the M239 Bedrock cred class** (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` + `AWS_REGION`/`AWS_SESSION_TOKEN`/`CLAUDE_CODE_USE_BEDROCK` — Talk to Data, see below) |
-| **sentinel** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example` |
+| **~~sentinel~~** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example`. ⚠️ **Repo not cloned since `766df6c`** — folded into `app`, so this row is a dated reading at `0c91421`, not a live target |
 | **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
@@ -139,11 +149,13 @@ non-obvious ones are pinned because the runtime reads a specific file:
 ### The hybrid `introspect` source + the keep-listed gate (`diff`)
 
 The required-key set is **not** a uniform per-repo `.env.example` — verified on stack-dev, **7 of 8 Go repos
-ship none** (only `sentinel` does; the count dropped from 8-of-9 when `skillpath` — a Go repo that shipped no `.env.example` — was decommissioned into `app`). So `introspect` (`secretdna.ReadDeclaredKeys` over
+ship none** (only `sentinel` does; the count dropped from 8-of-9 when `skillpath` — a Go repo that shipped no `.env.example` — was decommissioned into `app`). ⚠️ **Both halves of that sentence are dated at platform `0c91421`, and `766df6c` moved them:** v11.0 folded `sentinel` into `app` (the 8th merge) and dropped it from `repos.yml`, so the *cloned* Go set is **`app` alone** and **none** of it ships a `.env.example`. The premise the hybrid source exists for — *the required set cannot be read off per-repo `.env.example` files* — is therefore **stronger** now, not weaker. So `introspect` (`secretdna.ReadDeclaredKeys` over
 `DefaultHybridSources`) rebuilds the required set from the **union** of:
 
 - `platform/.env_example` — the documented backend wishlist baseline (59 keys);
-- `sentinel/.env.example` — the lone Go repo declaring keys this way;
+- `sentinel/.env.example` — the lone Go repo declaring keys this way ⚠️ **at `0c91421`; unreadable on a
+  post-`766df6c` stack, where the repo is not cloned. If `introspect` reports fewer declared keys than this
+  spec, a missing clone is the first thing to check — not a missing secret**;
 - each frontend's `.env.example` (studio-desk, next-web-app, ant-academy);
 - a **curated** set of keys docker-compose injects / passes as a build arg (`GH_PAT`, `PUBLIC_HOST`) that no
   `.env.example` declares.
@@ -189,15 +201,16 @@ local-vs-prod realities never poison the score:
 
 | Waived class | Genes | Why |
 |---|---|---|
-| `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification |
+| `waived-config` **(M30 field-bake)** | `sentinel/DB_CONNECTION` | docker-compose hardwires it as a sentinel `environment:` entry (`postgresql://postgres@postgresql:5432/postgres?search_path=sentinel&sslmode=disable`), which always overrides `env_file`; sentinel never reads it from `sentinel/.env` at runtime (no `sentinel/.env` exists on stack-dev). An in-network, password-less wiring DSN identical on every stack — config, not a provisioned secret. Was falsely failing the gate at Critical 84.6% before the reclassification. ⚠️ **All of that is at platform `0c91421`; at `766df6c` there is no `sentinel` compose block to hardwire it.** The DSN itself survives the fold — the policy tables stay in the `sentinel` schema and compose now injects the same `search_path=sentinel` DSN into `backend` as `SENTINEL_DB_CONNECTION` — so the *waiver* is still right (compose-injected, never provisioned) even though the block it named is gone |
 | `waived-aws-mount` | `platform/LIVEKIT_RECORDING_AWS_ACCESS_KEY_ID` | AWS recording creds are mounted from `~/.aws/credentials`, never a `.env` secret |
 | `waived-profile-gated` | `platform/BREVO_KEY` | the class name is historical: the `messenger` profile is gone — `838d907` deleted the container along with the profile. Messenger now runs in-process inside `backend`, gated by `MESSENGER_ENABLED`, which defaults **off** on a developer machine (`ENVIRONMENT=development`; `docker-compose.yml:84-92`), so no default stack ever reads the key |
 | `waived-optional` | `platform/BUNNY_STREAM_API_KEY`, `app/TAILSCALE_AUTH_KEY`, `studio-desk/GCLOUD_SERVICE_ACCOUNT`, `studio-desk/YOUTUBE_API_KEY`, `next-web-app/BUNNY_CDN_TOKEN_KEY` | example-only / absent from live / convenience — a local stack comes up without them |
 
 A waived gene names **no operators** and is never measured (`Validate` enforces this). Because the catalog is
 scoped to the **default stack's** service set, the denominator is honest for it — `platform/BREVO_KEY` is
-waived because the default selection (`core` at platform `0c91421`: `backend` + `gotenberg` + the always-on
-`postgresql`/`redis`/`sentinel` floor) sends no mail. Since `838d907`, **no selection does**: there is no
+waived because the default selection (`core` at platform `766df6c`: `backend` + `gotenberg` + the always-on
+`postgresql`/`redis` floor — **two**, not three; the `sentinel` service was deleted at `766df6c`, v11.0)
+sends no mail. Since `838d907`, **no selection does**: there is no
 `messenger` container left to start, and `backend`'s in-process messenger stays dormant until
 `MESSENGER_ENABLED` is set in `.env`.
 

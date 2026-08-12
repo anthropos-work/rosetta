@@ -100,14 +100,20 @@ The 14 repos the routine covers (same on every staging host; was 15 before `skil
 
 **Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
 
-> **⚠️ Seven of those eleven no longer build anything.** This is the routine's *configured* scope, read
-> off the staging hosts; upstream has moved out from under most of it. At platform `0c91421` only `app`,
-> `sentinel`, `next-web-app` and `studio-desk` are still `repos.yml` entries, and only `backend`,
-> `sentinel`, `next-web-app`, `studio-desk` and `gotenberg` are still compose services.
+> **⚠️ EIGHT of those eleven no longer build anything** (seven until M258 iter-18 — `sentinel` is the
+> eighth). This is the routine's *configured* scope, read off the staging hosts; upstream has moved out
+> from under most of it. At platform `0c91421` only `app`, `sentinel`, `next-web-app` and `studio-desk`
+> were still `repos.yml` entries, and only `backend`, `sentinel`, `next-web-app`, `studio-desk` and
+> `gotenberg` were still compose services — **both readings are RETRACTED at `766df6c`** (v11.0,
+> 2026-08-11), which folded `sentinel` into `app` as `app/internal/sentinel/` and deleted its compose
+> service *and* its `repos.yml` entry in one commit. Since `766df6c`: **three** `repos.yml` entries —
+> `app`, `next-web-app`, `studio-desk` — and **four** compose services — `backend`, `next-web-app`,
+> `studio-desk`, `gotenberg` — over an always-on floor of **two**, `postgresql` and `redis`.
 > `graphql-wundergraph` went at `2adcf71`/`360efd4`; `cms`, `jobsimulation` and `roadrunner` at
-> `d11a403`; `storage`, `messenger` and `customerio-sync` at `838d907` — every one of them folded into
-> `app`. Force-resetting those clones still works; the **rebuild** step for them has no compose service
-> left to name. Re-derive the routine's live scope from the host's own script before trusting this list.
+> `d11a403`; `storage`, `messenger` and `customerio-sync` at `838d907`; `sentinel` at `766df6c` — every
+> one of them folded into `app`. Force-resetting those clones still works; the **rebuild** step for them
+> has no compose service left to name. Re-derive the routine's live scope from the host's own script
+> before trusting this list.
 
 **Plain repos (no docker rebuild):** `rosetta`, `anthropos-knowledge-base`, `ant-singularity`.
 
@@ -158,7 +164,7 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `app`                      | `Dockerfile.dev`, `go.mod`, `go.sum`, ~~`internal/cors/cors.go`~~, `internal/web/backend/graphql/graph/handler.go`   |
 | ~~`cms`~~, ~~`jobsimulation`~~, ~~`storage`~~, ~~`messenger`~~ | **RETIRED — `make init` no longer clones any of these** |
-| `sentinel`                 | `Dockerfile.dev`, `go.mod` (+ `go.sum` on some)                                                                      |
+| ~~`sentinel`~~             | **RETIRED at `766df6c`** — `make init` no longer clones it either (was: `Dockerfile.dev`, `go.mod`, + `go.sum` on some) |
 | `next-web-app`, `studio-desk` | `Dockerfile.dev`                                                                                                  |
 | `platform`                 | `Makefile`, `docker-compose.yml`                                                                                     |
 
@@ -171,10 +177,14 @@ After: `git status` shows only what the agent actually changed; `git add .` stag
 > set the env var instead** — keeping the mark now hides real upstream changes to a file you no longer
 > need to edit.
 >
-> **2. Four of the repos in this table are no longer in the clone set.** `repos.yml` @ `0c91421` has
-> **four** entries — `app`, `sentinel`, `next-web-app`, `studio-desk`. `d11a403` removed `cms` +
-> `jobsimulation` + `roadrunner`; `838d907` removed `storage` + `messenger`. A `for` loop over the old
-> list silently skips them, which is the *"`[ -d ] || continue`"* failure this milestone exists to fence.
+> **2. FIVE of the repos in this table are no longer in the clone set** (four until M258 iter-18).
+> `repos.yml` @ `0c91421` had **four** entries — `app`, `sentinel`, `next-web-app`, `studio-desk`;
+> `d11a403` removed `cms` + `jobsimulation` + `roadrunner` and `838d907` removed `storage` +
+> `messenger`. ⚠️ **That four is RETRACTED at `766df6c`** (v11.0), which removed `sentinel` as well:
+> `repos.yml` there is a 13-line file declaring **three** entries — `app`, `next-web-app`,
+> `studio-desk`. A `for` loop over the old list silently skips them, which is the
+> *"`[ -d ] || continue`"* failure this milestone exists to fence — and `sentinel` is now in that set,
+> so a loop that used to cover it now no-ops on it without saying so.
 
 ### Force-reset interaction (the dance)
 
@@ -207,7 +217,7 @@ After Phase 1, only services whose source repo SHA actually moved get rebuilt. M
 | `cms`               | ~~`cms`~~ — service **deleted** at `d11a403` |
 | `jobsimulation`     | ~~`jobsimulation`~~ — service **deleted** at `d11a403` |
 | `storage`           | ~~`storage`~~ — service **deleted** at `838d907` |
-| `sentinel`          | `sentinel`             |
+| `sentinel`          | ~~`sentinel`~~ — service **deleted** at `766df6c` (v11.0); the PDP is `app/internal/sentinel/`, so a `sentinel` source move is now an `app` rebuild |
 | `roadrunner`        | ~~`roadrunner`~~ — service **deleted** at `d11a403` |
 | `messenger`         | ~~`messenger`~~ — service **deleted** at `838d907` |
 | `customerio-sync`   | ~~`customerio-sync`~~ — service **deleted** at `838d907` |

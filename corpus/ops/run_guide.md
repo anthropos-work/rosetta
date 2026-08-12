@@ -79,13 +79,13 @@ cd stack-dev/platform
 
 ### Option A: Start Full Backend (Recommended)
 
-This starts the backend tier (default `core` profile — `postgresql`, `redis`, `sentinel`, `backend`, `gotenberg`). There is no GraphQL router: platform `2adcf71` deleted it and `0dab54d` renamed the profile.
+This starts the backend tier (default `core` profile — `postgresql`, `redis`, `backend`, `gotenberg`). *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* There is no GraphQL router: platform `2adcf71` deleted it and `0dab54d` renamed the profile.
 
 ```bash
 make up
 ```
 
-This starts **five** containers: PostgreSQL, Redis, Sentinel, Backend, Gotenberg. (cms, jobsimulation, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — **seven**; `roadrunner` was named here as an eighth until M257x iter-137, and it was **deleted, not merged**, though for a bring-up the consequence is the same: nothing starts it — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
+This starts **four** containers: PostgreSQL, Redis, Backend, Gotenberg. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* (cms, jobsimulation, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — **seven**; `roadrunner` was named here as an eighth until M257x iter-137, and it was **deleted, not merged**, though for a bring-up the consequence is the same: nothing starts it — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
@@ -97,7 +97,7 @@ Start only the services you need:
 make up PROFILE=core       # the default: backend + gotenberg (+ the always-on floor)
 make up PROFILE=backend    # the same five — `backend` and `core` select identically
 # NB: the retired cms / graphql / storage / storage-legacy / messenger / customerio-sync
-#     tokens EXIT 0 and start ONLY postgresql, redis, sentinel. Nothing warns; the stack
+#     tokens EXIT 0 and start ONLY postgresql + redis. Nothing warns; the stack
 #     just has no application in it.
 make up-all                # Everything including frontend and studio-desk
 ```

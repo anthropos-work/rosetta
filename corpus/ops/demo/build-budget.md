@@ -98,7 +98,7 @@ unattributed and every attribution in it is suspect.
 > ```
 >
 > **Widened once** (Rule 57): `grep -rn "BRINGUP_ANCHORS" .` across the whole rext tree returns exactly two
-> hits — the definition at `buildbench.py:117` and its single consumer at `:276`. There is no second anchor
+> hits — the definition at `buildbench.py:130` (`BRINGUP_ANCHORS`) and its single consumer at `:327`. There is no second anchor
 > list, so the number does not move. Three of the twelve are conditional (`ui_*` on the UI tier,
 > `serve_and_egress` on `--public-host`) and are reported as *not applicable* rather than missing when their
 > feature is off — a conditional phase is still a declared phase.
@@ -194,7 +194,7 @@ BuildKit's own `#N DONE Xs` lines are authoritative, and the export step is spli
 >    describe the run under test"* — the same discipline was simply not applied to the host profile.
 >
 >    **A related units defect outlived that fix and was found at M257 iter-06**: the identity check grades
->    a `docker-desktop-vm` profile's `cores` against **engine NCPU**, correctly — but HEADROOM **clause 1**
+>    a `docker-desktop-vm` **host** profile's `cores` against **engine NCPU**, correctly — but HEADROOM **clause 1**
 >    was grading the **host's** `os.getloadavg()` against that same VM-allocation `cores`. On this machine
 >    that is a 12-core load against an 8-core limit: a threshold of **6** where the correct one is **10**,
 >    failing **closed**. Fixed by `load1_core_basis()`; a profile must now declare `kind`, and a
@@ -431,6 +431,22 @@ make L1 look better than it is, and the arithmetic that predicted the win (~132.
 legs) is reported beside the realized 141.63 s rather than merged into it. The images went **4.04 GB → 417 MB**
 (next-web) and **3.94 GB → 380 MB** (hiring); `exporting to image` went **136.4 s → 3.8 s** combined.
 
+**studio-desk, the third UI image, followed at v2.8 M258 (`TIK-A`) — and its result refutes L1's premise
+rather than repeating it.** An rext-owned multi-stage `frontend/studio-desk.Dockerfile` (prune-and-copy,
+build shape 3; zero platform-repo edits) took it **1.7 GB → 1.35 GB — 350 MB per stack, 20.6 %**. That is
+roughly **one third** of what was predicted, and the reason is the useful part: **838 MB of the 1.04 GB
+dependency layer survives `--omit=dev`**, because `@clerk/clerk-js` carries a crypto-wallet tree (`viem`
+68.2 · `@solana` 20.6 · `ox` 9.2 · `@base-org` 8.2 MB) plus React-Native/Hermes as **runtime** deps. So
+**studio-desk's image is dominated by PRODUCTION dependencies, not by the toolchain**, which was only
+~20 % of it — the opposite of next-web, where `next build` *emits* a standalone tree and the toolchain is
+the bulk.
+
+⚠️ **The TIME axis is WITHDRAWN, not claimed** (`D75`). The 7–10 s estimate came from applying the
+**5.73–8.05 s/GB measured on `billion` (x86_64/containerd)** to an **arm64/overlayfs** host — the exact
+cross-host error this document's opening rule exists to prevent — and the one cold attempt to settle it
+was a BuildKit cache hit (a 1.5 s export). **Only the 350 MB space win is measured.** The Dockerfile
+header cites this file for the s/GB derivation; this paragraph is that citation returned.
+
 **The ranking moved underneath the plan, which is the finding worth carrying forward.** With the UI tier
 collapsed, **`set_dress` is the largest phase at 28.6 %** — a lever (L5, the taxonomy replay) that the M257
 plan priced at ~30–50 s and ranked **fifth**, and which is also *the chief win on the `/dev-up` path* because
@@ -535,8 +551,8 @@ failure fails the whole assert.
 > assert working, not a broken profile.
 
 > **Clause 1 says *peak*, and under the standalone CLI it is not one.** `buildbench run` genuinely takes the
-> peak (`max` over the sampler's rows, `buildbench.py:375`). `buildbench assert-headroom` has no campaign to
-> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:2124`) — and the failure message still
+> peak (`max` over the sampler's rows, `buildbench.py:393`). `buildbench assert-headroom` has no campaign to
+> sample, so it reads a **single instantaneous** `os.getloadavg()[0]` (`:2227`) — and the failure message still
 > says *"peak load1 …"*. Read a CLI verdict as *"load right now"*: a quiet moment on a busy box passes, and a
 > transient spike fails. It is the `run` path's peak that gates a number.
 >
@@ -796,18 +812,31 @@ cd <the rext clone>
 #    worst-first. Measure your own host; still do not borrow another's numbers.
 python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
         --public-host <magicdns> --label baseline
+# ⚠️ THE HOST-MODE FLAG IS NOT OPTIONAL INFORMATION — OMITTING BOTH IS NOT "LOCAL" (M258 iter-03).
+# `up-injected.sh:110-114` AUTO-DISCOVERS a MagicDNS host unless it is given `--public-host` OR
+# `--no-public-host`, and that discovery is DEFAULT-ON. A campaign that passes neither runs public-host:
+# 0.0.0.0 binds, https, a tailscale-served origin baked into the bundles. Measured, not theorised —
+# M258 iter-02 ran a whole cycle that way while its own record said `--no-public-host`.
+# It decides what is MEASURABLE, not just what is reachable: a --public-host demo cannot be browsed from
+# its own host (docker-proxy bypasses `tailscale serve` — `run-playthroughs.sh:88-108`), so any campaign
+# that also drives a browser on that box MUST pass --no-public-host or the browser half cannot run.
+python3 stack-core/buildbench.py run 1 --reps 3 --profile <your measured host> \
+        --no-public-host --label single-box      # the single-box mode; mutually exclusive with the above
+# Every rep ledger records `bringup_argv`, so which mode produced a number is readable from the record
+# itself — it used to have to be recovered by grepping a progress line out of `cycle.log`.
 python3 stack-core/buildbench.py report stack-core/.buildbench/baseline-<ts>
 python3 stack-core/buildbench.py assert-headroom --profile laptop --lanes 2   # exit 1 = plan oversubscribes
 python3 stack-core/buildbench.py env-snapshot                                 # every knob + where it is read
 python3 stack-core/buildbench.py parse --log <an older cycle log>             # back-fill into the same schema
 ```
 
-**The full flag surface** (verified against the argparse constructed at `buildbench.py:2054`). The ones above are the
+**The full flag surface** (verified against the argparse constructed at `buildbench.py:2123`). The ones above are the
 common path; these are the rest, and two of them decide whether a campaign is comparable at all:
 
 | verb | flag | default | what it does |
 |---|---|---|---|
 | `run` | `--out <dir>` | `<rext>/stack-core/.buildbench/<label\|campaign>-<utc-ts>` | where the campaign dir is written |
+| `run` | `--no-public-host` | off | **force the single-box mode.** ⚠️ *Off is not "local"* — with neither host flag, `up-injected.sh` **auto-discovers** a MagicDNS host (default-on), so the campaign runs public-host. This flag is REQUIRED for any campaign that also drives a browser on the same box, because a `--public-host` demo cannot be browsed from its own host. Mutually exclusive with `--public-host`, refused before any teardown (M258 iter-03) |
 | `run` | `--no-reclaim` | off | **skip the between-reps reclaim.** Changes the variant — reps then accumulate cache |
 | `run` | `--reclaim-until <dur>` | `24h` | the `docker builder prune --filter until=` window (§*The campaign protocol* step 3) |
 | `run` | `--dry-run` | off | plan the campaign without running a cycle |

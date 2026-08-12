@@ -184,7 +184,7 @@ On completion the worker publishes a `RoadrunnerSubmissionCompleted` event (carr
 cd platform
 make up                  # the `core` profile — `backend` calls Judge0 directly
 # There is NO roadrunner profile and no roadrunner container. Asking for one does NOT fail:
-# it exits 0 and starts only postgresql, redis and sentinel.
+# it exits 0 and starts only postgresql and redis.
 ```
 
 ### Run natively

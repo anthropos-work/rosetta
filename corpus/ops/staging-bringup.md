@@ -37,7 +37,7 @@ What you're building (per-engineer, on a Tailscale-attached VM):
 +------------------ <yourhost>.taildc510.ts.net (Tailscale) ------------------+
 |                                                                            |
 |  /home/<you>/platform/        docker compose orchestrator                  |
-|  /home/<you>/{app,sentinel,   the 4 repos.yml sibling clones (always main) |
+|  /home/<you>/{app,             the 3 repos.yml sibling clones (always main) |
 |    next-web-app,studio-desk}  older hosts also carry the folded repos      |
 |  /home/<you>/rosetta/         this corpus                                  |
 |  /home/<you>/ant-singularity/ agent fleet & operations docs                |
@@ -115,7 +115,7 @@ The platform's `Makefile init` target does the heavy lifting (it clones every re
 cd ~
 git clone https://github.com/anthropos-work/platform.git
 cd platform
-make init                  # clones the 4 repos.yml entries: app/, sentinel/,
+make init                  # clones the 3 repos.yml entries: app/,
                            # next-web-app/, studio-desk/
                            # uses GH_PAT under-the-hood via the gh-cli helper
 
@@ -406,7 +406,7 @@ docker compose --profile all up --build -d
 
 Wait 5-15 min for all services to report healthy. At platform `0c91421` `--profile all` selects
 **all 7** services of the effective topology — `backend`, `gotenberg`, `next-web-app`, `studio-desk`
-and the always-on `postgresql`/`redis`/`sentinel` floor. (It used to leave `messenger` and `storage`
+and the always-on `postgresql`/`redis` floor (**two** since platform `766df6c` folded `sentinel` into `app`; it was three at `0c91421`). (It used to leave `messenger` and `storage`
 out, because running either alongside `app` meant two consumers on one Redis group or two writers on
 one bucket; `838d907` deleted both containers, and `customerio-sync` with them, so there is nothing
 left for it to exclude.)

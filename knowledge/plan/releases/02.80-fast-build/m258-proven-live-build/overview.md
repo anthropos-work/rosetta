@@ -2,7 +2,7 @@
 milestone_shape: iterative
 milestone: M258
 title: "proven-live build (the closer)"
-status: planned
+status: archived
 release: v2.8 "fast build"
 exit_gate: "One cold command brings the stack up AND drives the full Playthrough batch to completion with ZERO standing red, at total p50 <= 480 s across 3 consecutive cold reset-to-seed cycles, reproducible, 0 platform-repo edits, AND the stack is left in a presenter-usable world (the world contract — see overview). The gate text names the host topology answered by M255 spike (e): a --public-host demo CANNOT be browsed from its own host (docker-proxy binds 0.0.0.0, bypassing tailscale serve), and --public-host is default-on, so 'one cold command on billion' may need a peer or --no-public-host. NOTE 480 s is a sum of two ceilings (360 + 200) and is reachable only if M257 lands nearer its ~240-300 s estimate, spending part of its ~93-158 s of unspent levers. Batch-gate semantics (D-v28-3): the suite always runs to completion — never halts at first red, never retries to mask a flake — and emits ONE consolidated red set at batch end; a non-empty set escalates to the user for renegotiation. The stack is left UP regardless; the bring-up exits non-zero and says so loudly."
 iteration_protocol_ref: corpus/ops/verification.md
@@ -11,12 +11,12 @@ depends_on: [M256, M257]
 parallel_with: []
 complexity: medium
 created: 2026-07-27
-last_updated: 2026-07-27
+last_updated: 2026-08-12
 ---
 
 # M258 — proven-live build  (`iterative`, the closer)
 
-**Status:** `planned` · **Shape:** `iterative` (the closer) · **Complexity:** medium · **Release:** v2.8 "fast build"
+**Status:** `archived` (completed 2026-08-12) · **Shape:** `iterative` (the closer) · **Complexity:** medium · **Release:** v2.8 "fast build"
 **Depends on:** M256, M257
 
 > **Revised 2026-07-27** after the adversarial plan review, which found the gate **passable while shipping a
@@ -55,15 +55,15 @@ needs to be renegotiated with me at each full batch run (don't stop at every ste
 
 The only existing runner is `run-playthroughs.sh --reset`, which:
 - runs `stackseed --reset` → `TRUNCATE TABLE <t> CASCADE` over `resetTables`
-  (`stack-seeding/cmd/stackseed/main.go:733`, list at `:44-125`), bottoming out at
+  (`stack-seeding/cmd/stackseed/main.go:839`, list at `:44-131`), bottoming out at
   `public.{organizations,users,memberships}` **with no `organization_id` predicate** — the showcase orgs,
   heroes, sessions and content-story fan-out all go;
-- re-seeds **only** `pt-world.seed.yaml` (`run-playthroughs.sh:96-98`);
+- re-seeds **only** `pt-world.seed.yaml` (`run-playthroughs.sh:146`);
 - re-exports the Clerkenstein roster from pt-world over the live mount with `os.Create`
-  (**truncating, not merging**, `stackseed/main.go:225`) and restarts `fake-fapi`/`fake-bapi`.
+  (**truncating, not merging**, `stackseed/main.go:256`) and restarts `fake-fapi`/`fake-bapi`.
 
 Meanwhile `cockpit-manifest.json` and `content-manifest.json` are projected **once at bring-up** from
-`$STORIES_PRESET` (`up-injected.sh:2256`, `:2274`) and the runner **never refreshes them**.
+`$STORIES_PRESET` (`up-injected.sh:2615`, `:2633`) and the runner **never refreshes them**.
 
 **So the naive composition ends with a Meridian-Labs test world behind a presenter cockpit that still
 advertises maya-thriving, dan-manager and content-story result links whose rows no longer exist** — not a
@@ -78,15 +78,15 @@ that milestone or its carry-forward. M258 would make that swap the outcome of **
 **Two admissible resolutions — pick one at iter-01:**
 
 - **(a) pt-world-native.** Bring the stack up through the already-wired `DEMO_STORIES_PRESET` seam
-  (`up-injected.sh:218`, `:225`; documented at `demo-up-defaults.md:47`). Every downstream artifact — the
-  Clerkenstein roster (`:1718`), the cockpit manifest (`:2256`), the seed manifest (`:2263`), the content
-  manifest (`:2274`) — is exported from that same preset, so the stack is **self-consistent**: no TRUNCATE, no
-  dangling seats, no orphaned CTAs. Precedent: `corpus/ops/demo/playthroughs.md:429` records that M204 did
+  (`up-injected.sh:254`, `:261`; documented at `demo-up-defaults.md:47`). Every downstream artifact — the
+  Clerkenstein roster (`:1981`), the cockpit manifest (`:2615`), the seed manifest (`:2622`), the content
+  manifest (`:2633`) — is exported from that same preset, so the stack is **self-consistent**: no TRUNCATE, no
+  dangling seats, no orphaned CTAs. Precedent: `corpus/ops/demo/playthroughs.md:777` records that M204 did
   exactly this. **But it is not a presenter demo.**
 - **(b) restore after.** reset → suite → **re-seed the stories preset + re-export the demo roster + restart the
   fakes**. **Cheap, not expensive:** `--reset` does **not** wipe the snapshot-replayed taxonomy (no catalog
   tables in `resetTables`, so the **78.0 s** replay is not repaid), the stories seed measures **7.6 s**, and the
-  manifests need no re-export (`--cockpit-export` is "(no DB)" per `stackseed/main.go:150`; ids are
+  manifests need no re-export (`--cockpit-export` is "(no DB)" per `stackseed/main.go:172`; ids are
   deterministic). **Restore leg ≈ 20–45 s.**
 
 ## Shape (why iterative)
@@ -96,7 +96,7 @@ parallelism, on a box whose headroom is now budgeted.
 
 **Shape note (from the review).** It was argued this is *"M257 plus one invocation line"* and should be a
 `section` milestone — 480 = 360 + 120, no new number, no new measurement, no new lever, and the existing tail
-hook (`up-injected.sh:2411`) is a single line. It stays **`iterative`** per the user's explicit ask, but with
+hook (`up-injected.sh:2810`, the `autoverify.sh` invocation) is a single line. It stays **`iterative`** per the user's explicit ask, but with
 its one genuine unknown (host topology) moved forward to **M255 spike (e)** and the world contract named above,
 **it should close in 1–2 iters**. If iter-01 confirms the composition is mechanical, converting it to `section`
 is a legitimate in-flight simplification.
@@ -108,6 +108,16 @@ only if M257 lands nearer its own ~240–300 s estimate, spending part of the **
 (L4/L5/L7/L8/L10) it does not need for its own gate. The 600 s re-scope trigger is the release valve.
 **Do not read 480 s as expected — read it as the target.** Also: M256 must **measure and report the
 reset-to-seed leg**, so this composition arithmetic has a third real number instead of two.
+
+> ⚠️ **It did not, and the composition still has only ONE measured half** (iter-01 KB audit, 2026-08-12).
+> No corpus doc publishes a suite wall-clock or a reset-leg figure, and M256 graded its clause 1 on a
+> per-test median rather than a wall-clock. The only wall-clock anywhere is **56.6 s** in M256's
+> `progress.md` iter-02 — measured over **18** specs, where the suite **closed at 209 passed across 30
+> live Playthroughs**, so it must not be quoted as the batch half. **And M256 escalated that this suite's
+> timing is *not decidable at n=3 on this host*** — a **2.04× spread with no trend** over six full-suite
+> runs, which is why `D-v28-12` was re-cut. M258's gate is a **p50 over n=3** whose second half is that
+> same suite. Neither fact is a re-cut of anything here; both are evidence the first campaign must
+> publish its **spread** beside its p50. Full derivation + provenance: [`spec-notes.md`](spec-notes.md).
 
 ## Inherited from M256's gate re-cut (Fate 3, 2026-07-28)
 
@@ -285,7 +295,7 @@ disclosure question, not necessarily a change — but it must be answered in wri
 
 - **Host topology → answered by M255 spike (e).** A `--public-host` demo cannot be browsed from its own host
   (docker-proxy binds `0.0.0.0`, bypassing `tailscale serve` → `ERR_SSL_PROTOCOL_ERROR`,
-  `run-playthroughs.sh:56-72`), and `--public-host` is **default-on** (D-DESIGN-3). `--no-public-host` makes
+  `run-playthroughs.sh:92-105`; the `--reset-only` split that answers it is at `:58-62`), and `--public-host` is **default-on** (D-DESIGN-3). `--no-public-host` makes
   the literal single-box command satisfiable but proves the composition **in a mode the presenter never uses**.
   The gate text must name which is being gated, and define what "total p50" measures when the two halves run on
   different machines. `--reset-only` already splits the DB half from the browser half.

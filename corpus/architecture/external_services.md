@@ -415,7 +415,7 @@ graph TB
 
 ### Service Dependencies — **HISTORICAL**
 
-> Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more, **and no `graphql` profile either** — the token appears in no `profiles:` key at `0dab54d`, so asking for it exits 0 and silently starts only the three profile-less services (`postgresql`, `redis`, `sentinel`), which is worse than an error. There is likewise no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
+> Everything from here to the end of *Subgraph routing URLs* describes the **local compose build of the router, which platform `2adcf71` deleted**. There is no `graphql` service in `docker-compose.yml` any more, **and no `graphql` profile either** — the token appears in no `profiles:` key at `0dab54d`, so asking for it exits 0 and silently starts only the profile-less services, which is worse than an error. ⚠️ **Those are TWO — `postgresql` and `redis`.** This read *"the three profile-less services (`postgresql`, `redis`, `sentinel`)"* until M258 iter-18: true at `0c91421`, retracted at `766df6c` (v11.0), which folded `sentinel` into `app` and deleted its compose service. The silent-no-op point is unchanged; only the count is. There is likewise no `graphql-wundergraph` entry in `repos.yml`. Kept because the archived repo still contains these configs and a reader will meet them there; **do not follow any of it as a local-development instruction.**
 
 From `docker-compose.yml` at **`2adcf71^1` (`1e8e754`) — the last mainline state before the drop** — the gateway
 `depends_on` named **four** services, each `condition: service_started` (`docker-compose.yml:19-27`):
@@ -854,7 +854,7 @@ docker compose ps backend
 # `cms`, `jobsimulation`, `storage`, `messenger` and `customerio-sync` are NOT among them, and none of
 # the five names anything startable — every one of those compose blocks has been deleted, so
 # `docker compose ps cms` exits 1 with "no such service".
-docker compose ps postgresql redis sentinel
+docker compose ps postgresql redis   # the floor is TWO since 766df6c — sentinel is folded into app
 ```
 > **`storage` was the exception until 2026-08-05, and no longer is.** At platform `0dab54d` it was still a
 > declared service, just not a default one — its own block, behind `profiles: [storage-legacy]` — so

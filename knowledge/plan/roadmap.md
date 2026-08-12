@@ -942,7 +942,71 @@ cache-reuse checks (`:562`, `:849`, `:1077`) can **never** hit on a purge cycle.
 
 ### M258: Proven-live build
 
-**Status:** `planned` · **Shape:** `iterative` · **the closer**
+**Status:** `done` — **closed 2026-08-12, `closed-incomplete`: ACHIEVED BY USER RULING, NOT ON GATE** ·
+**Shape:** `iterative` · **the closer**
+
+> ## ⚠️ CLAUSE 3 IS NOT MET AND MUST NEVER BE RECORDED AS MET
+>
+> **Clauses 1, 2, 4 and 5 are proven** — 1, 2 and 5 re-proven on the final stack in its own bring-up.
+> **Clause 3 — composed p50 ≤ 480 s over 3 consecutive cold cycles — was never measured clean.** The user
+> ruled the goal achieved on the other four plus a **~402 s clean PROJECTION**, having concluded the CPU
+> contention on this box is not removable. This is the shape of **M257x's `TOK-09`**, and it is deliberately
+> **not** the shape of **M257**, whose gate fired on its own terms one day earlier. Do not read the two alike.
+>
+> **Every number with its status attached, or do not quote it:**
+> **840.01 s** is **instrument-rejected** (3/3 `headroom=FAIL`; `buildbench` calls those reps *"not usable
+> measurements"*) · **401.60 s** is a **PROJECTION**, never measured as one cycle · the **~290 s** cycle was
+> **deliberately not banked** — warm-cache, missing the export/unpack leg that is **46.2 %** of a cold one,
+> on the quietest box of the milestone. **That refusal is the honest reading and is preserved as such.**
+> · **179.37 s** is `batch_gate`'s own p50 — **inside M256's 200 s budget, while contended.** The batch half
+> is not what is slow.
+>
+> **Re-scope: NOT fired, deliberately.** 840 > 600, but the reps are instrument-rejected *and* the remedy the
+> trigger prescribes (split the suite) misses the diagnosis entirely.
+
+**What it shipped.** The bring-up now ends in a **second, higher gate**: after `UP.`, `batch-gate.sh` drives
+every seeded hero's journey to completion under `D-v28-3` and the bring-up **exits non-zero, loudly**, on a
+non-empty red set — while the stack is **left UP regardless**. With it, the **world-contract restore leg**
+(resolution (b)), because the suite's reset is destructive to the presenter demo, plus a post-condition that
+cross-checks the restored menu against the identities that can serve it.
+
+**`END-M258-one-stack`: MET.** `demo-4` is the only stack up, built by the **fixed** tooling from the newest
+platform mains (`platform` `766df6c` · `app` `c52dbc51e`), and it **proved itself in the same command**:
+`red_set: []` · `runner_exit: 0` · 30/31 passing · `autoverify green:true / warnings:0` · **12/12 cockpit
+seats**. Cockpit `http://localhost:47700`. Build-and-verify first, teardown last — enforced *in code*.
+
+**The user reshaped this milestone twice mid-flight, and both are load-bearing:** (a) the ruling above;
+(b) **space optimisation added as a NEW GOAL** (`TOK-02`, user-directed) under the binding constraint *space
+must not be bought with time*. Both delivered: **11.54 GB of real SSD reclaimed at ZERO build-time cost**,
+with the **21.03 GB reclaimable build cache deliberately untouched** — the constraint honoured rather than
+quoted. The anonymous-volume leak was stopped **at its producer** on both the demo and dev paths.
+
+**The 15-red escalation was CLOSED, not carried.** Platform `766df6c` folded **sentinel into `app`** — the
+**8th** merge — while three of our post-seed reload sites still drove the deleted container's RPC and logged
+the miss as *"non-fatal"*, which was false. A stale casbin enforcer refuses **every** org-scoped read and
+write with `forbidden` at HTTP 200. **The partition was the proof**: 15 failing journeys all org-scoped, 15
+passing all user-scoped. `batch_seconds` **629 → 129** — **the suite was slow because it was broken.**
+
+**The corpus caught up with the 8th merge:** six structural classes across **26 files** at iter-18 (floor
+3→2 · `core` 5→4 · `repos.yml` 4→3 · cross-process RPC edges 1→0 · Go services of ours 2→1 · folded domains
+7→8), and production graded **`mid-fold`, not `merged-into-app`** — the first fold of eight where the tables
+did **not** move. The close swept **16 more files** the first pass missed, and taught the docs that describe
+a bring-up that the batch gate exists at all.
+
+**Harden: 5 passes, STABILIZED** — the milestone's first and only, cumulative over 20 iters. It found **four
+defects in the milestone's own youngest code**, including a fence **satisfied by its own comment** and two of
+three reload sites unfenced — one the **restore leg**, whose miss costs a *user* a stack. **The close found
+eight more, two of them fail-opens to GREEN** (a crash in the red-set reader printed nothing, and "nothing"
+was graded as "red set empty"; and a hook that re-decided the opt-out wrote no verdict, letting the previous
+run's file be read as this one's).
+
+**Closure artifacts:** [`carry-forward.md`](releases/02.80-fast-build/m258-proven-live-build/carry-forward.md)
+· [`deferrals-audit.md`](releases/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) (YELLOW, **0
+escape-hatch**) · [`metrics.json`](releases/02.80-fast-build/m258-proven-live-build/metrics.json) ·
+[`retro.md`](releases/02.80-fast-build/m258-proven-live-build/retro.md). rext ships at
+**`fast-build-m258-close`**, verified on origin. 0 platform-repo edits.
+
+**Original plan follows.**
 **Goal:** A demo stack comes up **and proves itself** — one cold command, and what you get is not "UP" but
 "UP and every journey verified".
 

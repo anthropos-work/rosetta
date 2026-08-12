@@ -36,7 +36,7 @@ Pick the scope you want via the argument: `live`, `repos`, `census`, `full`. Def
 |---|---|---|
 | `live` | Platform running (`make ps` shows containers up) | `cd stack-dev/platform && make ps` |
 | `repos` | The 4 `repos.yml` repos cloned by `make init` — `app`, `sentinel`, `next-web-app`, `studio-desk` (studio-desk **is** one of them); toolchains installed (Go, pnpm 10.x, Node 24, npm) | `ls stack-dev/` and `node -v` |
-| `census` | Same 4 repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
+| `census` | Same 3 repos cloned (read-only — no toolchain needed) | `ls stack-dev/` |
 | `full` | All of the above | — |
 
 If `make ps` shows the platform is down and the user asked for `live` or `full`, **ask** whether to run `/dev-up` first instead of probing a dead stack.

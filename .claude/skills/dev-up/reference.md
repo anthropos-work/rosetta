@@ -30,7 +30,7 @@ ssh -T git@github.com               # GitHub SSH (run /setup-github if this fail
 
 ```bash
 # First-time build (in stack-dev/platform):
-make init                 # clone the 4 repos in repos.yml: app, sentinel, next-web-app, studio-desk
+make init                 # clone the 3 repos in repos.yml: app, next-web-app, studio-desk
                           # (ant-academy is NOT in repos.yml by design — clone it by hand if you need it;
                           #  the old `cd cms && make init-studio` step is dead: cms is not cloned.)
 git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
@@ -42,7 +42,7 @@ git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
 # PostgreSQL schemas (before migrations):
 docker exec anthropos-postgresql-1 psql -U postgres \
   -c "CREATE SCHEMA IF NOT EXISTS extensions; CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions; CREATE SCHEMA IF NOT EXISTS sentinel;"
-make up                   # build from local code + start (core profile — the default) — 5 containers, not 11
+make up                   # build from local code + start (core profile — the default) — 4 containers, not 11
 make migrate              # apply migrations — `app` is the ONLY repo that has any (repos.yml)
 
 # Start / restart an already-built stack:
@@ -56,11 +56,11 @@ make ps                   # expect 5 — the old "11" is three merge waves stale
 |-----------|---------|-------|
 | anthropos-postgresql-1 | 5432 | Health gate for others |
 | anthropos-redis-1 | 6379 | Health gate for others |
-| anthropos-sentinel-1 | 8087 | Always on (no profile) |
+| ~~anthropos-sentinel-1~~ | ~~8087~~ | **GONE since platform `766df6c`** — the Casbin PDP is `app/internal/sentinel/`, in-process |
 | anthropos-backend-1 | 8081-8083 | **The monolith.** Serves the **seven** merged skiller / skillpath / cms / jobsimulation / storage / messenger / customerio-sync domains in-process, **and GraphQL itself at `:8082/graphql/query`**. (`roadrunner` was listed here as an eighth domain until M257x iter-137 — it was *deleted*, not merged; Judge0 is reached from inside the jobsimulation domain) |
 | anthropos-gotenberg-1 | 3200 | Third-party PDF conversion |
 
-> **⚠️ Five containers, and that is the whole list — re-derived from the platform clone at origin
+> **⚠️ FOUR containers since platform `766df6c` (was five; `sentinel` folded into `app` at v11.0) — re-derived from the platform clone at origin
 > `0c91421`** (`docker-compose.yml`, 186 lines; M257x iter-87). Compose declares only **5** services
 > (`sentinel`, `backend`, `studio-desk`, `next-web-app`, `gotenberg`) plus `postgresql` + `redis` from
 > `common.yml`, and `core` selects five of those seven. Everything this table used to list is gone from

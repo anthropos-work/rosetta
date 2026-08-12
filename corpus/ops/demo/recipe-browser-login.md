@@ -48,7 +48,13 @@ on `127.0.0.1:5401+offset` (loopback-bound deliberately — see [`frontend-tier.
 > 1. **There is no `cms` container.** `stack-demo/platform` @ `0c91421df` declares **five** services in
 >    `docker-compose.yml` — `sentinel` (`:5`), `backend` (`:28`), `studio-desk` (`:112`), `next-web-app`
 >    (`:143`), `gotenberg` (`:170`) — plus `postgresql` (`:2`) and `redis` (`:24`) from the included
->    `common.yml`. No `cms`, no `jobsimulation`; the cms domain runs in-process inside `backend`. The demo
+>    `common.yml`. **⚠️ That count is FOUR at platform `766df6c`, and the `sentinel` anchor is dead**
+>    (corrected M258 iter-18): v11.0 (2026-08-11) folded the Casbin PDP into `app` as
+>    `app/internal/sentinel/` and deleted its compose service, so `docker-compose.yml:5` is no longer the
+>    `sentinel` block — the four are `backend`, `studio-desk`, `next-web-app`, `gotenberg`, over the same
+>    two-service `common.yml` floor. The `0c91421df` reading is kept because it is what refutes the `cms`
+>    claim this box exists to retract; **do not carry its line numbers or its `sentinel` entry forward.**
+>    No `cms`, no `jobsimulation`; the cms domain runs in-process inside `backend`. The demo
 >    tooling reaches the same conclusion at runtime, and since **M257x iter-270** it reaches it twice over:
 >    `up-injected.sh:222` now lists `INJECT_CANDIDATES="app"` — the two corpses were removed from the
 >    candidate list itself — and `derive_inject_svcs` (`:1709-1725`) still **filters the candidates against

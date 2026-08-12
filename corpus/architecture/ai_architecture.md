@@ -107,7 +107,11 @@ both sites or neither** (`TOK-07` rule 3). `app` **folded the library into its o
 *"refactor(ai): fold the ai library into app as internal/ai"*): at `app` `ad9f3c49` neither `app/go.mod` nor
 `sentinel/go.mod` requires `github.com/anthropos-work/ai`, and the library lives at `app/internal/ai/`.
 The only repos that still *require* the module are the frozen `cms` and `jobsimulation` husks, which nothing
-clones or builds. What the interface provides is unchanged:
+clones or builds. ⚠️ **`sentinel` is measured here as a repo a stack clones, and since platform `766df6c`
+it is not one** (v11.0, 2026-08-11 — the 8th merge; folded into `app` as `app/internal/sentinel/`, compose
+service and `repos.yml` entry deleted together). The `sentinel/go.mod` reading is unchanged and still true —
+it never required `ai` — but it now describes a **frozen** repo alongside `cms` and `jobsimulation`, not a
+live one, so *"Go services"* in this section means **`app`, and only `app`**. What the interface provides is unchanged:
 - A single `ai.AI` interface across providers (OpenAI, Azure, Anthropic, Bedrock, Mistral)
 - Per-provider client constructors that return provider token counts (`MetaData.Usage`)
 

@@ -182,12 +182,24 @@ and [`corpus/services/clerkenstein.md`](corpus/services/clerkenstein.md).
 
 **Core Backend Services (Tier 1)**: Go microservices
 
-> **⚠️ `app` is the backend monolith.** Eight services below left compose — **SEVEN of them were folded
+> **⚠️ `app` is the backend monolith.** Nine services below left compose — **EIGHT of them were folded
 > into `app`** and run in-process as the single `backend` service: **skiller** (July 2026), **skillpath**
 > ("skillpath-in-app", M502→M507), **jobsimulation** ("jobsim-in-app"),
 > **cms** ("cms-in-app v8.0", app **v1.360.0** — the step that took the supergraph **3→1**), and —
 > since the v9.0 "support-in-app" program, whose containers platform `838d907` (merged `0c91421`,
-> 2026-08-05) deleted outright — **storage**, **messenger** and **customerio-sync**.
+> 2026-08-05) deleted outright — **storage**, **messenger** and **customerio-sync**,
+> **and — the 8th, at v11.0 — `sentinel`** (platform `766df6c`, 2026-08-11; code at
+> `app/internal/sentinel/`, ported from the standalone repo at tag **v0.24.2**, wired once at
+> `app/main.go:305` under *"There is no switch and no RPC path: app IS the PDP"*).
+> **⚠️ THE SENTINEL FOLD REACHED THIS FILE ONLY AT M258 iter-18, and it moves five things this file
+> states elsewhere:** `repos.yml` is **three** repos, the always-on floor is **two** (`postgresql`,
+> `redis` — both in the **included** `common.yml`, not in `docker-compose.yml` at all), `core` starts
+> **four** containers, `app` is the **only** Go service a local stack builds, and there is **no
+> cross-process Connect-RPC edge left at all** — `app` deleted its RPC listener with the fold
+> (`app/main.go:1310`, *"NO RPC SERVER"*). Unlike the seven before it, **the tables did NOT move to
+> `public`**: the policy set stays in its own `sentinel` schema
+> (`docker-compose.yml:25`, `SENTINEL_DB_CONNECTION` with `search_path=sentinel`), which is why the
+> fenced map grades prod **`mid-fold`** rather than `merged-into-app`.
 > **⚠️ `roadrunner` is the eighth and it was NOT folded — this banner listed it among the seven until
 > M257x iter-137.** `app/internal/roadrunner/` **exists at no ref and was never added** (`git log --all
 > --diff-filter=A -- internal/roadrunner` → **0 commits, ever**, in a full 6,728-ref clone at `app`
@@ -225,15 +237,17 @@ In the default local profile (`core` — renamed from `graphql` at platform `0da
   - **Judge0 code execution** — reached directly via `JUDGE0_BASE_URL`, wired **inside the jobsimulation
     domain** (`internal/jobsimwiring/wiring.go:123` → `internal/jobsimulation/runner`). **This line read
     *"roadrunner domain"* until M257x iter-137; there is no such package** (see the banner above)
-- Sentinel: Authorization only (Casbin RBAC/ABAC) — authentication is Clerk + the `authn` middleware in each service, not Sentinel
-- Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`)
+- ~~Sentinel~~: **folded into `app` at v11.0** (platform `766df6c`). Authorization is still Casbin RBAC/ABAC and authentication is still Clerk + `colony/authn` — what changed is *where*: the PDP is `app/internal/sentinel/`, reached by an ordinary Go call, and there is **no `sentinel` container, no `repos.yml` entry and no `AUTHORIZATION_ADDRESS`** (0 occurrences across `docker-compose.yml`, `common.yml`, `repos.yml`). See `corpus/services/sentinel.md`
+- Gotenberg: Office-doc → PDF conversion (third-party image; consumed by `app/internal/converter/gotenberg.go`). **Since `766df6c` this is the only non-`app` service block in `docker-compose.yml` that a `core` stack starts**
 
 > **⚠️ Storage, Messenger and CustomerIO-Sync are ALL FOLDED INTO `app`.** The v9.0 program landed
 > 2026-08-04 (platform `0dab54d` / `app` `9d00a313` v1.367.0); one day later `838d907` (PR #26,
 > *"drop the support-service containers"*) **deleted all three compose services outright** and took
-> `storage` + `messenger` out of `repos.yml`, so `make init` no longer clones them. `core` starts
-> **five** containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`,
-> `sentinel`). There is **no local `storage` / `messenger` / `customerio-sync` container at all** — not
+> `storage` + `messenger` out of `repos.yml`, so `make init` no longer clones them. ⚠️ **`core` starts
+> FOUR containers — `backend`, `gotenberg` and the always-on floor (`postgresql`, `redis`).** This read
+> *"**five** … (`postgresql`, `redis`, `sentinel`)"* until M258 iter-18: `766df6c` deleted the `sentinel`
+> service too, and the floor is now the **two** services in the **included** `common.yml` — neither of
+> which appears in `docker-compose.yml` at all. There is **no local `storage` / `messenger` / `customerio-sync` container at all** — not
 > even a rollback path, which is how `storage-legacy` and `messenger` read for the two commits between
 > `0dab54d` (which introduced both tokens) and `838d907` (which removed both); the old *"dangerous to
 > run alongside `backend`"* warning (two writers on one bucket, two consumers on one Redis group) is moot
@@ -301,9 +315,11 @@ picture: `corpus/architecture/shared_libraries.md`.
 > never as a standing fact.
 >
 > Since the merges these libraries are imported by **app**, **sentinel**, **storage** and **messenger**
-> only — but the last two are frozen legacy repos since `838d907` (no compose service, not in
-> `repos.yml`), so only **app** and **sentinel** are still built. **`storage` is a supplier as well as a
-> consumer here, and the old wording hid that.** **`customerio-sync` is not in that
+> only — and **all three of the others are now frozen legacy**: `storage` + `messenger` since `838d907`,
+> and **`sentinel` since `766df6c`** (no compose service, not in `repos.yml`, `make init` does not clone
+> it), so **`app` is the only repo in this list a local stack still builds** — a sentence that named two
+> until M258 iter-18. **`storage` is a supplier as well as a consumer here, and the old wording hid
+> that.** **`customerio-sync` is not in that
 > measurement either way**: its repo has never been in the clone set, so nothing here has read its
 > `go.mod` — the same blind spot the `customerio-sync` row of
 > `corpus/architecture/platform-migration-status.md` records.
@@ -329,7 +345,7 @@ is right for Studio-Desk/Studio-Room and WRONG for Ant Academy** — see its row
 
 ### Communication Patterns
 
-- **Core Services ↔ Core Services**: Connect-RPC + Redis Streams (via Watermill) for async messaging. **The only cross-process *Connect-RPC* edge left in a local stack is `backend → sentinel`** — `AUTHORIZATION_ADDRESS=http://sentinel:8087` (`docker-compose.yml:48`), and **zero `*_RPC_ADDR` variables anywhere**. **⚠️ It is NOT the only cross-process edge, and compose does NOT set exactly one service address** — both of those stronger forms stood here until M257x iter-102 and both are false. `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:57`; `gotenberg` is in the **default `core` profile**, `:183` `profiles: [core, backend, all]`; consumed at `app/internal/converter/gotenberg.go:31`, a plain `http.NewRequestWithContext(…"POST"…)`, not RPC), and reaches Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:59`). The qualified wording at `corpus/architecture/architecture_overview.md:343` is the model. The `messenger → backend` edge was not re-pointed, it is *gone*: the `messenger` block was the only thing that set `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` (`d11a403` had re-pointed the middle two at `backend` — M809), and `838d907` deleted the service and all four with it. **backend → storage is no longer mid-fold either** — `STORAGE_RPC_ADDR` is set nowhere *and* read nowhere; `app` serves object storage in-process and says so at `app/main.go:504` **@ `2035f9a4`** (**state that ref** — this sentence also cites `b948604f` below, and at `b948604f` line 504 is an unrelated jobsim-in-app comment; `2035f9a4` was origin/main on 2026-08-06, origin/main was `ad9f3c49` when this was written — it is **`3eaadae6`** as of 2026-08-09, and `ad9f3c49` is **28 commits behind** it (corrected M257x iter-228; the observability and shared-libraries docs both already recorded the newer ref, so this file disagreed with the corpus, not just with the platform), and `:504` is identical there). **`app` is both producer and consumer of FIVE streams**, not three — `backend`, `skillpath`, `jobsimulation`, `cms` and the `ai_usage` usage stream. *(This line named only the middle three until M257x iter-102; it omitted `backend` itself while asserting exhaustiveness.)* Watch the partition when quoting a number: **four** is the application-stream subtotal, **five** the both-ways total, **six** the subscriber count. **`skiller` is the exception and the sixth subscriber:** `app` subscribes to it (`app/main.go:1276` @ `b948604f`) but nothing publishes to it — the producer was the standalone skiller service and was **deleted, not re-hosted**. Full enumeration with both refs: `corpus/services/backend.md`
+- **Core Services ↔ Core Services**: Redis Streams (via Watermill) for async messaging — and, since v11.0, **NO cross-process Connect-RPC at all**. ⚠️ **This line read *“the only cross-process Connect-RPC edge left in a local stack is `backend → sentinel`”* until M258 iter-18. That edge is GONE, not re-pointed:** platform `766df6c` deleted the `sentinel` service, `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`, `common.yml` and `repos.yml`, and `app` deleted its Connect-RPC listener with it (`app/main.go:1310`, *“NO RPC SERVER”* — the port-8081 mux that carried Users / Organizations / Skiller / JobSimulation / CMS / lab). Authorization is now an ordinary in-process Go call into `app/internal/sentinel/`, and cross-replica policy invalidation is **Redis Pub/Sub fan-out** on `sentinel:policy:invalidate` (`app/internal/sentinel/watcher.go:55`) — deliberately not the Watermill consumer-group plumbing, which delivers to exactly one consumer. **Zero `*_RPC_ADDR` variables anywhere.** **⚠️ “No RPC edge” still does NOT mean “no cross-process edge”** — that stronger form stood here until M257x iter-102 and is false. `backend` also calls **`gotenberg` over plain HTTP** (`GOTENBERG_URL=http://gotenberg:3200`, `docker-compose.yml:34`; `gotenberg` is in the **default `core` profile**, `:161` `profiles: [core, backend, all]`; consumed at `app/internal/converter/gotenberg.go:31`, a plain `http.NewRequestWithContext(…"POST"…)`, not RPC), and reaches Judge0 directly via `JUDGE0_BASE_URL` (`docker-compose.yml:36`). **All three re-resolved at M258 iter-18** — they read 57 / 183 / 59, correct at `0c91421` and past the end of a 164-line file at `766df6c`. The qualified wording at `corpus/architecture/architecture_overview.md:343` is the model. The `messenger → backend` edge was not re-pointed, it is *gone*: the `messenger` block was the only thing that set `BACKEND_USERS_RPC_ADDR`, `CMS_RPC_ADDR`, `JOBSIMULATION_RPC_ADDR` and `SKILLER_RPC_ADDR` (`d11a403` had re-pointed the middle two at `backend` — M809), and `838d907` deleted the service and all four with it. **backend → storage is no longer mid-fold either** — `STORAGE_RPC_ADDR` is set nowhere *and* read nowhere; `app` serves object storage in-process and says so at `app/main.go:504` **@ `2035f9a4`** (**state that ref** — this sentence also cites `b948604f` below, and at `b948604f` line 504 is an unrelated jobsim-in-app comment; `2035f9a4` was origin/main on 2026-08-06, origin/main was `ad9f3c49` when this was written — it is **`3eaadae6`** as of 2026-08-09, and `ad9f3c49` is **28 commits behind** it (corrected M257x iter-228; the observability and shared-libraries docs both already recorded the newer ref, so this file disagreed with the corpus, not just with the platform), and `:504` is identical there). **`app` is both producer and consumer of FIVE streams**, not three — `backend`, `skillpath`, `jobsimulation`, `cms` and the `ai_usage` usage stream. *(This line named only the middle three until M257x iter-102; it omitted `backend` itself while asserting exhaustiveness.)* Watch the partition when quoting a number: **four** is the application-stream subtotal, **five** the both-ways total, **six** the subscriber count. **`skiller` is the exception and the sixth subscriber:** `app` subscribes to it (`app/main.go:1276` @ `b948604f`) but nothing publishes to it — the producer was the standalone skiller service and was **deleted, not re-hosted**. Full enumeration with both refs: `corpus/services/backend.md`
 - **Frontend/Studio → Backend**: GraphQL **straight to `backend`** at `:8082/graphql/query` — the Cosmo router was deleted at platform `2adcf71`, so there is no gateway hop and no federation
 - **External Integrations**: Clerk SDK + JWT middleware (authn library), Directus proxied via the cms domain inside `backend`
 - **AI**: vendor selection implemented in each consumer's `internal/ai` wrapper, **not** the shared `ai` library. **Not a fallback ladder** (`corpus/architecture/external_services.md:579`): an EU Azure client by DEFAULT, a US Azure client swapped in by the PostHog flag `flag_use_azure_us`, and direct-OpenAI as the RETRY target on HTTP 429 — three independent levers, not three ordered rungs; Anthropic always Bedrock `eu-west-1`, except Course Builder's `ANTHROPIC_API_KEY` path to `api.anthropic.com`. Cost tracking in `app/internal/aiusage`
@@ -368,7 +384,7 @@ The `platform` repository provides a Makefile as the single entry point for all 
 ```bash
 # First-time setup
 cd stack-dev/platform
-make init              # Clone the 4 repos in repos.yml: app, sentinel, next-web-app, studio-desk
+make init              # Clone the 3 repos in repos.yml: app, next-web-app, studio-desk
 make up                # Build from local code and start (core profile — the default)
 make migrate           # Apply all database migrations
 
@@ -387,9 +403,12 @@ Docker Compose profiles control which services start:
 
 > **⚠️ `graphql` is no longer a profile, and asking for it does NOT fail.** Platform `0dab54d`
 > (*"rename graphql -> core"*) renamed the profile and dropped the standalone storage; the `Makefile`
-> now reads `PROFILE ?= core`. **`postgresql`, `redis` and `sentinel` declare no `profiles:` key at
-> all**, so they are in *every* selection — which means asking for the old `graphql` token **exits 0
-> and starts those three**. Postgres answers, `docker ps` is non-empty, the stack looks alive, and
+> now reads `PROFILE ?= core`. ⚠️ **`postgresql` and `redis` declare no `profiles:` key at all** — and
+> since `766df6c` they are not even in `docker-compose.yml`: they live in the **included** `common.yml`,
+> which is why a top-level grep of the compose file finds no database. They are therefore in *every*
+> selection, which means asking for the old `graphql` token **exits 0 and starts those two**. (This read
+> *"`postgresql`, `redis` and `sentinel` … starts those three"* until M258 iter-18; `sentinel` is folded
+> into `app` and `766df6c` deleted its service.) Postgres answers, `docker ps` is non-empty, the stack looks alive, and
 > the application is simply absent. The retired `cms`, `jobsimulation`, `roadrunner` and `storage`
 > tokens behave identically — as do `storage-legacy`, `messenger` and `customerio-sync`, retired at
 > `838d907` (2026-08-05). **Only five profile tokens still exist**: `all`, `backend`, `core`,
@@ -398,12 +417,12 @@ Docker Compose profiles control which services start:
 > `rosetta-extensions/stack-core/platform_predicate_guard.py` (G1/G3), which is also why no retired
 > token is spelled here in runnable form — a copy-pasteable command for a silent no-op is the defect.
 
-| Profile | Services started (besides the always-on floor `postgresql`, `redis`, `sentinel`) |
+| Profile | Services started (besides the always-on floor `postgresql`, `redis` — **two**, both in the included `common.yml`; `sentinel` left the floor at `766df6c`) |
 |---------|----------|
 | `core` *(default — `PROFILE ?= core`)* | backend, gotenberg |
 | `backend` | backend, gotenberg |
 | `all` | backend, gotenberg, next-web-app, studio-desk |
-| `frontend` | next-web-app — **but selecting it alone exits 1**: `next-web-app` declares `depends_on: backend` (`docker-compose.yml:165-167`), which this profile does not select, so compose rejects the project as invalid |
+| `frontend` | next-web-app — **but selecting it alone exits 1**: `next-web-app` declares `depends_on: backend` (`docker-compose.yml:143-145`), which this profile does not select, so compose rejects the project as invalid. *(re-resolved M258 iter-18 from lines 165-167, past the end of a 164-line file at `766df6c`.)* |
 | `studio-desk` | studio-desk — **also exits 1**, same `depends_on: backend` reason (`docker-compose.yml:138-140`) |
 
 Usage: `make up PROFILE=core`
@@ -430,7 +449,7 @@ Usage: `make up PROFILE=core`
 ### Demo Environments (disposable, Clerk-free, seeded + set-dressed — v1.1 "show floor" + v1.2 "set dressing")
 - `corpus/ops/safety.md`: **The tooling safety contract** — the consolidated read-side (tenant-data firewall + public predicates + read-only capture) + write-side (3-layer isolation guard + never-write-prod + n=0 guards + audit-proven zero pollution) statement. The *why-it-is-safe* anchor for the whole demo/dev family (v1.3 M15). **v2.3 M220 adds Part 3 — the exposure side**, the third axis: who can *reach* a demo and what they get. It is a **disclosure, not a third "never"** — a demo is an **unauthenticated, authz-weakened build** (Clerk verification disarmed in app/cms/jobsimulation — skillpath is decommissioned into app; the authz-skip demo-patch default-ON; the presenter cockpit a **password-free "become any seeded hero"** launcher), and **every demo container is published on `0.0.0.0` — all interfaces — on EVERY `demo-up`, flag or no flag** (a claim `tailscale-serve.md` **denied** until M220; the retraction is in place and fenced). What makes that defensible is Parts 1+2: **there is nothing behind the door** — no customer data can be in a demo, and a demo cannot write prod **over the pointers the guard covers**. ⚠️ That qualifier is load-bearing and this line lacked it until M257x harden pass 72: the guarantee is a claim about a *covered set*, not a property of the universe, and the set was **measurably incomplete** — the production **private** S3 bucket was outside it until M257x iter-284, and a demo's studio-desk reached it and was stopped only by an IAM 403 on an account we do not control. Both buckets are covered now; **the container-side strip is DEMO-only, so a `dev-N` stack still carries the production bucket** (bounded by the absence of credentials, not by an override). Read `safety.md` §2.3 before repeating the short form. Part 3 also carries the **supersession of v2.2's D-DESIGN-1** (*"public reach is never default-on"*) by v2.3's **D-DESIGN-3** — **demo path only; `/dev-up` stays opt-in**
 - `corpus/ops/demo/README.md`: **The demo-env family index** — the up→snapshot→seed→use→down flow + recipes + presets
-- `corpus/ops/demo/demo-up-defaults.md`: **The `/demo-up` defaults contract** (v2.3 "cue to cue" M220) — every knob and flag that controls a bring-up: **all 31 `DEMO_*`/`STACK_PUBLIC_HOST` env knobs + 10 CLI flags**, each with its real default and the exact `file:line` that reads it. **Derived from the parsers and fenced against them in BOTH directions** (`stack-core/demo_knob_guard.py`): a doc-promised flag with no parser entry is a **false promise**; a parser flag with no doc row is **undiscoverable**. Records the fact nobody had written down — **there are TWO entry points**: `up-injected.sh` (what `/demo-up` runs) takes **only** `<N>` + `--public-host` and **hard-errors `exit 1` on anything else**, while `--profile`/`--services` are flags of the separate `rosetta-demo` wrapper (the skill's `argument-hint` conflated them for releases). And the shape: **every feature knob is an opt-OUT (`DEMO_NO_*`, default `0`)** — so a bare `/demo-up N` **already** seeds the 4-org world (3 workforce + the M223 hiring org), the full UI tier, the cockpit, and set-dress. *"Pull all the data + seed the orgs" was always the default; the usual culprit is a **cold snapshot cache**, not a knob.*
+- `corpus/ops/demo/demo-up-defaults.md`: **The `/demo-up` defaults contract** (v2.3 "cue to cue" M220) — every knob and flag that controls a bring-up: **all 32 `DEMO_*`/`STACK_PUBLIC_HOST` env knobs + 10 CLI flags**, each with its real default and the exact `file:line` that reads it. **Derived from the parsers and fenced against them in BOTH directions** (`stack-core/demo_knob_guard.py`): a doc-promised flag with no parser entry is a **false promise**; a parser flag with no doc row is **undiscoverable**. Records the fact nobody had written down — **there are TWO entry points**: `up-injected.sh` (what `/demo-up` runs) takes **only** `<N>` + `--public-host` and **hard-errors `exit 1` on anything else**, while `--profile`/`--services` are flags of the separate `rosetta-demo` wrapper (the skill's `argument-hint` conflated them for releases). And the shape: **every feature knob is an opt-OUT (`DEMO_NO_*`, default `0`)** — so a bare `/demo-up N` **already** seeds the 4-org world (3 workforce + the M223 hiring org), the full UI tier, the cockpit, and set-dress. *"Pull all the data + seed the orgs" was always the default; the usual culprit is a **cold snapshot cache**, not a knob.*
 - `corpus/ops/rosetta_demo.md`: The demo-stack lifecycle (bring-up, port-offset, Clerkenstein injection, teardown)
 - `corpus/ops/seeding-spec.md`: The `stack.seed.yaml` blueprint + the **production-isolation boundary** (write-side) + the data-DNA (now **100%**, nothing waived)
 - `corpus/ops/demo/stories-spec.md`: **The verified-skill chain reference** (v1.9 "storytelling" M34) — how a seeded *verified skill* (a hero's profile + Skill Spotlight chart + the claimed-vs-verified gap) is materialized as the **7-table fan-out** the `PersonaSeeder` writes: the DB-enforced vs inserted-but-invisible constraint landmines, the **G14** session-seeder fix (valid `SIMULATION_TYPE_*`/enum/token + continuous growth-arc score), the `user_level` (claimed side) requirement, the `TaxonomyRefs` resolver (real public node-ids, never fabricated), the `users.go` name/avatar/email patch, and the **seed-side closure gene** (`datadna measure-closure`). The believability spine; vertical slice (Maya). M35 adds the full multi-org Stories & Heroes model, **M36 the org Workforce-Intelligence dashboard surfaces** (the mapped→verified funnel + teams + role gap/mobility + succession + feedback + the org-scale claimed-vs-verified gap), M37–M38 the presenter cockpit, and v1.10 "method acting" layers the per-hero **profile depth**: M39 the profile identity (real name/avatar/org-domain email) and **M41 the `ProfileSeeder`** (work-history + education timeline + a claimed-but-unverified `user_skills` tail that widens the visible claimed-vs-verified gap). **v1.10b "fit-up" M51 adds the AI-readiness showcase org as a 3rd story** (org "Northwind Aviation", 200 members, heroes Aria COMPLETED / Ben STARTED / Dana manager) with **four** net-new AI-readiness seeders (`OrgSettingsSeeder` + `AIReadinessConfigSeeder` + `AIReadinessFunnelSeeder` + — net-new at **v2.3 M219** — the **interview-aggregated-report** seeder, without which the manager's four interview-findings blocks render headings with NO content) seeding **both** a `closed` and an `active` cycle (M219 refuted M51's "live-recompute never completes" premise — it takes **2.09 s**) + the `app-aireadiness-snapshot-loadmembers` read-path demo-patch; the seeder contract is `corpus/services/ai-readiness.md`
@@ -440,7 +459,7 @@ Usage: `make up PROFILE=core`
 - `corpus/ops/snapshot-spec.md`: The **`stack-snapshot` extension** (v1.2 M9a/M9b/M10) — capture the public taxonomy + Directus content once from a safe prod source, manifest-cache it in `.agentspace`, replay per-stack (`/stack-snapshot`); the tenant-data firewall + the `stacksnap` CLI + the snapshot-fidelity gate
 - `corpus/ops/snapshot-cold-start.md`: **The cold-start capture runbook** (v1.3b M20) — the one case the cache can't shortcut: a fresh box with an empty cache + no safe `--dsn`. The sanctioned DSN-export / restore-a-`pg_dump`-then-`--dsn` path to fill the cache once per release (behind the capture-source policy + `AssertPublicOnly`), **why the wired `postgres` MCP is NOT a capture source** (it returns JSON rows, not COPY bytes), and how it slots into the auto-set-dress bring-up (replay-only, never capture)
 - `corpus/ops/idempotency.md`: **The bring-up re-run safety contract** (v1.3b M17) — what happens when you re-run migrate / snapshot-replay / seed: each is safe-and-idempotent or fails loudly with a guard (replay TRUNCATE-then-reload, idempotent seed COPY + casbin `WHERE NOT EXISTS`, the fixed `--reset`, the `set -e` first-run-race hardening). The *run-it-twice* companion to snapshot/seeding-spec
-- `corpus/ops/verification.md`: **The bring-up auto-verify safety net** (v1.3b M18) — every bring-up ends with a scoped, **non-fatal** `verify live` on the stack's **own offset ports**: cheap-win `/api/health` + `sentinel.casbin_rules > 0` asserts (the silent-403 catcher) then the full offset/project/scope-aware probe set, so "UP" means *verified-working*. Default-on; a verify bug never blocks a good stack. The *is-it-actually-working* companion to `rosetta_demo.md` + the `/test-platform` skill. **v2.5 M236 adds PRE-FLIGHT RUNG ZERO — *tagging is not publishing*:** a remote stack consumes `rosetta-extensions` only at a tag **fetched from origin** (M217 FATAL pin guard), so tooling that exists only in the local authoring copy is **unreachable** to it. M236's first iter found `billion` pinned to the previous release's tag with **0 of 13** `playbill-*` tags on origin — the feature under test could not be obtained at all. Verify the tag is *on origin* before any prove-it-live milestone
+- `corpus/ops/verification.md`: **The bring-up's TWO tail gates, and they fail in opposite directions.** (1) **auto-verify** (v1.3b M18) — a scoped, **non-fatal** `verify live` on the stack's **own offset ports**: cheap-win `/api/health` + `casbin_rules > 0` asserts (the silent-403 catcher) then the full offset/project/scope-aware probe set. Default-on; a verify bug never blocks a good stack. (2) **the Playthrough batch gate** (v2.8 M258) — the layer ABOVE it, and it is **LOUD**: it drives every seeded hero's journey to completion under `D-v28-3` (runs to completion, never halts at first red, never retries, ONE consolidated red set at batch end) and the bring-up **exits non-zero** on a non-empty set, while the stack is still **left UP regardless**. So "UP" no longer means *verified-reachable* — it means **"UP, and every journey verified."** ⚠️ *This entry said the bring-up ends in a non-fatal pass, full stop, until the M258 close.* The batch is also **destructive-then-restorative** (it resets to `pt-world`, then a restore leg rebuilds the presenter world and cross-checks the cockpit menu against the roster), and it **skips — recording `skipped`, never `green`** — on a `--public-host` stack or any knob that removes what it needs (`DEMO_NO_STORIES`/`DEMO_STORIES=0`, `DEMO_NO_UI`); opt out with `DEMO_NO_BATCH=1`. The *is-it-actually-working* companion to `rosetta_demo.md` + the `/test-platform` skill. **v2.5 M236 adds PRE-FLIGHT RUNG ZERO — *tagging is not publishing*:** a remote stack consumes `rosetta-extensions` only at a tag **fetched from origin** (M217 FATAL pin guard), so tooling that exists only in the local authoring copy is **unreachable** to it. M236's first iter found `billion` pinned to the previous release's tag with **0 of 13** `playbill-*` tags on origin — the feature under test could not be obtained at all. Verify the tag is *on origin* before any prove-it-live milestone
 - `corpus/ops/demo/frontend-tier.md`: **The demo UI tier** (v1.3b M19) — `/demo-up` brings up next-web-app + studio-desk (per-demo **cached** Docker image, offset ports, minted-pk + offset-URL baked) + ant-academy natively (Clerk-free). The 12 GB Docker-VM prereq + non-fatal pre-flight, the `--no-ui` (`DEMO_NO_UI`) escape, and the hard **zero-platform-repo-edit** line (repo = build context only). **⚠️ Two long-standing claims in this row are retracted at the v2.8 M257 close.** (1) *"from the **unmodified** Dockerfile"* — since M257 iter-09 both Next apps build from **rext-owned** Dockerfiles (`demo-stack/frontend/{next-web,hiring}.Dockerfile`, build **shape 3**); only `studio-desk` still consumes the platform's own. The zero-platform-edit line is *stronger* under shape 3, not weaker — nothing in the platform repo is touched, not even transiently. (2) the honest *"one ~3-min cached build per new `demo-N`"* residual → **104.60 s for all THREE UI images on `macmini`** (n=3 p50; `ui_next_web` 53.31 · `ui_hiring` 44.21 · `ui_studio_desk` 7.08), the two Next images having gone **4.04 GB → 417 MB** and **3.94 GB → 380 MB**. *Those are `macmini` seconds; `billion`'s post-L1 cycle is unmeasured.* The *see-it-in-a-browser* completion of the demo family
 - `corpus/ops/demo/demopatch-spec.md`: **The demo-patch mechanism — the sanctioned zero-platform-edit escape hatch** (v2.3 "cue to cue" M217). When a demo needs a fix with **no env/config/compose seam** (the value is baked into platform source), `demopatch` patches the demo's **own ephemeral clone** just before the image build and reverts it after — the *image* carries the fix, the clone is left git-clean, and the canonical `anthropos-work` repos are **never touched**. The **7 guards** (G1 path-assert · G2 drift-refuse + exactly-once anchor · G3 never-commit · G4 idempotent · G5 self-revert · G6 demo-only · **G7 apply post-condition**), the 10-key manifest schema, the **three apply vehicles** (the `app` patches target the build-scratch clone **outside** the workspace, so `demopatch`'s own G1/G6 correctly REFUSE them — two shell helpers re-implement the ladder against the same canonical manifest), the **chain rule** (`next-web-public-website-url`'s `pre_sha256` **IS** studio's `post_sha256` — it reads "DRIFTED" against a pristine file **by design**), and the **self-healing freshness gate**: *the anchor is the contract; the whole-file sha is only a baseline*. **Read it before adding or re-pinning any patch** — a silently-refused perf patch shipped a 76 s members grid for four releases
 - `corpus/ops/demo/build-budget.md`: **The bring-up build budget — what "fast" means for a `/demo-down --purge` + `/demo-up` cycle, and the harness that grades it** (v2.8 "fast build" M255). The sibling of `latency-budget.md`, one layer down, and it exists for the same reason: the corpus asserted *"~3 min per frontend"*, *"~3.7 GB first build"* and *"the ~3.7 GB build cache"* — measured, the cache is **105.4 GB** and the free-disk floor was sized against the wrong number. Defines **READY** (`up-injected.sh` exits 0 **and** `autoverify.json` is green), the **per-phase attribution model** (2 top-level + 12 anchor-derived sub-phases that must sum back, fail-closed), the measured baseline (**n=3 p50 666.29 s** on `billion`, 3/3 green — **billion is DEMO-ONLY, and `odysseus` is RETIRED — `D-v28-15` superseded `D-v28-14` the same day (2026-07-31): dev/test is LOCAL to the new Mac**, of which **UI-tier image builds are 65.5 % and image export/unpack ALONE is 46.2 %**). **⚠️ Three claims that stood in this row until the v2.8 M257 close are now RETRACTED, all in the same direction — they described a gap that has since been filled.** *"No profile has ever been measured for the host that replaced it"* and *"`hostprofiles/` holds only `billion.json` and a `laptop.json`"* → **three** profiles ship; `macmini.json` was measured and checked in at **M257 iter-04**, and its `gated_baseline` filled at **iter-08** (p50 **449.51 s** on `macmini`, n=3, *contended and labelled*). *"Gate clause 1 is NOT gradeable today (M257x iter-225)"* → it is: iter-06 fixed the clause's **units** (it graded a 12-core host's `load1` against an 8-core **VM allocation**, a limit of 6 where 10 is right, failing **closed**), and M257's gate then graded **HEADROOM OK on 3 of 3** reps at p50 **286.99 s**. *"`build-budget.md` still argues throughout for a gate host that no longer exists"* → that doc is re-pointed at `macmini` in this same close. The **headroom contract** (**four** clauses — a **clause zero** (`require_measured`, which a fresh host with an unpopulated sampler hits FIRST) plus CPU, memory, disk — against *measured, checked-in* host profiles; memory uses the **measured per-lane peak**, never the V8 ceiling, because a ceiling is not a reservation and would fail the single lane the host demonstrably runs → the derived lane count is **1 on `billion`** and **1 on the `laptop`** but **2 on `macmini`**, so the old *"neither host fits two concurrent lanes"* was a two-profile statement and does not generalise), the **campaign protocol** (the binding constraint is the ~18 GiB mid-cycle TRANSIENT, not the ~2 GiB a steady rep nets; reclaim with `--filter until=24h`, never `-af`, which would silently make the next rep truly-cold — but `until=24h` is **NOT** a guarantee that rep-touched records survive: being *served* from cache does not reliably refresh a BuildKit record's clock, and one 356.8 MB eviction cost **173 s**, which is why the baseline is a `p50` over `n ≥ 3` and never a mean), and the **union-apply** parallelism rule. Two rules it is worth reading it for alone: **a mid-campaign ENOSPC presents as the cryptic `redis exited (1)` (M239-F1), not as a disk error** — under a speed campaign it reads as "my lever broke the stack"; and **state the environment with every number** — the same Dockerfile and context yield **4.84 GB on `billion` (x86_64, containerd)** and **2.88 GB on an arm64 laptop (overlay2, which pays no unpack leg at all)**. **D-M255-1** is recorded here: the identical assert **hard-fails in `buildbench`** (a gate) and stays **advisory in the bring-up** (an operator) — two consumers, two contracts
@@ -490,44 +509,54 @@ Usage: `make up PROFILE=core`
 
 ## Working with Service Code
 
-### Go Services — `app` and `sentinel` (there are only two, and they are NOT alike)
+### Go Service — `app` (since v11.0 there is exactly ONE)
 
-> **⚠️ This section described `app` and called it "Go services", plural — corrected M257x harden pass 57.**
-> The heading read *"Backend, CMS, Sentinel, etc."*: **`cms` is decommissioned** (no compose service, no
-> `repos.yml` entry, ECS destroyed — see the merge banner above), and of the four commands and five
-> directories below, **`sentinel` has one command and zero directories**. A developer told to `make setup`
-> in `sentinel` gets *"No rule to make target"*, and goes looking for an `rpc.go` that has never existed
-> there. Measured at `stack-demo/{app,sentinel}` with `platform` at `0c91421` (= `origin/main`).
-
-| step | `app` | `sentinel` |
-|---|---|---|
-| `make setup` (install toolchain) | ✅ installs **five** tools — mockgen, oapi-codegen, ent, atlas, gqlgen (not the three this file used to list) | ❌ **no such target** — its Makefile declares exactly `initdb` and `proto` |
-| `make gen` (codegen) | ✅ `go generate ./...` | ❌ **no such target** — regenerate protobuf with `make proto` |
-| `atlas migrate apply --env local` | ✅ `atlas.hcl` declares `env "local"` | ❌ **no `atlas.hcl` at all**; schema is seeded from `init_policy.sql` |
-| `go run .` · `go test ./...` | ✅ | ✅ (`main.go` at the repo root) |
+> **⚠️ This section was headed *"Go Services — `app` and `sentinel` (there are only two…)"* until M258
+> iter-18, and it is now down to one.** Platform `766df6c` folded `sentinel` into `app` and deleted its
+> compose service and `repos.yml` entry, so **`make init` does not clone `sentinel` at all** — a developer
+> following the old block gets `cd: no such file or directory` before any of its four commands can be
+> wrong. The block is kept below, struck through, because the repo still exists (frozen at v0.24.2,
+> `f2c46190` — the port source) and someone reading pre-fold source will still land in it.
+> Measured at `stack-demo/{app,sentinel}` with `platform` at `766df6c` and `app` at `c52dbc51e`
+> (both = `origin/main`, verified against the remote 2026-08-12T12:07Z).
 
 ```bash
-# app — the backend monolith
+# app — the backend monolith, and the only Go repo a local stack builds
 cd stack-dev/app
-make setup                       # first time only
+make setup                       # first time only — installs mockgen, oapi-codegen, ent, atlas, gqlgen
 make gen
 atlas migrate apply --env local  # or `make migrate` from platform/, which is the usual path
 go run . && go test ./...
-
-# sentinel — authorization only; a much smaller repo with a different shape
-cd stack-dev/sentinel
-make proto                       # NOT `make gen`
-go run . && go test ./...
 ```
 
-**Key directories — these are `app`'s, and `sentinel` matches none of them** (measured: 0 of 5):
-- `rpc.go`: Main RPC server implementation (entry point for API)
+**Key directories** — ⚠️ **the first entry below was `rpc.go` and that file NO LONGER EXISTS**, deleted at
+`app` `a85e8308d` (*"deseam the users + organizations edges; delete rpc.go"*) and pinned gone by
+`app/rpc_removal_test.go`. `app` runs **no Connect-RPC server** (`app/main.go:1310`); the handler objects
+survive and are called in-process:
+
 - `internal/data/ent`: Database schema and ORM code
 - `internal/app`: Component wire-up
+- `internal/sentinel`: the Casbin PDP (net-new at v11.0) — plus `internal/authorization` as its caller-side facade
 - Domain-specific folders: `internal/organization`, `internal/user`, etc.
 
-`sentinel`'s own layout is `main.go` + `cmd/` + `internal/`, with its Casbin policy bootstrapped from
-`init_policy.sql` — read `corpus/services/sentinel.md` rather than mapping `app`'s tree onto it.
+**The `sentinel` schema did not move to `public`** and `app` migrates it separately: `make
+migrations-sentinel` → `atlas migrate diff --env sentinel` (`app/Makefile:80-81`), alongside the ordinary
+`make migrations`. That is the one place the fold is visible in day-to-day commands.
+
+<details><summary>⚠️ historical — the standalone <code>sentinel</code> repo (not cloned since <code>766df6c</code>)</summary>
+
+`sentinel` is `main.go` + `cmd/` + `internal/`, Casbin policy bootstrapped from `init_policy.sql`, and its
+Makefile declares exactly `initdb` and `proto` — **no `make setup`, no `make gen`, no `atlas.hcl`**. It is
+not on disk after a fresh `make init`; clone it by hand if you need to read the pre-fold source. Read
+`corpus/services/sentinel.md` first.
+
+</details>
+
+> **⚠️ `make bootstrap-dev` is BROKEN at `766df6c`** — found by this sweep, not by running it. The target
+> hard-requires `$(PARENT_DIR)/sentinel/init_policy.sql` (`platform/Makefile:148-149`) and then runs
+> `$(COMPOSE) restart sentinel` (`:164`) and waits on *"sentinel RPC on localhost:8087"* (`:165`). None of
+> those three exist any more: `make init` does not clone the repo, and there is no such compose service.
+> Reported, **not fixed** — this is a platform-repo defect and this corpus takes **0 platform edits**.
 
 ### Frontend (Next.js Monorepo)
 

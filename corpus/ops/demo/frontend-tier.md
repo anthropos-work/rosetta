@@ -27,9 +27,9 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 >
 > | shape | who owns the Dockerfile | platform repo is | example |
 > |---|---|---|---|
-> | 1 | the platform | build context, Dockerfile consumed as-is | `studio-desk` (`Dockerfile.dev`) — **and, until M257 iter-09, `next-web` too** |
+> | 1 | the platform | build context, Dockerfile consumed as-is | ⚠️ **no member left.** `next-web` moved to shape 3 at M257 iter-09 and **`studio-desk` (`Dockerfile.dev`) followed at v2.8 M258 TIK-A** — this cell named studio-desk as *the* example until the M258 close |
 > | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the demo-patches — **23** on disk (`ls demo-stack/patches/*/*.yaml \| wc -l` at rext `415240f`), of which **18** are image-baked (11 `next-web-app` · 5 `studio-desk` · 2 `app`) and 5 are `ant-academy`, patched-then-reverted around a **native** `next dev` rather than a build. *(This cell read "the 11 demo-patches" — the M224-era distinct-manifest total, four milestones stale. The authoritative inventory is [`demopatch-spec.md` §5](demopatch-spec.md), directory-fenced by `TestPatchInventory`.)* |
-> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`) **and `next-web`** (`frontend/next-web.Dockerfile`, net-new at M257 iter-09) |
+> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`), **`next-web`** (`frontend/next-web.Dockerfile`, M257 iter-09) **and `studio-desk`** (`frontend/studio-desk.Dockerfile`, multi-stage prune-and-copy, net-new at v2.8 M258 TIK-A: **1.7 GB → 1.35 GB**). All three of the demo's Docker-built frontends now live here |
 >
 > Shape 3 is *stronger* on the hard line than shape 2, not weaker: nothing in the platform repo is touched at
 > all, not even transiently. **It is the shape v2.8's largest speed lever uses — and as of M257 iter-09 that
@@ -76,7 +76,7 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 |-----|-------------|----------------------|------------------|
 | **next-web-app** (Workforce) | per-demo **Docker** image from the **rext-owned** `frontend/next-web.Dockerfile` (build shape 3 above), built from the unmodified `next-web-app` clone, in the demo's `core` profile. *Built from the platform's own `Dockerfile.dev` until M257 iter-09; L1 moved it so the image could be multi-stage without a platform-repo edit.* | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
 | **hiring** (the real `apps/hiring`) | per-demo **Docker** image from the **rext-owned** `frontend/hiring.Dockerfile` (build shape 3 above), built from the same unmodified `next-web-app` clone; a **net-new** compose service `hiring-app` with `profiles: [<derived-default>]` | **3001** + N×10000 | Clerk-free (minted pk baked; `CLERK_API_URL` → the fake BAPI alias) |
-| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `core` profile — **same as next-web** (see the profile note below) | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
+| **studio-desk** | per-demo **Docker** image from the **rext-owned** `frontend/studio-desk.Dockerfile` (build shape 3 above), built from the unmodified `studio-desk` clone, in the demo's `core` profile — **same as next-web**. *Built from the platform's own `Dockerfile.dev` until v2.8 M258 TIK-A, which multi-staged it (prune-and-copy) for **1.7 GB → 1.35 GB**, 350 MB/stack.* | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | **Clerkenstein-wired (v2.3 M220)** — the demo's minted pk + the disarmed fake BAPI, read from `<stack>/.env.demo-N`. It **shares the demo's session**: a hero who clicks through from next-web arrives at the academy **signed in as herself**. *Was keyless via the `e2e_persona` bypass — see the box below; that is now removed.* |
 
 Example: `demo-2` → next-web on `:23000`, hiring on `:23001`, studio-desk on `:29000`, ant-academy on `:23077`.
@@ -407,6 +407,26 @@ build hit `ENOSPC` mid-stream.
 > another demo or a dev/base image) — so tearing a demo down with `--purge` reclaims its disk. A **plain
 > `down`** still *keeps* the images (a fast re-up); `--purge` is the "I'm done, reclaim everything" path (it
 > already dropped volumes + the data dir).
+>
+> **⚠️ Volumes: every teardown path now passes `-v`, and it took two fixes to be true (v2.8 M258).** The
+> bitnami Postgres image declares **three** `VOLUME`s while compose binds only `/bitnami/postgresql`, so
+> **every container start mints two anonymous volumes** that any teardown without `-v` orphans —
+> **measured at 178 dangling volumes / 5.297 GB over five days across three stacks.** `--purge` was
+> exonerated by measurement (it already ran `down -v --remove-orphans`); the **plain `down`** was the
+> producer, fixed at M258 iter-14 and carried to the `dev-stack` twin at iter-17.
+>
+> The M258 close closed the third path: the **label sweep**. When compose *refuses* — a stale generated
+> override naming deleted services makes the merged project invalid, so compose touches nothing and every
+> container survives — the containers are removed by `docker rm` instead, and **`docker rm` without `-v`
+> orphans the anonymous volumes just the same.** That is the branch the sweep exists for, so the leak was
+> still fully open on exactly the failure mode that motivated the fix, and now invisible, because the
+> plain-down path was believed fixed. Both twins now run `docker rm -fv`.
+>
+> **Why `-v` is not destructive here, stated because a bare flag reads as one:** a live census of every
+> mount in a demo project found the **only** volume-type mounts in a whole stack are those two anonymous
+> ones — there are **no named volumes to lose** — and the database is a **host bind mount**, which `-v`
+> cannot touch. Fenced in both directions (`dev-stack/tests/test_dev_teardown_sweep_m258.py`), so the day
+> the platform adds a named volume the decision re-opens instead of silently becoming destructive.
 
 > **The free-space signal measures the Docker VM's INTERNAL disk, not host `/` (v2.6 M239-F1 correction).**
 > On Docker Desktop the engine runs in a Linux VM with its **own fixed-size virtual disk** — the filesystem a

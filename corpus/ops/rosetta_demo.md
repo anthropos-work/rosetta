@@ -58,7 +58,9 @@
 `stack-demo` is a **true peer of `stack-dev`**: it has its **own** platform clone set, and a demo builds
 **entirely** from it. A box with **only** `stack-demo/` (no `stack-dev/`) can bring a demo up end-to-end.
 
-**The from-scratch bring-up (what `/demo-up N` does, in order):**
+**The from-scratch bring-up (what `/demo-up N` does, in order)** — steps 1–4 build it; the **tail** then
+grades it in two passes (auto-verify, then the M258 Playthrough batch gate), which is where "UP" acquires
+its meaning. See [§ The bring-up tail](#the-bring-up-tail--two-gates-with-deliberately-opposite-failure-semantics).
 1. **`ensure-clones.sh`** (the first action, before any build) bootstraps `stack-demo`'s peer clone set:
    - bootstrap-clone `stack-demo/platform` from `git@github.com:anthropos-work/platform.git` over SSH if
      absent (fail-loud on a clone failure — **never** falls back to `stack-dev` for the build SOURCE);
@@ -90,8 +92,12 @@
    `stack-demo/next-web-app` + `stack-demo/studio-desk`; the remaining non-Clerk services build from
    `stack-demo`'s clones via the compose `build.context` (the compose dir `PLAT` is
    `stack-demo/platform`, so the relative contexts resolve against `stack-demo`). At platform `0c91421`
-   that non-Clerk set is **`sentinel` alone** — `graphql` was deleted at `2adcf71`, `roadrunner` at
-   `d11a403`, and `storage` at `838d907`. **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
+   that non-Clerk set was **`sentinel` alone** — `graphql` was deleted at `2adcf71`, `roadrunner` at
+   `d11a403`, and `storage` at `838d907`. ⚠️ **Since `766df6c` (v11.0) it is EMPTY**: `sentinel` was folded
+   into `app` — the 8th merge — so there is no non-Clerk service left to build from the compose
+   `build.context` at all. This is why the injected set is **DERIVED and not a fixed list**; the derivation
+   absorbed the change without an edit, and this sentence did not.
+   **Dev-image reuse is OFF by default** — a demo never inherits `stack-dev`'s
    built images (which could carry dev WIP), even when dev is up; opt back in with `DEMO_REUSE_DEV_IMAGES=1`.
 4. the disarmed-colony injection still mutates **only** the per-demo COPY at `stacks/demo-N/clones/<svc>` —
    the shared `stack-demo/<svc>` clone is the COPY's SOURCE and stays git-clean.
@@ -238,32 +244,72 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 > directus service, so teardown / registry / verify all correctly see nothing. Full lifecycle:
 > [`directus-local.md`](directus-local.md) § "Container lifecycle (M22)".
 
-## Post-set-dress Sentinel policy reload (v1.10 "method acting", M42e P5)
+## Post-set-dress policy reload (v1.10 "method acting", M42e P5 — REWRITTEN v2.8 M258 for sentinel-in-app)
 
-Right **after** the set-dress seed and **before** the auto-verify, a fresh demo-up now **reloads
-Sentinel's in-memory Casbin policy**. WHY it is required: Sentinel's enforcer calls `LoadPolicy()` **once
-at startup with no watcher** (`sentinel/internal/authorization/casbin.go`). `migrate-demo.sh` starts +
-migrates Sentinel **before** the set-dress seed writes the per-membership `g3 FEATURE_JOB_SIMULATIONS`
-grant into `sentinel.casbin_rules` — so on a fresh bring-up the grant lands in the DB but the running
-enforcer never sees it, and every `/sim/<slug>/start` renders the **org-member deny modal**
-(`canStartAsOrganizationMember` reads `organizationFeatures`, resolved via the `g3` grouping policy). M42e
-iter-09 papered over this with a **manual** `docker restart`; M42e P5 folds the reload into
-`demo-stack/up-injected.sh` so a fresh demo-up needs **zero** manual step. The reload prefers the
-prefix-agnostic **`AuthorizationService/Reload` RPC** on the offset 8087 port — its handler calls
-`e.LoadPolicy()` directly and returns 200 only on a successful reload, so a 2xx **proves** the policy
-re-loaded — and falls back to `docker restart <demo>-sentinel-1` (re-runs `LoadPolicy()` at startup) when
-the RPC isn't reachable. It runs only when the set-dress actually ran (it wrote the grant) and is
+Right **after** the set-dress seed and **before** the auto-verify, a fresh demo-up **reloads the
+in-memory Casbin policy**. WHY it is required: the enforcer calls `LoadPolicy()` **once at startup with
+no watcher**. `migrate-demo.sh` starts + migrates the authorization tier **before** the set-dress seed
+writes the per-membership `g3 FEATURE_JOB_SIMULATIONS` grant into `sentinel.casbin_rules` — so on a fresh
+bring-up the grant lands in the DB but the running enforcer never sees it, and every `/sim/<slug>/start`
+renders the **org-member deny modal** (`canStartAsOrganizationMember` reads `organizationFeatures`,
+resolved via the `g3` grouping policy). M42e iter-09 papered over this with a **manual** `docker restart`;
+M42e P5 folded the reload into `demo-stack/up-injected.sh` so a fresh demo-up needs **zero** manual step.
+
+> ⚠️ **THE MECHANISM CHANGED AT PLATFORM `766df6c` (v11.0), AND THIS SECTION DESCRIBED THE OLD ONE UNTIL
+> THE M258 CLOSE.** `sentinel` was folded into `app` — the 8th merge — so **there is no sentinel
+> container**, the RPC endpoint on the offset 8087 port is gone, and `docker restart <demo>-sentinel-1`
+> names a container that does not exist. The rung order is now:
+>
+> 1. **`PUBLISH sentinel:policy:invalidate` on the demo's Redis** — `app` subscribes to that channel
+>    in-process, and the **subscriber count in the PUBLISH reply is positive proof** the enforcer heard it
+>    (this is the current path, and the exec is bounded so an unresponsive redis cannot hang the bring-up);
+> 2. the standalone `AuthorizationService/Reload` RPC, **retained beneath** for a pre-v11.0 stack;
+> 3. `docker restart <demo>-sentinel-1`, likewise pre-v11.0 only.
+>
+> **This is not cosmetic.** A stale enforcer refuses **every org-scoped read and write** with `forbidden`
+> at HTTP 200 — the silent-403 class — and M258 iter-16 traced exactly that to three post-seed reload
+> sites still driving the deleted container's RPC while logging the miss as *"non-fatal"*. It cost **15 of
+> 31 Playthroughs and both negative controls**, and `batch_seconds` **629 → 129** once fixed: the suite was
+> slow because it was broken. The restore leg carries the same rung ladder, where a miss costs a **user**
+> a working stack rather than a test batch.
+
+It runs only when the set-dress actually ran (it wrote the grant) and is
 **non-fatal** (the M18/M19 pattern); `DEMO_NO_SENTINEL_RELOAD=1` opts out. The reload precedes the verify
 so the casbin/sim probes see the reloaded policy.
 
-## Auto-verify at the bring-up tail (v1.3b "dress rehearsal", M18)
+## The bring-up tail — TWO gates, with deliberately opposite failure semantics
 
-Every bring-up now ends with an automatic, **non-fatal** verification pass on the stack's own **offset
-ports**: the cheap-win `/api/health` + `sentinel.casbin_rules > 0` asserts (the silent-403 catcher), then
-the full offset/project/scope-aware `verify live`. So "UP" means *verified-working*, not just
-*containers-started*. Default-on (opt out: `DEMO_NO_VERIFY=1` / `DEV_NO_VERIFY=1`); a failing check warns
-loudly + points at `/test-platform N` but never aborts a good bring-up. Full contract:
-[`verification.md`](verification.md).
+### 1. Auto-verify (v1.3b "dress rehearsal", M18) — non-fatal
+
+Every bring-up ends with an automatic, **non-fatal** verification pass on the stack's own **offset
+ports**: the cheap-win `/api/health` + `casbin_rules > 0` asserts (the silent-403 catcher), then
+the full offset/project/scope-aware `verify live`. It proves the stack is *reachable and healthy*.
+Default-on (opt out: `DEMO_NO_VERIFY=1` / `DEV_NO_VERIFY=1`); a failing check warns loudly + points at
+`/test-platform N` but never aborts a good bring-up. Full contract: [`verification.md`](verification.md).
+
+### 2. The Playthrough batch gate (v2.8 M258) — LOUD, and it is the last step
+
+⚠️ **This section named only auto-verify, and called itself "the tail", until the M258 close — and it is
+no longer the tail.** After `UP.` prints, `playthroughs/e2e/batch-gate.sh` drives **every seeded hero's
+journey** to completion and emits ONE consolidated red set (`D-v28-3`: runs to completion, never halts
+at first red, never retries). A non-empty set makes the **bring-up exit non-zero**. So a `/demo-up` now
+proves the stack is *functionally correct*, not merely reachable — **"UP, and every journey verified."**
+
+Two consequences an operator must know before running one:
+
+- **The bring-up is now destructive-then-restorative.** The batch runs `run-playthroughs.sh --reset`,
+  which TRUNCATEs the world and seeds the `pt-world` test seed; a **restore leg** then rebuilds the
+  presenter world, re-exports the Clerkenstein roster, restarts the fakes and cross-checks the cockpit
+  menu against the roster. See [`idempotency.md`](idempotency.md) § re-running a bring-up.
+- **The stack is left UP regardless** — clause 5, the autoverify precedent: a test bug must never cost a
+  good demo. The gate stops, restarts and tears down nothing; only the exit code carries the verdict,
+  alongside `$STACK/batch-gate.json`.
+
+It **skips itself** — recording `verdict: skipped`, which is never `green` — on a `--public-host` stack
+(it cannot be browsed from its own host), and on any knob that takes away what it needs
+(`DEMO_NO_STORIES` / `DEMO_STORIES=0`, `DEMO_NO_UI`). Since `--public-host` is **default-on**, a bare
+`/demo-up N` **skips**; `/demo-up N --no-public-host` gates in one command. Opt out entirely with
+`DEMO_NO_BATCH=1`.
 
 > **The per-stack-Directus boot now health-gates so auto-verify can't race it (post-v1.9 demo-hardening).**
 > The bring-up's Directus boot step now **waits** for the stack's own offset `/server/health` to answer 200

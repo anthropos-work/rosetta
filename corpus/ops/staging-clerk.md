@@ -385,7 +385,12 @@ if (isDevClerk) {
 > and the repo from `repos.yml` in one commit. Measured at platform `0c91421d`: `docker-compose.yml`
 > declares five services (`sentinel`, `backend`, `studio-desk`, `next-web-app`, `gotenberg`) plus
 > `postgresql` + `redis` from the included `common.yml` — **no `graphql` / router service, and nothing
-> on `:5050`.** GraphQL is one in-process gqlgen handler on one route:
+> on `:5050`.** ⚠️ **That count is FOUR at `766df6c`** (v11.0, 2026-08-11), which folded `sentinel` into
+> `app` as `app/internal/sentinel/` and deleted its compose service: `backend`, `studio-desk`,
+> `next-web-app`, `gotenberg`, over the same two-service `common.yml` floor. The `0c91421d` reading is
+> kept because it is what settles the retraction above — either way there is no router — but do not
+> carry the five, or the `sentinel` entry in it, forward. GraphQL is one in-process gqlgen handler on
+> one route:
 > `app/internal/web/backend/backend.go:317`, `e.Any("/graphql/query", echo.WrapHandler(graphHandler))`
 > (@ `app` `ad9f3c498`). One process, one schema, no fan-out, nothing to warm serially. The supergraph
 > had already collapsed to a single subgraph at the cms-in-app merge *before* the router was deleted,

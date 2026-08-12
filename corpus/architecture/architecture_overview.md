@@ -9,9 +9,9 @@ This document provides a high-level overview of the Anthropos platform architect
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what a normal `make up` selects — starts **five containers**: `backend` and `gotenberg`, plus the always-on floor (`postgresql`, `redis`, `sentinel`), which declare no `profiles:` key and are therefore in every selection. Two of the five are Go services of ours: `backend` and `sentinel`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
+*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what a normal `make up` selects — starts **four containers**: `backend` and `gotenberg`, plus the always-on floor (`postgresql`, `redis`), which declare no `profiles:` key and are therefore in every selection — and which, since platform `766df6c`, are not in `docker-compose.yml` at all: they live in the **included** `common.yml`. **Exactly one of the four is a Go service of ours: `backend`.** ⚠️ **This sentence read *"five containers … (`postgresql`, `redis`, `sentinel`) … Two of the five are Go services of ours: `backend` and `sentinel`"* until M258 iter-18** — `766df6c` folded `sentinel` into `app` (the 8th merge) and deleted its compose service, so the floor is two and the Go-service count is one. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
     *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — a graph of **≥42,790 skills** across **≥22,470 job roles** (the measured *public* subset; see [Shared Libraries → the "60K / 18K" figures](./shared_libraries.md#taxonomy-figures)), vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
-    *   **Sentinel**: Security and access control (the bouncer)
+    *   ~~**Sentinel**~~: **folded into `app` at v11.0** (`766df6c`). Still the bouncer, still Casbin — but a package (`app/internal/sentinel/`), not a container, and reached by an ordinary Go call. See the [`sentinel` service doc](../services/sentinel.md)
     *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
 
     **Domains inside Backend/App, not services.** At platform `0dab54d` none of the three has a compose
@@ -62,22 +62,24 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
 - **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ~16.2.12` — a tilde range, not a caret — in the four `apps/*` that declare it: `web`, `hiring`, `integration`, `maintenance`; `apps/mobile` declares no `next`. Lockfile resolves `16.2.12`, at `next-web-app` `8297c684`)
-- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations; `sentinel` keeps its own schema; the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
+- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations — **and since v11.0 it also owns the `sentinel` schema**, which survives the fold and is migrated separately (`make migrations-sentinel`); the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
 - **APIs**: GraphQL served **by `backend` itself** (`:8082/graphql/query`); the WunderGraph Cosmo Router
   that used to federate it is deleted from local dev **and destroyed in production** (iter-124), and the
   supergraph had already been **one** subgraph since `915da06`. gRPC/Connect-RPC (internal), Protocol Buffers
-- **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
+- **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC) — the PDP is **`app/internal/sentinel/`, in-process since v11.0**, not a separate Sentinel service
 - **CMS**: Directus (self-hosted, headless)
 - **Infrastructure**: AWS ECS EC2 (EU-West-1 primary), Terraform IaC, Vercel (frontend)
 - **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private access
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
 **Service Tiers** (local development reality, default `core` profile):
-1. **Core Backend Services**: Backend/App (the monolith) and Sentinel, plus Gotenberg (third-party PDF service). Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them anywhere** — platform `2adcf71` deleted the local service, and the production module was **destroyed** (`infrastructure/terraform/production/services.tf:509-517`; corrected M257x iter-124, where this sentence said *"it survives in production only"*). So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
+1. **Core Backend Services**: Backend/App (the monolith), plus Gotenberg (third-party PDF service). ⚠️ **Sentinel was named here until M258 iter-18 and is no longer a service** — `766df6c` folded it into `app` and deleted its compose block. Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them anywhere** — platform `2adcf71` deleted the local service, and the production module was **destroyed** (`infrastructure/terraform/production/services.tf:509-517`; corrected M257x iter-124, where this sentence said *"it survives in production only"*). So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
 
-   **Seven** former microservices now run **inside** Backend/App (this line said **eight** and included
-   **roadrunner** until M257x iter-137 — roadrunner was *deleted*, not folded; there is no
+   **Eight** former microservices now run **inside** Backend/App — the seventh count stood until M258
+   iter-18, when `sentinel` became the eighth (`766df6c`, v11.0). (This line said **eight** for a
+   *different* and wrong reason before M257x iter-137, when it included
+   **roadrunner** — roadrunner was *deleted*, not folded; there is no
    `app/internal/roadrunner/` at any ref): **skiller** (July 2026), **skillpath**
    ("skillpath-in-app", M502→M507), **jobsimulation** ("jobsim-in-app"), **cms**
    ("cms-in-app v8.0", app v1.360.0) and — the v9.0 "support-in-app" trio, whose containers `838d907`
@@ -110,7 +112,8 @@ graph TD
 
     subgraph Core["⚙️ Core Backend Services (Go)"]
         Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)<br/>+ storage · messenger · customerio-sync (support-in-app v9.0)"]
-        Sentinel[Sentinel]
+        %% Sentinel had a node here until 766df6c (2026-08-11, v11.0) folded the Casbin PDP
+        %% into app as internal/sentinel and deleted its compose service. It is a domain in Gateway now.
         Gotenberg[Gotenberg<br/>PDF conversion]
         %% Storage and Messenger had nodes here until 838d907 (merged 0c91421, 2026-08-05)
         %% deleted the storage, messenger and customerio-sync compose services and their
@@ -144,7 +147,7 @@ graph TD
     GraphQL -.->|removed| Gateway
 
     %% Core service dependencies
-    Gateway --> Sentinel
+    %% Gateway --> Sentinel: removed at 766df6c — the PDP is in-process, there is no edge to draw
     Gateway --> Gotenberg
     Gateway --> Directus
 
@@ -165,13 +168,13 @@ graph TD
 #### Core Backend Services (Tier 1)
 
 Default local development set (started by `make up` — profile `core`, `Makefile:10` `PROFILE ?= core`).
-Five containers; the last three declare no `profiles:` key and are therefore in **every** selection:
+**Four** containers at platform `766df6c`; the last two declare no `profiles:` key — they are the whole of the **included** `common.yml` — and are therefore in **every** selection. *(This read "Five containers; the last three…" until M258 iter-18, when `sentinel` was folded into `app`.)*
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
 | **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026), plus the **cms**, **jobsimulation** and **roadrunner** domains | [→](../services/backend.md) |
 | **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
-| **Sentinel** *(always on)* | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
+| ~~**Sentinel**~~ | ~~Go~~ | **NOT A SERVICE since `766df6c`** — the Casbin PDP is `app/internal/sentinel/`, in-process | [→](../services/sentinel.md) |
 | **PostgreSQL** *(always on)* | Third-party image | Data store (custom image with `pgvector`) | — |
 | **Redis** *(always on)* | Third-party image | Cache, pub/sub, job queues | — |
 
@@ -273,10 +276,12 @@ may still exist on disk):
 ### Communication Patterns
 
 #### Core Services ↔ Core Services
-*   **Synchronous**: Connect-RPC/HTTP endpoints — down to **one Connect-RPC edge on a local stack,
-    `backend → sentinel`**. At platform `0c91421` that is the only cross-process **Connect-RPC** address,
-    `AUTHORIZATION_ADDRESS=http://sentinel:8087`
-    (`docker-compose.yml:48`), and there are **zero `*_RPC_ADDR` variables**. **It is NOT the only service
+*   **Synchronous**: HTTP endpoints — and, since platform `766df6c` (v11.0), **zero Connect-RPC edges on
+    a local stack**. ⚠️ **This passage read *"down to one Connect-RPC edge on a local stack, `backend →
+    sentinel`"* until M258 iter-18.** That edge is gone, not re-pointed: the `sentinel` service is
+    deleted, `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`, `common.yml` and
+    `repos.yml`, and `app` deleted its own Connect-RPC listener with it (`app/main.go:1310`, *"NO RPC
+    SERVER"*). There are still **zero `*_RPC_ADDR` variables**. **It is NOT the only service
     address compose sets, and not the only cross-process edge** — this passage previously said *"compose
     sets exactly one service address"*, which **is false** and is retracted (corrected M257x iter-102).
     The same `backend` block also sets `GOTENBERG_URL=http://gotenberg:3200` (`docker-compose.yml:57` — a
@@ -342,7 +347,7 @@ something this corpus can see**: the frontends' endpoint is Vercel runtime confi
 ```
 User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)   ← DESTROYED, iter-124
   → backend (the sole subgraph)
-    → Connect-RPC to internal services (sentinel)
+    → (no Connect-RPC hop — the sentinel PDP is in-process since v11.0)
     → Redis Streams for async events
 ```
 
@@ -350,7 +355,8 @@ User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)  
 
 ```
 Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
-  → Connect-RPC to sentinel   (the only cross-process RPC edge out of backend on a core stack)
+  → authorization in-process   (app IS the PDP since v11.0 — no sentinel container,
+       no AUTHORIZATION_ADDRESS, and no Connect-RPC server at all)
   → object storage in-process   (no storage container, no STORAGE_RPC_ADDR)
   → cms / jobsimulation domains in-process   (no containers, no hops)
   → Judge0 directly via JUDGE0_BASE_URL   (wired INSIDE the jobsimulation domain —
@@ -403,10 +409,10 @@ isolation is enforced at three layers:
    subset of those 23, not the total) — see
    [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
    the derivation
-2. **Authorization**: Sentinel is the centralized Casbin (RBAC/ABAC) authorization **engine** — **not a
+2. **Authorization**: the Casbin (RBAC/ABAC) PDP — **`app/internal/sentinel/` since v11.0, in-process, not a separate service** — is the centralized authorization **engine**, and **not a
    blanket applied to every API request.** ⚠️ This line said *"validates every API request"* until M257x
    iter-120. Measured at `app` `ad9f3c49`: the GraphQL `AuthorizationMiddleware` is a **viewer** gate
-   with **six** paths that reach the resolver before the single Sentinel call
+   with **six** paths that reach the resolver before the single PDP call
    (`internal/authorization/gqlauthz/gqlauthz.go:222`) — including *"viewer has no active org"* (`:190-191`)
    and *"the operation carries no `userId` variable"* (`:196-197`) — and the REST surface has **no
    BLANKET authz middleware**: authorization there is opt-in per group or per handler, and only 2 of its
@@ -451,7 +457,7 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 *   *(legacy)* `cms` schema → non-authoritative; the similarity + Studio tables moved to `public` with cms-in-app v8.0
 *   *(legacy)* `jobsimulation` schema → non-authoritative; the 23 session/run tables moved to `public` with jobsim-in-app
 *   *(decommissioned)* `skillpath` schema → an empty legacy husk; the skill-path runtime state moved to `public.skill_path_sessions` when the skillpath service merged into `app` (M502→M507)
-*   `sentinel` service → `sentinel` schema (created manually during setup; sentinel does not run migrations)
+*   `sentinel` schema → **still exists and is still not `public`**, but there is no `sentinel` *service* since `766df6c`: `app` reads it via `SENTINEL_DB_CONNECTION` (`docker-compose.yml:25`, `search_path=sentinel`) and migrates it with its own `make migrations-sentinel` (`app/Makefile:80-81`, `atlas migrate diff --env sentinel`). ⚠️ **This is the one fold of the eight where the tables did NOT move to `public`**, which is why the fenced map grades prod `mid-fold` rather than `merged-into-app`
 *   `extensions` schema → houses `pgvector` extension (required by the skill/job-role embeddings, now owned by `backend`)
 
 > [!IMPORTANT]
