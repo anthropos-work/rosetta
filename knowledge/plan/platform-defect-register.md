@@ -490,3 +490,45 @@ initials.
 
 **Measured at** `stack-demo/studio-desk`, `app/sim-advanced-builder/builderAssistant.js:741-754` and
 `app/services/userService.ts:204-206`.
+
+---
+
+## PD-v28-A — `next-web-app`: the enterprise landing redirect still points at the RETIRED assignments page
+
+**Reported** 2026-08-13 by the user against the rebuilt `demo1` (platform `766df6c` / `app` v2.0.1 /
+`next-web-app` v2.141.0): *"the menu item on the left that says assign content brings me to the old page
+`/enterprise/assignments` … it should bring me to `/enterprise/assignments-list`."*
+
+**Measured**, `stack-demo/next-web-app`:
+
+- `apps/web/src/app/(authenticated)/(verified)/enterprise/EnterpriseWrapper.tsx:56` —
+  `router.replace('/enterprise/assignments')`. **This is the only occurrence of the old path in the app.**
+- **Every other consumer already uses the new one:** `BuilderV2Container.tsx:47`
+  (`LIST_PATH = '/enterprise/assignments-list'`), `AssignmentBuilderContainer.tsx:18`,
+  `AssignmentDetailContainer.tsx:45` and `:77`, `AssignmentsListContainer.tsx:79`.
+- Both pages exist — `enterprise/assignments-list/page.tsx` and `.../[planId]/page.tsx` are present.
+
+So the migration to `assignments-list` landed everywhere **except the one redirect that decides where the
+section opens**, which is why the user reaches the old interface without ever choosing it.
+
+**Not a demo defect and NOT demo-patched.** Verified no demopatch manifest mentions `assignments-list`;
+the stale redirect is platform source, and it hits production the same way. A demo-patch would hide the
+symptom on the only surface where it does not matter. **The fix is one line in the platform repo.**
+
+## PD-v28-B — `ant-academy`: clicking a module in the course-page list does not navigate
+
+**Reported** 2026-08-13 by the user against the rebuilt `demo1`: on
+`/chapters/coding-agents-landscape-intro/`, *"if i click a module from the list on the course page nothing
+happens (it should move the ui to that subpage); if i click from the side menu the module it moves
+properly."*
+
+**Two list surfaces render the same modules and only one navigates** — the side menu works, the in-page
+course list does not. That asymmetry is the diagnostic: the data is present and the routes resolve (the
+side menu proves both), so the defect is in the in-page list's click handling, not in routing or content.
+
+**Not investigated further here** and deliberately not demo-patched — `ant-academy` is platform source and
+v2.8 holds 0 platform edits. Reproduce on the rebuilt demo, then compare the two list components'
+handlers; the working side-menu path is the reference implementation.
+
+**Measured environment:** `demo1` rebuilt 2026-08-13 on `billion`, ant-academy `7ae25e95b`, served at
+`https://demo1.anthropos.work:13077`.
