@@ -111,6 +111,15 @@ Example: `demo-2` → next-web on `:23000`, hiring on `:23001`, studio-desk on `
 > So on a current clone **both** rows read `core`, and both read it because rext put them there — not because
 > the platform did. (`hiring` is a rext-owned shape-3 service and is emitted the same way.)
 
+> **⚠️ UNVERIFIED against the renamed profile.** Platform `0dab54d` (the v9.0 "support-in-app"
+> commit) **renamed the default compose profile `graphql` → `core`**; there is no `graphql`
+> profile in `docker-compose.yml` any more. The two `graphql` tokens in the table above describe
+> what `rosetta-extensions`' `up-injected.sh` passes to compose, and that repo was **not** checked
+> when this note was written. If the bring-up still passes `--profile graphql`, compose selects
+> **nothing** and the UI tier silently does not start — `docker compose --profile <unknown>` exits
+> 0. Verify with `docker compose --profile graphql config --services` against a current platform
+> clone before trusting the table, and re-pin the token in `rosetta-extensions` if it is stale.
+
 > ### 🔴 The academy used to **POISON the demo session** — and one click destroyed a live demo (v2.3 M220 S5/i)
 >
 > This is the single most damaging defect the demo family has shipped, and it hid behind *"the port answers"*

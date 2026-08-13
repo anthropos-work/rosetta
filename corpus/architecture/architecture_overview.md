@@ -123,7 +123,9 @@ graph TD
     subgraph Data["💾 Data & Infrastructure"]
         Postgres[(PostgreSQL)]
         Redis[(Redis)]
+        S3[(AWS S3<br/>private + public bucket)]
         Directus[Directus CMS]
+        Brevo[Brevo<br/>mail + contacts]
     end
     
     %% Frontend connections
@@ -154,6 +156,8 @@ graph TD
     %% Data connections
     Gateway --> Postgres
     Gateway --> Redis
+    Gateway --> S3
+    Gateway --> Brevo
     Directus --> Postgres
     
     %% Clerk integration
@@ -236,6 +240,9 @@ may still exist on disk):
 | **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); the prod ECS service is **DESTROYED** (corrected M257x iter-127 — `infrastructure` @ `13c248e6` declares no `module "cms"`; `infrastructure/terraform/production/services.tf:64-70`). **This cell read *"not a settled rollback path — report both, assert neither"* on the strength of `cms/terraform/main.tf:39` `service_desired_count = 0`, which is orphaned dead code.** Corroborating, and correct all along, `6efa1d5` (merged `f38c0c4`, 2026-08-04) deleted cms's build-production workflow under *"the cms ECR repository is decommissioned (M810)"*, naming M810's deletion of `module.cms_euwest1`. **It HAS been applied — measured at `infrastructure` `13c248e6` (2026-08-07), M257x iter-123**: there is no `module "cms_euwest1"` declaration, and `terraform/production/services.tf:64-70` records the deletion and everything it destroyed. `cms/terraform/main.tf:39` is **orphaned dead code**. (This cell said *"not visible to this corpus — `infrastructure` has never been in any clone set"*; that was a clone-set limit, not a measurement limit, and the fix was to clone the repo.) See [`org-repos.md` § 3](org-repos.md). **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, and re-pointed `messenger`'s `CMS_RPC_ADDR` at `http://backend:8083` — **M809 has landed** (on **two** variables, this one and `JOBSIMULATION_RPC_ADDR`; not on all four — M257x iter-115). `838d907` (merged `0c91421`) then deleted the `messenger` service itself, so **no compose file sets `CMS_RPC_ADDR` at all** any more; prod teardown is **M810** | [→](../services/cms.md) |
 | **Roadrunner** | **DELETED AND REPLACED, not merged** — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` from **inside the jobsimulation domain** (`app/internal/jobsimwiring/wiring.go:123`); **`app/internal/roadrunner/` exists at no ref and was never added** (0 commits ever @ `app` `ad9f3c498`). **Gone locally AND absent from production:** at platform `0c91421` there is **no `roadrunner` compose service at all** (deleted by `d11a403`; **5** services remain declared, 7 in the effective topology), and `infrastructure` @ `13c248e6` declares **ten** service modules in `terraform/production/services.tf` with **no `module "roadrunner"` among them**. **This cell read *"orphaned in prod … while prod terraform still reads `= 1`"* until M257x iter-137 — the half-applied repair the CMS row one line above already carried:** `roadrunner/terraform/main.tf:19` is an input to an **uninstantiated** module, i.e. orphaned dead code, exactly as `cms/terraform/main.tf:39` is. What survives in `infrastructure` is the **name**, in the `production_roadrunner_judge0_*` CI secrets that feed `module "backend_euwest1"` (`infrastructure/terraform/production/services.tf:384-385`) | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
+| **Messenger** | Merged into Backend/App (v9.0 "support-in-app", 2026-08-04) — the mailer + its 24 handlers run in `app` behind `MESSENGER_ENABLED`, on messenger's **own** Redis consumer group. ECS module deleted; ECR repo preserved and now unmanaged in AWS. Still startable from the `messenger` compose profile as the rollback path | [→](../services/messenger.md) |
+| **Storage** | Merged into Backend/App (v9.0) — `backend` reads/writes both S3 buckets directly; `STORAGE_RPC_ADDR` is gone. ECS service gone, but **`module.storage-service_euwest1` is deliberately kept**: it owns the buckets, CloudFront + OAI and the `media.anthropos.work` CNAME. Still startable from `storage-legacy` | [→](../services/storage.md) |
+| **CustomerIO Sync** | Merged into Backend/App (v9.0) — the 10-minute **Brevo** contact push runs on `app`'s asynq scheduler behind `CUSTOMERIO_SYNC_ENABLED`. Terraform module deleted, ECR destroyed — **no rollback path**. Its compose entry survives (and is still in `all`) | [→](../services/customerio-sync.md) |
 
 #### Shared Libraries (Not Deployed)
 

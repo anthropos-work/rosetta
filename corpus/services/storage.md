@@ -1,5 +1,47 @@
 # Storage Service
 
+> ## ⚠️ Merged into `app` — no longer a standalone service
+>
+> As of **v9.0 "support-in-app"** (2026-08-04), the standalone `storage` Go microservice has been
+> **merged into the `app` monolith** (the service the platform calls "backend"), alongside
+> [messenger](./messenger.md) and [customerio-sync](./customerio-sync.md). `backend` reads and writes
+> both S3 buckets **directly**; there is no object-storage RPC hop left anywhere on the platform.
+>
+> Where everything went:
+>
+> * **Domain** — `app/internal/storage/` holds both managers (`NewManager` / `NewPublicManager`),
+>   constructed once at boot and handed to every consumer as an in-process dependency. The former
+>   callers are all inside the same binary now: the jobsimulation domain (recordings, anti-cheat
+>   captures), the cms domain (content assets, media) and app itself (user files, profile images).
+> * **Config** — `backend` reads **`STORAGE_S3_BUCKET`** (private) and
+>   **`STORAGE_S3_PUBLIC_BUCKET`** (public), plus `AWS_REGION`/`AWS_DEFAULT_REGION`.
+>   **`STORAGE_RPC_ADDR` is gone** — no code reads it; the only surviving occurrences are comments
+>   saying so.
+> * **Boot guard** — `backend` proves at boot that its task role can actually reach both buckets under
+>   the names it was given, because both are created with terraform `bucket_prefix` and carry a
+>   generated suffix. The guard is **disarmed by `ENVIRONMENT=development`**, which is the trap worth
+>   knowing: with empty bucket names a local `backend` boots "fine" and silently writes every upload to
+>   the container's ephemeral disk.
+> * **Infrastructure — the ECS service is gone; the terraform module is NOT, and must not be deleted.**
+>   `module "storage-service_euwest1"` now declares only the platform's object-storage **assets**: both
+>   S3 buckets (~92 GiB), their versioning and SSE, the CloudFront distribution + OAI + bucket policy,
+>   and the `media.anthropos.work` CNAME — all of which `backend` reads and writes directly.
+>   `prevent_destroy` will **not** save you here: it is read from *configuration*, so removing the block
+>   removes the guards along with the resources they guard. `backend`'s `storage_s3_bucket` /
+>   `storage_s3_public_bucket` / `media_url` inputs are wired from this module's outputs.
+>   **Name collision:** `module.storage-service_euwest1` (the buckets) is **not**
+>   `module.storage_euwest1` (`modules/core/storage` — the RDS instance and the ElastiCache replication
+>   group). Never abbreviate either name; never target them with a wildcard.
+> * **Repo** — the `storage` git repo still exists but is **frozen/legacy**; make changes in `app`.
+>   It is still in `repos.yml` and still startable from the `storage-legacy` compose profile, as the
+>   rollback path.
+>
+> **Everything below this banner describes the standalone service.** The object layout, namespaces and
+> manager semantics carried over unchanged and are still accurate; the RPC surface, the SDK and the
+> ports are the rollback target's, not the live path's.
+>
+> For current documentation of this domain, see [Backend (`app`)](./backend.md).
+
 ## Role & Responsibility
 
 Storage is the **centralized file/blob service** for the platform.
@@ -235,6 +277,25 @@ storage sync /tmp/anthropos-storage s3://anthropos-private-bucket --dry-run
 | `ENVIRONMENT` | `development` | Environment name. **The block DID set it** — `- ENVIRONMENT=development` at `docker-compose.yml:119` @ platform `0dab54d` and `:206` @ `2adcf71`. (Corrected M257x iter-102; this cell read *(empty)*, i.e. "never set by compose". The error mattered: `development` is precisely the value that makes `deployedEnvironment()` return false and **disarms** app's boot guards — see the hazard note under "Two storage managers" — so recording it as unset hid the mechanism.) |
 | `SERVICE_NAME` | `storage` | Logging label |
 | `SENTRY_DSN` | (empty) | Sentry error tracking |
+
+### The in-app variables (what you actually set now)
+
+Read by **`backend`**, not by this container:
+
+| Variable | Compose value | Description |
+|----------|---------------|-------------|
+| `STORAGE_S3_BUCKET` | `production-storage20240826131618541000000005` | Private bucket. **Not empty any more** — the local default is the real production private bucket |
+| `STORAGE_S3_PUBLIC_BUCKET` | `production-storage-public20240919130721114900000001` | Public bucket, fronted by CloudFront at `media.anthropos.work` |
+| `AWS_REGION` / `AWS_DEFAULT_REGION` | `eu-west-1` | Required — the buckets live in eu-west-1 |
+| `MEDIA_URL` | `https://media.anthropos.work` | The public read URL `backend` hands out for public objects |
+| ~~`STORAGE_RPC_ADDR`~~ | *(gone)* | Set by no compose file, absent from `.env_example`, read by no code. Its only remaining occurrences are comments recording that it is gone |
+
+> **FOOTGUN, and a bigger one than the standalone's.** Both bucket names default to **production**
+> buckets on a local stack, so `backend` writes to real S3 out of the box (given credentials — the
+> compose file mounts `~/.aws/credentials` read-only). Override both to empty for a fully local run,
+> and expect the boot-time bucket-access guard to be silent about it: `ENVIRONMENT=development`
+> disarms the guard, so empty buckets look like a healthy boot while every upload goes to the
+> container's ephemeral disk.
 
 ## Testing
 

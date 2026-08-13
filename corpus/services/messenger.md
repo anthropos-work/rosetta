@@ -139,6 +139,13 @@ Most messenger sends are reactive — driven by **Redis Streams** events on the 
     a store that holds none.)*
 
 > **Staging safety**: if you ever restore a production DB dump into local staging, `BREVO_KEY` **must be blanked** in `platform/.env` before `make up` to prevent real customer emails from going out. See [staging_from_dump.md](../ops/staging_from_dump.md).
+>
+> **Since v9.0 the kill switch moved.** Blanking `BREVO_KEY` is still necessary but is no longer the
+> primary control, and restarting the `messenger` container no longer does anything on a default
+> stack — there is no messenger container running. The mailer is `backend`, and the switch is
+> **`MESSENGER_ENABLED`** (unset ⇒ off on a developer machine). `backend` also **refuses to boot** if
+> the switch is on with an empty `BREVO_KEY`, so on a prod-dump stack leave the switch off rather than
+> trying to neuter the key.
 
 ## Local Development
 
@@ -201,6 +208,16 @@ at `:296`. Ref re-stated M257x iter-102 — the citation was previously unpinned
 | ~~`SKILLPATH_RPC_ADDR`~~ | *(removed earlier)* | **Gone from docker-compose** since skillpath was decommissioned into `app` ("skillpath-in-app", M502→M507) — only the residual `SKILLPATH_STREAM=skillpath` remains, on `backend`. Messenger never had a Skillpath RPC client anyway; skill-path data is read via the CMS client (`internal/flow/assignments.go:828`, in `getSkillPath`). |
 
 > The binary's built-in fallbacks when the env var is unset are `PORT=8080` (`cmd/root.go:63`), `RPC_PORT=8081` (`cmd/root.go:64`), `REDIS_STREAMS_INDEX=2` (`cmd/root.go:107`).
+
+### The in-app variables (what you actually set now)
+
+These are read by **`backend`**, not by this container:
+
+| Variable | Read by | Description |
+|----------|---------|-------------|
+| `MESSENGER_ENABLED` | `backend` | Master switch for the folded mailer. **Unset ⇒ off** on a developer machine; **unset in a deployed environment ⇒ `backend` refuses to boot** (an unset switch would silently drop every email while every health check stayed green). An unparseable value is an error everywhere |
+| `BREVO_KEY` | `backend` | **Required** when `MESSENGER_ENABLED` (or `CUSTOMERIO_SYNC_ENABLED`) is on — `backend` fails fast rather than starting a mailer that cannot send. One key now covers transactional mail, product tracking and the marketing-contact sync |
+| `REDIS_ADDR` / `REDIS_STREAMS_INDEX` | `backend` | Where the takeover subscriber attaches. It joins the **existing** `messenger` consumer group; boot verifies the group exists rather than creating a fresh one |
 
 ## Testing
 

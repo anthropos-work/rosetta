@@ -65,7 +65,7 @@ sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
 docker compose -f platform/docker-compose.yml restart backend
 ```
 
-Verify:
+Verify against **`backend`**:
 
 ```bash
 docker compose -f platform/docker-compose.yml exec -T backend env | grep -E '^(BREVO_KEY|MESSENGER_ENABLED)='
@@ -75,7 +75,6 @@ docker compose -f platform/docker-compose.yml exec -T backend env | grep -E '^(B
 With the key blank, every API call to Brevo fails at the 401 layer and no email is delivered.
 
 Apply the same caution to any other live-customer integration you don't intend to fire from staging:
-- `CUSTOMERIO_*` (marketing/lifecycle email — disable unless you're testing customer.io integration explicitly).
 - `HEYGEN_WEBHOOK_SECRET` (third-party webhooks — won't fire if not exposed publicly anyway, but blank it to be safe).
 - `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` (media / voice — these don't email but can incur cost or bandwidth charges; use sandbox keys if available).
 

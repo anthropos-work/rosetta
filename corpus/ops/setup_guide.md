@@ -474,10 +474,15 @@ All services share a **single centralized `.env` file** located in the `platform
 > **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails, and the messenger subsystem will send them on any flow that triggers a notification. Since `838d907` there is **no `messenger` container to stop** — messenger runs in-process inside `backend`, switched on by `MESSENGER_ENABLED` (unset means off while `ENVIRONMENT=development`), so blanking the key is the one kill switch that survives someone flipping that variable. Blank it in `platform/.env`:
 >
 > ```bash
-> sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
+> echo 'MESSENGER_ENABLED=false'       >> platform/.env
+> echo 'CUSTOMERIO_SYNC_ENABLED=false' >> platform/.env
 > ```
 >
-> Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
+> Neither switch is in `.env_example` and **unset already means off on a developer machine**, so the safe default needs no action — set them explicitly anyway if the box runs as a *deployed* environment, where an unset switch makes `backend` refuse to boot. `true/1/yes/on` and `false/0/no/off` are all accepted; anything else is an error everywhere rather than being read as "false".
+>
+> Blanking `BREVO_KEY` is still reasonable defence-in-depth **but is not the primary control and can backfire**: `BREVO_KEY` is *required* whenever either switch is on, and `backend` fails fast on an empty key. An empty key plus an on switch is a dead stack, not a muted mailer — turn the switch off instead.
+>
+> Apply the same caution to `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
 
 **Note**: `env_file: .env` is declared on exactly **four** of the seven compose services — `sentinel`
 (`docker-compose.yml:15-16`), `backend` (`:44-45`), `studio-desk` (`:125-126`) and `next-web-app` (`:156-157`),

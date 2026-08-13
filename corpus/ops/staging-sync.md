@@ -96,9 +96,16 @@ In practice this almost never fires — the rule is "no WIP on staging clones". 
 
 ## Repo scope
 
-The 14 repos the routine covers (same on every staging host; was 15 before `skillpath` was decommissioned into `app`):
+The 14 repos the routine covers (same on every staging host; was 15 before `skillpath` was decommissioned into `app`). The *count* has not moved, but since v9.0 most of the service half is frozen — the sync still force-resets those clones, there is just nothing live to rebuild from them:
 
-**Service repos (rebuild on change):** `app`, `next-web-app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `roadrunner`, `messenger`, `customerio-sync`, `studio-desk`, `graphql-wundergraph`. (The `skillpath` repo is decommissioned — merged into `app`, "skillpath-in-app" M502→M507 — and no longer built/cloned.)
+**Service repos (rebuild on change):** `app`, `next-web-app`, `sentinel`, `studio-desk`.
+
+**Frozen — force-reset if still cloned, but no live container maps to them:**
+
+- `messenger`, `storage`, `customerio-sync` — folded into `app` at **v9.0 "support-in-app" (2026-08-04)**. Their compose services survive only as the rollback path (`messenger` / `storage-legacy` / `customerio-sync` profiles); a default stack starts none of them. `sentinel` is now the only out-of-process Anthropos service.
+- `cms`, `jobsimulation`, `roadrunner` — folded into `app` earlier (cms-in-app v8.0, jobsim-in-app; `roadrunner` went in with jobsim and `backend` calls Judge0 directly).
+- `graphql-wundergraph` — **retired 2026-07-31**. The repo is archived and clients call `backend`'s own GraphQL endpoint directly; there is no `graphql` compose service and `:5050` is free.
+- `skillpath` — decommissioned, merged into `app` ("skillpath-in-app" M502→M507); no longer built/cloned at all.
 
 > **⚠️ EIGHT of those eleven no longer build anything** (seven until M258 iter-18 — `sentinel` is the
 > eighth). This is the routine's *configured* scope, read off the staging hosts; upstream has moved out
@@ -129,7 +136,7 @@ The 14 repos the routine covers (same on every staging host; was 15 before `skil
 
 ## Skip-worktree handling
 
-The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative).
+The `skip-worktree` pattern lets the docker stack read staging-only patches from disk while keeping them invisible to git (so agent commits stay clean). Service clones (`app`, `cms`, `jobsimulation`, `storage`, `sentinel`, `messenger`, `next-web-app`, `platform`) carry these — see [`staging-bringup.md` Quirk #19](./staging-bringup.md#bringup-quirks-consolidated-as-a-procedural-narrative). On a host brought up before the merges, the marks on the **frozen** clones (`cms`, `jobsimulation`, `storage`, `messenger`) are still there and the sync still dances them through the force-reset — they just no longer feed a running container. Only `app`, `sentinel`, `next-web-app` and `platform` marks affect what actually runs.
 
 ### Apply once per staging clone (idempotent)
 

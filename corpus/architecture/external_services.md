@@ -13,8 +13,15 @@ The Anthropos platform integrates with **four key external services**:
 2. **Directus** - Stores and manages platform content (self-hosted via Docker)
 3. **GraphQL/Wundergraph** - Unifies all backend services into a single API. **Prod-only since platform `2adcf71`** — see the two-state note in that section
 4. **AI Providers** - OpenAI, Anthropic, and Azure for intelligent features
+5. **Brevo** - Transactional email, product tracking, and the marketing-contact sync
+6. **AWS S3** - Object storage (session recordings, documents, assets), CloudFront-fronted for public media
 
 These services allow us to focus on core features while leveraging best-in-class solutions for authentication, content management, and API orchestration.
+
+> **Brevo and S3 moved up into this document at v9.0 "support-in-app"** (2026-08-04). They were
+> previously reached *through* the `messenger` and `storage` microservices; those folded into
+> `app`, so `backend` now talks to both vendors directly. Same vendors, one fewer hop — and,
+> for Brevo, one credential covering three uses.
 
 ---
 
@@ -741,6 +748,65 @@ LiveKit provides the real-time voice infrastructure for simulation voice calls. 
 | **Integration** | Jobsimulation service |
 
 AWS Chime SDK captures the full simulation session (camera, screensharing, microphone) as a composited MP4 grid view. This runs in parallel with LiveKit's audio-only recording.
+
+---
+
+## Brevo (Email + Marketing Contacts)
+
+| Property | Value |
+|:---------|:------|
+| **Type** | SaaS (formerly Sendinblue) |
+| **Purpose** | Transactional email, product tracking, **and** the marketing-contact sync |
+| **Integration** | **`backend` directly** — in-process since v9.0 "support-in-app" (2026-08-04) |
+| **Credential** | a single `BREVO_KEY` covers all three uses |
+
+Brevo became a **direct** `backend` dependency when [messenger](../services/messenger.md) and
+[customerio-sync](../services/customerio-sync.md) folded into `app`. There is no Messenger RPC hop
+and no Customer.io — the `customerio-sync` name is a fossil from a vendor the platform left long ago.
+
+Two independent, explicitly-gated subsystems drive it:
+
+| Subsystem | Package | Switch | What it does |
+|---|---|---|---|
+| Transactional mail | `app/internal/messenger/` | `MESSENGER_ENABLED` | The 24 event handlers → Liquid templates → Brevo send, on messenger's own Redis consumer group |
+| Marketing contacts | `app/internal/customeriosync/` | `CUSTOMERIO_SYNC_ENABLED` | A 10-minute push of platform users to Brevo as marketing contacts, on `app`'s asynq scheduler |
+
+> **Both are OFF unless switched on by name.** Being separate deployments used to be what kept
+> them off a developer's machine; folding them in deleted that barrier, since `BREVO_KEY` is
+> already in the same `.env` for product tracking. So an inferred condition — "deployed?", "key
+> present?" — is deliberately **not** accepted as consent. Unset in a **deployed** environment is
+> a **boot failure** rather than a default-off, because silently-unsent mail passes every health
+> check. `backend` also refuses to boot if either switch is on with an empty `BREVO_KEY`.
+>
+> The practical consequence for a prod-dump staging stack: **leave the switches off**. Emptying
+> `BREVO_KEY` with a switch on gives you a dead stack, not a muted mailer.
+
+---
+
+## AWS S3 (Object Storage)
+
+| Property | Value |
+|:---------|:------|
+| **Type** | AWS Service |
+| **Purpose** | Session recordings, simulation documents, content assets, user files, profile images |
+| **Integration** | **`backend` directly** — in-process since v9.0 "support-in-app" |
+| **Config** | `STORAGE_S3_BUCKET` (private) · `STORAGE_S3_PUBLIC_BUCKET` (public) · `AWS_REGION=eu-west-1` |
+
+S3 became a direct `backend` edge when [storage](../services/storage.md) folded in.
+`STORAGE_RPC_ADDR` is **gone** — no code reads it. The public bucket is fronted by CloudFront at
+**`media.anthropos.work`** (`MEDIA_URL`).
+
+Ownership of the assets themselves is the part worth remembering: the storage *ECS service* is gone,
+but **`module.storage-service_euwest1` in production terraform must NOT be deleted** — it declares
+both buckets, their versioning and SSE, the CloudFront distribution + OAI + bucket policy, and the
+`media.anthropos.work` CNAME, and `backend`'s bucket/media inputs are wired from its outputs.
+
+> **Local dev hits production S3 by default.** `backend`'s compose env hardcodes **both** bucket
+> names to the real production buckets, and mounts `~/.aws/credentials` read-only. The private
+> manager's old "/tmp fallback when the bucket is empty" no longer applies, because the bucket name
+> is no longer empty. `backend` verifies bucket access at boot — but that guard is **disarmed by
+> `ENVIRONMENT=development`**, so with the names blanked a local stack boots clean and silently
+> writes every upload to the container's ephemeral disk.
 
 ---
 

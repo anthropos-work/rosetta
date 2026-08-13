@@ -136,6 +136,8 @@ git clone https://github.com/anthropos-work/anthropos-knowledge-base.git
 
 **Quirk #2 — RETIRED, nothing to patch.** The compose service `customerio-sync` used to build from `git@github.com:anthropos-work/customerio-sync.git#main` (the Docker daemon has no GitHub creds), so staging clones repointed it at `context: ../customerio-sync`. Platform `838d907` (2026-08-05) **deleted that service outright**, together with `storage` and `messenger` — `backend` serves all three in-process. There is no build context left to patch, and none of the three can be started locally any more. The quirk keeps its number so the consolidated list below still lines up.
 
+> Still true of the compose entry — the git-URL build context is unchanged — but since **v9.0 "support-in-app" (2026-08-04)** you will normally never hit it. `customerio-sync` was folded into `app` (`internal/customeriosync`, the 10-minute marketing-contact push, on `backend`'s asynq scheduler, gated by `CUSTOMERIO_SYNC_ENABLED`). The container survives only on the opt-in `customerio-sync` profile, so this quirk bites only if you deliberately select it. Its destination is **Brevo**, not Customer.io — the name is a fossil.
+
 You will end up with this layout:
 
 ```

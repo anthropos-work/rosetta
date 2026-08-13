@@ -30,6 +30,8 @@ Sourced from `platform/docker-compose.yml` `depends_on:` declarations and servic
 >
 > **Jobsimulation + cms merged into app (jobsim-in-app, cms-in-app v8.0):** the last two subgraph services are gone from the **supergraph** — the federation now composes **one** subgraph. **And at platform `0c91421` they are gone from compose and from `repos.yml` too** — 7 compose services in the effective topology (5 declared in `docker-compose.yml`), 4 repo entries, neither list containing cms or jobsimulation. (It was 10 and 6 at `0dab54d`, before `838d907` dropped the last three support containers.) (Both still started as unfederated husks right up to `d11a403` — at `2adcf71` compose still declared all three of cms, jobsimulation and roadrunner — and `d11a403` is what changed it. `2adcf71` is the *router* deletion; do not conflate the two commits.) Their tables were re-created in `public` (the legacy `jobsimulation` and `cms` schemas are non-authoritative). **Their production dispositions converged, and BOTH ECS services are destroyed.** `cms`'s module is still declared **in its own repo** at `service_desired_count = 0` (`cms/terraform/main.tf:39`) — but **do not read that as "the prod rollback path stands"**: it is **orphaned dead code**, because `infrastructure` @ `13c248e6` declares no `module "cms"` and `terraform/production/services.tf:64-70` records the destruction (M257x iter-123). `6efa1d5` (merged `f38c0c4`, 2026-08-04), which **deleted** cms's build-production workflow saying *"the cms ECR repository is decommissioned (M810)"*, was the correct signal all along. **This sentence read *"which has never been in any clone set — UNMEASURABLE, report both and assert neither"*; the clone-set premise is true and the unmeasurability that was inferred from it is not.** Likewise **jobsimulation's ECS service is destroyed — M810 has landed for that row** (`6092c6d2` deleted the `module "jobsimulation"` block along with its task definition and ECR repository; the file survives owning only the LiveKit/Chime buckets, the `/production/jobsimulation/*` SSM parameters and the atlas tracker — `jobsimulation/terraform/main.tf:15-40`, the legacy-schema drop being a separate, still-pending M810 step). See [Jobsimulation](../services/jobsimulation.md) and [CMS](../services/cms.md).
 >
+> **Messenger + storage + customerio-sync merged into app (v9.0 "support-in-app", 2026-08-04):** the last three support services folded in, leaving **`sentinel` as the only out-of-process Anthropos service**. Three consequences for this matrix: (1) `backend`'s Connect-RPC mux has **no external callers left** — `messenger` was the last, so the mux's remaining service definitions exist for the frozen repos' pinned builds, not for live traffic; (2) `backend` → S3 is now a **direct** edge, not an RPC hop, and its bucket names come from `STORAGE_S3_BUCKET` / `STORAGE_S3_PUBLIC_BUCKET` (`STORAGE_RPC_ADDR` is gone); (3) **Brevo is now a direct `backend` dependency** — one `BREVO_KEY` covers transactional mail, product tracking and the marketing-contact sync. Both outbound subsystems are gated (`MESSENGER_ENABLED`, `CUSTOMERIO_SYNC_ENABLED`) and off unless switched on by name. See [Messenger](../services/messenger.md), [Storage](../services/storage.md), [CustomerIO Sync](../services/customerio-sync.md).
+>
 > **Content-vs-runtime dependency (unchanged, now in-process):** both the skill-path engine and the jobsimulation engine depend on the **cms domain for content/definitions** — cms is the content layer; they are runtime/session engines that hold no content and reference cms artifacts **by ID**. The skill-path engine fetches a path's chapter/step structure when (re)building a session; the jobsimulation engine loads a simulation's definition before running it. Both calls used to be Connect-RPC (`CMS_RPC_ADDR`, `cms.GetSimulation`); they are **plain function calls** now. The jobsim domain still holds no `DIRECTUS_BASE_ADDR` of its own — its Directus reads flow *through* the cms domain. (See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), [Jobsimulation](../services/jobsimulation.md).)
 
 Production-only:
@@ -49,6 +51,8 @@ Imported as private Go modules (not deployed, **not** cloned by `make init`). Fu
 | **authn** | **Nothing imports the standalone module** (0 `go.mod` requires, 0 Go-source imports across all 7 repos). Reached only via `colony/authn` — `app` at 129 `.go` files @ `ad9f3c49`; the frozen cms/jobsimulation at 6 and 8. The former skillpath usage is folded into app |
 | **taxonomy** | **node-id library** (not data): of the Go repos a stack clones at platform `0c91421` — direct: app (`app/go.mod:20` @ `b948604f`); indirect: sentinel (`sentinel/go.mod:21` @ `88bc5592`). The messenger (direct) / storage (indirect) requirements are frozen — `838d907` dropped both from `repos.yml` |
 
+> Only **two** of those four repos still deploy: `app` and `sentinel`. `storage` and `messenger` are frozen rollback targets — they build, they import the libraries at pinned tags, and they take no traffic.
+
 ## Event Streams (Redis Streams via Watermill)
 
 Services communicate asynchronously through named Redis Streams. Stream names come from `*_STREAM` env vars in `platform/docker-compose.yml`.
@@ -64,6 +68,22 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 | `AI` | (multiple) | (multiple) | AI usage / cost telemetry — see `AI_USAGE_STREAM=AI` env var |
 
 > **Note**: The `chronos` stream was previously used by Chronos for timer events but is gone with the chronos service removal. Jobsimulation no longer has chronos as a dependency.
+
+> **The one place two subscribers share a stream — deliberately.** Everywhere else, `app` merges new
+> handlers onto the **existing** subscriber with `.AddHandler(...)`, because colony keys subscribers by
+> stream name and a second `AddSubscriber` for the same stream silently overwrites the first. The
+> folded **messenger** is the exception: it runs on a **second, dedicated `SubscriberServer`** attached
+> to messenger's **own** Redis consumer group (the literal `messenger`). Two reasons — messenger
+> subscribes to streams `app` already subscribes to, so a shared server would have silently replaced
+> app's handlers; and re-using the pre-existing group means Redis keeps the cursor, so the cutover from
+> the standalone had **no gap**. Different consumer groups on the same stream each see every entry, so
+> the two subscribers do not steal work from one another. `backend` verifies the group exists at boot
+> rather than creating a fresh one, and the whole block only runs when `MESSENGER_ENABLED` is on.
+>
+> The corollary is the operational rule: **never run the standalone `messenger` container alongside a
+> `MESSENGER_ENABLED=true` backend.** Those two DO share a group, and entries claimed by one are
+> invisible to the other — you get a coin flip over which process sends each email. Platform `0dab54d`
+> dropped `messenger` from the `all` compose profile for exactly this reason.
 
 ## Key Flows
 
@@ -101,3 +121,16 @@ Services communicate asynchronously through named Redis Streams. Stream names co
 `Backend (app)` → `Gotenberg`
 *   The backend service uses Gotenberg's `/forms/libreoffice/convert` endpoint to render Office documents to PDF. See `app/internal/converter/gotenberg.go`.
 *   `GOTENBERG_URL=http://gotenberg:3200` is injected via the backend's compose env.
+
+### 7. Transactional Email (Event-Driven)
+`App (any domain)` → `Redis Stream` → `App (messenger flow handlers, in-process)` → `Brevo`
+*   A domain event (session completed, assignment created, org invitation, …) is published to one of the application streams.
+*   The **folded messenger** — `app/internal/messenger/flow/`, running on its **own** subscriber and its **own** consumer group — decides whether the event should produce an email, picks the template, applies staleness guards and per-org whitelabel branding, renders through Liquid, and sends via **Brevo**.
+*   Gated by **`MESSENGER_ENABLED`**; `BREVO_KEY` is required when it is on. With the switch off (the default on a developer machine) no handler is registered at all — the events still flow, nothing mails.
+
+### 8. Marketing-Contact Sync (Scheduled)
+`App (asynq scheduler, every 10 min)` → `public` tables → `Brevo` contacts
+*   `app/internal/customeriosync/` reads a fixed **overlap window** wider than the schedule — the standalone's in-memory `lastSyncTime` did not survive a multi-replica worker that restarts on every deploy — and pushes each user as a Brevo marketing contact.
+*   The push is idempotent (`CreateContact` with `UpdateEnabled`), so overlapping windows cost nothing and a missed run is covered by the next one.
+*   Gated by **`CUSTOMERIO_SYNC_ENABLED`**. The name is a fossil: the destination is Brevo, not Customer.io.
+*   It no longer reads the `public.customer_io_sync_table` view, which was **`public`'s only cross-schema dependency** — it would have been a silent casualty of any legacy-schema drop. The query now lives in `internal/customeriosync/sync_query.sql` against final `public` tables.
