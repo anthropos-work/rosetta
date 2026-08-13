@@ -1,0 +1,19 @@
+repos.yml names: app sentinel next-web-app studio-desk 
+
+stack-demo clones absent from repos.yml (excluding platform/ant-academy/rosetta-extensions):
+  cms                    HEAD f38c0c4 2026-08-04
+  graphql-wundergraph    HEAD 60c229f 2026-07-30
+  jobsimulation          HEAD 82cb66ec 2026-08-04
+  messenger              HEAD e9421c6 2026-08-05
+  roadrunner             HEAD 87d8d44 2026-06-19
+  storage                HEAD 9f8cb53 2026-08-05
+
+repos.yml last change: 838d907 2026-08-05 chore(compose): drop the storage, messenger and customerio-sync containers
+
+studio trees on disk:
+stack-demo/app/studio
+stack-demo/cms/studio
+stack-dev/app/studio
+
+compose build contexts naming a dead repo: NONE (grep '../cms|../jobsimulation|...' in platform/docker-compose.yml -> 0)
+corpus git-clone instructions for a dead repo: NONE (0 matches)

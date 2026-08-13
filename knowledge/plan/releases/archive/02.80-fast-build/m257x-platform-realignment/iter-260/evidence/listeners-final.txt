@@ -1,0 +1,3 @@
+Python    75363 marco    4u  IPv4  0x1ec4efeb4443319      0t0  TCP 127.0.0.1:17700 (LISTEN)
+node      94551 marco   15u  IPv6 0xe272b3582a9bda26      0t0  TCP [::1]:23077 (LISTEN)
+Python    95381 marco    3u  IPv4 0xf4c89509a98fd695      0t0  TCP 127.0.0.1:27700 (LISTEN)

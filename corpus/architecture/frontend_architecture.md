@@ -6,9 +6,9 @@ This document outlines the architecture of the Anthropos **main customer-facing 
 
 > **Note**: There are **two other frontend products** that live outside this monorepo and have their own architecture:
 > - **[Studio-Desk](../services/studio-desk.md)** — Vite + Express, simulation design tool
-> - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo, internal learning portal for `@anthropos.work` employees
+> - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo; a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only
 >
-> Both are pulled by `make init` from `repos.yml` and run natively (not in docker-compose by default). The rest of this document is about `next-web-app` specifically.
+> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:141`, `profiles: [studio-desk, all]` — the fact has survived platform `d11a403` **and** `838d907`; only the line number keeps moving — it was 226 before the support containers were deleted). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. At `0c91421` `repos.yml` holds exactly **4** entries — `app`, `sentinel`, `next-web-app`, `studio-desk` (it was 9 at `2adcf71`, before the cms/jobsimulation/roadrunner and storage/messenger drops) — and ant-academy is not one of them. The rest of this document is about `next-web-app` specifically.
 
 ## Monorepo Structure
 
@@ -29,23 +29,34 @@ The code is divided into `apps` (deployable applications) and `packages` (shared
 | Package Name | Path | Responsibility |
 | :--- | :--- | :--- |
 | **UI Kit** | `packages/ui` | Shared UI components (Design System). Recent work: `SkillCard` mini-card, `SkillCardCallout`, onboarding `SkillsRefinement` cluster card. |
-| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the Cosmo Router supergraph. |
+| **GraphQL** | `packages/graphql` | Shared GraphQL definitions, generated hooks, and types. Populated by `pnpm codegen` against the supergraph — which is now the single `backend` subgraph, served locally by `backend` itself. |
 | **Core JS** | `packages/core-js` | Common utilities and helpers. |
 | **TSConfig** | `configs/tsconfig` (workspace-scoped as `@anthropos/tsconfig`) | Shared TypeScript configs. |
 | **i18n** | `configs/i18n` (workspace-scoped as `@anthropos/i18n`) | Translation messages for 8 locales (de, en, es, fr, it, ja, nl, pt) + next-intl config; consumed as a workspace dependency by all web apps. |
 
 ## Data Layer & Communication
 
-The frontend communicates with the backend **exclusively through the federated GraphQL gateway** (Cosmo Router at `:5050/graphql`, env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend.
+The frontend communicates with the backend **primarily — but NOT exclusively — through GraphQL** (**`backend` at `:8082/graphql/query` locally** since platform `2adcf71`; the Cosmo Router at `:8080/graphql` in prod **until it too was destroyed — corrected iter-124**, `infrastructure/terraform/production/services.tf:509-517`; `:5050` was only ever the deleted LOCAL compose host mapping, never a production port; env `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` either way, and **what that variable points at in production is Vercel runtime config this corpus cannot read**) using `graphql-request` + TanStack React Query, with Clerk bearer tokens injected per-request via `useGraphql` (`Authorization: Bearer <token>`). There are **no** direct Connect/gRPC calls from the frontend — **but there are direct REST/SSE calls**, spread over **22 non-test source files** that name `NEXT_PUBLIC_BACKEND_API_URL` (`:8082`, `docker-compose.yml:161` runtime env, `:152` build arg): the four `packages/core-js` REST clients (course-builder, credits, Talk-to-Data, workforce), AI-readiness (`useAIReadiness.ts` plus the client and its email-preview modal), invitations (`invite/[token]/page.tsx`), the reminder-unsubscribe page, workforce member analytics, the assignment builder and its ask endpoint (`useAssignmentBuilder.ts`, `useAssignmentAsk.ts` — in **both** `apps/web` and `apps/hiring`), Stripe (`useStripe.tsx` / `useStripe.ts`, plus `useManageSubscription.tsx`), CSV bulk import, onboarding résumé import, the AI-simulation test-run network panel, and the admin backfill tools. *"GraphQL only"* is the wrong mental model for the data layer.
+
+> **⚠️ Two quantities, and this passage used to conflate them** (corrected M257x iter-102; it previously said *"**but there are direct REST/SSE calls**, **29 of them across 21 non-test files**"*, with the four core-js clients glossed as *"12 sites between them"*). **29 / 12 were never counts of CALLS** — they were counts of `NEXT_PUBLIC_BACKEND_API_URL` **occurrences**, which is roughly a third of the call surface, so the sentence undercounted the thing its own noun named. Re-derived at `next-web-app` **`8297c684`** (the ref this stack builds, 2026-08-05; 41 commits / 192 files past the `bb3313bc` the old figures came from), over the non-test `.ts`/`.tsx` files, `e2e/` excluded:
+>
+> | quantity | `bb3313bc` | **`8297c684`** |
+> |---|---|---|
+> | files naming `NEXT_PUBLIC_BACKEND_API_URL` | 21 | **22** |
+> | occurrences of that env var | 29 | **31** |
+> | `fetch(` call sites in those files | 43 | **47** |
+> | of which, the four `packages/core-js` clients | 12 env / 25 calls | **12 env / 27 calls** |
+>
+> `new EventSource(` is **0** everywhere — the "SSE" half rides on a streamed `fetch` POST, and `packages/core-js/src/talkToData/api.ts:214` says why: *"uses POST so we can send a JSON body — that rules out EventSource."* Every figure here is **a reading at a ref, never a standing current**: `origin/main` `f97ba659` (4 commits further) reads the same 31 / 22 / 47, but that will move again. The long-standing *"~15 sites"* undercounted by more than half on either measure.
 
 ### 1. GraphQL
 *   **Used For**: Content retrieval (via **CMS**), Simulation state, and aggregated data.
 *   **Implementation**: `packages/graphql` contains the generated types and hooks.
-*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the federated GraphQL endpoint (Cosmo Router, `:5050/graphql`) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
+*   **Code Generation**: Uses `graphql-codegen` to read the supergraph schema from the GraphQL endpoint (`backend` at `:8082/graphql/query`; the Cosmo Router that served `:8080/graphql` in prod was destroyed — iter-124) and emits typed GraphQL documents into `packages/graphql/src/__generated__` via the client-preset (documents sourced from `src/query/**`). React Query hooks are hand-authored on top of these typed documents.
 
 ## Key Technologies
 
-* **Framework**: Next.js 15 (App Router, Turbopack), React 19
+* **Framework**: **Next.js 16** (App Router, Turbopack), React 19 — `apps/web/package.json:46` reads `"next": "~16.2.12"` @ `next-web-app` `8297c684` (same in `apps/hiring` / `apps/integration` / `apps/maintenance`; `apps/mobile` declares none). **Note the operator: a TILDE, not a caret** — this line read `"^16.2.7"` until M257x iter-108, wrong in both the range operator and the patch; the lockfile resolves `16.2.12`. The repo carries an `UPGRADE-IMPACT-next16.md`
 * **Build System**: Turborepo 2.x
 * **Package Manager**: pnpm 10.x (`packageManager: "pnpm@10.30.3"`)
 * **Node**: **v24+ required** (`engines.node: ">=24.0.0"` in `package.json`)

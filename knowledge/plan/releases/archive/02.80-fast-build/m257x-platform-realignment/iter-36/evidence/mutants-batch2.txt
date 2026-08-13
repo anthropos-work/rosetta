@@ -1,0 +1,8 @@
+M1 assignments: NULL the plan FKs: declared=RED actual=RED MATCH
+--- FAIL: TestAssignmentsSeeder_PlanMaterialized (0.00s)
+M2 hiring: NULL the plan FKs: declared=RED actual=RED MATCH
+--- FAIL: TestHiringFunnelSeeder_PlanMaterialized (0.00s)
+M8 dangling FK: plan rows suppressed at write time: declared=RED actual=RED MATCH
+--- FAIL: TestAssignmentsSeeder_PlanMaterialized (0.00s)
+--- FAIL: TestHiringFunnelSeeder_PlanMaterialized (0.00s)
+--- FAIL: TestPlanModelWriteOrderIsFKSafe (0.00s)

@@ -41,7 +41,7 @@ Gating on it would have made the milestone unwinnable for a reason that has noth
 
 `measureLogin` begins by reading the cockpit's real CTA, and the ACCESS predicate's second half ("the user menu
 shows the hero") is resolved from the CTA's **`data-login-as`** attribute. The cockpit emits that attribute on
-**hero cards only** (`cockpit.py:1214`); the Content-stories tab's seat CTAs (`:882`) carry a bare `href`. So
+**hero cards only** (`cockpit.py:1374`); the Content-stories tab's seat CTAs (`:1036`) carry a bare `href`. So
 `readCockpitCta` (`e2e/lib/latency.ts:115-127`) **throws before t0** for a content seat — there is no clock to
 start. `run-latency.sh:53-59` independently hard-rejects any vantage outside `employee|manager|recruiter`
 (`exit 2`). **A content-seat number cannot be produced by this harness at all**, so its absence is a property
@@ -137,8 +137,29 @@ hypotheses an operator reaches for first.
 | a **constant** ~37.5 s / ~6.1 s regardless of page content | a **retry ladder** — blackholing vs fast-failing (above) |
 | **scales with the item count** on the page; a light sibling passes | a **per-item fan-out** — a query inside a loop |
 | **large and cold, small and warm**, same page | a **warm-up transient** — see R4 below, not a gate violation |
+| **one process pays it, every later call is ~0**, and it lands **before** the surface exists | a **name-service lookup on a bind/connect path** — see below |
 
-**The order matters: name the arithmetic signature *before* reading code.** All three are distinguishable from
+**The fourth signature is the one no page instrumentation can see, because it happens before there is a page.**
+A process pays a large, fixed cost **exactly once**, and every subsequent call in that process — and in the
+next process on the same box — is free. That is not a warm-up transient (which is per-surface and recurs on
+each cold stack); it is a **name-service lookup the OS resolver then caches**, and it sits on a *bind* or
+*connect*, upstream of every timer a browser or a probe could start.
+
+M257x iter-171 measured one, on the demo's own entry point: CPython's `http.server.HTTPServer.server_bind`
+sets `server_name = socket.getfqdn(host)` — a synchronous reverse-DNS query — and on the dev Mac's homebrew
+Python **3.14.6** the first `socket.getfqdn("127.0.0.1")` took **35.005 s**, against **0.005 s** on the Apple
+system **3.9.6**, warm calls ~0 s on both. Nothing reads `server_name`. The damage was not the delay:
+`up-injected.sh` polls the presenter cockpit's `/healthz` **25 × 0.2 s ≈ 5 s**, so the bring-up declared the
+cockpit **dead**, skipped fronting it with `tailscale serve`, and the cockpit came up fine — unfronted — half
+a minute later. **Read a health-gate false negative as a latency signature**, not as a crash.
+
+> **Diagnostic, and it is one call:** dump the blocked thread's stack — `sys._current_frames()` in Python,
+> the equivalent elsewhere — *before* theorising about the harness. It named the frame outright here, where
+> two plausible wrong answers ("the test window is too tight", "3.14 is flaky") were already on the table.
+> And **never re-measure without clearing or defeating the cache**: the second reading is free, so a warm
+> measurement reports the bug as absent. The fence for this class poisons the resolver instead of timing it.
+
+**The order matters: name the arithmetic signature *before* reading code.** All four are distinguishable from
 the number and one contrast, and each sends you to a different file.
 
 > ⚠️ **But first, disbelieve the clock.** A per-item fan-out and a **mis-instrumented wait** produce the same
@@ -321,9 +342,76 @@ Contract:
   rather than silently sweeping the DEV stack at offset 0.
 - **It never gates on `networkidle`** — next-web holds never-idle long-polls. Every wait is **content-presence**
   polling.
+- **…and the ban on it must be a TOKEN scan, not a list of spellings (v2.8 M256 harden pass).** M256 iter-03
+  widened the Playthrough harness's ban from "the four `/home` logins" to "the whole harness" and encoded it as
+  two tightly-anchored regexes: `waitUntil:\s*['"]networkidle['"]` and
+  `waitForLoadState\(\s*['"]networkidle['"]\s*\)`. Measured at the harden pass, **four plausible shapes score zero
+  hits against that pair**, and two of the four are not hypothetical:
+  - `waitUntil: opts.waitUntil ?? 'networkidle'` — the **coalesced default**, which is
+    `stack-verify/e2e/lib/cockpit-login.ts:87` *verbatim*: the single line that is the **root cause of the whole
+    class**. The pattern required a quote immediately after `waitUntil:`; a `??` default puts an identifier there,
+    so the ban was blind to the origin of the bug it was banning.
+  - `waitForLoadState('networkidle', { timeout: 4_000 })` — the **bounded settle**, ~20 occurrences one directory
+    away (`persona-assert.ts`, `section-assert.ts`, `crawl.ts`, four `calibrate-*` specs). The pattern required
+    `)` immediately after the closing quote, so **any** second argument disabled it — and `hero-login.ts` forwards
+    into that very tree, so the two directories are one copy-paste apart.
+  - plus double-quoted spellings and `const w = 'networkidle'` indirection.
+
+  The ban is now a **token scan of comment-stripped code** — no arity, argument order or quote style to get wrong —
+  with exactly **one enumerated allowance**: a `waitUntil?:` optional-property *type* declaration, which `?:` makes
+  provably impossible to execute as a gate. **The general rule: ban the token, not the two spellings you happened
+  to find** — a spelling list is a fence around the instances you already fixed. The scope exception
+  (`stack-verify/e2e/**`, the coverage sweep, which uses a *ceiling-bounded* networkidle as one input to a presence
+  heuristic **by design**) is now written down rather than implied by which directories the scanner happens to read.
 - **It clears cookies per sample**, so each click is a genuine cold login.
-- **curl cannot drive this flow** at all: the fake-FAPI validates `redirect_url` against the public origin, and
-  next-web's middleware 307s any non-https origin. It **must** be a real browser on the real origin.
+- **curl cannot drive this flow** at all. It **must** be a real browser on the real origin — but **not** for the
+  reason this bullet gave until M257x, and the difference is a security one.
+
+  > ### 🔻 RETRACTED — *"the fake-FAPI validates `redirect_url` against the public origin"* (M257x)
+  >
+  > **It does not validate it at all.** The handshake handler takes `redirect_url` straight off the query
+  > string, substitutes `/` only when it is **empty**, appends the freshly-minted `__clerk_handshake` token
+  > and 303s to it **verbatim** — no scheme check, no host check, no allowlist, no comparison against the
+  > demo's own origin. Measured at `rosetta-extensions/clerkenstein/clerk-frontend/server.go:414-423`
+  > @ rext `415240f`:
+  >
+  > ```go
+  > loc := r.URL.Query().Get("redirect_url")   // :414
+  > if loc == "" { loc = "/" }                 // :415-417
+  > …
+  > loc += sep + "__clerk_handshake=" + url.QueryEscape(hsToken)   // :422
+  > http.Redirect(w, r, loc, http.StatusSeeOther)                  // :423
+  > ```
+  >
+  > `grep -n "redirect_url" clerkenstein/clerk-frontend/*.go` returns **22 lines across four files**, of
+  > which **three sit outside `_test.go`** — and **exactly one is CODE**: the `:414` read. ⚠️ **This
+  > receipt said *"returns one non-test occurrence"* until M257x iter-140, and run verbatim it does not:**
+  > the other two non-test lines are **comments** in the same file (`:150`, `:155`) describing the very
+  > handshake bounce this paragraph is about. **The conclusion is untouched — there is one code
+  > occurrence — but the number was written from the conclusion rather than from the command's output**,
+  > which is the defect: a reader who runs it sees 22 and stops trusting the paragraph. There is no origin allowlist anywhere in the file; the only `Origin` handling is
+  > `corsMiddleware`, which **reflects** whatever Origin it is sent (`:214-217`) rather than checking it.
+  >
+  > **Why this correction is load-bearing, not pedantry.** The bullet credited the Clerkenstein mock with a
+  > **security property it has never had**, in the document a reader consults to decide what a demo is safe
+  > to expose. The mock is an **open redirect that hands the caller a session** — `GET
+  > /v1/client/handshake?__clerk_identity=<hero>&redirect_url=<anywhere>` mints an RS256 `__session` +
+  > `__client_uat` + `__clerk_db_jwt` and forwards them to an attacker-chosen destination, with **no
+  > credential presented at any point**. That is not a regression to fix here: it is the *designed* behaviour
+  > of a deliberately disarmed mock, and the control that makes it defensible is the one
+  > [`../safety.md` §3](../safety.md) states — **there is nothing behind the door** (no customer data in a
+  > demo, no write path to prod) plus the VPN/tailnet exposure scope. `safety.md:627` already discloses the
+  > password-free handshake as an exposure; **what was wrong was only this page's claim that a validation
+  > step stands in front of it.** Do not re-add the claim, and do not treat the mock's `redirect_url` as
+  > sanitised anywhere else.
+  >
+  > **What actually makes curl insufficient** is the definition of ACCESS at the top of this page: the
+  > authenticated shell **rendered and interactive with the hero's identity present**. Reaching that requires
+  > `clerk-js` to execute (the bundle the fake FAPI proxies), the client gate to resolve, and the data query
+  > to return — none of which a redirect-following fetch performs. The HTTPS-origin requirement is real but
+  > belongs to `@clerk/clerk-js`/`clerkMiddleware`, which derive the FAPI host from the publishable key and
+  > always prefix it `https://` (see [`recipe-browser-login.md` step 2](recipe-browser-login.md)) — it is a
+  > property of the Clerk SDK, not of a check the mock performs.
 
 ## The studio-desk first-paint budget (v2.7 "july jitter" M253)
 
@@ -466,6 +554,43 @@ nav commit → skeleton (the M253 metric) → clerk.load → l12n → canAccess 
   (`nonOk` + a `slowest` top-12 per run). This is what turned "studio feels slow" into a named 404 route.
 - Reports **`dead_shell_gap_ms`** — real-shell minus skeleton — *the* number the M253 gate cannot see.
 - Knobs: `STUDIO_TTU_{HOST,SCHEME,N,RUNS,IDENTITY,OUT}`. Read-only, zero platform edits.
+
+## ⚠ A relative gate needs its NOISE FLOOR published next to it, or it is not falsifiable (v2.8 M256 iter-12)
+
+M256's clause 1 was pinned as a **ratio**: the median per Playthrough must be **≤ 0.79×** a same-stack
+baseline measured earlier in the milestone. Eleven iters reported it as MET (0.5434× · 0.6245× · 0.5950× ·
+0.5652× · 0.6863×), each honestly reporting its own batch. **Nobody measured how much the number moves when
+nothing changes** — and iter-12 did:
+
+| statistic, six full-suite runs, one session, same host | min | max | spread | median (n=6) |
+|---|---:|---:|---:|---:|
+| the GATED figure (22 non-studio Playthroughs) | 0.5701× | 1.1121× | 1.95× | **0.8129×** |
+| the CONTROL subset (16 specs unchanged since iter-03) | 0.5281× | 1.0762× | **2.04×** | 0.7063× |
+
+The control subset is code **no iter touched**, and it varies by a factor of two. There is no trend — the
+most recent run reads 0.529× and the oldest 0.528×, with the 1.076× extreme in between — so this is not
+host degradation over a session but **variance the pinned statistic does not absorb**. A "median of 3
+consecutive runs" can land anywhere between ~0.53× and ~1.08× depending on which three runs it catches, which
+means the *verdict* was being sampled, not measured. At n=6 the gated figure is **0.8129× — outside the
+gate.**
+
+**Rules this produces, and they apply to every relative gate in the corpus:**
+
+1. **Publish the spread with the median.** A ratio without a noise floor is a number, not a verdict. State
+   min / max / n alongside it.
+2. **Keep an untouched CONTROL subset and report it every time.** It is the only thing that separates "the
+   work got faster" from "the box was quiet". M256's original-16 cross-check existed from iter-04 and is what
+   made this diagnosable at all — its value was in *having* it, not in the reassuring readings it gave.
+3. **Prefer a PAIRED measurement.** Measure the baseline in the **same batch** as the treatment. A baseline
+   fixed hours earlier silently turns the ratio into a measure of host state.
+4. **If n=3 cannot decide the gate, raise n or normalise within-run** (against an invariant leg such as the
+   login handshake) — do not re-run until a favourable batch appears. Choosing the flattering denominator
+   after the fact is the same defect as choosing the flattering run.
+
+This does **not** retract the underlying speed work: iter-03's `networkidle` removal was measured **directly**
+at the leg (2854 ms → 423 ms for the same navigation), not inferred from a suite ratio. Leg-level
+before/after on the same page in the same run is exactly the kind of measurement this variance cannot fake —
+which is the strongest argument for preferring it over suite-level ratios wherever it is available.
 
 ## See also
 

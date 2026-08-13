@@ -1,0 +1,4 @@
+Playthroughs coverage: 29/31 passing (93.5%)
+  passing=29  failing=1  unimplemented=1  unimplementable=0
+
+  [PASS] ai-readiness.manager-dashboard.UC1       passing                                 

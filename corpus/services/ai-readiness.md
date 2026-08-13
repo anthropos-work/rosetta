@@ -15,9 +15,20 @@
 > The whole AI-Readiness domain moved out of `app/internal/workforce/` into a **new package
 > `app/internal/aireadiness/`** (package name `aireadiness`) — commit `4c28365f` ("Refactor AI Readiness domain:
 > migrate workforce dependencies to aireadiness package", 2026-07-22). `workforce` keeps the org-analytics KPIs;
-> `aireadiness` owns everything readiness-scoped. **The only remaining dependency on `workforce` is the member
-> directory** (the `WorkforceDirectory` interface — `LoadMembers`/`LoadMembersByUserIDs`, whose implementations
-> **stayed** in `app/internal/workforce/members.go`).
+> `aireadiness` owns everything readiness-scoped. **The remaining dependency on `workforce` is the member
+> directory PLUS the org's skill-scale setting** — the `WorkforceDirectory` interface, which declares
+> **FOUR** methods at `app/internal/aireadiness/manager.go:40-51` @ `app` `ad9f3c498`:
+> `LoadMembers` (`:43`), `LoadMembersByUserIDs` (`:45`), `BaseMembers` (`:48`) and **`LevelsCount`**
+> (`:50`). ⚠️ **Corrected M257x iter-141 — this said *"the ONLY remaining dependency … is the member
+> directory"* and named two methods.** The source's own type doc says otherwise in as many words
+> (`manager.go:36-39`): *"the slice of the workforce manager this domain needs: the active-member
+> directory … **and the org's skill-scale setting**."* `LevelsCount` is an **org setting**, not a member
+> call — `readiness.go:776` reads `maxLevel := int(m.workforce.LevelsCount(ctx, orgID))`.
+> **And *"whose implementations stayed in `members.go`"* is wrong for the fourth**: `LoadMembers` /
+> `LoadMembers` / `LoadMembersByUserIDs` / `BaseMembers` are at `app/internal/workforce/members.go:349`/`:353`/`:357`,
+> but **`LevelsCount` is at `app/internal/workforce/manager.go:90`** (`git grep "func .*LevelsCount"`
+> returns three sites tree-wide: the unexported `getLevelsCount` at `manager.go:61`, the exported one at
+> `:90`, and a test fake). Independently re-derived at source, iter-141.
 >
 > **File renames** (older `app/internal/workforce/…` anchors elsewhere in this doc refer to the pre-refactor
 > location — resolve them under `internal/aireadiness/`):
@@ -39,8 +50,33 @@
 > file no longer exists — the call is now at **`app/internal/aireadiness/readiness.go`**, `buildResponseFromSnapshots`,
 > as **`m.workforce.LoadMembers(ctx, orgID, "")`** *through the `WorkforceDirectory` interface* (the bounded swap
 > `LoadMembers → LoadMembersByUserIDs` is now expressible at that interface call site, since `WorkforceDirectory`
-> already exposes `LoadMembersByUserIDs`). The patch **must re-anchor** — this is the M246 drift-ledger **D-07**
-> item, owned by **v2.7 M250**.
+> already exposes `LoadMembersByUserIDs`). **The re-anchor has LANDED** — v2.7 **M254**, not the M250 the M246
+> drift-ledger's **D-07** item originally assigned it to: the manifest reads `path:
+> internal/aireadiness/readiness.go` (`app-aireadiness-snapshot-loadmembers.yaml:42`) and its own header says
+> *"v2.7 M254 RE-POINT"* (`:33`), with `demo-stack/tests/test_aireadiness_snapshot_loadmembers_m254.py`
+> fencing it. This paragraph stated completed work as outstanding while the **⚠⚠ M51 iter-08/09** block below
+> already described the same call site in its post-refactor location — *"(now `aireadiness/readiness.go`,
+> formerly `workforce/ai_readiness.go:512`)"* — i.e. the doc contradicted itself; corrected M257x iter-46.
+> ⚠️ **The bare line number was itself the defect.** That cross-reference carried one line number when iter-46 wrote it and
+> the next one down after iter-100 mechanically re-pointed it, and **neither line has ever carried the statement** — the later of the two
+> merely opens the `> **✅ CORRECTED M219 …**` blockquote, which is about an unrelated claim. The target is
+> therefore named by construct above — the **`⚠⚠ M51 iter-08/09`** block, identified by the quoted
+> parenthetical *"(now `aireadiness/readiness.go`, formerly `workforce/ai_readiness.go:512`)"*.
+> ⚠️ **And the third generation rotted too, which is why this passage no longer carries a line pin at all
+> (M257x iter-115).** iter-102 replaced `:459` with **`:496`**; re-derived at iter-115, `:496` was the
+> **closing line of the `> **✅ CORRECTED M219 …**` blockquote** — the very blockquote the two sentences above
+> name as the *wrong* target for the previous generation. **The pin was deleted rather than re-derived**:
+> three generations of one anchor in one file, each off by a handful of lines, is not three accidents — a
+> same-file line pin in a document that grows will rot again, and the self-heal clause (*"when the two
+> disagree, the name wins"*) lowers a reader's cost without making the number true. **Search the construct.**
+>
+> ⚠️ **A FOURTH generation, and it was inside this very paragraph (M257x iter-120).** iter-115 deleted the
+> *cross-reference* pin and then spent three sentences describing where things were, in bare line numbers —
+> *"(`:476-496`)"*, *"the block opens at `:498`"*, *"the parenthetical is at `:500`"*. Re-derived at iter-120
+> those are **`:512`**, **`:538`** and **`:540`**: the passage arguing that same-file pins rot had three of
+> its own rot inside five iterations. They are now gone. **The surviving numbers — `:458`, `:459`, `:496` —
+> are QUOTED HISTORY, not citations**: they are what the doc once *said*, which is a fixed fact, and that is
+> the only kind of line number this paragraph is allowed to carry.
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
@@ -55,7 +91,8 @@ and **member-facing** for the onboarding flow + **manager/analytics-facing** for
 
 ## Org enablement (the gate)
 
-The feature is off until an org turns it on. Two gates compose (both must be true for the UI to render):
+The feature is off until an org turns it on. Two gates exist — but **they do not both apply to every
+surface**, and assuming they do sends you hunting for a PostHog problem the manager dashboard does not have:
 
 1. **Org setting** — a row in `organization_settings` with `setting = 'ai_readiness'`, `is_enabled = true`
    (`app/internal/data/ent/enum/organization_settings.go:47` → `OrganizationSettingAIReadiness = "ai_readiness"`;
@@ -63,15 +100,32 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
    `workforce/readiness_steps.go::isAIReadinessEnabled`). No row =
    off. Exposed to the FE as the GraphQL query `aiReadinessEnabled: Boolean!`
    (`resolver_ai_readiness.go` — returns `false`, not an error, for non-enabled orgs).
-2. **PostHog flag** `flag_ai_readiness` — the next-web client also gates the route on this flag before it even
-   queries `aiReadinessEnabled` (`apps/web/.../ai-readiness/AIReadinessClient.tsx`).
+2. **PostHog flag** `flag_ai_readiness` — gates the **member-facing** surface only. Its **sole consumer
+   repo-wide** is `apps/web/src/components/ai-readiness/data/useAiReadinessActive.ts:22`
+   (`useFeatureFlagEnabled(AI_READINESS_FLAG)`; the constant is declared at
+   `components/ai-readiness/aiReadiness.constants.ts:26`).
+
+> **⚠️ The MANAGER dashboard does NOT check the flag.**
+> `apps/web/src/app/(authenticated)/(verified)/ai-readiness/AIReadinessClient.tsx` contains **no PostHog
+> reference at all** — measured: 0 occurrences of `posthog` and 0 of `flag_ai_readiness`. It gates on
+> `orgEnabled` alone — `const { orgEnabled } = useAiReadinessEnabled(true);` at **`:135`**, **@ `next-web-app`
+> `8297c684`** (byte-identical at `origin/main` `f97ba659`, so no ref resolves it away). ⚠️ **This cited
+> the two lines above it until M257x iter-115** — the tail of the `// Feature gate:` comment, not the construct.
+> **All four of this document's `AIReadinessClient.tsx` anchors were off by the same one-construct drift**
+> and are corrected together (`:135` · `:155-156` · `:171` · `:601`); the one anchor *above* the drift point,
+> `:78` `const SHOW_SECONDARY_TABS: boolean = false;`, is exact — which is what let the block read as
+> verified. So **gate 1 alone**
+> renders the admin dashboard; gate 2 applies to the member/onboarding surface. A blank manager dashboard is
+> a gate-1 (org-setting) problem, never a PostHog one.
 
 > **These two gates are different layers — not a contradiction.** `stories-spec.md` (the `OrgSettingsSeeder` row)
 > calls enablement "an **org setting**, not a PostHog flag": that is precise about the **enablement/data layer**
 > (gate 1) the seeder writes — a `organization_settings` DB row, resolved from the M48 contract, which is *not*
-> stored in PostHog. It does **not** deny gate 2: the next-web client *additionally* checks the PostHog
-> `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and UI-also-checks-the-flag (gate 2)
-> are complementary, and both must hold for the dashboard to render.
+> stored in PostHog. It does **not** deny gate 2: the next-web **member** surface *additionally* checks the
+> PostHog `flag_ai_readiness` before rendering. Seeder-writes-the-setting (gate 1) and
+> member-UI-also-checks-the-flag (gate 2) are complementary — but per the callout above, **only gate 1 is
+> required for the manager dashboard**. The demo must satisfy gate 2 for the member journey, which is what
+> the next section is about.
 >
 > ### ⚠️ How the demo satisfies gate 2 (the FE flag) — CORRECTED, M219 (v2.3 "cue to cue")
 >
@@ -87,6 +141,15 @@ The feature is off until an org turns it on. Two gates compose (both must be tru
 > const { orgEnabled } = useAiReadinessEnabled(flagEnabled);     // queried ONLY when the flag is on
 > active = flagEnabled && orgEnabled === true;                   // → never active
 > ```
+>
+> **The construct this paraphrases, named (M257x iter-115).** It is `useAiReadinessActive()` in
+> `apps/web/src/components/ai-readiness/data/useAiReadinessActive.ts:19-32`, **@ `next-web-app`
+> `8297c684`** — `:22` `rawFlag`, `:25` `flagEnabled`, `:29` `useAiReadinessEnabled(flagEnabled)`,
+> `:32` `active: flagEnabled && orgEnabled === true`. **This block carried no file and no ref until
+> iter-115**, which is the same defect the four `AIReadinessClient.tsx` anchors in this document carried
+> — a citation-free paraphrase cannot be re-derived, and cannot be caught when it drifts. **Distinct
+> surface from the manager dashboard**: this is the *member* gate (gate 2); the manager dashboard
+> calls `useAiReadinessEnabled(true)` directly and never reaches this hook.
 >
 > `Analytics.provider.tsx` initializes PostHog only when **both** `NEXT_PUBLIC_POSTHOG_KEY` and
 > `NEXT_PUBLIC_POSTHOG_HOST` are present; a demo supplies neither. So on a demo the **member** AI-readiness
@@ -161,12 +224,12 @@ All tables live in `app` (`public` schema); ent schemas under `app/internal/data
 | `ai_readiness_text_translations` | content-addressed translation cache | `source_hash`+`lang` |
 | `ai_readiness_recommendations` | per-member recommended actions (the What-to-do-next drawer's "Recommended actions") | **was missing from this doc until M219**; the demo seeds **0 rows** — the live read derives `people[].diagnosis.recommendations` instead |
 | `ai_readiness_email_overrides` (**net-new, M408**) | per-org email-copy override | one row per `(organization, email_type)`; `OrganizationMixin`-scoped; backs the workforce-admin email PUT/GET/DELETE + the preview renderer |
-| `ai_readiness_notification_log` (**net-new, M400**) | notification send log | the invitation/reminder/launch/digest lifecycle audit |
-| `ai_readiness_notification_optout` (**net-new, M400/M403**) | per-member unsubscribe | the reminder-cadence opt-out |
+| `ai_readiness_notification_logs` (**net-new, M400**; plural — the ent-generated table name) | notification send log | the invitation/reminder/launch/digest lifecycle audit |
+| `ai_readiness_notification_optouts` (**net-new, M400/M403**; plural — the ent-generated table name) | per-member unsubscribe | the reminder-cadence opt-out |
 | `organization_settings` (existing) | the enablement gate | `setting='ai_readiness'`, `is_enabled` |
-| **`jobsimulation.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
+| **`public.interview_aggregated_reports`** | **the org's Step-3 interview AGGREGATE — the SOLE source of all four "AI Interview — breakdown" blocks** | `(organization_id, sim_id, report JSONB, session_count)`. **Added to this doc in M219 R-8; nothing had ever seeded it.** See below. |
 
-### The Step-3 interview findings — `jobsimulation.interview_aggregated_reports` (M219 R-8)
+### The Step-3 interview findings — `public.interview_aggregated_reports` (M219 R-8)
 
 The manager's **How-we-measure → Step-3 breakdown** panel has four sub-sections. On the shipped demo **three
 rendered their HEADINGS WITH NO CONTENT** and **a fourth did not render at all**, and the coverage gate **passed
@@ -174,7 +237,7 @@ it under a disclosed exception**. An empty sub-section is a **FINDING, not a pas
 the seeder fills the blocks.
 
 **It was blamed on the wrong table.** The milestone's own DB corroboration pointed at
-`jobsimulation.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
+`public.conversation_extractions` (0 rows) — a **red herring**: that table holds transcript interaction
 counts and *nothing on this surface reads it*. `interview_extraction_results` (165 rows, written by the
 `SuccessionSeeder`) feeds a **different** surface. `app/internal/aireadiness/how_we_measure.go`
 (`computeInterviewInsightsV2` — formerly `workforce/how_we_measure_v2.go`, folded in at the M247-refresh refactor)
@@ -182,7 +245,7 @@ reads **exactly one table**, and decodes its `report` JSONB:
 
 | `report` key | → renders | Notes |
 |---|---|---|
-| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (5 tiles) | ids `avg_adoption` / `avg_transformation` / `avg_originality` / `avg_depth` / `avg_ownership` (Adoption / Transformation / Originality / Depth·Creation / Critical ownership), each a **0-100 cohort average** (the M219 ids `avg_frequency` / `avg_breadth` / `avg_context_fit` were retired in the post-M246 platform rename — see part 5 at `:533`). `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all of them is why the tile row did not render at all**, rather than rendering empty. |
+| `catalog_kpis[]` `{id, value}` | **"How they use AI — at a glance"** (5 tiles) | ids `avg_adoption` / `avg_transformation` / `avg_originality` / `avg_depth` / `avg_ownership` (Adoption / Transformation / Originality / Depth·Creation / Critical ownership), each a **0-100 cohort average** (the M219 ids `avg_frequency` / `avg_breadth` / `avg_context_fit` were retired in the post-M246 platform rename — see *part 5* of § *The FILLED-ness contract* below). `usageDimensionsFromReports` **omits** any KPI that is absent or non-numeric — **omitting all of them is why the tile row did not render at all**, rather than rendering empty. |
 | `narrative.patterns[]` | **Strengths** | `evidence[0]` **IS** the rendered verbatim quote; `source_session_id` is what `resolveSessionAuthors` joins (`sessions → memberships`) to hydrate the quote's **author name + job role**. |
 | `narrative.unexpected[]` | **Unexpected angles** | **NO chart fallback exists** — the narrative is the only way this column can *ever* render. |
 | `narrative.insights[]` where `category` contains **`"risk"`** | **What holds them back** | The category string is **load-bearing**: `holdsBackFromInsights` filters on it. Get it wrong and the column silently empties again. |
@@ -194,8 +257,13 @@ reads **exactly one table**, and decodes its `report` JSONB:
 - every `source_session_id` / `session_ids` entry is a **REAL seeded Step-3 session id**, so quote attribution
   resolves to a **real seeded member** through the platform's own join — never a fabricated id, never a quote
   from nobody;
-- the four usage KPIs are **DERIVED from the org's own seeded Step-3 session scores** (the same raw numbers the
-  frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented;
+- the **five** usage KPIs — `avg_adoption` · `avg_depth` · `avg_ownership` · `avg_transformation` ·
+  `avg_originality`, the set `aiReadinessUsageKPIs` returns at
+  `stack-seeding/seeders/ai_readiness_interview_report.go:185-189`, whose own comment at `:149` reads *"All
+  five are always emitted here"* — are **DERIVED from the org's own seeded Step-3 session scores** (the same
+  raw numbers the frozen snapshot rolls up), so the tiles agree with the funnel rather than being invented.
+  (This bullet said *"four"* until M257x; it is the same five ids the `catalog_kpis[]` row above enumerates
+  and the same five *part 5* of § *The FILLED-ness contract* re-derives.);
 - `session_count` is the true number of seeded interviews;
 - an org with **zero** seeded Step-3 interviews writes **no row** (nothing to aggregate — honest degradation).
 
@@ -238,10 +306,20 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 - **One-click self-service provisioning** — `aireadiness/provision.go` `ProvisionAIReadiness` (+ `GetAIReadinessSetupStatus`)
   seeds the 31-skill default + 3 sims + the 3-step plan idempotently, behind the new `/setup` GET/POST endpoints.
 - **The notifications lifecycle** — `aireadiness/notifications/` (invitation fan-out, a 5-slot reminder cadence +
-  unsubscribe, launch confirmation, the weekly manager digest), backed by the `ai_readiness_notification_log` +
-  `ai_readiness_notification_optout` tables, emitting proto events consumed by the messenger service.
+  unsubscribe, launch confirmation, the weekly manager digest), backed by the `ai_readiness_notification_logs` +
+  `ai_readiness_notification_optouts` tables, emitting proto events consumed by the messenger **domain** — in-process inside `backend` since the v9.0 fold and switch-gated by `MESSENGER_ENABLED`, not a separate service (its container went at `838d907`).
 - **Email overrides + preview** (M407/M408) — `aireadiness/emailoverride/` + `emailpreview/`: per-org email-copy
-  overrides (`ai_readiness_email_overrides`) validated against `messenger/pkg/aireadinessemail` placeholders, with
+  overrides (`ai_readiness_email_overrides`) validated against **`app/internal/messenger/aireadinessemail`**
+  placeholders — imported under exactly that path at `aireadiness/emailoverride/emailoverride.go:29`, **@ `app`
+  `ad9f3c49`**, where `git ls-tree ad9f3c49 internal/messenger/aireadinessemail/` lists 9 files. ⚠️ **This read
+  `messenger/pkg/aireadinessemail` until M257x iter-115**, with **no `internal/` and no `app/`** — a path that
+  resolves only in the standalone `messenger` repo @ `fa47850d`, which `838d907` removed from `repos.yml`, so
+  `make init` does not clone it and the citation resolves to nothing on a stack. It is also the odd one out in
+  its own bullet list, every sibling of which is `app/internal/`-relative under a heading that scopes the list
+  to the live app packages — and two bullets above, this document has just said messenger is *"in-process
+  inside `backend` since the v9.0 fold … not a separate service."* (The platform's own comment at
+  `emailoverride.go:33` uses the same `pkg/` shorthand, which is where the error came from; it does not make
+  it resolve.) With
   an admin preview renderer.
 - **Cross-cycle Compare is a fully-built backend** — `aireadiness/compare.go` `CompareCycles` → a 6-section
   `AIReadinessCompareResponse` (Topline / Archetypes / a 4×4 Transitions matrix / TeamDelta / SkillCoverage /
@@ -258,36 +336,57 @@ corpus coverage**. Documented here as platform facts; the demo-seeder consequenc
 
 ## Surfaces (UI) — **current vs legacy** (M219, v2.3 "cue to cue")
 
-> ⚠️ **There are TWO manager dashboards. Only one of them is the product.** Every AI-readiness demo pointer —
-> the cockpit deep-link catalog, the manager hero's `jump_to`, and the coverage sweep's page descriptor —
-> targeted the **legacy** one for four releases. Nothing ever failed, because the legacy page *does* render.
-> It just isn't the dashboard the product ships. **Establish which surface you are on before you conclude
-> anything about AI readiness.**
+> ⚠️ **HISTORICAL (M219) — there is now only ONE manager dashboard.** For four releases every AI-readiness
+> demo pointer (the cockpit deep-link catalog, the manager hero's `jump_to`, the coverage sweep's page
+> descriptor) targeted a **legacy** dashboard that still rendered but was not the shipped product. **That
+> surface no longer exists:** next-web-app `dae0fb2f7` (*"drop orphaned container"*, 2026-07-13) deleted
+> `AIReadinessContainer.tsx`, `AIReadinessIntro.tsx` and `AIReadinessView.tsx` (−653 lines), and
+> `/enterprise/workforce/ai-readiness` now **404s**. The section is kept because the *class* of defect —
+> an unlinked orphan surface that renders — is the one worth recognising, not because there is still a
+> choice to make.
 
 | Vantage | Surface | Route | Status |
 |---------|---------|-------|--------|
 | **Manager** | **`AIReadinessClient`** — HeroCard (org score + dominant archetype + **Steps-Completion %**) + tabs **Snapshot** (archetype matrix + donuts + by-tag), **How-we-measure** (3-step ribbon + skill strengths/gaps + sims + **interview findings**), **What-to-do-next** (archetype action groups + per-person **Diagnose** drawer). **Cycle-aware.** | **`/ai-readiness`** | ✅ **CURRENT** |
-| **Manager** | `AIReadinessContainer` → `AIReadinessView` — pre-v3.0 org-summary card + team table. **No cycle picker, no archetype matrix, no people, no How-we-measure, no What-to-do-next.** | `/enterprise/workforce/ai-readiness` | ❌ **LEGACY** |
+| **Manager** | `AIReadinessContainer` → `AIReadinessView` — pre-v3.0 org-summary card + team table. | `/enterprise/workforce/ai-readiness` | 🗑️ **DELETED** at next-web `dae0fb2f7` (2026-07-13); the route 404s |
 | **Employee** | `AIReadinessHero` (the 3-step funnel; modes new/progress/done/archived) + `AIReadinessRailCard`. **NO ROUTE OF ITS OWN — both are EMBEDDED in `/home`.** Step 1 = skill-mapping modal, Step 2 → a sim, Step 3 → an interview. | **`/home`** | ✅ **CURRENT** |
 
-**How to tell them apart in code** (there is no `@deprecated` marker, no `-v2` naming, and no feature flag
-switching between them — the legacy one is simply *unlinked*):
+**How the orphan was identified, while it still existed** (there was no `@deprecated` marker, no `-v2`
+naming and no feature flag switching between them — the legacy one was simply *unlinked*). Retained as the
+recognition pattern. **The three orphaned COMPONENTS are deleted; the surrounding anchors below still
+resolve** — `urls.ts`, `useNavbarSections.tsx`, the e2e spec, `WorkforceNewClient.tsx` (still
+omitting readiness) and `useWorkforceAIReadiness.ts` (still cycle-less) are all live, so they remain
+checkable evidence rather than history. **Every line number in the three bullets below is a reading at
+`next-web-app` `8297c684`** (re-derived 2026-08-06) — this block used to say *"at HEAD"*, and a bare moving
+label is what let the first anchor below rot through four readings:
 
 - **`/ai-readiness` is the only readiness route the navbar links** — `AI_READINESS_URL`
-  (`packages/core-js/src/constants/urls.ts:50`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx:253-260`.
-  It is also the only one next-web's own e2e covers (`e2e/specs/web.ai-readiness.spec.ts`).
-- **The legacy route is an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omits it),
+  (`packages/core-js/src/constants/urls.ts:51`), consumed by `packages/ui/src/NavBar/useNavbarSections.tsx`
+  — imported at `:4`, built into `aiReadinessMenuItem` at `:401-408` (`key: AI_READINESS_URL` at `:403`),
+  gated at `:569` (`showAIReadiness ? aiReadinessMenuItem : null`). ⚠️ **This doc said `urls.ts:52` for four
+  readings, and `:52` has never been `AI_READINESS_URL` at any ref reachable from this clone** — over every
+  commit touching that file the constant sits at line **41, 50 or 51 only**; `:52` is `TALK_TO_DATA_URL` at
+  `8297c684` and was `ORGANIZATION_FEEDBACK_URL` at `bb3313bc`. The citation *resolved*,
+  which is why an anchor-existence check passed it while a reader following it landed on a different route;
+  corrected M257x iter-102. A repo-wide grep finds the constant in exactly those
+  two **source** files — the only other non-`node_modules` hit is the platform's own KB page,
+  `knowledge/ai-readiness/frontend-architecture.md:15`. `/ai-readiness` is also the only readiness route
+  next-web's own e2e covers (`e2e/specs/web.ai-readiness.spec.ts`).
+- **The legacy route was an orphan**: no nav entry, no workforce tab (`WorkforceNewClient.tsx:125-151` omitted it),
   no redirect points at it. Its hook (`hooks/useWorkforceAIReadiness.ts:23-27`) calls
   `GET /api/workforce/ai-readiness?tag=` — **there is no `cycle` param in it at all**, and it never calls `/cycles`.
 - The `(new)` in the legacy path is a Next.js **route group** for the workforce refactor — *not* a version marker.
   Don't read it as "the new one".
 
 **The `flag_ai_readiness` PostHog flag gates the EMPLOYEE side only** (`useAiReadinessActive.ts:22`). It does
-**not** select between the two manager trees. The manager dashboard gates purely on the GraphQL
-`aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
+**not** select between manager trees — it never did, back when there were two. The (one) manager
+dashboard gates purely on the GraphQL `aiReadinessEnabled` boolean plus `isEnterprise` nav visibility.
 
 **Also present but not user-reachable:** a 4th manager tab, **Compare** (cycle deltas), is fully built but
-**hard-gated off** — `AIReadinessClient.tsx:69` `const SHOW_SECONDARY_TABS = false;` strips it from the tab list.
+**hard-gated off** — `AIReadinessClient.tsx:78` `const SHOW_SECONDARY_TABS: boolean = false;` (exact), read by
+the tab filter at **`:601`** — `(SHOW_SECONDARY_TABS && tab.key === 'compare')` — which strips it from the tab
+list. **@ `next-web-app` `8297c684`.** (This carried a line pin until M257x iter-115; that line is `tab.key === 'how' ||`,
+two lines above the read.)
 `/ai-readiness?tab=compare` renders no panel. It is neither current nor legacy: complete-but-disabled.
 
 **The demo's pointers** (all repointed at the current surfaces in M219, and a legacy target is now a **hard
@@ -349,14 +448,62 @@ jobsim sessions for steps 2/3) **+** `ai_readiness_user_step_progresses` (3× `c
 `ai_readiness_live_snapshots` upsert (`score≈100, stage=3, archetype` per the score). The **"started" hero**: only
 the skill_mapping signal + a `stage=1`/`score≈30` live snapshot. The **"completed" hero**: all 3 + `stage=3`.
 
+**⚠️ A hero's stage is DERIVED FROM HER PERSONA KIND — and stage 0 was UNREACHABLE for an end-user until v2.8
+M256 iter-26.** `aiReadinessStageFor` maps a hero: **manager → 0** (she reads the dashboard, she is not a funnel
+row), **struggling → 1**, and **everything else → 3**. There is no "unspecified" middle: an end-user hero appended
+to a readiness org arrives **already COMPLETED**. That is a trap for test authorship rather than for the demo —
+a Playthrough built on such a seat drives its hero *past* the flow it means to watch her enter and can **PASS on
+the completed surface**. It is now declarable:
+
+- **`Persona.AIReadiness`** — `""` (derive from trajectory, unchanged) | **`"not_started"`** (funnel **stage 0**:
+  no evidence, no sessions, no progress row, no snapshot — `seedAIReadinessOrgFunnel` skips her entirely). Checked
+  **before** the derived default, read in **exactly one place**, and a **closed enum** (a typo would fall back to
+  stage 3, i.e. produce the very already-completed seat, so it fails the seed loudly).
+- It is deliberately **not** a third `trajectory` value: readiness stage is **orthogonal** to the life-arc — the
+  diagnostic is a time-boxed cycle, and a member who joined mid-cycle has verified skills, a career and an
+  activity history while having done none of its three steps. A new trajectory would additionally have claimed her
+  skills, level band, growth arc and succession signal were day-0 too, and would have rippled through the five
+  seeders that switch on `Trajectory` through a silent `default:` branch in each.
+- An end-user hero must still declare `verified > 0` (`blueprint.validate()`), which is the same point from the
+  other side: the field does not make a hero **blank**, it makes her **not-yet-diagnosed**.
+
+Fenced by `stack-seeding/seeders/seat_append_test.go` (the mapping, both directions) +
+`ai_readiness_funnel_test.go:TestAIReadinessFunnelSeeder_DayZeroHeroGetsNoSignals` (the consequence — she has
+zero rows *while the derived heroes still land 3 and 1*, so a seeder that wrote nothing cannot pass it). The
+consumer is the Playthrough seat `pt-ai-onboard`; see
+[`demo/playthroughs.md`](../ops/demo/playthroughs.md) § *The day-0 readiness seat*.
+
 **⚠️ Which table the dashboard reads depends on the cycle state — this dictates the seed strategy (an M51
 decision):**
 
 - **Active cycle → the dashboard RECOMPUTES from signals.** `GetAIReadinessWithOptions` → `buildLiveResponse` →
-  `computeOrgBreakdowns` (`ai_readiness.go:283-343`) re-derives each member's score **from the underlying signals**:
+  `computeOrgBreakdowns` (`aireadiness/readiness.go:330`) re-derives each member's score **from the underlying signals**:
   `user_skill_evidences` (step 1) + the readiness jobsim sessions (steps 2/3) + the `ai_readiness_skills`/
-  `ai_readiness_sims` config — and `keepStartedMembers` **excludes members with no step-1 signal** from the
-  aggregate. So an **active**-cycle dashboard requires the **signals-true** seed (write the real skill evidences +
+  `ai_readiness_sims` config — and, **for an active cycle, the membership filter is `keepInCycleStep1`**
+  (call site `readiness.go:388`; **`func` at `:716`**): it keeps only members who **FINISHED step 1 inside
+  the cycle window** (`completed_at >= cycle.start`), scores carried forward all-time. `keepStartedMembers`
+  is the **other** branch — the lifetime filter used when there is **no** active cycle (call site `:390`;
+  **`func` at `:730`**). This passage named the wrong one of the two until M257x iter-52, and carried the
+  wrong `func` anchors until iter-108 — they landed in the body of `audienceScope` (`:655`) and on
+  `queryInCycleStep1Completers`, the very function the sentence contrasts this branch against.
+
+  ⚠️ The no-active-cycle filter `keepStartedMembers` **excludes members with no PROGRESS ROW** from the
+  aggregate, and **reads no step-1 evidence signal at all**, which this sentence claimed until M257x iter-49:
+  `queryReadinessStarters` (`aireadiness/steps.go:964`, its SQL at `:969-974`) is
+  `SELECT DISTINCT user_id FROM public.ai_readiness_user_step_progresses … AND status <> 'not_started'` — a
+  row in the **progress** table, never a `user_skill_evidences` row. The old wording was wrong in **both**
+  directions: a member with step-1 evidence but no progress row is **dropped**, and one with an
+  `in_progress` row and zero evidences is **kept**. (This paragraph **previously said** the active-cycle
+  path used this filter; that attribution is **refuted** — see the `keepInCycleStep1` correction above.) The platform states this itself at `steps.go:962`
+  (*"This DB signal is the only real 'has started' check"*) — this doc cited a different function's doc comment until M257x
+  iter-108 — that of `queryReadinessSimCompleters` (`:922`), a
+  `job_simulation_sessions` query about a different proposition. So an **active**-cycle dashboard requires the
+  **signals-true** seed — and the `ai_readiness_user_step_progresses` rows are what actually decide who is
+  counted, not the evidences. **Both branches read that one table, at different strictness**, and the
+  active-cycle one is the strict one: `queryInCycleStep1Completers` (`readiness.go:690`) demands
+  `step_type = skill_mapping` **AND** `status = completed` **AND** `completed_at >= cycle.start`, so a
+  progress row seeded `in_progress` — enough for `keepStartedMembers` — leaves the member **invisible**
+  on an active cycle (write the real skill evidences +
   sim sessions + `ai_readiness_user_step_progresses`; reuse the existing verified-skill chain). `ai_readiness_live_snapshots`
   is a **materialized cache** (rewritten by `RefreshLiveSnapshots`, consumed by Talk-to-Data SQL) — **NOT** the
   dashboard's source: seeding it directly does **not** make the live dashboard render and is overwritten on refresh.
@@ -364,14 +511,21 @@ decision):**
   directly, so a **closed**-cycle showcase can be seeded **snapshot-direct** (write the `frozen_*` rows + flip the
   cycle to `closed`) with **no underlying signals** — the world reads as a *finished* assessment. **This is the
   strategy M51 shipped** (`AIReadinessConfigSeeder` writes the cycle `closed` + `AIReadinessFunnelSeeder` writes 199
-  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path (the live-recompute never
-  completes in the coverage harness budget — a per-skill federated translation N+1, the M46 per-object-RPC class).
+  frozen `ai_readiness_snapshots`), after iters 03→06 falsified the active-signals path — on the premise that the
+  live-recompute never completed in the coverage harness budget (a per-skill federated translation N+1, the M46
+  per-object-RPC class). ⚠️ **That premise was refuted at M219: the recompute takes 2.09 s.** The strategy M51
+  shipped is unchanged; the reason given for it is not. Retracted here and at
+  [`ops/demo/stories-spec.md:599`](../ops/demo/stories-spec.md) at M257x iter-49.
 
-  **⚠ The frozen path is CYCLE-SCOPED; the DEFAULT (`CycleID == nil`) GET does NOT take it.**
-  `GetAIReadinessWithOptions` (`ai_readiness.go:283-301`) reaches `buildResponseFromSnapshots` **only** when the
-  request carries `opts.CycleID != nil` AND that cycle's `status == "closed"`; the **default GET** (line 301) is
-  hardcoded to `buildLiveResponse`. The **current** manager dashboard passes the cycle id, so this is not a
-  problem in practice — see the correction below.
+  **The frozen path is reachable BOTH cycle-scoped and by default.** `GetAIReadinessWithOptions`
+  (`app/internal/aireadiness/readiness.go:289`) has two routes into `buildResponseFromSnapshots`:
+
+  1. **cycle-scoped** — `opts.CycleID != nil` AND that cycle's `status == "closed"` (`:290-297`);
+  2. **default (`CycleID == nil`)** — when the org has **no active cycle** and a **latest closed cycle**
+     exists (`:307-312`). Only an org with neither falls through to `buildLiveResponse` (`:314`).
+
+  Route 2 is exactly the shape M51 seeds, so a snapshot-direct closed-cycle showcase renders frozen data
+  **even when the caller passes no cycle id**. The current manager dashboard passes the cycle id anyway.
 
   > **✅ CORRECTED M219 (v2.3 "cue to cue") — the old M51 iter-07 caveat here was MISATTRIBUTED, and it sent a
   > later milestone hunting for a demo-patch that was never needed.**
@@ -379,9 +533,13 @@ decision):**
   > The retracted claim: *"the demo FE fires the data GET WITHOUT `?cycle=` … and never fires the `/cycles` list
   > that supplies `latestClosedCycle.id`"*, concluded to be **platform-bound**.
   >
-  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:137-138`) computes
+  > **What is actually true.** The **CURRENT** dashboard (`AIReadinessClient.tsx:155-156`, **@ `next-web-app`
+  > `8297c684`**) computes
   > `effectiveCycleId = selectedCycle ?? activeCycle?.id ?? latestClosedCycle?.id` and gates the data GET on
-  > `cyclesQ.isFetched` (`:150-154`) — i.e. it **waits for `/cycles`, then passes `?cycle=`**. Verified live
+  > `enabled: featureOn && cyclesQ.isFetched` at **`:171`** — i.e. it **waits for `/cycles`, then passes
+  > `?cycle=`**. (These carried two line ranges until M257x iter-115: the first was the comment above
+  > the const, and the second a range that stopped **one line short** of the gate it is offered as evidence
+  > for — `:168-170` is the `useAIReadiness({` call and its first two options.) Verified live
   > against a running demo (authenticated as the manager hero): `/cycles` returns the seeded cycle, and the
   > frozen read answers **HTTP 200 in 24 ms**.
   >
@@ -462,7 +620,7 @@ The M219 bar was *"every element and sub-section filled with spot data"*. Raisin
 mis-seeds into defects. Each is a **seeder** contract, and each is now fenced by a regression test that was
 **proven RED against the pre-fix code**.
 
-**1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`ai_readiness.go:133-170`) divides the
+**1. A member maps SEVERAL AI skills — not one.** `computeTier1` (`aireadiness/readiness.go:139`) divides the
 member's **held** skill-weight by the org's **entire configured repertoire** — **since M250 the platform's real 31
 defaults: 19 core @ 1.0 + 12 enabling @ 0.5 = `25.0`** (was the invented 8-skill / `6.5` set) — normalized to 30.
 So *one* core skill alone is `round(1.0/25.0*30)` = **1/30**, and one *enabling* skill is also **1/30**: the
@@ -496,16 +654,26 @@ sims pool that no general picker can draw (`contentref.go`), making the sets **p
 in ten.
 
 **3. An interview session with no turns is incoherent data.** `computeCycleTotals`
-(`how_we_measure.go:253-261`) counts `interviewQuestions` as `COUNT(jobsimulation.interactions)` joined through
-sessions to the org's interview sim. The funnel seeded the **session** and not one interaction, so the field was
-a hard **0**. The funnel now writes each stage-3 interview's two `jobsimulation.actors` (the AI interviewer +
-the member — the interaction FKs *require* them, and the DB enforces `source_id <> target_id`) and **6–11**
-`jobsimulation.interactions` turns (`action_type='call'` — the platform's enum is exactly `{email, call}`).
+(`how_we_measure.go:253-261`) counts `interviewQuestions` as `COUNT(public.interactions)` joined through
+sessions to the org's interview sim — the live query at `how_we_measure.go:285-287` reads
+`FROM public.interactions i JOIN public.job_simulation_sessions s`. The funnel seeded the **session** and not one
+interaction, so the field was a hard **0**. The funnel now writes each stage-3 interview's two
+`public.actors` (the AI interviewer + the member — the interaction FKs *require* them, and the DB enforces
+`source_id <> target_id`) and **6–11** `public.interactions` turns (`action_type='call'` — the platform's enum is exactly `{email, call}`).
 
 > **Measured, not assumed — and it corrects the finding that opened this thread.** The **current** dashboard's
 > *"✨ Handled for you this cycle"* tile renders **`skillsMapped` / `handsOnMinutes` / `interviewMinutes`** —
-> and **does not render `interviewQuestions` at all** (`HowWeMeasureTab.tsx:2773-2797`; the field exists in the
-> API and in the FE's TypeScript type, `useAIReadiness.ts:250`, and is drawn by nothing). So its zero was a
+> and **does not render `interviewQuestions` at all** (**all anchors in this parenthetical re-derived at
+> `next-web-app` `8297c684`, 2026-08-06**: `HowWeMeasureTab.tsx:1879` opens the
+> `{/* ===== C · Handled for you this cycle ===== */}` block, label `:1903`, then exactly three cells —
+> `skillsMapped` `:1915`, `handsOnMinutes` `:1921`, `interviewMinutes` `:1927`; `grep -c interviewQuestions`
+> over that 1,989-line file returns **0**. The field exists in the API and in the FE's TypeScript type,
+> `apps/web/src/hooks/useAIReadiness.ts:326` — inside `export interface AIReadinessCycleTotals` (`:323-330`)
+> — and is drawn by nothing. ⚠️ **Read that `:326` as a pin, not a standing line**: this doc carried two
+> different line numbers for it in successive iters, and at each ref the *other* number named an unrelated
+> construct. **The interface name is the contract; the line number is the convenience** — and the earlier
+> number is deliberately no longer reproduced here (M257x iter-141): quoting it kept it live enough to rot,
+> and it rotted onto a blank line, turning two fences RED. `§5` rule 63(c)). So its zero was a
 > **payload** zero, not a visible empty cell. Filled regardless — an interview with no questions is not real
 > data — but the honest claim is that this tile's *visible* zero-risk lives in the three cells that do render,
 > which the coverage sweep now fences with a **non-zero-value** assert rather than a label assert (a section
@@ -540,8 +708,10 @@ across bands). One of three **post-M246 drifts** the M250 fidelity sweep caught 
 manager-sweep confirmation is a slow ~150-page crawl routed to **M254** (its exit gate re-runs the same sweep on
 billion by design).
 
-**End-to-end proof:** the AI-readiness journeys are covered by **4 Playthroughs** (both member vantages + the
-manager) — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap).
+**End-to-end proof:** the AI-readiness journeys are covered by **5 Playthroughs** (both member vantages + the
+manager — see [`../ops/demo/playthroughs.md`](../ops/demo/playthroughs.md#the-ai-readiness-product-m219--and-why-a-blind-area-is-the-worst-kind-of-gap)
+— plus the **day-0 guided onboarding** journey `pt-onboarding-aireadiness-guided` on the `not_started` seat
+documented above, v2.8 M256 iter-26).
 The M250 fidelity gate was proven LIVE-GREEN both vantages (employee `aria-completed` + manager `dana-manager`,
 Northwind, cold reset-to-seed, escapes=0) for parts 1/2/3/5 + the core part-4 sections. Code-of-record:
 `rosetta-extensions` @ `july-jitter-m250-iter07`. **Re-proven LIVE on billion at M254 (gate (d)):** both

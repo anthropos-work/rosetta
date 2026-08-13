@@ -22,8 +22,13 @@ This is a **third class of test**, beside the two everyone already knows:
 | **integration** | Do these components work together? |
 | **alignment** | Do *two independent implementations* behave identically for the same input? |
 
-The framework is **engine-agnostic and reusable** — it lives in rosetta and knows nothing about
-Clerk. Clerkenstein is just its first consumer.
+The framework is **engine-agnostic and reusable** — it knows nothing about Clerk. Clerkenstein is just its
+first consumer.
+
+**It does not live in rosetta.** The harness is the `alignment/` section of **`rosetta-extensions`** (Go module
+`anthropos.dev/alignment`) — authored in the `.agentspace/rosetta-extensions/` copy, tagged, and consumed
+per-stack at that tag. rosetta ships this doc and the `/align-dna` + `/align-run` skills, and **no executable
+alignment code at all**; see *Where things live* below for the full split.
 
 ## Vocabulary
 
@@ -134,8 +139,10 @@ framework and an engine is a small executable, the **runner**:
 > `value` is the capability's normalized return (any JSON, or `null` on error); `error_class` is a
 > stable short string naming the error kind (or `null` on success).
 
-Each engine ships exactly one runner. The toy's is `examples/toy/cmd/toyrun`; **Clerkenstein ships
-its own** in its own repo. That's the whole integration surface.
+Each engine ships exactly one runner *per surface*. The toy's is `examples/toy/cmd/toyrun`; **Clerkenstein
+ships its own** in the `clerkenstein/` **section of the `rosetta-extensions` monorepo** — not a repo of its
+own (`clerkenstein/alignment/cmd/{clerkrun,jsfapirun,expressrun,deployrun,multirun}`). That's the whole
+integration surface.
 
 ## Record / replay (golden capture)
 
@@ -190,7 +197,7 @@ The check is now real, and it **binds**:
 | **What declares it** | A DNA may carry a `consumed_surface`: a list of `{endpoint, consumer, capability \| covered_by}` — the endpoints a **real consumer actually calls**, and who calls each one. |
 | **What enforces it** | `DNA.Validate()` **rejects** a consumed endpoint that names no capability (or names one that doesn't exist). `alignctl run` calls `Validate` **before it scores anything**, so such a DNA cannot be scored at all — the missing-gene state is *unrepresentable*, not merely undetected. |
 | **How you run it** | `alignctl dna coverage --dna PATH` → exit **0** every declared endpoint has a gene · exit **2** an endpoint is uncovered **or the DNA declares no surface at all**. `gate.sh` runs it on every gate, **before** the score — but with **`--if-declared`** (see the row below), which changes what the *gate* enforces. |
-| **What the GATE actually enforces** (`--if-declared`) | ⚠ **Not the same as the bare command — do not conflate them.** `gate.sh:61` calls `alignctl dna coverage --dna … --if-declared`. That flag downgrades **exactly one** case — *"this DNA declares no `consumed_surface` at all"* — from **exit 2** to a **loud warning, exit 0**. A DNA that **does** declare a surface and leaves an endpoint **uncovered** still **fails the gate, exit 2, before a single gene is scored.** So: **a declared hole is fenced; an undeclared surface is only warned about.** The flag exists because a deployment/injection DNA has no HTTP surface to declare, and a hard stop there would be noise. |
+| **What the GATE actually enforces** (`--if-declared`) | ⚠ **Not the same as the bare command — do not conflate them.** `gate.sh:69` calls `alignctl dna coverage --dna "$base/$dna" --if-declared` (its rationale is the comment block at `:58-68`; `:61` — where this used to point — is inside that comment). That flag downgrades **exactly one** case — *"this DNA declares no `consumed_surface` at all"* — from **exit 2** to a **loud warning, exit 0**. A DNA that **does** declare a surface and leaves an endpoint **uncovered** still **fails the gate, exit 2, before a single gene is scored.** So: **a declared hole is fenced; an undeclared surface is only warned about.** The flag exists because a deployment/injection DNA has no HTTP surface to declare, and a hard stop there would be noise. |
 | **The escape hatch** | `covered_by` names a capability on **another** surface's DNA (e.g. `clerk-express-1:ClerkClientBAPI/get-organization`). It is **not** machine-verified — but it must be *written down*, which is the whole difference from the silence that hid the bug. |
 
 **And what it does NOT guarantee — stated plainly, because over-claiming this is what caused the bug:**
@@ -247,20 +254,21 @@ alignctl dna coverage --dna P [--if-declared]     # M218. exit 2 = a consumed en
                                                   #   surface at all). gate.sh passes --if-declared.
 ```
 
-### The current scores — and the one that is deliberately red
+### The current scores — and the two things they once hid
 
 | surface | DNA | score | |
 |---|---|---|---|
-| Go SDK | `clerk-2.6.0` | **97.2% overall · 100% critical** (26/27 genes) | gate ≥95 / =100 ⇒ **MET** |
-| JS/FAPI | `clerk-js-5` | 100% / 100% (9 genes) | |
-| multi-identity | `clerk-multi-1` | 100% / 100% (9 genes) | |
-| deployment/injection | `clerk-deploy-1` | 100% / 100% (7 genes) | |
-| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**3**, **no score** *(was rc=2, indistinguishable from a real regression — split at M219)* | **not a pass** |
+| Go SDK | `clerk-2.6.0` | **100% overall · 100% critical** (27/27 genes, 14 capabilities) — *was 97.2% / 26-of-27 until M219 closed the deliberately-RED org-eid gene* | gate ≥95 / =100 ⇒ **MET** |
+| JS/FAPI | `clerk-js-5` | 100% / 100% (9 genes, 6 capabilities) | |
+| multi-identity | `clerk-multi-1` | 100% / 100% (9 genes, 5 capabilities) | |
+| deployment/injection | `clerk-deploy-1` | 100% / 100% (7 genes, 3 capabilities) | |
+| `@clerk/express` | `clerk-express-1` | **UNMEASURABLE** without `@clerk/express` `node_modules` — rc=**3**, **no score** *(was rc=2, indistinguishable from a real regression — split at M219)*. 13 genes / 5 capabilities when it *does* run | **not a pass** |
 
 Two things this table is designed to stop you from saying:
 
-1. **"Clerkenstein is at 100%."** The Go surface is at **97.2%**, on purpose. `MembershipOrgIdentity/real-org-eid`
-   is a **deliberately RED** `standard` gene (M218 **D16**): the fake BAPI fabricates the org's external id
+1. **"Clerkenstein is at 100%."** The Go surface sat at **97.2%** for a full milestone, on purpose:
+   `MembershipOrgIdentity/real-org-eid` was a **deliberately RED** `standard` gene (M218 **D16**) —
+   the fake BAPI fabricated the org's external id
    instead of returning the roster's real UUID. It could have been made green by **omitting the field from
    the gene** — which is precisely how the *user*-level version of the same stub survived four releases. The
    divergence was therefore printed on **every run** until the fix landed.
@@ -312,12 +320,17 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
 - **M1 (Clerkenstein backend mirror)** runs the loop: `/align-dna` authors the **Clerk DNA**
   (`clerk@2.6.0` genome), then the build drives `/align-run`'s score up to its **exit gate** (100%
   critical / ≥95% overall) by closing diverging genes. The Clerk DNA, goldens, alignment tests, mirror,
-  and runner all live in the **`clerkenstein` repo**, not here.
+  and runner all live in the **`clerkenstein/` section of the `rosetta-extensions` monorepo** — *not* a
+  repo of its own, and not here.
 - **M1b (Clerk drift detection)** reuses the framework wholesale: on a Clerk version bump, `alignctl
   dna diff` shows what changed and `alignctl run` re-scores the existing mirror against the new
   source — turning a silent break into a flagged, mechanical update.
-  Mechanized as `alignment/scripts/{gate,drift-check}.sh`; the bump runbook + exit-code contract are in the
-  repo's own [`knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
+  Mechanized as **`clerkenstein/alignment/scripts/{gate,drift-check}.sh`** — **mirror-side, not harness-side**:
+  the reusable `alignment/` section has no `scripts/` dir at all (it holds `cmd/`, `internal/`, `examples/`,
+  `go.mod`, `README.md`), and these scripts are Clerkenstein's, defaulting to `RUNNER_PKG=./cmd/clerkrun` and
+  `DNA=dna/clerk-2.6.0.json`; they locate the sibling harness's `alignctl` via `ALIGN_DIR` (default
+  `../../alignment`). The bump runbook + exit-code contract are in the
+  section's own [`clerkenstein/knowledge/alignment.md`](../services/clerkenstein.md) (pointed to from
   [Clerkenstein](../services/clerkenstein.md)).
   > ⚠ **These scripts are run by hand, not by CI (corrected in M218; the correction itself corrected at the
   > M218 close).** This page originally described "a weekly CI workflow in the clerkenstein repo" and said
@@ -340,22 +353,29 @@ the divergence is a non-critical gene) while logging the tolerated divergence.
   DNA — `clerk-js-5` (the FAPI/browser surface) — with its own runner (`jsfapirun`) and goldens, scored
   by the same `alignctl` to the same gate (100%/100%, 9 genes). Same machinery, a new surface; the
   parameterized `gate.sh` gates it alongside the Go DNA (**by hand — there is no CI**; see the M1b note). See
-  [Clerkenstein](../services/clerkenstein.md) (and the repo's `knowledge/architecture.md` for the
+  [Clerkenstein](../services/clerkenstein.md) (and the section's `clerkenstein/knowledge/architecture.md` for the
   browser↔backend coherence chain).
 - **M2c (`@clerk/express` backend session verification)** exercises the framework a **third** time, on the
-  Node backend surface: a *third* DNA — `clerk-express-1` (9 genes) — with its own runner (`expressrun`)
+  Node backend surface: a *third* DNA — `clerk-express-1` (**5 capabilities / 13 genes**) — with its own runner (`expressrun`)
   and goldens, scored by the same `alignctl` to the same gate. Its runner drives the **genuine
   `@clerk/express`/`@clerk/backend` SDK** (the *verify-against-the-real-library* discipline, the same one
   `clerk-webhook/` uses with `svix`) rather than a reimplementation — so the score measures whether the real
   SDK accepts Clerkenstein's tokens. It added an **additive RS256/JWKS** path beside the existing HS256
   seams (no migration; M1/M2 gates untouched).
-  > ⚠ **This surface is DEPENDENCY-GATED, and today it is frequently UNMEASURED (corrected in M218).** The
-  > runner needs `@clerk/express` `node_modules` to build. Without them it exits **rc=2 and produces NO
-  > score** — and *nothing in the tooling treats that as a failure*. So on a box that lacks the Node modules,
-  > this gate silently contributes **nothing**, while summaries went on reporting "all five surfaces at
-  > 100%". **An absent score is not a passing score.** The M218 harden pass could re-measure only **4 of the
-  > 5** surfaces for this reason (reproduced identically at the pre-pass baseline ⇒ pre-existing, not a
-  > regression). Routed forward as `TEST-M219-expressrun-dep-gate`: a missing dependency must **fail loud**.
+  > ⚠ **This surface is DEPENDENCY-GATED, and it USED to be silently UNMEASURED. `TEST-M219-expressrun-dep-gate`
+  > is RESOLVED — the behaviour below is historical.** The runner needs `@clerk/express` `node_modules` to
+  > build. Without them it once exited **rc=2 — indistinguishable from a regression** — and *nothing in the
+  > tooling treated that as a failure*, so on a box lacking the Node modules the gate silently contributed
+  > **nothing** while summaries reported "all five surfaces at 100%". The M218 harden pass could re-measure
+  > only **4 of the 5** surfaces for this reason (reproduced identically at the pre-pass baseline ⇒
+  > pre-existing, not a regression).
+  >
+  > **Fixed at M219, and the fix was to make the two outcomes different numbers.** `alignment/cmd/alignctl/run.go:133-136`
+  > declares `ExitRegressed = 2` and **`ExitUnmeasurable = 3`**; `unmeasurable()` (`:139-153`) returns **rc=3**
+  > and prints a boxed banner — *"UNMEASURABLE — the runner could not execute. THIS IS NOT A PASSING SCORE …
+  > Do NOT record this run as a pass."* **An absent score is not a passing score**, and it no longer wears a
+  > regression's exit code. (Corrected M257x iter-85: this passage described the pre-M219 behaviour in the
+  > present tense, and told a reader to read a `2` as a missing Node module.)
 
 - **Deployment / injection (`clerk-deploy-1`, added after M3)** measures a *different kind* of fidelity — see
   the next section. Its runner (`deployrun`) drives the **real platform consumer** (colony) the way `expressrun`
@@ -452,14 +472,18 @@ The snapshot dimension extends the **same** data-DNA harness (`rosetta-extension
   waived (the snapshot/shared-store hard line) becomes `snapshot-seeded` once a snapshot fills it, so the fleet
   reads **100% coverage with nothing left waived** — the v1.2 thesis (M7c's two waived surfaces lifted to real,
   measured coverage). `Coverage()` counts seeded **OR** snapshot-seeded over the non-waived denominator;
-- a **snapshot-fidelity gene class** (`dna/snapshot.go`) — five two-sided operators over a `FidelityProbe` (the
-  replayed stack) compared to the captured manifest: **`snapshot-row-count`** (source-vs-replay parity),
-  **`snapshot-structural`** (every captured column present after replay), **`snapshot-referential`** (the captured
-  surface is referentially closed — every FK's parent table is in the captured set), **`snapshot-embedding-dim`**
+- a **snapshot-fidelity gene class** (`stack-seeding/dna/snapshot.go:62`) — **six** two-sided operators over a
+  `FidelityProbe` (the replayed stack) compared to the captured manifest: **`snapshot-row-count`**
+  (source-vs-replay parity), **`snapshot-structural`** (every captured column present after replay),
+  **`snapshot-referential`** (the captured surface is referentially closed — every FK's parent table is in the
+  captured set), **`snapshot-embedding-dim`**
   (pgvector columns replayed at the captured dimension — the index was rebuilt, the vectors must carry the same
-  width), and **`snapshot-public-only`** (the **provenance gene** — zero tenant-scoped rows after replay, the
-  firewall's measured counterpart). A snapshot gene names **snapshot** operators; a structural gene names
-  **structural** operators — `Validate` rejects a cross-wire so the two classes never mix.
+  width), **`snapshot-public-only`** (the **provenance gene** — zero tenant-scoped rows after replay, the
+  firewall's measured counterpart), and — added at M23, which is why the count reads five in older passes —
+  **`snapshot-cross-surface-closure`**, closure that spans *two* surfaces: every taxonomy node-id the replayed
+  content references must resolve to a skill present in the replayed taxonomy. `snapshot-referential` works
+  **within** one surface and cannot see that dangle. A snapshot gene names **snapshot** operators; a structural
+  gene names **structural** operators — `Validate` rejects a cross-wire so the two classes never mix.
 
 **Where it breaks from M7b (and why it's a separate gene class, not new structural operators):** the comparison is
 captured-vs-replayed (two-sided), the public-only gene asserts a **safety provenance** (no customer data) rather
@@ -469,9 +493,11 @@ its data reproduces the captured public source — row-for-row, structurally, re
 dimension, and with zero tenant leakage — and that fidelity is enumerable and measurable, just like behaviour.**
 
 **Wired to real surfaces (M9b + M10).** The dimension stops being theoretical at M9b: the **taxonomy** surface (the
-public skills-taxonomy catalog — formerly the skiller service's; the domain now lives in `app`'s `public` schema) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries all five
-fidelity operators. **M10** promotes the **content** surface (the public Directus template library)
-`waived-m7c → snapshot-seeded-m10`, carrying four operators (no `embedding-dim` — content has no vectors) with the
+public skills-taxonomy catalog — formerly the skiller service's; the domain now lives in `app`'s `public` schema) is promoted `waived-m7c → snapshot-seeded-m9b` in `data-dna.json` and carries **five of the six**
+fidelity operators (`stack-seeding/dna/data-dna.json:410` — all but `cross-surface-closure`, which is the *content*
+surface's gene). **M10** promotes the **content** surface (the public Directus template library)
+`waived-m7c → snapshot-seeded-m10`, carrying **five** operators too (`stack-seeding/dna/data-dna.json:439`) — no
+`embedding-dim`, since content has no vectors, but M23's `cross-surface-closure` in its place — with the
 **public-only gene measured against the per-surface directus predicate** (`private=false AND tenant_id IS NULL AND
 status='published'`), not `organization_id`. The two-sided measure is driven by `datadna measure-snapshot`:
 `dna.CapturedFromManifest` derives the **source** side from the real snapshot `manifest.json` (per-surface
@@ -488,8 +514,8 @@ rosetta documents the discipline and ships the skills; **all executable machiner
 |---|---|
 | this doc — the alignment test class + method | `alignment/` — the reusable harness (`alignctl` + the toy) |
 | `/align-dna`, `/align-run` skills | each **mirror** section (e.g. `clerkenstein/`) — the mirror engine itself |
-| | the source's DNA(s) (the genome — e.g. Clerkenstein ships three) |
-| | the alignment tests + goldens + the engine's runner(s) (one per surface — `clerkrun`/`jsfapirun`/`expressrun`) |
+| | the source's DNA(s) (the genome — e.g. Clerkenstein ships **five**, in `clerkenstein/alignment/dna/`) |
+| | the alignment tests + goldens + the engine's runner(s) (one per surface — `clerkrun`/`jsfapirun`/`expressrun`/`deployrun`/`multirun`) + the mirror's own `gate.sh`/`drift-check.sh` |
 
 rosetta never contains executable alignment code — neither a specific mirror's source nor the reusable
 harness. Both are sections of the **rosetta-extensions** monorepo, which carries two clone roles: an
@@ -505,7 +531,7 @@ corpus plus dev-env skills.
 
 ```
 rosetta-extensions/alignment/        (section of the extensions monorepo)
-  cmd/alignctl            run | capture | dna list|diff|validate
+  cmd/alignctl            run | capture | dna list|diff|validate|coverage   (`dna.go:20-26`)
   internal/dna            DNA model, load, validate, weight derivation
   internal/outcome        Outcome type + outcomes/golden IO
   internal/compare        the 4 operators + weighted score (divergence detection)

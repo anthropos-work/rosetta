@@ -1,0 +1,4 @@
+anthropos-gotenberg-1	Up 3 minutes
+anthropos-postgresql-1	Up 3 minutes (healthy)
+anthropos-redis-1	Up 3 minutes (healthy)
+anthropos-sentinel-1	Restarting (2) 49 seconds ago

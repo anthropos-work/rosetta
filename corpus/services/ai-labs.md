@@ -1,7 +1,17 @@
 # AI Labs + Credits (`app` domain)
 
 > **Not a standalone service — a set of `app`-monolith domains** (the service the platform calls "backend").
-> There is no separate container, repo, or subgraph. Code lives under `app/internal/labs/`,
+> There is no separate container or subgraph. **There IS a separate repo, and this doc used to deny it**
+> (v2.8 M257x): `anthropos-work/AI-Labs` is the live Go control plane the sections below already call
+> **`labs-api`** — the thing behind `anthroposlabs.com` that owns the Firecracker microVM lifecycle. What is
+> in `app` is the *consumer* half. **Where labs-api RUNS was still missing until iter-123 and is now in
+> [`org-repos.md` § 7](../architecture/org-repos.md)**: two stdlib-only Go modules (~8 kLOC, zero external
+> `require`s), deployed by **Ansible + systemd + Cloudflare Tunnel + Caddy onto a single tailnet VM** —
+> there is **no Terraform in that repo** (the `anthroposlabs.com` DNS is Terraformed in `infrastructure`),
+> and `STATUS.md:3-6` records it as single-worker with the fleet still pending. Its catalog is **96
+> scenario templates, each with a `meta.json` — measured. The repo's own README, its `STATUS.md:11` and
+> its GitHub description all say "15", and all three are stale**; a repo's self-description is testimony,
+> the tree is evidence. Code lives under `app/internal/labs/`,
 > `app/internal/credits/`, `app/internal/payments/`, `app/internal/subscriptions/`, plus the top-level
 > `app/stripe/` fixtures.
 
@@ -10,9 +20,11 @@
 >   [Course Builder](./coursebuilder.md)**, not to AI Labs.
 > - The **AI Labs self-serve credits initiative** branded **v6.0 "shared purse"** (org self-serve *buy* AI-Labs
 >   credits + an *enforcing* shared-pool wallet) is **DESIGNED / QUEUED, NOT BUILT** — a knowledge-plan release
->   (`app` `knowledge/plan/releases/06.00-shared-purse/`, milestones M600–M607, all planned). In current `origin/main`
->   there is **no `checkout.session.completed` webhook, no labs↔credits linkage, and `/credits/purchase` was removed
->   (Wave 13)**. `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (`app` is at `v1.351.1`).
+>   (`app` `knowledge/plan/releases/06.00-shared-purse/`, milestones M600–M607, all planned). Measured at `app`
+>   **`ad9f3c49`** (which was `origin/main` on 2026-08-06) there is **no `checkout.session.completed` webhook**
+>   (0 occurrences in Go source), **no labs↔credits linkage** (`internal/labs/` imports `internal/credits`
+>   nowhere), **and `/credits/purchase` was removed (Wave 13)** (`internal/web/backend/credits/handler.go:12`).
+>   `v6.0` is a **knowledge-plan release number, NOT the `app` SemVer** (those run in the `v1.3xx` range — newest tag **`v1.369.0`**, re-read 2026-08-06 at that same `ad9f3c49`, seven commits past the tag: `git describe --tags ad9f3c49` → `v1.369.0-7-gad9f3c498`. **A version — and a branch label — is a reading at a ref, never a standing "current"**: this line read `v1.363.2` @ `5ba17044` for six `app` releases, then `v1.369.0` @ *origin/main* `2035f9a4` until that label expired five commits later. `2035f9a4` is still a valid **pin** (`v1.369.0-2-g2035f9a40`); only the moving label rotted).
 > This doc documents the **shipped reality**; the shared-purse unification is flagged as planned where relevant.
 
 ## Role & Responsibility
@@ -42,8 +54,14 @@ yet by code:
 ### AI Labs — catalog (`internal/labs/catalog/`)
 *   `catalog.Manager` (slug catalog domain) + `ContentManager` (viewer-facing, **fail-closed** tenant-filtered
     reads; `ErrNotFound` is a hard-404 no-existence-oracle), `content_import.go` (idempotent manifest upsert),
-    `s3_workspace_store.go` (S3-backed workspace/grader/solution assets — the solution is private, never served to
-    learners).
+    `s3_workspace_store.go` (S3-backed **workspace tarball only** — one object per Lab at
+    `<prefix>/<slug>/workspace.tar.gz` in `LABS_WORKSPACE_BUCKET`, `internal/labs/catalog/s3_workspace_store.go:19,:45`
+    @ `ad9f3c498`; the words *grader* and *solution* do not occur in the file). **The grader and solution
+    assets are `{id,url}` reference pairs on the `labs` row, stored via the general storage service** —
+    a different bucket and mechanism (`internal/data/ent/schema/lab.go:113-116`). *The privacy claim is
+    unchanged and TRUE — the solution is private and never served to learners — but it was attached to
+    the wrong file until run 81, sending an auditor of that asset's access control to a store that
+    never holds it.*
 *   **Tables**: `labs` (Ent `lab.go` — metadata: `slug`, `tenant_eid` nullable = org-scoped else public, `lifecycle`,
     `base_image`, `default_model`, `budget_usd`, S3 asset refs) and `lab_bodies` (Ent `lab_body.go` — one row per
     `(lab_slug, locale)`; EN base + 6 overlays; `{meta,brief,tutor,hints}` as one jsonb). Migration

@@ -11,7 +11,9 @@
 > **Skillpath was always a runtime/session engine, never a content store** — it tracks per-user progression
 > *state* (`SkillPathSession → ChapterSession → StepSession`, progress %, completion). The skill-path **content**
 > it tracks against (title, cover, curators, chapters → steps, skills-to-verify, versioning) **remains owned by
-> [CMS](./cms.md)** and is fetched by ID over Connect-RPC (`CMS_RPC_ADDR`). The consolidation moved the *engine*
+> the cms domain inside `app`** ([CMS](./cms.md)) and is read by ID **in-process** — `app/internal/skillpath/session.go:205-207`
+> (`// cms-in-app deseam: cms is in-process`) → `contentread.CmsContentReader.GetSkillPathDomain`. It was a
+> `CMS_RPC_ADDR` Connect-RPC hop before cms-in-app. The consolidation moved the *engine*
 > into `app`; it did not touch the content-vs-runtime split.
 >
 > Where everything went:
@@ -25,9 +27,17 @@
 >   `skillpath_mixins.go`). The old `skillpath` DB schema is **legacy — a decommissioned empty husk** (the table
 >   was kept but holds 0 rows; runtime state is authoritative in `public`). `askengine` and every other reader was
 >   re-pointed `skillpath.skill_path_sessions → public.skill_path_sessions`.
-> * **RPC** — the `SkillPathSessionService` surface (`GetSkillPathSession`) is served by `app`; callers were cut
->   over to read sessions **in-process** and the `SKILLPATH_RPC_ADDR` was dropped from terraform (**M506** caller
->   cutover).
+> * **RPC — there is NO `SkillPathSessionService` anywhere.** It was not re-hosted in `app`; it was DROPPED.
+>   Measured: **0** occurrences in Go source across the clone set and no `skillpath…v1connect` import; the
+>   platform's own M506 record says so — *"**No in-app RPC handler is served**"* / *"the client is simply
+>   deleted"*. Callers read sessions **in-process**, and `SKILLPATH_RPC_ADDR` was dropped from terraform.
+>   Sessions are otherwise reached through the `backend` GraphQL subgraph. (`app/CLAUDE.md:109` and
+>   `app/knowledge/architecture.md:28` still list the service — **re-derived at `app` `ad9f3c49`**, which is
+>   both `origin/main` and the demo's build pin on 2026-08-06; both anchors also hold at `2035f9a`, the ref
+>   this sentence used to name as `origin/main` before that label expired (M257x iter-102 — *a pin is a pin,
+>   a branch name is not*). The CLAUDE.md anchor stood at a different line when first measured, so re-find the
+>   sentence rather than trusting the offset. Trap C, *the platform's planning docs lag its own code*.
+>   Grade against `main.go`: `SkillPathSessionService` has **0** occurrences in Go source at `ad9f3c49`.)
 > * **GraphQL** — the skillpath subgraph was **removed** from the WunderGraph/Cosmo federation → the supergraph is
 >   **3 subgraphs** at the time (backend/app, jobsimulation, cms; it is **1** now — jobsimulation and cms have since merged into `app` too). The skill-path session types/queries/mutations
 >   (`getOrCreateSkillPathSession`, `skillPathActiveSessions`, `skillPathCompletedSessions`,
@@ -36,7 +46,7 @@
 >   `backend` subgraph** (`app/internal/web/backend/graphql/graph/schemas/skillpath_sessions.graphqls`). The fold
 >   landed dormant at **M505**; the router owner-swap that routes `SkillPathSession` to `app` was the atomic
 >   **M506** cutover.
-> * **Infrastructure** — skillpath was removed from `repos.yml` (now **10 repos**, 0 skillpath) and from
+> * **Infrastructure** — skillpath was removed from `repos.yml` (**9 repos** @ platform `2adcf71`, 0 skillpath; **6** @ `0dab54d`, after `d11a403` dropped the cms / jobsimulation / roadrunner entries too; **4** since `838d907` dropped storage and messenger) and from
 >   docker-compose (no skillpath service); the standalone service + its terraform module were decommissioned at
 >   **M507**. Only residual env plumbing remains (e.g. the `SKILLPATH_STREAM=skillpath` Redis-stream name).
 > * **Repo** — the `skillpath` git repo still exists but is **legacy/decommissioned**, no longer deployed or
@@ -48,7 +58,7 @@
 
 * **Content-vs-runtime split (unchanged).** "Skillpath" the engine ≠ skill-path *content*. The content it runs
   against — chapters → steps, curators, the job-simulation steps, skills-to-verify, versioning — is owned by
-  **[CMS](./cms.md)** (the `skill_paths` Directus collection) and fetched by ID over Connect-RPC (`CMS_RPC_ADDR`).
+  the **cms domain inside `app`** ([CMS](./cms.md); the `skill_paths` Directus collection) and read by ID **in-process** — `app/internal/skillpath/session.go:205-207` / `app/internal/skillpaths/skillpaths.go:88-95`. **No `CMS_RPC_ADDR` hop** since cms-in-app — and the variable itself is gone: it survived on the `messenger` block, re-pointed at `backend` by `d11a403` (M809), until `838d907` deleted that block. **No compose file sets any `*_RPC_ADDR` now**, and there is no cms process left to address.
   This is the content-vs-runtime split documented in the [Service Taxonomy](../architecture/service_taxonomy.md).
 
 * **Session model.** The engine owns a hierarchical session: `SkillPathSession → ChapterSession → StepSession`,
@@ -59,22 +69,39 @@
 
 * **Event-driven step completion (unchanged).** The engine subscribes to the **jobsimulation Redis stream**
   (start/end events) to update `StepSession` status when a simulation completes, and additionally calls
-  jobsimulation over Connect-RPC (`GetSessions`) on session create/upgrade to reconcile already-completed
+  jobsimulation **in-process** (`GetSessions`) on session create/upgrade to reconcile already-completed
   simulations. It publishes `EventSkillPathSessionUpdated` + `EventChapterStepSessionCompleted` to the
   `skillpath` Redis stream (consumed by `app`). All of this now runs in-process inside `app`.
 
-* **The manager view reads an `app`-side MIRROR, not this runtime.** The **manager insights** surface
-  (`insightsSkillPathByMemberships`, the `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]`
-  scoreboard in `apps/web`) does **not** read the runtime session — it reads the `app`-side mirror table
-  **`public.local_skill_path_session`** (`app/internal/organization/intelligence.go`; Ent schema
-  `app/internal/data/ent/schema/local_skill_path_session.go` — `progress` 0-100, `status`, no `score`), the
-  analog of hiring's `local_jobsimulation_sessions` mirror. **Seeding only the runtime session rows renders an
-  empty manager scoreboard** — the mirror row must be co-written. `apps/hiring` has no skill-paths tab
-  (no-surface). Full treatment: [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+* **The manager view reads the RUNTIME session directly — the mirror is GONE.** The **manager insights**
+  surface (`insightsSkillPathByMemberships`, the
+  `/enterprise/activity-dashboard/@tabs/skill-paths/[skillPathId]` scoreboard in `apps/web`) reads
+  `public.skill_path_sessions` — measured: `InsightsSkillPathByMemberships`
+  (`app/internal/organization/intelligence.go:1144`) queries `m.ent.SkillPathSession` filtered by
+  `skill_path_id` + `status ∈ {active, completed}` + the tenant predicate (`:1159-1170`).
 
-* **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app` `origin/main`).
-  The mirror above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
-  (`InsightsBySkillPathStudentsContainer`) — a real table that genuinely requires the mirror row. The
+  > **⚠️ RETRACTION — this bullet previously said the opposite, and the instruction was actively harmful.**
+  > It told seeders that the scoreboard reads an `app`-side mirror **`public.local_skill_path_session`** with
+  > an Ent schema of its own, and that "the mirror row must be co-written." **Both mirrors were DROPPED** —
+  > `DROP TABLE "local_skill_path_sessions"` at
+  > `app/terraform/migrations/20260729133514.sql:63` (and `local_jobsimulation_sessions` at `:62`)
+  > — and no `local_skill_path_session.go` Ent schema exists. (This note used to call that the **last**
+  > migration in the repo; it is not — **three** post-date it at `app` `9d00a313`: `20260731131307.sql`,
+  > `20260731154527_academy_chapter_progress_completed_at.sql`,
+  > `20260803143844_ai_readiness_recommendation_path.sql`. Corrected M257x.) A seeder following the old
+  > text would write to a table that is not there. **Seeding the runtime `skill_path_sessions` row is now both
+  > necessary and sufficient for this scoreboard.** The generalized manager-view MIRROR trap described in
+  > `content-stories-routes.md` no longer applies to skill-paths.
+
+  `apps/hiring` has no skill-paths tab (no-surface). Full treatment:
+  [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
+
+* **The per-user drill-down one level deeper is UNIMPLEMENTED** (verified against `next-web-app`
+  **`8297c684`** — the demo's build pin on 2026-08-06, which is the tree that settles a claim about what a
+  stack renders. This bullet previously named the bare moving label `next-web-app` `origin/main`, which has
+  since advanced to `f97ba659`; ref pinned M257x iter-102).
+  The reader above powers the *cohort* scoreboard at `…/skill-paths/[skillPathId]`
+  (`InsightsBySkillPathStudentsContainer`) — a real table, fed by the runtime session row. The
   **per-member** route `…/skill-paths/[skillPathId]/[userId]`
   (`InsightsBySkillPathStudentSimulationsContainer`) is **not built**: `userData` is hardcoded `null`, its
   results table and totals block are commented out, and the body renders the literal string **"Coming soon"**.
@@ -86,5 +113,5 @@
 * [Backend (`app`)](./backend.md) — where the skillpath engine now lives
 * [CMS](./cms.md) — the content side of the content-vs-runtime split (owns the skill-path definitions)
 * [Jobsimulation](./jobsimulation.md) — the peer runtime engine whose completion events drive step completion
-* [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md) — the manager-mirror + player-link-only treatment
+* [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md) — the player-link-only treatment (its manager-view MIRROR trap no longer applies to skill-paths; see the retraction above)
 * [Service Taxonomy](../architecture/service_taxonomy.md) · [Dependency Map](../architecture/dependency_map.md)

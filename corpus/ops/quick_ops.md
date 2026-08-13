@@ -120,17 +120,24 @@ cd stack-dev/next-web-app && rm -rf node_modules && pnpm install
 
 ### Apply all migrations
 
+> **⚠️ `app` is the ONLY repo with migrations to run**, and the directory is `app` — **not `backend`**.
+> `backend` is the *deployed service name*; the repo `make init` clones is `app`, so `cd backend` fails
+> with *no such file or directory*. `repos.yml` states the rule in the platform's own words: the folded
+> repos *"own no local schema, no compose service and no clone entry here."* The `cms` and
+> `jobsimulation` legs this recipe used to carry named two directories `make init` no longer creates
+> **and** two schemas the platform no longer creates — running them against a current stack is the
+> failure gate clause 4 exists to prevent. Use `make migrate` from `platform/` unless you need atlas
+> directly.
+
 ```bash
 cd stack-dev
-(cd backend && atlas migrate apply --env local)
-(cd cms && atlas migrate apply --env local)
-(cd jobsimulation && atlas migrate apply --env local)
+(cd app && atlas migrate apply --env local)
 ```
 
 ### Check migration status
 
 ```bash
-cd stack-dev/backend && atlas migrate status --env local
+cd stack-dev/app && atlas migrate status --env local
 ```
 
 ---
@@ -153,7 +160,7 @@ done
 | Service | Port |
 |---------|------|
 | Frontend | 3000 |
-| GraphQL | 5050 |
+| GraphQL | **8082** (`/graphql/query`, served by `backend`; the `:5050` Cosmo router was deleted from compose at platform `2adcf71`) |
 | Backend | 8082 |
 | Studio-Desk | 3100 |
 | PostgreSQL | 5432 |

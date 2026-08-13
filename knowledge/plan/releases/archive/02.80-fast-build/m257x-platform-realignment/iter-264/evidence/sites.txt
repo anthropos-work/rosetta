@@ -1,0 +1,14 @@
+corpus/architecture/service_taxonomy.md
+corpus/architecture/ai_architecture.md
+corpus/architecture/platform-migration-status.md
+corpus/architecture/org-repos.md
+corpus/architecture/external_services.md
+corpus/ops/platform_repo.md
+corpus/ops/run_guide.md
+corpus/ops/update_guide.md
+corpus/ops/platform-alignment.md
+corpus/ops/setup_guide.md
+corpus/services/messenger.md
+corpus/services/studio-room.md
+CLAUDE.md
+corpus/services/cms.md

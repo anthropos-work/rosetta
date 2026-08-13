@@ -1,0 +1,147 @@
+{
+  "milestone": "M257",
+  "title": "first-light build",
+  "release": "v2.8 fast build",
+  "shape": "iterative",
+  "closed": "2026-08-12",
+  "close_status": "closed-on-gate",
+  "close_authority": "THE GATE FIRED. Met on its own terms at iter-09 — not a user ruling, and not a narrowed definition of done. Distinct from M257x, which closed `closed-incomplete` by ruling one day earlier.",
+
+  "gate": {
+    "target": "cold `demo-down --purge` + `demo-up` reaching autoverify green:true / 0 warnings at p50 <= 360 s across 3 consecutive cycles on `macmini`, 0 platform-repo edits, all 7 demopatch guards (G1-G7), and two FALSIFIABLE asserts (HEADROOM, ISOLATION) that fail the gate when tripped. Stretch <= 300 s.",
+    "status": "MET",
+    "achieved_p50_s": 286.99,
+    "achieved_min_s": 280.99,
+    "achieved_max_s": 303.44,
+    "reps": [286.99, 303.44, 280.99],
+    "n": 3,
+    "margin_to_gate_s": 73.01,
+    "margin_to_stretch_s": 13.01,
+    "host": "macmini (M4 Pro Mac mini, arm64, containerd image store, PERMANENTLY CONTENDED workstation)",
+    "profile": "rosetta-extensions/stack-core/hostprofiles/macmini.json",
+    "clauses": {
+      "autoverify_green_zero_warnings": "3/3",
+      "headroom_ok": "3/3 — peak load1 5.47 / 6.16 / 8.72 against a limit of 10",
+      "isolation_ok": "3/3 — 8 images per rep, 0 failures, real own_pk_fingerprint, empty foreign_pks/foreign_origins",
+      "host_identity": "match x3",
+      "rc_up": "0 x3",
+      "phases_complete": "3/3",
+      "platform_repo_edits": 0,
+      "refused_demopatches": 0,
+      "campaign_ok": true,
+      "campaign_gateable": true
+    },
+    "falsifiability_evidence": "BOTH falsifiable clauses actually fired during the milestone. HEADROOM failed 2 of 3 reps on the iter-08 baseline campaign (peak load1 19.48 / 14.52 vs 10) and took that campaign RED by contract. ISOLATION was proven able to fail by 19 unit controls + 3 live ones, after two fail-opens that only a live artefact could reveal.",
+    "reverified": "TWICE after the fact, not assumed. (1) The final harden re-graded the three reps under post-harden code. (2) This close re-graded them again under the three fail-open fixes it landed in the instrument: rep_is_ok True x3, ok/gateable true, p50 286.99 UNCHANGED, identity match x3.",
+    "artefacts": ".agentspace/scratch/work-m257/baseline-n3-postL1/ (post-L1) and .../baseline-n3-pinned/ (pre-lever baseline)"
+  },
+
+  "baseline": {
+    "pre_lever_p50_s": 449.51,
+    "pre_lever_min_s": 410.80,
+    "pre_lever_max_s": 542.94,
+    "pre_lever_label": "CONTENDED AND LABELLED — 2 of 3 reps failed HEADROOM, so the campaign exits RED by contract (D-M255-1). It is the baseline (what this host COSTS) and was never a gate pass.",
+    "reduction_pct": 36.2,
+    "billion_reference_p50_s": 666.29,
+    "billion_note": "billion's 666.29 s does NOT transfer and was never the denominator for this gate. Different arch, different image sizes (4.12 GB vs 4.84 GB for the identical Dockerfile), different snapshotter cost. billion's post-L1 cycle is UNMEASURED."
+  },
+
+  "lever": {
+    "landed": "L1 — multi-stage the two Next images to .next/standalone from rext-owned Dockerfiles (next-web moved build shape 1 -> 3, so no platform-repo edit was needed)",
+    "levers_priced": 8,
+    "levers_landed": 1,
+    "ui_tier_before_s": 246.23,
+    "ui_tier_after_s": 104.60,
+    "ui_tier_delta_s": -141.63,
+    "predicted_delta_s": -132.6,
+    "prediction_vs_measurement": "Reported SEPARATELY, never merged. backend_builds also fell 12.37 s and is booked as VARIANCE, not credited to the lever.",
+    "next_web_image": "4.04 GB -> 417 MB",
+    "hiring_image": "3.94 GB -> 380 MB",
+    "export_to_image_s": "136.4 -> 3.8 (both Next apps combined)",
+    "behavioural_equivalence": "proven before the numbers were believed — hiring's /login is byte-for-byte 426,914 bytes in both images"
+  },
+
+  "phase_ranking_after_L1": {
+    "largest_phase": "set_dress",
+    "largest_phase_p50_s": 82.04,
+    "largest_phase_share_pct": 28.6,
+    "finding": "The ranking moved underneath the plan: L5 (the taxonomy replay) was priced at ~30-50 s and ranked FIFTH. Routed as LEVER-M257-L5-setdress. It is also the chief win on the /dev-up path."
+  },
+
+  "iters": {
+    "total": 9,
+    "tiks": 7,
+    "toks": 2,
+    "tok_detail": "iter-01 bootstrap (TOK-01, `instrument before baseline, baseline before levers`); iter-05 triggered after a 3-tik no-progress streak (TOK-02, `retry-with-evidence`)",
+    "metric_moving_iters": 2,
+    "zero_delta_iters": 7,
+    "zero_delta_note": "Accurate, and three of them COULD NOT have moved the metric: the gate's subject (odysseus) was retired one day after TOK-01 named it, so no measurement taken anywhere could have satisfied it. A gate that names a dead thing abstains rather than fails, and abstention is invisible.",
+    "orphan_iters": 0,
+    "orphan_commits": 0
+  },
+
+  "hardening": {
+    "passes": 3,
+    "stop_condition": "STABILIZED on pass 3 — coverage delta 0, dimension scan found nothing new",
+    "note": "The FIRST stabilized harden across M257x and M257. M257x closed 18 consecutive passes at cap-without-stabilization.",
+    "bugs_fixed_inline": 9,
+    "tests_added": 35,
+    "flakes": 0,
+    "residual": "The whole-tree stack-core pytest sweep launched at pass 1 did NOT return (55m12s against a 32-57 min measured band on this contended box, vs 34m56s for the same section one iter earlier) and was terminated as session cleanup rather than left orphaned. Judged not load-bearing for the attribution, which rests on stronger per-item evidence (HARDEN-M257-2). This is NOT `swept clean`."
+  },
+
+  "close": {
+    "findings": 25,
+    "must_fix": 3,
+    "must_fix_detail": "All three in code THIS milestone authored, each the milestone's own lesson turned back on it: clause 3 graded the other machine's filesystem; isolation_ok was computed and read by nothing so `report` printed gateable:true over a directory with no isolation block; the RED reason string named six causes and not isolation.",
+    "should_fix": 9,
+    "nice_to_have": 5,
+    "scope_gaps": 5,
+    "tests_added": 25,
+    "corpus_files_changed": 8,
+    "citations_reanchored": 7,
+    "knob_anchors_regenerated": 13,
+    "fabricated_figures_caught_pre_commit": 7,
+    "fabricated_figures_note": "Seven sub-phase p50 cells in the first draft of the build-budget table were written from memory and were WRONG. Caught by checking every one against the raw campaign.json before commit."
+  },
+
+  "tests": {
+    "stack_core_milestone_files": {
+      "test_isolation_assert_m257.py": 43,
+      "test_buildbench.py": "195 -> 218",
+      "test_union_apply_guard.py": "20 -> 24",
+      "test_section85_retraction_fence_m257.py": 9,
+      "test_anchor_ladder_alternates_m257.py": 19,
+      "test_suite_census_collection.py": 22
+    },
+    "net_new_at_close": 25,
+    "net_new_at_harden": 35,
+    "flake_count": 0,
+    "flake_gate": "3 consecutive clean runs with pytest's random-ordering plugin ENABLED, at the harden; the close's scoped re-runs were deterministic across repeats.",
+    "counting_note": "Counts are per-file pytest summaries, not a JUnit tally — this repo ships no junit-xml wiring and the close did not invent one."
+  },
+
+  "fences": {
+    "net_new": "stack-core/tests/test_section85_retraction_fence_m257.py — the grep gate D-v28-10 promised and that had never existed. POSITIONAL, not absence-based: a retracted claim may appear only where a reader is being told it is retracted.",
+    "green_at_close": ["anchor_construct_guard", "corpus_index_guard", "markdown_structure_guard", "derived_value_guard", "demo_knob_guard", "test_baseline_mirror_fence", "test_m255_mutation_battery", "repair_postcondition (pre-commit, both commits)"],
+    "caught_my_own_work": "The baseline mirror fence caught an un-hosted 449.51 s in a table I wrote; the new §8.5 fence caught two of my own sentences plus a case-sensitivity hole in its own marker list; the M255 mutation battery went RED because my clause-3 fix moved its subject (§5 rule 53 working)."
+  },
+
+  "deferrals": {
+    "escape_hatch": 0,
+    "fate_1_landed_at_close": 1,
+    "fate_3_to_m258": 15,
+    "dropped": 1,
+    "superseded": 1,
+    "repeat_deferral_pattern": "FOUR items inherited from the M255 close (2026-07-28) were routed to M257 and NONE landed across nine iters. Re-fated per-item at this close: 1 landed (the _manifest_lists body-extraction fence), 3 routed to M258 with measured reasons replacing the original ones.",
+    "routing_gap_fixed": "M257x closed routing 11 items / 5 clusters + 1 block fate to M258, and `grep M257x` in M258's overview.md returned ZERO hits — verbatim the BIND_HOST / D-M255-7 failure recorded IN THAT SAME FILE. Fixed at this close."
+  },
+
+  "publication": {
+    "rosetta_extensions_tag": "fast-build-m257-close",
+    "rung_zero": "tag verified ON ORIGIN, not merely created",
+    "rosetta_repo": "NOT pushed — the user runs origin publishes on their own cadence"
+  },
+
+  "notes": "M257 is the first milestone of v2.8 to close ON ITS GATE since M256, and it did so with both falsifiable asserts green on all three reps. The headline number survived two independent re-gradings under code that changed after it was taken. The single most valuable thing the close produced is not the retraction it was scoped for but the discovery that the gate instrument itself carried three fail-opens — found by reviewing the milestone's code as a whole rather than per-commit."
+}

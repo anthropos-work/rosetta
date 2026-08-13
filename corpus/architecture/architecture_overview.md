@@ -1,34 +1,56 @@
 # Anthropos Architecture Overview
 
+> **⚠️ THE ROUTER IS GONE IN BOTH STATES — corrected M257x iter-124 (v2.8).** Platform `b56d731`+`360efd4` (merged **`2adcf71`**, 2026-07-31) **deleted the Cosmo Router from local dev** — no `graphql` compose service, no `repos.yml` entry — and re-pointed the frontends at **`backend` directly, `http://localhost:8082/graphql/query`**. **There is no `:5050` on a local stack.** **And it is DESTROYED in production too**: `module.wundergraph_euwest1` is deleted from `infrastructure/terraform/production/services.tf` @ `13c248e6`, whose `:509-517` records that the apply destroyed *"its ECS service, task definition, target group, ALB rule (priority 810), Cloud Map entry, log group, ACM cert and the `wundergraph.anthropos.work` alias"* — ECR hand-deleted **2026-08-05**, *"so production-wundergraph is gone and this block is now inert."* **This banner said *"in production the router is still declared"* until iter-124**, citing `graphql-wundergraph/terraform/main.tf:20` `= 1` — **orphaned dead code**: a `service_desired_count` in a repo whose module no root module instantiates describes nothing ([`org-repos.md` § 3](org-repos.md)). The repo is **ARCHIVED on GitHub (2026-07-30)**. The supergraph was **ONE** subgraph — `backend` — since `915da06` (2026-07-29). **Where production's frontends now send GraphQL is NOT something this corpus can see** — that is Vercel runtime configuration, in no clone set. The fenced source of truth is [`platform-migration-status.md`](./platform-migration-status.md).
+
+
 This document provides a high-level overview of the Anthropos platform architecture.
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
 Anthropos is a B2B SaaS skills intelligence platform that helps companies **map, verify, and develop skills** using AI-powered workplace simulations. It is composed of **three tiers of services**:
 
-*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The set below is the **local `graphql` profile** — what runs after a normal `make up`. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
-    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — 60K+ skills graph, vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
-    *   **Sentinel**: Security and access control (the bouncer)
-    *   **Jobsimulation**: Running realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by CMS. Currently still standalone — it is the next runtime engine slated for the same in-app consolidation.)
-    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python, in the same container)
-    *   **Storage**: File/blob storage
-    *   **Roadrunner**: Code execution proxy (via Judge0 sandbox)
+*   **Core Backend Services**: A collection of specialized Go microservices that handle the business logic. The **local `core` profile** (renamed from `graphql` at platform `0dab54d`) — what a normal `make up` selects — starts **four containers**: `backend` and `gotenberg`, plus the always-on floor (`postgresql`, `redis`), which declare no `profiles:` key and are therefore in every selection — and which, since platform `766df6c`, are not in `docker-compose.yml` at all: they live in the **included** `common.yml`. **Exactly one of the four is a Go service of ours: `backend`.** ⚠️ **This sentence read *"five containers … (`postgresql`, `redis`, `sentinel`) … Two of the five are Go services of ours: `backend` and `sentinel`"* until M258 iter-18** — `766df6c` folded `sentinel` into `app` (the 8th merge) and deleted its compose service, so the floor is two and the Go-service count is one. See [Service Taxonomy](./service_taxonomy.md) for the full picture (other profiles, archived services, production-only services).
+    *   **Backend/App**: Main API gateway, user and organization management; also hosts the **AI-readiness** workforce subsystem (org-level AI-capability diagnostics — see [`../services/ai-readiness.md`](../services/ai-readiness.md)), the **skill-path progression engine** (per-user `SkillPathSession` state — merged in from the former standalone skillpath service, "skillpath-in-app", platform M502→M507), the **skills taxonomy domain** since the **skiller-in-app merge (July 2026)** — a graph of **≥42,790 skills** across **≥22,470 job roles** (the measured *public* subset; see [Shared Libraries → the "60K / 18K" figures](./shared_libraries.md#taxonomy-figures)), vector embeddings (RAG), AI skill matching — plus the newer app-owned domains (course-builder, AI Labs + credits, ask-engine/Talk-to-Data, the academy store)
+    *   ~~**Sentinel**~~: **folded into `app` at v11.0** (`766df6c`). Still the bouncer, still Casbin — but a package (`app/internal/sentinel/`), not a container, and reached by an ordinary Go call. See the [`sentinel` service doc](../services/sentinel.md)
     *   **Gotenberg**: Office-doc → PDF conversion (used by `app`)
 
-    Off by default (opt-in via Docker profile): **Messenger** (Brevo email), **CustomerIO Sync**.
+    **Domains inside Backend/App, not services.** At platform `0dab54d` none of the three has a compose
+    service, a container, a port or a `repos.yml` entry — `d11a403` (2026-08-03) deleted all three from
+    both files in one commit:
+    *   **Jobsimulation**: runs realistic AI-powered job scenarios with voice, chat, code, and document tasks. (It *runs* the simulation; the simulation *definition* is content owned by the cms domain. **Merged into `app`** — "jobsim-in-app"; **the repo's archive state is not visible to this corpus** — this line asserted a GitHub archive on 2026-07-31, which `origin/main`'s four **2026-08-04** commits (merged PR #439 among them) contradict, an archived GitHub repo being read-only; report both, assert neither — and **M810 has landed for the production ECS service**: `6092c6d2` deleted the `module "jobsimulation"` block outright, destroying the ECS service, task definition and ECR repository, so `service_desired_count` no longer appears in the file at all (`jobsimulation/terraform/main.tf:15-22`). What survives is the module's *other* ownership — the LiveKit and Chime recording buckets `backend` reads by literal name, the `/production/jobsimulation/*` SSM parameters and the atlas tracker; dropping the legacy `jobsimulation` schema is a separate, still-pending M810 step (`:24-40`).)
+    *   **CMS**: **The content layer** — owns the authored content & definitions (skill paths, simulation blueprints, the library) by wrapping Directus, plus the embedded Studio-Room AI content generation pipeline (Python — pulled into the **`app`** image by CI since cms-in-app; it rode in the cms container before the merge)
+    *   **Roadrunner — NOT a domain here; it is the one of the three that was DELETED, not folded**
+        (corrected M257x iter-137, which found this bullet under a heading reading *"Domains inside
+        Backend/App"*). `app/internal/roadrunner/` exists at no ref and was never added (0 commits ever
+        @ `app` `ad9f3c498`). Judge0 code execution is reached directly from **inside the jobsimulation
+        domain** (`app/internal/jobsimwiring/wiring.go:123` @ `app` `ad9f3c498`; `:118` @ `b948604`), so
+        there is no hop and nothing left to start
+
+    **Also domains inside Backend/App, and no longer even opt-in:** **Storage**, **Messenger** (Brevo
+    email) and **CustomerIO Sync**. Platform `838d907` (merged **`0c91421`**, 2026-08-05) **deleted all
+    three compose services**, with their ports and `depends_on` edges, and dropped `storage` +
+    `messenger` from `repos.yml`. The `storage-legacy` / `messenger` / `customerio-sync` profiles are gone
+    with them, and asking for one now exits 0 and starts only the always-on floor. `app`
+    serves object storage in-process; messenger and customerio-sync ride in the same container but stay
+    **OFF** on a developer machine behind `MESSENGER_ENABLED` / `CUSTOMERIO_SYNC_ENABLED`, which compose
+    deliberately does not set (`docker-compose.yml:84-92` says why). Up to that commit the first two were
+    kept startable "for rollback comparison"; that escape hatch is gone.
     Archived (removed from local orchestration): Chronos, Intelligence.
     Production-only: **db-backup** (scheduled PostgreSQL backups).
 *   **Studio Services**: Specialized tools for content creation:
     *   **Studio-Desk**: Web app where creators design job simulations
     *   **Studio-Room**: AI pipeline that generates content from those designs. **Embedded inside the `app` (backend) image** since cms-in-app — it rode in the cms container before that, and was never a standalone deployment.
-*   **Standalone Internal Apps**: Independent products that reuse platform identity (Clerk) but do not depend on the backend services:
-    *   **Ant Academy** (`ant-academy`): Internal learning portal (Next.js 16 + Expo mobile) for `@anthropos.work` employees. Deployed on Vercel.
-*   **Frontend**: Next.js 15 applications deployed on Vercel
+*   **Standalone Internal Apps**: Separately deployed products that reuse platform identity (Clerk) — **but not independent of the backend**:
+    *   **Ant Academy** (`ant-academy`): the AI-academy learning product (Next.js 16 + Expo mobile) — a **public storefront** with an enterprise/org tier, **not** an `@anthropos.work`-only portal (refuted iter-115, swept run 81). Deployed on Vercel. Its course catalog is **DB-authoritative**, read over GraphQL from the platform's **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`) inside it — so the catalog degrades to an empty grid without the backend (see [`../services/ant-academy.md`](../services/ant-academy.md)).
+*   **Frontend**: Next.js **16** applications deployed on Vercel
 *   **External Services**: Third-party integrations:
     *   **Clerk**: User authentication (SaaS)
     *   **Directus**: Content storage (self-hosted)
-    *   **GraphQL/Cosmo Router**: API federation gateway
-    *   **AI Providers**: OpenAI, Anthropic, Mistral (EU-first routing)
+    *   ~~**GraphQL/Cosmo Router**~~: the former API federation gateway — **GONE IN BOTH STATES.**
+        Deleted from local dev at platform `2adcf71`; **DESTROYED in production**, `module.wundergraph_euwest1`
+        deleted from `infrastructure/terraform/production/services.tf:509-517` @ `13c248e6` (corrected iter-124)
+    *   **AI Providers**: OpenAI, Anthropic, Mistral — EU-resident clients by default, **not** an EU-first
+        fallback ladder (see [AI Providers](#external-service-integration) below)
     *   **LiveKit**: Real-time voice engine for simulations
     *   **AWS Chime**: Video/audio recording
     *   **PostgreSQL & Redis**: Data infrastructure
@@ -39,26 +61,34 @@ The Anthropos platform follows a **three-tier microservices architecture** with 
 
 **Tech Stack**:
 - **Backend**: Go microservices (primary), Python for AI content, TypeScript/Node.js for Studio-Desk
-- **Frontend**: Next.js 15 + React 19 + TypeScript on Vercel
-- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM; each service has its own schema
+- **Frontend**: Next.js **16** + React 19 + TypeScript on Vercel (`next: ~16.2.12` — a tilde range, not a caret — in the four `apps/*` that declare it: `web`, `hiring`, `integration`, `maintenance`; `apps/mobile` declares no `next`. Lockfile resolves `16.2.12`, at `next-web-app` `8297c684`)
+- **Database**: PostgreSQL RDS (Multi-AZ) with Ent ORM. **Not a schema per service** — `app` owns `public` and is the only repo with migrations — **and since v11.0 it also owns the `sentinel` schema**, which survives the fold and is migrated separately (`make migrations-sentinel`); the `cms`/`jobsimulation`/`skillpath` **schemas** are legacy husks — non-authoritative leftovers, not services (see the Database Separation section below)
 - **Cache/Streams**: Redis ElastiCache (caching, pub/sub, job queues via Watermill)
-- **APIs**: GraphQL Federation v2 (WunderGraph Cosmo Router), gRPC/Connect-RPC (internal), Protocol Buffers
-- **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC via Sentinel)
+- **APIs**: GraphQL served **by `backend` itself** (`:8082/graphql/query`); the WunderGraph Cosmo Router
+  that used to federate it is deleted from local dev **and destroyed in production** (iter-124), and the
+  supergraph had already been **one** subgraph since `915da06`. gRPC/Connect-RPC (internal), Protocol Buffers
+- **Auth**: Clerk (identity) + Casbin (authorization with RBAC/ABAC) — the PDP is **`app/internal/sentinel/`, in-process since v11.0**, not a separate Sentinel service
 - **CMS**: Directus (self-hosted, headless)
 - **Infrastructure**: AWS ECS EC2 (EU-West-1 primary), Terraform IaC, Vercel (frontend)
 - **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private access
 - **Monitoring**: CloudWatch, Better Stack, Sentry, PostHog
 
-**Service Tiers** (local development reality, default `graphql` profile):
-1. **Core Backend Services**: Backend/App (the monolith), Sentinel, Storage, Messenger (when opted in) + Gotenberg (third-party PDF service) + Cosmo Router. Dockerized.
+**Service Tiers** (local development reality, default `core` profile):
+1. **Core Backend Services**: Backend/App (the monolith), plus Gotenberg (third-party PDF service). ⚠️ **Sentinel was named here until M258 iter-18 and is no longer a service** — `766df6c` folded it into `app` and deleted its compose block. Dockerized. **`jobsimulation`, `cms` and `roadrunner` are not among them** — platform `d11a403` deleted all three compose services outright (and their `repos.yml` entries); their domains run in-process inside `app`, so there is nothing to start and nothing unfederated left over. **`Storage`, `Messenger` and `CustomerIO Sync` are not among them either** — platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services outright, so there is no longer even a profile to opt into; all three are served in-process by `backend`. **The Cosmo Router is no longer among them anywhere** — platform `2adcf71` deleted the local service, and the production module was **destroyed** (`infrastructure/terraform/production/services.tf:509-517`; corrected M257x iter-124, where this sentence said *"it survives in production only"*). So a bare `make up` gives you **five containers** — `backend`, `gotenberg` and the always-on `postgresql`/`redis`/`sentinel` floor — of which **two are our Go services**, not six.
 
-   Five former microservices now run **inside** Backend/App: **skiller** (July 2026), **skillpath**
-   ("skillpath-in-app", M502→M507), **roadrunner**, **jobsimulation** ("jobsim-in-app") and **cms**
-   ("cms-in-app v8.0", app v1.360.0). The federation is down to a **single subgraph**. `chronos` and
-   `intelligence` are retired.
-2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is now embedded in the CMS container.
-3. **External Services**: Clerk, Directus, GraphQL, AI providers, LiveKit, AWS Chime
-4. **Shared Libraries**: colony, authn, proto, ai, taxonomy (not deployed, imported by services)
+   **Eight** former microservices now run **inside** Backend/App — the seventh count stood until M258
+   iter-18, when `sentinel` became the eighth (`766df6c`, v11.0). (This line said **eight** for a
+   *different* and wrong reason before M257x iter-137, when it included
+   **roadrunner** — roadrunner was *deleted*, not folded; there is no
+   `app/internal/roadrunner/` at any ref): **skiller** (July 2026), **skillpath**
+   ("skillpath-in-app", M502→M507), **jobsimulation** ("jobsim-in-app"), **cms**
+   ("cms-in-app v8.0", app v1.360.0) and — the v9.0 "support-in-app" trio, whose containers `838d907`
+   deleted — **storage**, **messenger** and **customerio-sync**. The federation is down to a **single
+   subgraph**. `chronos` and `intelligence` are retired.
+2. **Studio Services**: Studio-Desk (TypeScript, runs natively or in `studio-desk` profile); Studio-Room is embedded in the **`app` (backend) image** since cms-in-app — it was in the cms container before the merge.
+3. **External Services**: Clerk, Directus, AI providers, LiveKit, AWS Chime. **The Cosmo Router is no longer
+   one of them in either state** — deleted from local dev at `2adcf71`, destroyed in production (iter-124)
+4. **Shared Libraries**: **five** imported private modules — **analytics-go, colony, proto, storage, taxonomy** (not deployed; pulled at Docker build). Measured at `app` `ad9f3c498`, `app/go.mod:14-18`, all five direct with no `// indirect` and no org `replace`; `sentinel` `f2c4619` requires `colony` + `proto` directly and `taxonomy` indirectly. **`ai` is NOT among them** — `app` folded it in-tree at `1e457fa70` (2026-08-04) and carries it at `app/internal/ai/`. **`authn` is not one either**: it ships inside colony as `colony/authn`, and no service's `go.mod` requires the standalone module — 0 hits for `github.com/anthropos-work/authn` across all seven Go clones, against a positive control of `colony` required by all seven. ⚠️ **This line said *"four — colony, proto, ai, taxonomy"* until M257x iter-133**, which is wrong twice: it kept `ai` after the fold and it never carried `analytics-go` or `storage`, both direct requires. The **fenced** set is [`platform-migration-status.md`](./platform-migration-status.md)'s assertion G, which prints the true module set on every run
 5. **Production-only / not in local compose**: db-backup, archived Chronos/Intelligence
 
 Services communicate via **Connect-RPC/HTTP** for synchronous operations and **Redis Streams** (via Watermill) for asynchronous messaging.
@@ -67,7 +97,7 @@ Services communicate via **Connect-RPC/HTTP** for synchronous operations and **R
 graph TD
     subgraph External["🌐 External Services"]
         Clerk[Clerk Auth]
-        GraphQL[GraphQL/Wundergraph]
+        GraphQL["GraphQL / Cosmo Router<br/>REMOVED — deleted from local dev at 2adcf71<br/>and DESTROYED in production (iter-124)"]
     end
     
     subgraph Frontend["🖥️ Frontend Applications"]
@@ -77,15 +107,17 @@ graph TD
     
     subgraph Studio["🎨 Studio Services"]
         Desk[Studio-Desk<br/>Content Design]
-        Room[Studio-Room<br/>AI Generation]
+        Room["Studio-Room<br/>AI Generation<br/>(NOT a deployable — runs inside<br/>the app image since cms-in-app)"]
     end
 
     subgraph Core["⚙️ Core Backend Services (Go)"]
-        Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)"]
-        Sentinel[Sentinel]
-        Storage[Storage]
-        Messenger[Messenger]
+        Gateway["Backend / App — THE MONOLITH<br/>users · orgs · AI Readiness · academy · labs<br/>+ skiller (taxonomy, embeddings, matching)<br/>+ skillpath (progression engine)<br/>+ jobsimulation (session runtime)<br/>+ cms (content layer, embedded Studio-Room)<br/>+ roadrunner (Judge0 code exec)<br/>+ storage · messenger · customerio-sync (support-in-app v9.0)"]
+        %% Sentinel had a node here until 766df6c (2026-08-11, v11.0) folded the Casbin PDP
+        %% into app as internal/sentinel and deleted its compose service. It is a domain in Gateway now.
         Gotenberg[Gotenberg<br/>PDF conversion]
+        %% Storage and Messenger had nodes here until 838d907 (merged 0c91421, 2026-08-05)
+        %% deleted the storage, messenger and customerio-sync compose services and their
+        %% storage-legacy / messenger / customerio-sync profiles. They are domains in Gateway now.
     end
 
     subgraph Data["💾 Data & Infrastructure"]
@@ -97,23 +129,27 @@ graph TD
     %% Frontend connections
     Web --> Clerk
     Hiring --> Clerk
-    Web --> GraphQL
-    Hiring --> GraphQL
+    Web -.->|removed — was prod| GraphQL
+    Hiring -.->|removed — was prod| GraphQL
+    Web -->|local: :8082/graphql/query| Gateway
+    Hiring -->|local: :8082/graphql/query| Gateway
     
     %% Studio connections
     Desk --> Clerk
-    Desk --> GraphQL
-    Room -.->|generates from| Desk
+    Desk -->|local: :8082/graphql/query| Gateway
+    Gateway -.->|runs studio/gen.py in-process, argv exec — no shell| Room
     
-    %% GraphQL aggregation (ONE subgraph: backend)
-    GraphQL --> Gateway
+    %% Router aggregation — HISTORICAL. The router is gone in BOTH states as of iter-124: deleted from
+    %% local dev at 2adcf71, and module.wundergraph_euwest1 destroyed in infrastructure @ `13c248e6`,
+    %% terraform/production/services.tf:509-517.
+    %% ONE subgraph: backend. 915da06 deleted the cms AND jobsimulation entries in one commit (a 3 → 1 step).
+    %% Everywhere now, the frontends and studio-desk hit Gateway directly (edges above).
+    GraphQL -.->|removed| Gateway
 
     %% Core service dependencies
-    Gateway --> Sentinel
+    %% Gateway --> Sentinel: removed at 766df6c — the PDP is in-process, there is no edge to draw
     Gateway --> Gotenberg
-    Gateway --> Storage
     Gateway --> Directus
-    Messenger --> Gateway
 
     %% Data connections
     Gateway --> Postgres
@@ -131,17 +167,25 @@ graph TD
 
 #### Core Backend Services (Tier 1)
 
-Default local development set (started by `make up`, profile `graphql`):
+Default local development set (started by `make up` — profile `core`, `Makefile:10` `PROFILE ?= core`).
+**Four** containers at platform `766df6c`; the last two declare no `profiles:` key — they are the whole of the **included** `common.yml` — and are therefore in **every** selection. *(This read "Five containers; the last three…" until M258 iter-18, when `sentinel` was folded into `app`.)*
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026) | [→](../services/backend.md) |
-| **CMS** *(now a domain in `app`)* | Go + embedded Python (studio-room) | **Content layer** — owns content & definitions (skill paths, simulation blueprints, library) via Directus + AI generation pipeline | [→](../services/cms.md) |
-| **Sentinel** | Go | Authorization (Casbin RBAC/ABAC) | [→](../services/sentinel.md) |
-| **Jobsimulation** *(now a domain in `app`)* | Go | **Runtime** — runs simulation *sessions*; the simulation *definition* comes from the cms domain by ID | [→](../services/jobsimulation.md) |
-| **Storage** | Go | File/Blob storage management | [→](../services/storage.md) |
-| **Roadrunner** | Go | Code execution proxy to Judge0 sandbox | [→](../services/roadrunner.md) |
+| **Backend** (`app`) | Go | Main API Gateway / User Backend; also owns the skills taxonomy, embeddings (RAG), and AI skill matching (merged skiller domain, July 2026), plus the **cms**, **jobsimulation** and **roadrunner** domains | [→](../services/backend.md) |
 | **Gotenberg** | Third-party (Go) | Office-doc → PDF conversion | [→](../services/gotenberg.md) |
+| ~~**Sentinel**~~ | ~~Go~~ | **NOT A SERVICE since `766df6c`** — the Casbin PDP is `app/internal/sentinel/`, in-process | [→](../services/sentinel.md) |
+| **PostgreSQL** *(always on)* | Third-party image | Data store (custom image with `pgvector`) | — |
+| **Redis** *(always on)* | Third-party image | Cache, pub/sub, job queues | — |
+
+> **What used to be in this table and no longer is.** **CMS**, **Jobsimulation** and **Roadrunner** each had a
+> row here as a container; platform `d11a403` deleted all three compose services — they are **domains inside
+> `app`** now, with no service, port or `repos.yml` entry (docs: [cms](../services/cms.md),
+> [jobsimulation](../services/jobsimulation.md), [roadrunner](../services/roadrunner.md)). **Storage**,
+> **Messenger** and **CustomerIO Sync** had rows too — first here, then in an *opt-in profiles* table below,
+> and now nowhere: platform `838d907` (merged `0c91421`, 2026-08-05) deleted all three compose services and
+> their profiles (docs: [storage](../services/storage.md), [messenger](../services/messenger.md),
+> [customerio-sync](../services/customerio-sync.md)).
 
 > [!IMPORTANT]
 > **Content vs. runtime state — a split-ownership model that SURVIVED the merge.** The platform separates the **content layer** (the cms domain, which wraps Directus) from the **runtime/session engines**. Since cms-in-app all of them live in the same process, but the ownership split is unchanged — the boundary is now a package boundary, not a network one:
@@ -150,29 +194,47 @@ Default local development set (started by `make up`, profile `graphql`):
 >
 > So **skill-path *content* ≠ the skill-path *engine*; "jobsimulation" ≠ simulation content.** Content = the cms domain/Directus; the engine/runtime = the state machine over that content. All of it now lives in `app`. See [CMS](../services/cms.md), [Skillpath](../services/skillpath.md), and [Jobsimulation](../services/jobsimulation.md).
 
-Available but off by default (opt-in via Docker profile):
+Available but off by default (opt-in via Docker profile): the two containerized frontends, and nothing
+else — **Next Web App** (`frontend`, `all`) and **Studio-Desk** (`studio-desk`, `all`). Neither profile
+is usable on its own: both services declare `depends_on: backend`, which those profiles do not select,
+so compose exits 1 — stack them on `core`. See [Service Taxonomy](./service_taxonomy.md#profiles).
 
-| Service Name | Profile | Responsibility | Documentation |
-| :--- | :--- | :--- | :--- |
-| **Messenger** | `messenger` | Email notifications via Brevo (Sendinblue) | [→](../services/messenger.md) |
-| **CustomerIO Sync** | `customerio-sync` | Background data sync to Customer.io | [→](../services/customerio-sync.md) |
+> **This used to be a table of three Go services — Storage (`storage-legacy`), Messenger (`messenger`)
+> and CustomerIO Sync (`customerio-sync`) — and all three rows are gone.** Platform `838d907` (merged
+> `0c91421`, 2026-08-05, *"drop the storage, messenger and customerio-sync containers"*) deleted the
+> service definitions **and** the profiles; `storage` and `messenger` left `repos.yml` in the same
+> commit, so `make init` no longer clones them. Asking for one of the retired tokens does **not** fail —
+> it exits 0 and starts only the always-on floor, which is why none of them is written here in runnable
+> form. Docs: [storage](../services/storage.md), [messenger](../services/messenger.md),
+> [customerio-sync](../services/customerio-sync.md).
 
 Production-only (deployed but not in local docker-compose):
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **db-backup** | Go | Scheduled PostgreSQL backups (every 6h) to S3, Azure, Hetzner | [→](../services/db-backup.md) |
+| **db-backup** | **Bash** (43 lines, Alpine; zero `.go` files) | `pg_dump` → **S3 + Hetzner** (two targets, **never Azure**). **Trigger commented out since `7dd1b80`, 2025-05-29**, and prod pins that commit — deployed, unfired. The disabled schedule was `rate(12 hours)`; **"6 h" has no source in the repo's history** | [→](../services/db-backup.md) |
 
-Archived / merged (removed from local orchestration; repos still exist):
+Archived / merged — **and since platform `d11a403` every one of them is out of local orchestration** (repo dirs
+may still exist on disk):
+
+> **⚠️ This table and the *Default local development set* table above used to overlap by design, and that
+> overlap has now closed.** CMS, Jobsimulation and Roadrunner appeared in **both**: out of the supergraph
+> (no subgraph) **and**, until platform **`d11a403`** (2026-08-03,
+> *"chore(compose): drop roadrunner, prune dead env, repoint messenger"*), still started by the then-default
+> profile as unfederated husks. `d11a403` deleted all three compose services **and** all three `repos.yml`
+> entries in one commit — so at `0dab54d` none of them starts. (That commit's own message says roadrunner's
+> *"repos.yml entry was already gone"*; its diff deletes `- name: cms`, `- name: jobsimulation` **and**
+> `- name: roadrunner`. The diff is the fact.) Keep the *merged ≠ gone from compose* distinction in mind
+> anyway: it is a **phase**, and the next fold will pass through it too.
 
 | Service Name | Status | Documentation |
 | :--- | :--- | :--- |
 | **Chronos** | Removed via platform commit `045857c` | [→](../services/chronos.md) |
 | **Intelligence** | Removed via platform commit `fdfa189` | [→](../services/intelligence.md) |
 | **Skiller** | Merged into Backend/App (July 2026) — repo legacy/decommissioned | [→](../services/skiller.md) |
-| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`; ECS module kept as the rollback path, teardown **M810** | [→](../services/jobsimulation.md) |
-| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph 2→1; ECS module kept as the rollback path, teardown **M810** | [→](../services/cms.md) |
-| **Roadrunner** | Merged into Backend/App with jobsim-in-app — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` | [→](../services/roadrunner.md) |
+| **Jobsimulation** | Merged into Backend/App ("jobsim-in-app") — session engine runs in `app`; the 23 run-state tables moved to `public`. **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, so at `0dab54d` there is nothing to start. **Prod teardown — M810 has LANDED for the ECS service**: `6092c6d2` deleted the `module "jobsimulation"` block, so the ECS service, task definition and ECR repository are destroyed (`jobsimulation/terraform/main.tf:15-22`). The module file survives owning only the LiveKit/Chime buckets, the SSM parameters and the atlas tracker; the legacy-schema drop is a separate, still-pending M810 step. **Do not read this row onto CMS** | [→](../services/jobsimulation.md) |
+| **CMS** | Merged into Backend/App ("cms-in-app v8.0", app v1.360.0) — content layer + Studio run in `app`; similarity/studio tables moved to `public`; supergraph **3→1** (the same commit, `915da06`, also deleted the `jobsimulation` subgraph — its own commit subject's "2→1" is wrong); the prod ECS service is **DESTROYED** (corrected M257x iter-127 — `infrastructure` @ `13c248e6` declares no `module "cms"`; `infrastructure/terraform/production/services.tf:64-70`). **This cell read *"not a settled rollback path — report both, assert neither"* on the strength of `cms/terraform/main.tf:39` `service_desired_count = 0`, which is orphaned dead code.** Corroborating, and correct all along, `6efa1d5` (merged `f38c0c4`, 2026-08-04) deleted cms's build-production workflow under *"the cms ECR repository is decommissioned (M810)"*, naming M810's deletion of `module.cms_euwest1`. **It HAS been applied — measured at `infrastructure` `13c248e6` (2026-08-07), M257x iter-123**: there is no `module "cms_euwest1"` declaration, and `terraform/production/services.tf:64-70` records the deletion and everything it destroyed. `cms/terraform/main.tf:39` is **orphaned dead code**. (This cell said *"not visible to this corpus — `infrastructure` has never been in any clone set"*; that was a clone-set limit, not a measurement limit, and the fix was to clone the repo.) See [`org-repos.md` § 3](org-repos.md). **No local container**: `d11a403` deleted the compose service and the `repos.yml` entry, and re-pointed `messenger`'s `CMS_RPC_ADDR` at `http://backend:8083` — **M809 has landed** (on **two** variables, this one and `JOBSIMULATION_RPC_ADDR`; not on all four — M257x iter-115). `838d907` (merged `0c91421`) then deleted the `messenger` service itself, so **no compose file sets `CMS_RPC_ADDR` at all** any more; prod teardown is **M810** | [→](../services/cms.md) |
+| **Roadrunner** | **DELETED AND REPLACED, not merged** — `backend` calls Judge0 directly via `JUDGE0_BASE_URL` from **inside the jobsimulation domain** (`app/internal/jobsimwiring/wiring.go:123`); **`app/internal/roadrunner/` exists at no ref and was never added** (0 commits ever @ `app` `ad9f3c498`). **Gone locally AND absent from production:** at platform `0c91421` there is **no `roadrunner` compose service at all** (deleted by `d11a403`; **5** services remain declared, 7 in the effective topology), and `infrastructure` @ `13c248e6` declares **ten** service modules in `terraform/production/services.tf` with **no `module "roadrunner"` among them**. **This cell read *"orphaned in prod … while prod terraform still reads `= 1`"* until M257x iter-137 — the half-applied repair the CMS row one line above already carried:** `roadrunner/terraform/main.tf:19` is an input to an **uninstantiated** module, i.e. orphaned dead code, exactly as `cms/terraform/main.tf:39` is. What survives in `infrastructure` is the **name**, in the `production_roadrunner_judge0_*` CI secrets that feed `module "backend_euwest1"` (`infrastructure/terraform/production/services.tf:384-385`) | [→](../services/roadrunner.md) |
 | **Skillpath** | Merged into Backend/App then decommissioned ("skillpath-in-app", platform M502→M507) — the skill-path progression engine now runs in `app`; session state moved to `public.skill_path_sessions`; no skillpath container or subgraph | [→](../services/skillpath.md) |
 
 #### Shared Libraries (Not Deployed)
@@ -183,9 +245,9 @@ Archived / merged (removed from local orchestration; repos still exist):
 | :--- | :--- |
 | **colony** | Platform framework: logging+Sentry, DB/Redis helpers, GraphQL/RPC servers, middleware, pub/sub (Watermill); also contains `authn` |
 | **proto** | Protobuf definitions (single source of truth for RPC contracts) + hand-written domain types |
-| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & EU-first routing live in the **consumers**, not this lib |
+| **ai** | AI provider wrapper behind one `ai.AI` interface (OpenAI, Azure, Anthropic, **Bedrock**, Mistral). Cost tracking & **vendor selection** live in the **consumers**, not this lib — and that selection is a caller-supplied switch, **not** an EU-first fallback ladder ([no such ladder exists](./external_services.md#routing-what-is-actually-implemented)) |
 | **authn** | Clerk JWT authentication — now shipped **inside colony** as `colony/authn` (standalone repo is legacy) |
-| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the 60K-skill/18K-role data lives in `app`'s `public` schema (former skiller service) |
+| **taxonomy** | **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset; the skill/job-role data (**≥42,790 skills**, **≥22,470 job roles** — public subset, measured 2026-06-29) lives in `app`'s `public` schema (former skiller service). The long-quoted "60K skills / 18K roles" is not a measurement: [18K is refuted, 60K is unverified](./shared_libraries.md#taxonomy-figures) |
 
 #### Studio Services (Tier 2)
 
@@ -200,32 +262,76 @@ Archived / merged (removed from local orchestration; repos still exist):
 | :--- | :--- | :--- | :--- |
 | **Clerk** | SaaS | User authentication & organization management | [→](../services/clerk-integration.md) |
 | **Directus** | Docker (self-hosted) | Headless CMS for content storage | [→](./external_services.md#directus-headless-cms) |
-| **GraphQL/Cosmo Router** | Docker (configured) | Apollo Federation v2 gateway — **one** subgraph (`backend`) since cms-in-app | [→](../services/graphql-wundergraph.md) |
+| ~~**GraphQL/Cosmo Router**~~ | **REMOVED IN BOTH STATES** — deleted from compose at platform `2adcf71`; ECS module destroyed in production (`infrastructure` `services.tf:509-517`, corrected iter-124) | *was* an Apollo Federation v2 gateway, **ONE** subgraph (`backend`) since `915da06` | [→](../services/graphql-wundergraph.md) |
 
 #### Frontend Applications
 
 | Application | Technology | Purpose | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Next Web App** | Next.js 15 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
+| **Next Web App** | Next.js 16 | Main user-facing application (Workforce + Hiring) | [→](../services/next-web-app.md) |
 | **Hiring App** | Next.js | Recruiting & hiring workflows | [→](./frontend_architecture.md) |
 | **Mobile App** | Expo/React Native | Mobile experience | [→](./frontend_architecture.md) |
-| **Ant Academy** | Next.js 16 + Expo | Internal learning portal for `@anthropos.work` employees (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
+| **Ant Academy** | Next.js 16 + Expo | The AI-academy product — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only (standalone, Vercel-deployed) | [→](../services/ant-academy.md) |
 
 ### Communication Patterns
 
 #### Core Services ↔ Core Services
-*   **Synchronous**: Connect-RPC/HTTP endpoints (configured via `*_RPC_ADDR` env vars)
+*   **Synchronous**: HTTP endpoints — and, since platform `766df6c` (v11.0), **zero Connect-RPC edges on
+    a local stack**. ⚠️ **This passage read *"down to one Connect-RPC edge on a local stack, `backend →
+    sentinel`"* until M258 iter-18.** That edge is gone, not re-pointed: the `sentinel` service is
+    deleted, `AUTHORIZATION_ADDRESS` occurs **0** times across `docker-compose.yml`, `common.yml` and
+    `repos.yml`, and `app` deleted its own Connect-RPC listener with it (`app/main.go:1310`, *"NO RPC
+    SERVER"*). There are still **zero `*_RPC_ADDR` variables**. **It is NOT the only service
+    address compose sets, and not the only cross-process edge** — this passage previously said *"compose
+    sets exactly one service address"*, which **is false** and is retracted (corrected M257x iter-102).
+    The same `backend` block also sets `GOTENBERG_URL=http://gotenberg:3200` (`docker-compose.yml:57` — a
+    second container on the **default** `core` profile at `:183`, reached over **plain HTTP**, not
+    Connect-RPC, at `app/internal/converter/gotenberg.go:31` @ `app` `ad9f3c49`), `JUDGE0_BASE_URL`
+    (`docker-compose.yml:59`) and `REDIS_ADDR` (`docker-compose.yml:66`). **The correctly-scoped form is
+    this document's own local-stack diagram below** — *"the only cross-process **RPC** edge out of backend
+    on a core stack"* — which was right while this line was wrong, 55 lines apart in one file.
+    On the `*_RPC_ADDR` half: the `messenger` block was the last thing
+    that set any (`BACKEND_USERS_`, `CMS_`, `JOBSIMULATION_`, `SKILLER_` — **all four read
+    `http://backend:8083`, but `d11a403` moved only the MIDDLE TWO**: `CMS_RPC_ADDR` and
+    `JOBSIMULATION_RPC_ADDR`. `BACKEND_USERS_RPC_ADDR` and `SKILLER_RPC_ADDR` already held that value at
+    `d11a403^`, and `BACKEND_USERS_RPC_ADDR` never addressed anything but `backend` from its introduction
+    at `3e85fce` — it only ever moved ports, so there was nothing to re-point. Corrected M257x iter-115),
+    and `838d907` deleted that service. The env-var *names* still exist
+    in consumer code; no local compose file configures them
 *   **Asynchronous**: Redis Streams for event-driven messaging (via Watermill pub/sub library)
 
 #### Frontend/Studio → Backend
-*   **Primary**: GraphQL via Cosmo Router (Apollo Federation v2, a single `backend` subgraph)
+*   **Primary**: GraphQL — **`backend` directly** (`:8082/graphql/query` locally). The Cosmo Router is gone in both states (iter-124), and the supergraph was **one** subgraph (`backend`) before it went
 *   **Direct**: Some services expose REST endpoints for specific use cases
 
 #### External Service Integration
 *   **Clerk**: SDK-based (frontend) + JWT middleware (backend via `authn` library)
-*   **Directus**: Proxied via CMS service (business logic layer)
-*   **GraphQL**: Cosmo Router fronts a single subgraph (`backend`) — the jobsimulation and cms subgraphs were folded into it
-*   **AI Providers**: EU-first routing — Azure OpenAI (EU) → AWS Bedrock (EU) → Mistral (EU) → OpenAI Direct (US fallback)
+*   **Directus**: Proxied via the cms **domain** inside `backend` (business logic layer)
+*   **GraphQL**: the supergraph is **one** subgraph — `backend` — since `915da06` folded cms in and deleted the `jobsimulation` entry in the same commit (**3 → 1**; the jobsimulation *subgraph* outlived the jobsim-in-app service merge). Nothing is aggregated any more
+*   **AI Providers**: the default clients are EU-resident, and **there is no ordered EU-first fallback
+    ladder** — the chain *"Azure OpenAI EU → Azure OpenAI US → direct OpenAI"* was retracted at
+    [`external_services.md:579`](./external_services.md) and is corrected here (M257x iter-46). Inside the
+    AI manager there are two US paths — a **feature flag** and a **429 retry target**, not fallback rungs —
+    but **that is not the whole set**: [`external_services.md:602-607`](./external_services.md) enumerates
+    **four live** ways a request leaves the EU, of which the two outside the manager are `ANTHROPIC_API_KEY`
+    and **an authored sequence with `ai_vendor` unset** — the latter reaching direct US OpenAI
+    *unconditionally, on the first attempt, with no flag and no 429*. A fifth arm, **Studio-Room's own
+    `openai` `TARGET SERVICE`**, exists in code but is **selected by no shipped config** (all three
+    `app/studio/configs/*.ini` pin `azure`). Scope corrected M257x iter-48, count corrected to five at
+    iter-49 and to four-live-plus-one-latent at iter-52. Measured at
+    `app/internal/jobsimulation/ai/ai.go`: `getClient` defaults to `azureClientEu` and swaps to
+    `azureClientUs` when the PostHog flag **`flag_use_azure_us`** is on (`:262-276`); direct OpenAI is the
+    retry target on HTTP 429 (`isThrottlingError` at `:129`, applied at `:166` and `:325`). **⚠️ "EU-first"
+    is not "EU-only" — a feature flag routes traffic to the US, and an unset `ai_vendor` does so with no flag
+    at all.** AWS Bedrock is a *per-call vendor*
+    (`AnthropicAws`, pinned to `eu-west-1` at `:85-88`), never a fallback tier. **Mistral is not part of this
+    routing chain** — but it *is* live in `app`: `internal/cms/studio/markdownManager.go:29-30` builds a
+    Mistral OCR client (`mistralocr.New(aiKey)`) for **Studio document OCR**. **The key reaches it from the
+    CALLER, not from the environment**: `studioManager.go:583` reads `os.Getenv("MISTRAL_API_KEY")` and
+    passes it in. This sentence used to cite `:11,19` and say the constructor read the variable itself —
+    `:11` is the closing paren of the import block and `:19` is a doc comment recording that that very
+    `os.Getenv` read was **removed**, so the anchor named the fix as if it were the defect.
+    It is a separate, single-purpose provider, not a tier in the simulation cascade
 
 For detailed integration patterns, see [External Services](./external_services.md).
 
@@ -233,19 +339,97 @@ For detailed integration patterns, see [External Services](./external_services.m
 
 A typical API request follows this path:
 
+**In production, HISTORICALLY** — this is the shape while the router existed. It was **destroyed**
+(`infrastructure/terraform/production/services.tf:509-517` @ `13c248e6`, corrected iter-124), so the
+`Cosmo Router` hop below is no longer taken. **What replaced it in the production request path is NOT
+something this corpus can see**: the frontends' endpoint is Vercel runtime configuration, in no clone set.
+
 ```
-User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 5050)
+User → Vercel (Next.js) → Clerk (JWT) → ALB → Cosmo Router (port 8080)   ← DESTROYED, iter-124
   → backend (the sole subgraph)
-    → gRPC to internal services (sentinel, storage, roadrunner, ...)
+    → (no Connect-RPC hop — the sentinel PDP is in-process since v11.0)
     → Redis Streams for async events
 ```
 
+**On a local stack** (platform `2adcf71` deleted the router — **there is no `:5050`**):
+
+```
+Browser → Clerk (JWT) → backend :8082/graphql/query   (no router hop)
+  → authorization in-process   (app IS the PDP since v11.0 — no sentinel container,
+       no AUTHORIZATION_ADDRESS, and no Connect-RPC server at all)
+  → object storage in-process   (no storage container, no STORAGE_RPC_ADDR)
+  → cms / jobsimulation domains in-process   (no containers, no hops)
+  → Judge0 directly via JUDGE0_BASE_URL   (wired INSIDE the jobsimulation domain —
+       there is no roadrunner domain; this line listed one until M257x iter-137)
+  → Redis Streams for async events
+```
+
+> `roadrunner` is **not** a gRPC hop from `backend` in either column — it was **deleted** with jobsim-in-app
+> (*"folded in"* until M257x iter-137; there is no `app/internal/roadrunner/` at any ref) and
+> `backend` calls Judge0 directly from inside the jobsimulation domain. **Nor is `storage` one in EITHER column** — the production diagram above no
+longer lists it, because the edge is dead there too: `storage`'s ECS service block is **gone from terraform
+entirely**, and says so in-comment — at `9f8cb53` `storage/terraform/main.tf` is 18 lines (`:9-11`
+*"The ECS service that used to live here is GONE (v9.0 'support-in-app')"*), the module kept only so the
+buckets, CloudFront distribution and media DNS record keep their `prevent_destroy` guards (`:13-16`). It
+read `service_desired_count = 0` at the intermediate `63bffc8`. And `STORAGE_RPC_ADDR` has **zero** reads
+anywhere in `app`
+(**3 hits in Go source** at `9d00a313`, every one a comment — `main.go:451`,
+`internal/jobsimwiring/wiring.go:101`, `internal/storagens/callsites_test.go:189`. **Not 3 repo-wide**:
+`git -C stack-demo/app grep -n STORAGE_RPC_ADDR 9d00a313` returns **29 lines across 18 files**, the rest
+being CHANGELOG and `knowledge/*.md`. The Go scope is what carries the claim; the repo-wide form was a
+mis-transcription of it). The earlier wording scoped this retraction to
+*"locally"*, which left the prod edge affirmatively standing (corrected M257x iter-85). Platform
+**`0dab54d`** ("storage-in-app,
+> v9.0") deleted `STORAGE_RPC_ADDR` from `backend`'s env, dropped `storage` from `backend`'s `depends_on`
+> — the replacement comment read *"storage removed at v9.0: served in-process by this container now"*
+> — and moved the service to `profiles: [storage-legacy]`; **`838d907`
+> (merged `0c91421`, 2026-08-05) then deleted the `storage` service and that profile outright**, so there
+> is nothing left to opt into. The app side
+> closed at **`app` `9d00a313`** (v1.367.0) and is still closed at `app` **origin/main**, where
+> `STORAGE_RPC_ADDR` has **zero reads** and `main.go:504`
+> says *"the standalone service takes no traffic and STORAGE_RPC_ADDR is gone."* That comment stood at
+> `main.go:451` at `9d00a313`; **the line number moved without the code moving**, which is what a week of
+> `app` commits costs an anchor (re-derived M257x iter-87). At the older `b948604`
+> v1.366.0 the variable is still read — `internal/jobsimwiring/wiring.go:115` — so **state the ref you mean**. See
+> [`roadrunner.md`](../services/roadrunner.md), [`storage.md`](../services/storage.md) and
+> [`platform-migration-status.md`](./platform-migration-status.md).
+
 ### Multi-Tenancy
 
-The platform uses **shared database, shared schema** with `organization_id` on every table. Data isolation is enforced at three layers:
+The platform uses **shared database, shared schema**, with `organization_id` on **org-scoped** tables
+(**not** on every table — the taxonomy and other global reference data carry none by design). Data
+isolation is enforced at three layers:
 
-1. **Database**: `organization_id` foreign key on all tables; Ent ORM policies auto-filter queries
-2. **Authorization**: Sentinel (Casbin RBAC/ABAC) validates every API request
+1. **Database**: `organization_id` on org-scoped tables; Ent privacy policies auto-filter by organization on
+   **only 31 of 135 schemas** (the **29** live `OrganizationMixin{}` users — a 30th is commented out at
+   `user_resource.go:22` — plus `Membership` and `Organization`, which each declare their own). An M257x
+   iter-49 audit called this **32**; that was **refuted** at iter-52 by two independent readers and by
+   re-measurement — the earlier 31 was right, but reached by two compensating errors.
+   **23 schemas carry an `organization_id` with no policy at all** (16 is the *neither-mixin*
+   subset of those 23, not the total) — see
+   [Security & Compliance → Layer 1](./security_compliance.md#layer-1-database) for the measured split and
+   the derivation
+2. **Authorization**: the Casbin (RBAC/ABAC) PDP — **`app/internal/sentinel/` since v11.0, in-process, not a separate service** — is the centralized authorization **engine**, and **not a
+   blanket applied to every API request.** ⚠️ This line said *"validates every API request"* until M257x
+   iter-120. Measured at `app` `ad9f3c49`: the GraphQL `AuthorizationMiddleware` is a **viewer** gate
+   with **six** paths that reach the resolver before the single PDP call
+   (`internal/authorization/gqlauthz/gqlauthz.go:222`) — including *"viewer has no active org"* (`:190-191`)
+   and *"the operation carries no `userId` variable"* (`:196-197`) — and the REST surface has **no
+   BLANKET authz middleware**: authorization there is opt-in per group or per handler, and only 2 of its
+   **11** Echo groups carry a group-level one (`cbGate`, `internal/web/backend/gate.go:27-49`) — **plus
+   EIGHT routes mounted on the root outside any group, so no group-level statement reaches them at
+   all** — the eighth being `/v1/labs/:slug/workspace.tar.gz`, which serves a workspace tarball under
+   **optional auth by design** (`internal/web/backend/labs_admin.go:36-40`, wired unconditionally at
+   `backend.go:301`). The enumerated table is in
+   [`security_compliance.md`](./security_compliance.md); it is stated once there and not restated here.
+   (⚠️ **this line has now been wrong twice about two different counts**: it said *"6 Echo groups"* until
+   M257x run 82 — the denominator was re-measured repo-wide at `app` `ad9f3c498`, and run 81's own
+   correction of the same count did **not** reach this file — and it said *"seven"* root mounts until
+   M257x iter-136, when three independent adjudicators converged on eight.) The platform's
+   own source calls the blanket gate **fail-open**
+   (`graph/resolver_skiller_taxonomy_authz.go:53-66`). See
+   [Security & Compliance → Layer 2](./security_compliance.md#layer-2-authorization) for the enumerated
+   paths and the honest statement
 3. **Identity**: Clerk JWT includes org context; sessions are org-scoped
 
 For detailed integration patterns, see [External Services](./external_services.md).
@@ -273,7 +457,7 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 *   *(legacy)* `cms` schema → non-authoritative; the similarity + Studio tables moved to `public` with cms-in-app v8.0
 *   *(legacy)* `jobsimulation` schema → non-authoritative; the 23 session/run tables moved to `public` with jobsim-in-app
 *   *(decommissioned)* `skillpath` schema → an empty legacy husk; the skill-path runtime state moved to `public.skill_path_sessions` when the skillpath service merged into `app` (M502→M507)
-*   `sentinel` service → `sentinel` schema (created manually during setup; sentinel does not run migrations)
+*   `sentinel` schema → **still exists and is still not `public`**, but there is no `sentinel` *service* since `766df6c`: `app` reads it via `SENTINEL_DB_CONNECTION` (`docker-compose.yml:25`, `search_path=sentinel`) and migrates it with its own `make migrations-sentinel` (`app/Makefile:80-81`, `atlas migrate diff --env sentinel`). ⚠️ **This is the one fold of the eight where the tables did NOT move to `public`**, which is why the fenced map grades prod `mid-fold` rather than `merged-into-app`
 *   `extensions` schema → houses `pgvector` extension (required by the skill/job-role embeddings, now owned by `backend`)
 
 > [!IMPORTANT]
@@ -282,11 +466,17 @@ Although all services may share a physical PostgreSQL instance (in dev/docker), 
 ### Infrastructure & Deployment
 
 *   **Cloud**: AWS ECS EC2 (EU-West-1 primary); Vercel for frontend
-*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; public subnets (ALB, Cosmo Router), private subnets (all microservices)
+*   **Networking**: VPC (10.0.0.0/16) with Multi-AZ; **public subnets (ALB only)**, private subnets (all microservices — **including the Cosmo Router**, whose terraform passes `private_subnets_ids` and names no public subnet; corrected M257x iter-115 together with its twin in [`security_compliance.md`](security_compliance.md), which carries the derivation. **This site was NOT in iter-113's enumerated set** and is repaired anyway, because repairing one half of a pair manufactures a self-contradiction — recorded against `FIX-M257x-iter113-adjudication-is-judgement`)
 *   **IaC**: Terraform for all infrastructure provisioning
 *   **CI/CD**: GitHub Actions with self-hosted EU runners; Tailscale VPN for private subnet access; Git tags trigger deployments
 *   **Monitoring**: CloudWatch (metrics, dashboards, alarms), Sentry (errors, performance, cron monitoring), PostHog (analytics), Better Stack (incident escalation, uptime)
-*   **Backups**: Full DB backups every 6 hours to S3, Azure, and Hetzner (Germany); RDS point-in-time recovery
+*   **Backups**: **RDS Multi-AZ + an hourly AWS Backup plan with PITR** carries durability. The separate
+    `db-backup` job — **Bash, `pg_dump` → S3 + a Hetzner Storage Box, two destinations, never Azure** — is
+    deployed but **untriggered**: its EventBridge rule has been commented out since `7dd1b80` (2025-05-29)
+    and production pins that commit. **This line read *"every 6 hours to S3, Azure, and Hetzner"* until
+    M257x iter-124** — wrong on the cadence (the disabled value was `rate(12 hours)`; *"6 h" never had a
+    source*), on Azure (which has never existed in that repo) and on the fact that anything fires at all.
+    What is lost is the **offsite, non-AWS leg**, not durability. See [`db-backup.md`](../services/db-backup.md)
 *   **Health**: ECS health checks every 30 seconds with automated rollback on failure
 
 For security, compliance, and data protection details, see [Security & Compliance](./security_compliance.md).

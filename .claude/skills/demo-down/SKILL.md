@@ -26,7 +26,10 @@ the dev `anthropos` stack and any other demos untouched. Manual teardown is the 
 
 ## Safety
 `down` is hard-scoped `-p demo-N` and **refuses any N that resolves to the dev project name** — it can never
-tear down the dev stack. Verified live: demo-1 up→status→down with the dev stack (12 containers) untouched.
+tear down the dev stack. Verified live: demo-1 up→status→down with the dev stack untouched. (That proof was
+recorded when a dev stack was 12 containers; on the default `core` profile at platform `0c91421` it is **5**.
+The isolation property is what was proven — **don't quote the old count as the expected number**; re-derive
+it with `make ps`.)
 Teardown **frees the demo's slot** in the unified dev+demo registry (M12), so its N is re-allocatable.
 
 ### The host-native listeners (M217 — check these, `compose down` cannot)

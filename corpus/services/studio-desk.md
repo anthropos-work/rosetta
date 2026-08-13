@@ -18,7 +18,7 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
 | **Technology Stack** | TypeScript, Vite, Express.js (vanilla TS frontend, no framework) |
-| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (`make up PROFILE=studio-desk`; ports 9000/9100, depends on graphql + cms) |
+| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (ports 9000/9100). It `depends_on` **`backend` alone** — `docker-compose.yml:138-140` @ platform `0c91421`, with `profiles: [studio-desk, all]` at `:141` (both re-anchored M257x iter-87; they stood far further down the file at `0dab54d`, before `838d907` deleted three service blocks above them). It *also* listed **`cms`** — a block `2adcf71` still carried — until that container was deleted from compose at `d11a403`; there is no `cms` service to depend on now, and it never depended on `graphql`, which is likewise no longer a compose service. Built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`. **⚠️ Asking for `studio-desk` as the only profile exits 1** — the profile selects `studio-desk` but *not* the `backend` it depends on, so compose rejects the whole project (`service "studio-desk" depends on undefined service "backend": invalid compose project`). Use `PROFILE=all`, which selects both. |
 | **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
 | **Authentication** | Clerk |
 | **Repository** | Local `studio-desk/` (sibling repo cloned by `make init`) |
@@ -35,7 +35,20 @@ Studio-Desk is a **full-stack TypeScript application** with:
 
 2. **Backend**: Express.js API server
    - Clerk middleware for route protection
-   - GraphQL integration with CMS service
+   - ⚠️ **NOT a GraphQL client — corrected M257x iter-115.** At `studio-desk` `41ee3575`,
+     `git grep -in graphql -- 'src/*'` returns exactly **two** lines, both comments saying the opposite
+     (`src/routes/skillpath.ts:374` *"We do NOT route this through the platform's `privateSkillPaths`
+     GraphQL"*, and `:405`); `git grep -n 8082 -- 'src/*'` returns **0**; and `src/index.ts` mounts four
+     API routers — `/api/dev` (`:150`), `/api/ai` (`:158`), `/api/skillpath` (`:161`), `/api/youtube`
+     (`:164`) — none of them GraphQL. **The Express backend's real remote dependency is Directus over
+     REST** (`DIRECTUS_BASE_URL`/`DIRECTUS_TOKEN`, read at `src/routes/skillpath.ts:44-47` and
+     `src/index.ts:303-310`). Every `new GraphQLClient(...)` in the repo is in the **frontend**
+     (`app/services/{userService.ts:20, taxonomyService.ts:43, userPreferencesService.js:13,
+     content/simulationContentService.js:325}`), fed by `app/services/config.ts:6` reading the
+     **`VITE_`-prefixed, browser-baked** `VITE_GRAPHQL_ENDPOINT`. This file states it correctly in four
+     other places — the Directus integration note, the `app/services/graphql/` example, the
+     `VITE_GRAPHQL_ENDPOINT` config line and the env table — so this was a live self-contradiction,
+     not a stale leftover
    - Multi-provider AI integration (Azure OpenAI / OpenAI / Anthropic) for Studio Copilot
    - File upload handling
 
@@ -43,10 +56,11 @@ Studio-Desk is a **full-stack TypeScript application** with:
 graph LR
     User[Content Creator] --> Frontend[Vite multi-page frontend :9100]
     Frontend --> Backend[Express Backend :9000]
-    Backend --> GraphQL[Cosmo Router :5050]
+    Frontend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is destroyed in both states]
+    Backend --> DirectusREST[(Directus REST — Bearer DIRECTUS_TOKEN)]
     Backend --> OpenAI[OpenAI API]
     Frontend --> Clerk[Clerk Auth]
-    GraphQL --> CMS[CMS Service]
+    GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>there is NO cms container"]
     CMS --> Directus[(Directus CMS)]
 ```
 
@@ -56,23 +70,31 @@ graph LR
 studio-desk/
 ├── src/                # Backend (Express.js)
 │   ├── index.ts        # Server entry point
-│   ├── routes/         # API routes
-│   ├── services/       # Backend services
-│   └── prompts/        # AI prompt templates
-├── app/                # Frontend (Vite, vanilla TS)
-│   ├── core/           # Core components & utilities (main.ts bootstrap)
-│   ├── designer-sim/   # Simulation designer interface
+│   ├── routes/         # API routes (ai.ts, skillpath.ts, youtube.ts, dev.ts)
+│   ├── services/       # Backend services (aiService.ts, promptService.ts, textExtractor.ts, ai/)
+│   ├── prompts/        # AI prompt templates (per-builder dirs: start/, sim-advanced-builder/,
+│   │                   #   sim-guided-builder/, builder-skill-path/, documents/ + loose *.md)
+│   ├── lib/            # Backend helpers (devLogin.ts)
+│   └── types/          # Ambient type declarations (*.d.ts)
+├── app/                # Frontend (Vite, vanilla TS) — one *.html entry per feature (MPA)
+│   ├── core/           # Bootstrap (main.ts) + scaffold/ (header, sidemenu, footer) + components/
+│   ├── simulation-builder/     # "Start Composer" — compose intent once, fan out to both builders
+│   ├── sim-advanced-builder/   # The full simulation designer
+│   ├── sim-guided-builder/     # The guided interview flow
 │   ├── builder-skill-path/ # Skill Path Builder
 │   ├── generation/     # Generation workflow UI
 │   ├── listing/        # Catalog/listing UI
 │   ├── academy/        # Academy UI
 │   ├── home/           # Home page
 │   ├── skills/         # Skills management UI
+│   ├── dev-accept/     # Dev-only acceptance harness (dev-accept.html; not in the prod build)
 │   ├── shared/         # Shared frontend utilities
 │   ├── services/       # Frontend services
 │   │   ├── graphql/    # GraphQL queries/mutations
+│   │   ├── content/    # Content services (AntContentService, pathContentService, simulationContentService)
 │   │   └── __generated__/ # graphql-codegen output
-│   └── assets/         # Static assets
+│   ├── public/         # Statically served assets (fontawesome/, l12n/, templates/, avatars, images)
+│   └── assets/         # Bundled assets (favicons, logo)
 ├── tests/              # Test suite
 │   ├── frontend/       # Frontend tests
 │   ├── unit/           # Backend unit tests
@@ -96,7 +118,7 @@ studio-desk/
 
 #### 2. Skill Path Builder
 
-A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 (`YOUTUBE_API_KEY` / `GCLOUD_SERVICE_ACCOUNT`) through a `YouTubePicker`.
+A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 through a `YouTubePicker` — the route reads **`YOUTUBE_API_KEY` only** (`src/routes/youtube.ts:43`; with no key it serves a `_mock: true` fallback list). `GCLOUD_SERVICE_ACCOUNT` is declared in `.env.example:**119**` (@ `studio-desk` `41ee3575`) and injected by `terraform/main.tf:129`, but **no code in `src/` reads it** — treat it as vestigial, not a second YouTube credential. (This cited `.env.example:120` until M257x iter-115. The file is 131 lines, so `:120` is **in range and resolves — to a blank line**, which is the failure mode a range check cannot catch: `:117` is `YOUTUBE_API_KEY=`, `:118` the comment, `:119` the declaration, `:120` empty. The other two thirds of the sentence verified exactly.)
 
 > **Demo/dev set-dressing (v1.5 "prop room", M23):** on a `--local-content` stack (demo default; dev opt-in) studio-desk is pointed at the **per-stack Directus** (`DIRECTUS_BASE_URL=http://directus:8055`, the in-network compose service) with a **locally-minted static admin token** (`DIRECTUS_TOKEN=local-directus-token-<stack>`). The token is stamped on the bootstrapped admin via Directus's `ADMIN_TOKEN` bootstrap env (a Bearer-usable static token — `bootstrap/index.js:81` in the pinned `directus/directus:11.6.1`; #M23-D2), so studio-desk's skill-path **writes target the per-stack instance, never prod**. On a non-`--local-content` stack the prod token is stripped to empty (the prod-write **disarm**) and studio-desk has no local instance to write to. (The cms `PostMultipart` hardcoded-prod-upload-URL is a separate upstream **platform** bug — disarmed by the token strip, owned as a user PR; cannot be fixed without a platform edit.)
 
@@ -121,7 +143,7 @@ A builder for learning skill paths, served at `/builder-skill-path` (`app/builde
 
 #### GraphQL Integration
 
-Studio-Desk connects to the platform's GraphQL gateway (Cosmo Router) for data operations:
+Studio-Desk connects to the platform's GraphQL endpoint for data operations — **`backend` directly since platform `2adcf71`; the Cosmo Router is destroyed in production too (iter-124)**:
 
 ```typescript
 // Example from app/services/graphql/
@@ -129,7 +151,7 @@ Studio-Desk connects to the platform's GraphQL gateway (Cosmo Router) for data o
 // Types auto-generated via graphql-codegen
 ```
 
-**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` (default: `http://localhost:5050/graphql`)
+**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` as a build arg (`docker-compose.yml:119`) and again in the runtime environment (`:135`), re-anchored at platform `0c91421` (that anchor stood far further down the file at `0dab54d`); was `http://localhost:5050/graphql` when the router existed locally
 
 **Type Generation**:
 ```bash
@@ -153,8 +175,8 @@ Studio-Desk works with these primary entities (stored via CMS → Directus):
 - Node.js v24+ (per `package.json` engines and `node:24-alpine` Docker base)
 - npm v7+
 - Clerk account (for authentication)
-- Access to platform GraphQL endpoint (Cosmo Router running)
-- Access to CMS service
+- Access to the platform GraphQL endpoint (`backend` on `:8082`; the router no longer runs locally)
+- Access to the **cms domain** — served by that same `backend`, not a separate service
 
 #### Environment Configuration
 
@@ -170,7 +192,7 @@ CLERK_SIGN_IN_URL=http://localhost:3000/login
 
 # Frontend
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-VITE_GRAPHQL_ENDPOINT=http://localhost:5050/graphql
+VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
 VITE_WEB_APP_URL=http://localhost:3000
 
 # AI (for Copilot) — multi-provider chain
@@ -188,7 +210,7 @@ BUNNY_LIBRARY_ID=...
 BUNNY_LIBRARY_API_KEY=...
 FORCE_READ_ONLY=0
 YOUTUBE_API_KEY=...
-GCLOUD_SERVICE_ACCOUNT=...
+GCLOUD_SERVICE_ACCOUNT=...   # declared in .env.example + terraform, but read by no code in src/
 ```
 
 #### Local Development
@@ -267,8 +289,16 @@ Docker images are built automatically on tag push. Deployment managed via infras
 
 #### With Core Platform
 - **Authentication**: Clerk (shared with main app)
-- **Data Layer**: GraphQL → CMS → Directus
-- **User Sync**: Optionally sync Clerk users to local DB via Tailscale funnel
+- **Data Layer**: GraphQL → the cms domain → Directus
+- **No local datastore — studio-desk has no database of any kind.** `package.json` declares no DB
+  driver (no `pg`/`postgres`/`prisma`/`sqlite`/`mysql`/`mongo`/`knex`/`drizzle`/`typeorm`/`sequelize`),
+  and nothing in `src/` reads a `DATABASE_URL` or opens a pool/client. All persistence is remote over
+  HTTP: skill-path content goes to **Directus** (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`,
+  `src/routes/skillpath.ts`), and per-user studio preferences (including the recoverable draft window in
+  `app/services/studioDB.js` — a facade, not a datastore) round-trip through the platform **GraphQL** API
+  via `GET_USER_STUDIO_PREFERENCES` / `SET_USER_STUDIO_PREFERENCES`. There is no Clerk-user sync job.
+  (The repo's only Tailscale-funnel mention is `app/core/main.ts:105` — the public ingest URL of the
+  self-hosted **GlitchTip** Sentry endpoint. Error telemetry, unrelated to users or data.)
 
 #### With Studio-Room
 - Studio-Desk **creates** simulation blueprints
@@ -277,10 +307,11 @@ Docker images are built automatically on tag push. Deployment managed via infras
 
 ### Troubleshooting
 
-**GraphQL errors**: Ensure Cosmo Router (graphql) is running on port 5050:
+**GraphQL errors**: Ensure **`backend`** is up on port 8082 (there is no router service locally any more):
 ```bash
 cd platform
-docker compose up -d graphql
+docker compose up -d backend   # NOT `graphql` — that service no longer exists (platform `2adcf71`);
+                              # studio-desk talks to backend at :8082/graphql/query
 ```
 
 **Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match.
@@ -413,6 +444,6 @@ already 303s non-admin seats to the web app first. Detail + the measured table:
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) - Studio services overview
 - [Studio-Room](./studio-room.md) - AI generation pipeline
-- [CMS Service](./cms.md) - Data storage backend
+- [CMS](./cms.md) - the content layer, merged into `backend` as `app/internal/cms`
 - [External Services](../architecture/external_services.md) - Clerk and Directus details
 - [demopatch-spec §8](../ops/demo/demopatch-spec.md) - the studio-desk source patches (additive-UI injection)

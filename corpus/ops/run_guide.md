@@ -14,8 +14,8 @@ Once running, access these URLs in your browser:
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
 | **Studio-Desk** | http://localhost:9100 | Simulation design tool |
-| **Ant Academy** | http://localhost:3077 | Internal learning portal (`@anthropos.work` only) |
-| **GraphQL Playground** | http://localhost:5050 | API gateway (Cosmo Router) |
+| **Ant Academy** | http://localhost:3077 | The AI-academy product (**not** `@anthropos.work`-only — public storefront + org tier) |
+| **GraphQL Playground** | http://localhost:8082/graphql | Served by `backend` itself — the Cosmo Router was deleted from compose at platform `2adcf71`. The **endpoint** is `/graphql/query`; `/graphql` is the Apollo Sandbox UI |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
 
 ---
@@ -79,13 +79,13 @@ cd stack-dev/platform
 
 ### Option A: Start Full Backend (Recommended)
 
-This starts all backend services + GraphQL router (default `graphql` profile):
+This starts the backend tier (default `core` profile — `postgresql`, `redis`, `backend`, `gotenberg`). *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* There is no GraphQL router: platform `2adcf71` deleted it and `0dab54d` renamed the profile.
 
 ```bash
 make up
 ```
 
-This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+This starts **four** containers: PostgreSQL, Redis, Backend, Gotenberg. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* (cms, jobsimulation, skillpath and skiller are all merged into `app`, and so are storage, messenger and customerio-sync — **seven**; `roadrunner` was named here as an eighth until M257x iter-137, and it was **deleted, not merged**, though for a bring-up the consequence is the same: nothing starts it — `838d907` deleted those three containers outright, so there is nothing left to start them with; the Cosmo router was deleted at platform `2adcf71`.)
 
 *Note*: First run may take several minutes as Docker builds images from local repos.
 
@@ -94,8 +94,11 @@ This starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, 
 Start only the services you need:
 
 ```bash
-make up PROFILE=backend    # Backend (app) only
-make up PROFILE=cms        # CMS only
+make up PROFILE=core       # the default: backend + gotenberg (+ the always-on floor)
+make up PROFILE=backend    # the same five — `backend` and `core` select identically
+# NB: the retired cms / graphql / storage / storage-legacy / messenger / customerio-sync
+#     tokens EXIT 0 and start ONLY postgresql + redis. Nothing warns; the stack
+#     just has no application in it.
 make up-all                # Everything including frontend and studio-desk
 ```
 
@@ -122,7 +125,10 @@ make logs
 ### Health Check: GraphQL Gateway
 
 ```bash
-curl -s http://localhost:5050/health || echo "GraphQL not responding"
+curl -s http://localhost:8082/api/health || echo "backend not responding"
+# GraphQL itself (POST an introspection query — there is no GET /health on the GraphQL path):
+curl -s -X POST http://localhost:8082/graphql/query \
+  -H 'Content-Type: application/json' -d '{"query":"{__typename}"}'
 ```
 
 *Expected*: Health check response or API info.
@@ -131,7 +137,7 @@ curl -s http://localhost:5050/health || echo "GraphQL not responding"
 
 ## 4. Start Frontend (Next.js Web App)
 
-**Required** — the frontend always runs natively (not in Docker for the `graphql` profile). It must be
+**Required** — the frontend always runs natively (not in Docker for the `core` profile). It must be
 started in a **tmux session** so it survives Claude Code session closure.
 
 ### Verify Node.js Version
@@ -195,7 +201,7 @@ cd stack-dev/platform
 make up PROFILE=studio-desk
 ```
 
-This starts Studio-Desk in Docker along with its dependencies (GraphQL, CMS).
+**NB: `make up PROFILE=studio-desk` exits 1** — `studio-desk` declares `depends_on: backend`, which its own profile does not select, so compose rejects the project. Combine it with the default: `docker compose --profile core --profile studio-desk up --build -d`.
 
 ### Option B: Run Natively
 
@@ -221,9 +227,9 @@ Open http://localhost:9100 in your browser.
 
 ---
 
-## 5.1 Start Ant Academy (Optional — Internal Learning Portal)
+## 5.1 Start Ant Academy (Optional — the AI-academy learning product)
 
-Ant Academy is the standalone Next.js 16 / Expo learning portal for `@anthropos.work` employees. It runs **natively only** — no docker-compose profile. It authenticates via **Clerk** and — since v0.5.1 — **reads its course catalog from the platform academy subgraph over GraphQL** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`); without that backend it still boots but the catalog grid **renders empty** (see [`../services/ant-academy.md` § The Content Model](../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7)).
+Ant Academy is the standalone Next.js 16 / Expo learning product — a public storefront with an enterprise/org tier, **not** `@anthropos.work`-only. It runs **natively only** — no docker-compose profile. It authenticates via **Clerk** and — since v0.5.1 — **reads its course catalog from the platform `backend` subgraph over GraphQL** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`) — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`) inside the single `backend` subgraph, and this line said otherwise until M257x close. Without that backend it still boots but the catalog grid **renders empty** (see [`../services/ant-academy.md` § The Content Model](../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7)).
 
 ### Navigate
 
@@ -275,14 +281,20 @@ tmux attach -t anthropos-academy   # detach with Ctrl+B D
 
 ### Verify
 
-Open <http://localhost:3077>. You should land on the Clerk sign-in page; sign in with an `@anthropos.work` Google account.
+Open <http://localhost:3077>. **You land on the public catalog, not a sign-in page** — `/` is an explicitly
+public route (`ant-academy` @ `22df69dd8`, `code/proxy.js:170`, in the `createRouteMatcher` list at `:112`
+with the comment *"M4 public catalog — the front door"*; `isPublic(req)` returns before `auth()` is ever
+called). Sign in from the account menu when you want the org tier. ⚠️ **This said *"you should land on the
+Clerk sign-in page; sign in with an `@anthropos.work` Google account"* until M257x iter-129** — the
+`@anthropos.work`-only predicate was refuted at iter-115 and this guide was one of the sites the repair
+sweep did not reach.
 
 ### Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Redirect to `/no-organization` | Org-membership gate (default ON) | Set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` in `code/.env` for solo dev |
-| Sign-in fails with "domain not allowed" | Account not on `@anthropos.work` | Sign in with a work account, or update the Clerk app's allowed domain |
+| Sign-in fails with "domain not allowed" | **Not an app gate** — there is no email-domain allowlist in `ant-academy` (`git grep -n "allowedDomain\|emailDomain\|endsWith('@anthropos" 22df69dd8 -- code` → **0 hits**). If you see this, it is the **Clerk instance's own** sign-up restriction | Check the Clerk app's allowed domains in the Clerk dashboard. The only gate in the app itself is `REQUIRE_ORGANIZATION_MEMBERSHIP` (the row above) |
 | 401 from `/api/ai/chat` | Missing `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` server-side | Fill `code/.env` with the server keys (different from the in-app Cosmo's localStorage key) |
 
 ### Mobile App (Optional)
@@ -325,8 +337,13 @@ Studio-Room is the AI-powered generation pipeline. Unlike other services, it run
 
 ### Navigate to Studio-Room Directory
 
+> **⚠️ `make init` does not create `stack-dev/studio-room`.** `anthropos-studio-room` has no `repos.yml`
+> entry; it is pulled into the `app` **image** by CI (`additional_repo`). Its in-repo root is
+> **`app/studio/`**, which `app` itself `.gitignore`s (`app/.gitignore:78-79`). So use `stack-dev/app/studio`
+> if a build populated it, or clone `anthropos-studio-room` by hand — the path below assumes you did.
+
 ```bash
-cd stack-dev/studio-room
+cd stack-dev/app/studio        # or a hand-cloned stack-dev/studio-room
 ```
 
 ### Verify Python Environment
@@ -341,8 +358,13 @@ pip3 install -r requirements.txt
 
 ### Run a Generation
 ```bash
-python3 gen.py --media simulation --template default
+python3 gen.py --media simulation
 ```
+
+> **⚠️ There is no `--template` flag**, and passing one does **not** fail — `gen.py`'s `parse_known_args`
+> folds any unrecognised `--key value` into the request dict, so `--template default` sets a key nothing
+> reads and the run generates something unrelated *while reporting success*. The nine real arguments are
+> enumerated in [`../services/studio-room.md`](../services/studio-room.md#command-line-interface).
 
 ---
 

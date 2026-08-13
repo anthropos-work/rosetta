@@ -2,25 +2,36 @@
 
 ## Corpus Structure
 
+**90 markdown files.** This tree is a shape, **not an inventory** — every section has a maintained
+`README.md` index, and `ls` is the source of truth. (An earlier revision listed 13 files and omitted the
+entire `ops/demo/` family plus the fenced migration map; sweeps that trusted it missed both.)
+
 ```
-corpus/
-├── README.md                    # Corpus entry point
-├── architecture/
-│   ├── architecture_overview.md # System design (update for new services)
-│   ├── service_taxonomy.md      # Three-tier categorization
-│   ├── frontend_architecture.md # Next.js monorepo details
-│   ├── external_services.md     # Clerk, Directus, GraphQL
-│   └── dependency_map.md        # Service interconnections
-├── services/
-│   ├── TEMPLATE.md              # Follow this for new services
-│   ├── backend.md, sentinel.md, etc.
-│   └── studio-desk.md, studio-room.md
-├── ops/
-│   ├── setup_guide.md           # Environment setup
-│   ├── run_guide.md             # Platform startup
-│   └── update_guide.md          # Sync and update
-└── tools/
-    └── toolchain_overview.md    # Development tools
+corpus/                              # 90 .md total — list, don't recall
+├── README.md                        # corpus entry point
+├── architecture/  (11)              # README.md is the index
+│   ├── platform-migration-status.md # ⭐ FENCED one-row-per-service map — read FIRST for
+│   │                                #    "does this service still exist"; outranks prose
+│   │                                #    anywhere, incl. CLAUDE.md. Guarded vs repos.yml.
+│   ├── architecture_overview.md · service_taxonomy.md · dependency_map.md
+│   ├── frontend_architecture.md · external_services.md · shared_libraries.md
+│   └── security_compliance.md · ai_architecture.md · alignment_testing.md
+├── services/      (29)              # README.md = enumerated index of every service doc
+│   ├── TEMPLATE.md                  # follow this for a new service
+│   ├── backend.md · sentinel.md · next-web-app.md · studio-desk.md · studio-room.md · …
+│   └── archived/merged redirects: skiller.md · skillpath.md · chronos.md · intelligence.md
+├── ops/           (23)              # README.md is the index
+│   ├── setup_guide.md · run_guide.md · update_guide.md · quick_ops.md
+│   ├── platform-alignment.md · safety.md · verification.md · idempotency.md
+│   ├── secrets-spec.md · seeding-spec.md · snapshot-spec.md · snapshot-cold-start.md
+│   ├── db-access.md · directus-local.md · rosetta_demo.md · webhook_setup.md
+│   ├── staging-bringup.md · staging-clerk.md · staging-sync.md · staging_from_dump.md
+│   └── demo/  (23)                  # the demo family — README.md is the index
+│       ├── demo-up-defaults.md      # fenced against the parsers in both directions
+│       ├── build-budget.md · latency-budget.md · coverage-protocol.md · playthroughs.md
+│       └── recipe-*.md · *-spec.md · content-stories-routes.md · frontend-tier.md · …
+└── tools/         (3)
+    └── README.md · toolchain_overview.md · anthropos-labs.md
 ```
 
 ## Evidence Analysis Patterns

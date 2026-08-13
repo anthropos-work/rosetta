@@ -49,7 +49,7 @@ unnamed until this spec.
 | **G2 — the ANCHOR gate** *(rewritten M217-close)* | **The anchor is the contract; the whole-file sha is only a baseline.** The **anchor must occur EXACTLY ONCE**: zero → refuse (*the code being patched is gone*); two or more → refuse (*ambiguous — refusing to choose a hunk*). A **drifted whole-file sha with an intact anchor is NOT a refusal** — it self-heals (§6). Counting a target as *already patched* is a **coherence** probe, not a marker sniff: the whole replacement must be present **and** the anchor gone; otherwise the target is **PARTIALLY PATCHED or CORRUPT** and is refused. **Both vehicles enforce this identically** — `demopatch` and `apply_patch.py` were converged at the M217 close, because leaving `demopatch` on the old sha gate would have shipped the identical rot on the three next-web patches. |
 | **G3 — never-commit / working-tree-only** | The tool never runs `git add/commit/push/tag` — **a unit test greps its own source for any mutating git verb**. The only `git checkout` is the `-- <path>` working-tree form, isolated in one function precisely so the grep can whitelist it. After writing, it asserts the file is modified **and unstaged**; if not, it refuses *and reverts its own write*. |
 | **G4 — idempotent re-apply** | The demo clone **persists** across `/demo-up`. An already-patched target is a no-op, exit 0. **"Already patched" is G2's COHERENCE probe** — *the whole replacement present **and** the anchor gone* — **not a post-sha match.** <br>⚠️ *This row used to read "post-sha **and** marker", i.e. exactly the whole-file-sha check that §6 spends a section explaining ROTS. It contradicted G2 in the same table. Corrected at the M219 close; the two rows now describe one mechanism.* |
-| **G5 — content-anchored self-revert** | `revert` swaps `replacement → anchor` and then **re-asserts** `sha256 == pre_sha256`. Already-pristine is a no-op. A file matching *neither* pre nor post is refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation). <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 23 today; was a hardcoded 3). See §2.1.** |
+| **G5 — journalled self-revert** *(rewritten M257x iter-90)* | **`apply` records the OBSERVED pre-image; `revert` restores exactly it.** Revert consults that journal FIRST and, for a patch this tool applied, needs no baseline at all — which is what makes it exact on a **drifted** base, the normal state of a persistent clone. The journal lives in the **workspace root** (never inside a clone), is consumed on success, and its directory is removed once it empties. **No journal ⇒ no guessing:** a target with no entry falls through to `pre_sha256`/`post_sha256` and is still refused — *"manual drift; refusing to guess"*. `--force-pristine` falls back to `git checkout -- <path>` (a working-tree restore, never a history operation) and is the one-time recovery for clones patched before the journal existed. <br>⚠️ *This row used to read "swaps `replacement → anchor` and re-asserts `sha256 == pre_sha256`" — a **whole-file-sha** gate, while G2 one row up had already moved to the **anchor**. The two rows contradicted each other, and the contradiction was live: on any drifted clone the patch applied and would not come off. See §6's FIXED block.* <br>⚠️ **G5 is a capability, not a sweep — the recovery rung (R1) that invokes it sweeps EVERY manifest on disk (directory-driven since v2.6 M237 — 23 today; was a hardcoded 3). See §2.1.** |
 | **G6 — demo-only scope** | The manifest must declare `scope: demo`, and the workspace must be a demo workspace. Note the **structural** check is the one that actually fires at fresh-build time — the unified registry has no `demo-N` row yet when patches are applied. |
 | **G7 — apply post-condition** *(unnamed until this spec; made real at the M217 close)* | The write is **atomic** (`tmp` + `fsync` + `os.replace`) and the post-condition is verified against **the bytes that actually landed on disk**, not against the in-memory object. On mismatch the **pristine file is restored**. <br>*It was previously a tautology*: it re-hashed the same in-memory string `classify()` had just hashed, so it could not fail and its exit code was unreachable — while the real exposure (a truncate-in-place write with no rollback, leaving half-written source on a short write/ENOSPC/SIGINT) went unguarded. |
 
@@ -158,14 +158,89 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
-so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. The apply-order (studio →
-public-website) and revert-order (LIFO) are identical on both; each build carries its own patch-set fingerprint
-(§5-bis) — next-web's over its manifest set, hiring's over the **4-manifest union** (the 2 `apps/hiring` patches +
-this shared pair). A test fences the hiring-side chain apply-order + LIFO revert + the 4-manifest fingerprint union.
+so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
+own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:600-603`), hiring's over
+**7** (`up-injected.sh:1141-1143` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
+interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's over its own **5**
+(`up-injected.sh:922`). Line refs at rext `8956e69`, the commit that last touched the file; the
+`:1071-1075` this cited until M257x is now studio-desk's `--label` line. Each anchor names the
+`next_web_patchset_fp` **call**, not the `local …_manifest=` declarations above it — the call is where the
+count is legible. A test fences the hiring-side chain apply-order and the fingerprint union.
+
+> **⚠️ Corrected at v2.8 M255** (pre-milestone KB-fidelity audit). This paragraph previously said hiring's
+> fingerprint was over a **"4-manifest union"** — a C1 mirrored-count that drifted at **M232** (the interview
+> pair) and again at **M249** (Back-to-Cockpit) — and that the apply and revert orders *"are identical on
+> both"*, with revert being **LIFO**. Derived from the source, **neither half is true**:
+>
+> | build | apply order | revert order | strict LIFO? |
+> |---|---|---|---|
+> | `next-web` (9) | studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result · back-to-cockpit | pubweb · studio · pagination · ssr-origin · aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit | **no** |
+> | `hiring` (7) | studio · pubweb · rolemap · pagination · interview-container · interview-result · back-to-cockpit | interview-result · interview-container · pagination · rolemap · pubweb · studio · back-to-cockpit | **no** |
+>
+> **And it does not need to be.** The only order-sensitive relationship in either set is the `urls.ts`
+> chain — *pubweb must revert before studio* — and **both builds get that right**. Every other manifest
+> targets a file no other manifest in its set touches, so its position is free. The real invariant is
+> therefore **"the chain reverts in the right order"**, not "the whole list is LIFO", and that is what
+> `rosetta-extensions/stack-core/union_apply_guard.py` now asserts, in both builds, in both directions.
+>
+> This matters beyond pedantry: v2.8's **union-apply** parallelism rule (see
+> [`build-budget.md`](build-budget.md)) is stated as *"apply the union once, build both in parallel, revert
+> once LIFO"* — and it was about to inherit a "LIFO" that had no referent in the code.
+
+> **~~A related sharp edge, worth knowing before you rely on revert.~~ FIXED at M257x iter-90 — and the
+> paragraph that stood here was wrong about the one thing that mattered.** It described the defect
+> accurately: G5 compared the file against the manifest's **recorded** `post_sha256` while apply wrote a
+> **recomputed** post whenever the self-healing freshness gate fired, so the paired revert refused, silently,
+> into the `RETURN` traps' `/dev/null`. Then it concluded *"it is not currently harmful."*
+>
+> **It was harmful, and it was live.** M257x iter-88 routed four separate demo-stack failures as up to three
+> classes; iter-89 collapsed all four to this one cause with a one-minute probe — `git status` on
+> `stack-demo/next-web-app`, which had been left dirty by exactly this refusal. Three shipped manifests
+> reported `status: patched` and `revert: neither pre nor post` **in the same breath**. The reasoning that
+> made it look benign — *the ephemeral clone is force-checked-out on the next bring-up* — is true of the
+> `app` build-scratch clone and **false of the persistent `next-web` clone this paragraph was about.**
+>
+> **The fix (`demopatch`, M257x iter-90): apply JOURNALS the observed pre-image; revert restores exactly it.**
+> Revert no longer consults a recorded baseline at all for patches this tool applied, so it is exact on a
+> drifted base — which is the normal state of a persistent, pulled clone. The journal lives in the
+> **workspace root** (never inside a clone, which would defeat the promise it exists to keep), is **consumed
+> on a successful revert**, and its directory is removed once it empties. **No journal means no guessing:** a
+> target that drifted with no apply behind it still falls through to the baseline comparison and still
+> refuses, so revert never became a blind restorer.
+>
+> **Known limitation, stated rather than hidden.** A patch applied *before* the journal existed has no entry
+> and cannot be journal-reverted; those clones need the one-time `revert --force-pristine`. `apply`'s
+> idempotent no-op now **WARNs** when it finds an already-patched target with no journal entry, naming that
+> consequence, so the condition is self-describing at the moment it is created instead of costing two
+> iterations to rediscover.
+>
+> **The finding that outlives the fix, and the reason it is recorded here rather than in a changelog:**
+> **G2 (refuse on drift) and G5 (always self-revert) cannot both hold once the base is allowed to move** —
+> and the base is always allowed to move. Every test asserted them **separately**, and each passed; the suite
+> was green while the mechanism was broken. **A specification with seven guards needs at least one test per
+> PAIR that can interact, not one test per guard.** Those pairs now live in
+> `demo-stack/tests/test_demopatch.py::TestGuardConjunctions`, with a mutation control that rebuilds
+> `demopatch` with the journal blinded and asserts the battery goes RED again with the original signature.
 
 ### The `app` patches are never reverted — and that is correct
 
-The `next-web` patches are reverted by a `RETURN` trap (LIFO) so the persistent clone is left git-clean. The `app`
+The `next-web` patches are reverted by a `RETURN` trap so the persistent clone is left git-clean — **but not
+in LIFO order**, and this sentence used to say it was. The next-web trap
+(`demo-stack/up-injected.sh:749` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
+aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
+*studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
+back-to-cockpit* (`:771`, `:776`, `:795`, `:807`, `:819`, `:831`, `:845`, `:856`, `:869`): **only two adjacent
+pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
+reverted in apply order.** That is the same
+finding the §4 correction box above records — see its table for the hiring lane, whose revert
+(`:1202`) is likewise not LIFO. **The one lane that IS strict LIFO is `studio-desk`**: apply *back · logout ·
+logo · shell · nothirdparty* (`:992`, `:997`, `:1017`, `:1032`, `:1035`), revert exactly reversed (`:976`).
+The invariant is *"the chain reverts in the right order"*, not *"the list is LIFO"* — and all three lanes
+satisfy it. `stack-core/union_apply_guard.py` asserts it for the two lanes that share a clone
+(`_FUNCS = {"next-web": …, "hiring": …}`, `union_apply_guard.py:75`); studio-desk builds from its own clone
+and is out of that guard's scope.
+
+The `app`
 patches have **no revert**: the build-scratch clone is **force-checked-out at the newest `v*` tag on every bring-up**,
 which discards the previous run's injections wholesale.
 
@@ -235,17 +310,30 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 > **The `apps/hiring` patches are M224 "the callback" (v2.4 "casting-call").** The demo now runs the
 > **real Hiring app** as a second UI container (TOK-02 — the two-app demo), so a recruiter hero lands on the
 > genuine `apps/hiring` candidate-comparison Results screen instead of a re-skinned workforce fake. **The HIRING
-> image (`build_frontend_hiring`) bakes FOUR patches**, not two: the **2 net-new** `apps/hiring` patches
-> (`next-hiring-role-remap`, `next-hiring-members-pagination`) **plus the 2 chained shared `urls.ts`** patches
-> (`next-web-studio-url` → `next-web-public-website-url`), applied on the hiring build too because the Studio nav
+> image (`build_frontend_hiring`) bakes SEVEN patches today**, not two — and not the four this paragraph
+> claimed until M257x: the **2 net-new** `apps/hiring` patches
+> (`next-hiring-role-remap`, `next-hiring-members-pagination`), the **2 chained shared `urls.ts`** patches
+> (`next-web-studio-url` → `next-web-public-website-url`), the **2 shared `packages/ui` interview flag-gates**
+> (`next-web-interview-flag-container` / `-result`, M232) and the **shared `next-web-back-to-cockpit`** item
+> (M249) — measured off the fingerprint call itself, `demo-stack/up-injected.sh:1141-1143` @ rext `8956e69`,
+> which passes exactly those seven manifests to `next_web_patchset_fp`. The `urls.ts` pair is
+> applied on the hiring build because the Studio nav
 > link lives in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`) — so an unpatched hiring image ejects the
 > presenter to `studio.anthropos.work` exactly as `apps/web` did. Found + killed at iter-13 (the hiring image's
 > client chunks were `docker exec`-grep-verified to carry **0** `studio.anthropos.work`; the trustworthy render
-> probe of iter-12 had surfaced the eject the earlier broken probe hid). All four ride `build_frontend_hiring`'s
-> transient LIFO apply/revert, fenced by a **4-manifest patch-set fingerprint union** (§5-bis) that forces a
-> rebuild if any of the four moves. The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
+> probe of iter-12 had surfaced the eject the earlier broken probe hid). All seven ride `build_frontend_hiring`'s
+> transient apply/revert, fenced by a **7-manifest patch-set fingerprint union** (§5-bis) that forces a
+> rebuild if any of the seven moves. **The revert is not LIFO** — `up-injected.sh:1213` reverts
+> *interview-result · interview-container · pagination · rolemap · pubweb · studio · back-to-cockpit* against
+> an apply order of *studio · pubweb · rolemap · pagination · interview-container · interview-result ·
+> back-to-cockpit*; only the `urls.ts` chain is inverted, which is the only ordering that matters (§4's
+> correction table).
+> **This is the SAME drift §4's M255 box already corrected on its own copy of the number** — it moved
+> `4 → 7` there and left this paragraph on 4, which is precisely the mirrored-count failure the C1 note two
+> boxes up defines. A correction that reaches one cell is not a correction.
+> The 2 net-new `apps/hiring` patches are the **same class as a known `apps/web`
 > patch** — the same monorepo (`next-web-app`), the same defect the web app already fixed, never mirrored onto
-> hiring. *(**This is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
+> hiring. *(**The rest of this paragraph is M224-era bookkeeping — it predates the M232 interview-flag + M238 academy-body additions.** At
 > M224 the distinct-manifest total was **11**; the mechanism it records still holds — the chained `urls.ts` pair is
 > counted once (under `packages/core-js`) yet applied on **both** frontend builds — but the **current
 > directory-fenced total is 23**, per the §5 header above. The pre-M224 line read "8 patches / 5 × next-web-app";
@@ -301,7 +389,8 @@ bring-up reports success. The bundle is unpatched. Nothing anywhere says so.
 is image metadata, so it needs **no Dockerfile edit** — the zero-platform-edit line holds (the repo stays a build
 *context* only). Change a patch, re-pin a hash, add a manifest, or flip `DEMO_NO_PATCH` ⇒ the label moves ⇒
 **rebuild**. An image with **no** label predates the fingerprint and is treated as a mismatch (fail-safe: a
-needless ~3 min build is far cheaper than serving an unpatched demo to a customer).
+needless rebuild is far cheaper than serving an unpatched demo to a customer — and since v2.8 M257's L1 that
+rebuild is **53.31 s on `macmini`**, n=3 p50, where this line used to say "~3 min").
 
 It fired on its first live run:
 
@@ -397,6 +486,49 @@ file **byte-for-byte**. Only then does it write the pin.
   **We do not write a pin we cannot prove.** Re-checkout the clone and try again.
 
 `--repin` **never touches the target file** — only the manifest.
+
+### 6-bis. The pre-flight nobody could run: *would the whole set still apply, at ref X?* (M257x iter-223)
+
+`demopatch preflight` answers this for **one** manifest against the **checked-out** tree. There was no way
+to ask it of the **set**, at an **arbitrary ref** — which is the question you actually have when deciding
+whether to advance the clones. Until iter-223 the only way to find out was to run a bring-up and read the
+warnings ~11 minutes in, and §5-bis is the record of what that costs: *a silently-refused perf patch
+shipped a 76 s members grid for four releases.*
+
+`rext stack-core/patch_anchor_guard.py --clones-root <stack-demo> [--ref <ref>]` censuses every manifest
+at a named ref and asserts the two conditions `demopatch`'s own G2 refuses on — **the path exists**, and
+**the anchor occurs exactly once**. It runs in seconds, needs no build, and is a member of the guard
+family (`--ref` defaults to `HEAD`, so the family asks *"does the patch layer apply to what this stack
+would build now"*; pass `--ref origin/main` for the pin-advance question).
+
+**Sha drift is counted and printed and is never a finding**, which is the whole design decision. Since
+M217 the gate self-heals: a drifted whole-file sha with the anchor intact `1×` is `pristine`, WARNed and
+applied. A fence that reddened on drift would contradict the shipped mechanism and go RED on a set that
+works — and a fence that cries wolf gets suppressed.
+
+**The first run, and the number that matters is the second one:**
+
+| measured at `stack-demo`, 2026-08-09 | `HEAD` (the pin) | `origin/main` |
+|---|---|---|
+| manifests | 23 | 23 |
+| path missing | 0 | 0 |
+| anchor occurs exactly once | **23 / 23** | **23 / 23** |
+| `pre_sha256` no longer matches | 10 | 10 |
+
+The clones were **not** at the same tree in those two columns — iter-222 measured `app` **+28**,
+`next-web-app` **+12**, `ant-academy` **+9** behind `origin/main`. So the answer to *"would advancing the
+clones break the patch layer?"* is **no**, and that is a real result about a real question.
+
+**And the drift sets are IDENTICAL, member for member.** Those 10 baselines were already stale at the ref
+the demo builds today; the platform advancing did not make them so, and advancing further would not make
+them worse. At least one is stale **by design** — §6's chain case, where `next-web-public-website-url`'s
+`pre_sha256` *is* studio's `post_sha256` and reads DRIFTED against a pristine file on purpose. Which of
+the remaining nine are chain cases and which are simply un-repinned is **not** settled here, and the
+guard is deliberately silent on it: it reports the count, never a verdict on the cause.
+
+**Read the green over its reach.** This says every patch *applies*. It does not say any patch is still
+*right* — an anchor can survive onto a line whose meaning moved — and it says nothing about two patches
+interacting on one path, which is `union_apply_guard`'s subject.
 
 ---
 

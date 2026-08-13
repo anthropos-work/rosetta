@@ -1,0 +1,3 @@
+    ⚠ [directus] bootstrap failed — skipping local content (the stack stays on the prod-read path)
+==> demo-1: set-dressed (content:prod-read, snapshot:taxonomy=replayed directus=replayed sim-embeddings=replayed, stories seeded).
+      ✗ directus-serves-content          fail: anon GET /items/task_sub_checks -> 403 — the running Directus holds the content but serves it to nobody (public-role grants never applied)

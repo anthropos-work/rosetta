@@ -1,7 +1,7 @@
 # Recipe — Set-dress a stack with the real public library (snapshot capture → replay)
 
 **Goal.** Turn a structural demo ("an org with users") into a **set-dressed** world ("an org browsing the real
-product catalog") by stamping the real **public** reference library — the ~60K-skill / 18K-role taxonomy and the
+product catalog") by stamping the real **public** reference library — the taxonomy (**≥42,790 skills / ≥22,470 job roles**, measured; [not "60K/18K"](../../architecture/shared_libraries.md#taxonomy-figures)) and the
 global simulation / skill-path content templates — into the stack. This is the v1.2 "set dressing" layer: the
 catalog view shows real skills, and seeded sessions/assignments link to real templates instead of placeholder ids.
 
@@ -35,13 +35,13 @@ replay **skips with `stacksnap` exit 4** and the taxonomy surface lands as norma
 prod — see the
 [known-state](../snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16). Note
 **both** `/dev-up N` (M13) **and** `/demo-up N` (M20) already run this replay by default at the bring-up tail (the
-auto-set-dress pass) — you only call `/stack-snapshot replay` explicitly to **re-run** it (e.g. after filling a
+auto-set-dress pass) — you only call `/stack-snapshot demo-N replay` explicitly to **re-run** it (e.g. after filling a
 cold cache — [`../snapshot-cold-start.md`](../snapshot-cold-start.md)) or to replay into a stack brought up with the
 auto-pass skipped. The snapshot is **stack-global** public reference data — replay it once per stack,
 independent of which org you then `/stack-seed`.
 
 ```bash
-/stack-snapshot replay 1                         # taxonomy (lands) + directus (exits 0 on --local-content; else skips exit 4)
+/stack-snapshot demo-1 replay                    # taxonomy (lands) + directus (exits 0 on --local-content; else skips exit 4)
 # or one surface at a time, explicitly:
 SN=stack-demo/rosetta-extensions/stack-snapshot
 go build -o /tmp/stacksnap "$SN/cmd/stacksnap"
@@ -58,7 +58,7 @@ a diverged stack schema).
 
 **Then seed + log in.** With the library in place, seed an org and the seeded sessions link to the real templates:
 ```bash
-/stack-seed 1 --preset mid-500
+/stack-seed demo-1 --preset mid-500
 # log in per recipe-browser-login.md → the catalog + assigned content are real, not placeholder.
 ```
 

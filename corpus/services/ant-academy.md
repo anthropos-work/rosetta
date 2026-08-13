@@ -2,11 +2,25 @@
 
 ## High-Level Summary (For PMs & Non-Engineers)
 
-**Ant Academy** (a.k.a. *AI Academy*) is the **internal learning portal** for Anthropos employees. It delivers micro-chapters on AI engineering, Claude Code, agent frameworks, and related topics to anyone with an `@anthropos.work` email.
+**Ant Academy** (a.k.a. *AI Academy*) is the **AI-academy learning product**: micro-chapters on AI
+engineering, Claude Code, agent frameworks and related topics.
 
-Think of it as **the company's training app**:
+> ⚠️ **This paragraph called it *"the internal learning portal for Anthropos employees … to anyone with an
+> `@anthropos.work` email"* until run 81, and that is FALSE** — refuted at **M257x iter-115** in this
+> file's own Clerk bullet, which then sat 469 lines below an opening that still contradicted it. It is a
+> **public storefront** that sells a **$399/yr** subscription to **anonymous visitors**
+> (`code/src/lib/pricing.js`, `TopBar.jsx:77-88` @ `22df69dd`), carries **no domain predicate anywhere in
+> `code/`**, and shares its Clerk instance with the customer-facing platform. **What is true:** there is
+> an **enterprise/org tier**, and the org-membership gate applies to *those* surfaces. Run 81 swept the
+> predicate across **13 sites in 9 files** — see [`iter-128/progress.md`](../../knowledge/plan/releases/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md).
+
+Think of it as **a training product with a company tier**:
 - A web portal where employees take short, structured chapters
-- A companion **iOS / Android app** (Expo / React Native) that bundles the same content for offline reading
+- A companion **iOS / Android app** (Expo / React Native) **intended to** bundle the same content for offline
+  reading — ⚠️ **its bundler is inoperative at `22df69dd8`**: `mobile/scripts/bundle-content.ts:27-28` reads a
+  repo-root `content/` that does not exist (**0** entries; the content is at `code/public/content/`, 3,406
+  files), so it ENOENTs and ships nothing. **This page's own deep-dive already said so** — the summary
+  contradicted it until M257x iter-129
 - Authored content lives **inside the repo** as JSON, so curriculum changes ship through normal PRs
 
 It is **not** a platform microservice. It is a standalone product that *uses* the platform's identity provider (Clerk) — and, since **v0.5.1**, **reads its course catalog from the platform's academy backend over GraphQL**. Without that backend it still boots and authenticates, but the catalog **degrades to empty**: the home grid renders **0 cards**. (This is exactly why the academy looks blank in a demo — see [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7) below.)
@@ -21,17 +35,17 @@ It is **not** a platform microservice. It is a standalone product that *uses* th
 | **Technology Stack** | Next.js 16 App Router + React 19.2 (React Compiler enabled), Expo / React Native (mobile) |
 | **Deployment** | **Vercel native** (no Docker, no docker-compose entry). Mobile builds via Expo. |
 | **Local dev port** | **3077** (web); **8555** (mobile web preview) |
-| **Authentication** | Clerk (`@anthropos.work` domain gate + org-membership gate) |
+| **Authentication** | Clerk (org-membership gate only — `REQUIRE_ORGANIZATION_MEMBERSHIP`, and it gates the *enterprise* surfaces). ⚠️ **The `@anthropos.work` domain gate was REMOVED from this row at run 81**; it is FALSE and this file has said so at the Clerk bullet since iter-115 |
 | **Repository** | `git@github.com:anthropos-work/ant-academy.git` → `stack-dev/ant-academy/` |
 | **In `repos.yml`** | **No — by design (v1.10b M49 #5).** NOT in `platform/repos.yml`, so `make init` / `make pull` do **not** clone/pull it. M49 did **not** add the entry: `repos.yml` lives in the *ephemeral, gitignored* `stack-demo/platform` clone (editing it is non-durable + a platform-repo edit). Instead, for a **demo**, `ensure-clones.sh` clones ant-academy **explicitly** (phase d2 — the cms/studio submodule-pattern precedent, non-fatal). For **dev**, clone it directly (it's a Vercel-native peripheral). The old "cloned by `make init`" claims are **stale**. |
 | **In `docker-compose.yml`** | **No** — runs natively only |
 
 ### Role & Responsibility
 
-- **Primary Goal**: Internal-only learning portal that delivers AI-engineering chapters to `@anthropos.work` employees, online and offline (PWA + mobile bundle).
+- **Primary Goal**: an AI-engineering learning product — a **public storefront** with an enterprise/org tier, not an internal-only portal (*"Internal-only … to `@anthropos.work` employees"* was **removed at run 81**; the retraction is at the Clerk bullet, iter-115). Chapters are delivered online (installable via `public/academy-manifest.json`, but **no longer offline on the web** — the Serwist service worker was removed at v0.5 M1) and offline on the Expo mobile bundle.
 - **Key Functions**:
   - Serve chapter content as a Next.js App Router site at `/chapters/<slug>/`
-  - Cache chapters offline via a Serwist-built service worker
+  - ~~Cache chapters offline via a Serwist-built service worker~~ — **REMOVED at v0.5 M1.** `RegisterServiceWorker.jsx` is now a kill-switch that unregisters any surviving worker and deletes its caches; the web app is online-only
   - Bundle the same chapter JSON into the iOS / Android Expo app at build time
   - Provide an opt-in in-app AI assistant ("Cosmo", behind a feature flag) that talks to OpenAI directly from the browser
   - Author / publish / benchmark content via repo-local Claude skills (`.claude/skills/author-chapter`, `author-skill-path`, `author-podcast`, `author-cover`, `benchmark-chapter`, `build-index`, …)
@@ -60,10 +74,33 @@ The **React app's** env lives at `code/.env.example` (Clerk + AI keys); the **re
 
 ### How It Fits Into the Platform
 
-Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app` academy subgraph. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`, posted from `code/app/api/academy/beacon/route.js`) to Ent tables `academy_chapter_progress` / `academy_last_activity` / … in `app`. This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
+Ant Academy is architecturally a **sibling of `studio-desk` and `next-web-app`** — a frontend product that **reuses platform identity** and is a **backend-authoritative read/WRITE GraphQL client** of the platform `app`'s **`backend`** subgraph — **there is no separate "academy subgraph"**; the academy types are one SDL file (`academy.graphqls`, 1 of 43) inside it. It has no backend of its own, but it does call one: it **reads** the catalog (below) and, since **v0.5 "direct line" M2**, **writes** per-user progress to the platform backend (chapter progress, last-activity, bookmarks, certificates, study-time, feedback) — the platform `app internal/academy` store is the sole source of truth (there is NO localStorage/IDB source-of-truth). The earlier "does not call backend services / read-only client" framing is retired (corrected v2.5 M231): progress persists via GraphQL mutations (`upsertChapterProgress[Batch]` / `setLastActivity`) to Ent tables `academy_chapter_progresses` / `academy_last_activities` / … in `app` (**plural** — Ent pluralizes; the singular forms are schema-file names, not table names).
+
+> **⚠️ The write path is the CLIENT harness, not the beacon route** (corrected M257x iter-102 — this sentence
+> sourced the mutations to `code/app/api/academy/beacon/route.js`, which states the mechanism in the opposite
+> order). Measured @ `ant-academy` `22df69dd`: **every in-session write is fired from `code/src/progress/store.js`**
+> — `saveChapterProgress` (`:150`) calls the injected authed requester with `UPSERT_CHAPTER_PROGRESS` at `:162`,
+> `saveLastActivity` (`:202`) with `SET_LAST_ACTIVITY` at `:210` — i.e. **straight to the supergraph** over the
+> cross-origin GraphQL endpoint with a Clerk Bearer token. The beacon route is the **exception the old sentence
+> presented as the rule**: an *on-unload last-ditch flush*, passed as the `beacon:` option at `store.js:169` /
+> `:215` and reached only by `navigator.sendBeacon` / `fetch({keepalive:true})` on pagehide
+> (`src/writeThrough/index.js:247`, `:259`). It exists precisely **because** `sendBeacon` cannot set an
+> `Authorization` header, so this **same-origin** route re-issues the mutation server-side from the Clerk session
+> cookie — its own header comment says so: *"a best-effort last-ditch flush for a write that would otherwise be
+> lost if the tab closes mid-retry"* (`route.js:1-18`). The mutation NAMES are correct either way; only the
+> attribution of where they are posted from was wrong.
+
+This makes a "played academy session" a **seedable server row** (via `app/cmd/academy-seed`) — **on a
 backend-wired deployment. That binary is MOOT on a demo stack** (M236 iter-08): a demo academy has no
-`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so it falls back to serving its **committed FS catalog** and nothing ever
-reads the seeded `academy_chapter_progress` rows. Seeding them on a demo changes no pixel. The demo's academy
+`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, so the backend read yields nothing and **nothing ever reads the seeded
+`academy_chapter_progresses` rows**. Seeding them on a demo changes no pixel. **⚠️ It does *not* "fall back to
+the committed FS catalog"** — there is **no FS-as-published fallback** in the app; `getServerCatalogView()`
+resolves a null backend result to the **empty view**, and `serverTenant.js:115-145` says so in-code: *"the
+cutover is intentional, not reversible-on-error."* A demo grid renders cards only because the rext demo-patch
+**`demo-stack/patches/academy-fs-published-fallback`** *restores* that removed fallback on the demo's ephemeral
+clone (applied by `demo-stack/ant-academy.sh` before `next dev`, env-gated on `ACADEMY_DEMO_FS_PUBLISHED`,
+reverted on `--stop`); if that patch is refused, the grid is empty. See
+[the empty-grid analysis below](#the-content-model--db-authoritative-catalog-v051-m7). The demo's academy
 story is therefore **presence-only** — a real `/courses/<slug>` link into a grid of 65 real cards — not a
 progress/result surface. See [`../ops/demo/content-stories-routes.md`](../ops/demo/content-stories-routes.md).
 
@@ -81,13 +118,11 @@ graph LR
     end
 
     subgraph Core["Core Backend (Tier 1, Docker)"]
-        App[app]
-        CMS[cms]
-        Jobsim[jobsimulation]
+        App["app (backend)<br/>cms + jobsimulation are in-process<br/>domains, not containers"]
     end
 
     Academy --> Clerk
-    Academy -->|catalog: GraphQL academy subgraph| App
+    Academy -->|catalog: GraphQL, backend subgraph| App
     Academy -.->|direct, no platform proxy| OpenAI
     Academy ==> Vercel
     Desk --> Clerk
@@ -97,8 +132,10 @@ graph LR
 **Key contrasts** with the core Go services:
 - No PostgreSQL schema of its own, no Atlas migrations
 - No Connect-RPC, no Redis Streams
-- **Provides** no GraphQL subgraph (it doesn't federate INTO Cosmo Router) — but it **consumes** the platform's
-  **academy subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL"
+- **Provides** no GraphQL subgraph (it doesn't federate into the supergraph, which is `backend` alone) — but it **consumes** the platform's
+  **`backend` subgraph** as a GraphQL *client* (see below); "no subgraph" ≠ "no GraphQL". **There is no
+  "academy subgraph" to consume either** — the academy types live inside `backend`; this bullet named one
+  until M257x iter-108
 - Its rendered catalog is **NOT static repo JSON** — since v0.5.1 it is **DB-authoritative**, read from the platform
   academy backend over GraphQL. The committed JSON is the *authoring source* + the dev *draft* layer + a separate
   machine index — not what the authenticated grid renders
@@ -110,7 +147,7 @@ catalog).
 ### The Content Model — DB-authoritative catalog (v0.5.1 M7)
 
 **The home grid does NOT read the committed JSON.** Since ant-academy **v0.5.1 (M7)** the catalog the portal renders is
-**DB-authoritative** — queried from the **platform academy subgraph** (served by `app`'s `internal/academy`) over
+**DB-authoritative** — queried from the **platform `backend` subgraph** (the academy types are served by `app`'s `internal/academy`; there is no separate academy subgraph) over
 GraphQL, not from the repo's JSON files. This is the most load-bearing fact about the academy and the root of the demo
 "empty grid" symptom below.
 
@@ -126,8 +163,22 @@ getBackendCatalogView(eids)   (src/lib/backendContent.js)
     →  query academyCatalogSeries + academyCatalogSkillPaths   (tenant-filtered server-side by the user's eids)
 ```
 
-`getServerCatalogView()` is literally `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, so on
-**any** failure the catalog becomes `emptyCatalogView() = { chapters: [], skillPaths: {}, series: [] }` → **0 cards**.
+`getServerCatalogView()` is literally `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`
+(`code/src/lib/serverTenant.js:145` @ `ant-academy` `22df69dd` — byte-exact), so on **any** failure the catalog
+becomes `emptyCatalogView()` → **0 cards**.
+
+> **The shape of `emptyCatalogView()` is FIVE keys, not three** (corrected M257x iter-102 — this passage asserted
+> it by `=` as the 3-key literal `{ chapters: [], skillPaths: {}, series: [] }`). Measured at
+> `serverTenant.js:115-117`: `return { chapters: [], skillPaths: {}, series: [], bundles: PUBLIC_BUNDLES,
+> catalogVersion: CATALOG_VERSION }`. The two extra keys are **not** empty — `PUBLIC_BUNDLES`
+> (`code/ucourses/catalog.js:961`) is a populated exported array of curated bundle objects and `CATALOG_VERSION`
+> (`:31`) is `'1.0'` — they pass through verbatim from the committed FS tree because, in the function's own
+> words (`:111-113`), `bundles` *"carries no tenant metadata and is the one piece not yet modeled in the backend
+> catalog."* **The `→ 0 cards` conclusion is unaffected and stands:** a bundle stripe's path cards are derived
+> from the (empty) `chapters` — `AcademyClient.jsx:1363-1365` drops every path whose `scopedChapters` filter is
+> empty — so the audience views render bundle chrome with **zero** path cards, and the grid itself renders none.
+> Do not "fix" this by deleting the bundles key from the shape; the shape is what the code returns.
+
 Three failure legs collapse to the same empty grid:
 1. **Endpoint unset** — `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` empty → `createServerGraphQLClient()` throws → `makeClient()`
    returns `null` → `getBackendCatalogView()` returns `null`.
@@ -186,8 +237,11 @@ chapter title + body.
 
 ### The demo-config is applied at bring-up and must survive the demo LIFECYCLE — the durability fix (v2.6 M245)
 
-The academy's entire demo-config — the four bring-up patches (`academy-fs-published-fallback` + `-public` + `-chapter-body`
-+ `ant-academy-dev-origins`) applied to the **ephemeral clone**, plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
+The academy's entire demo-config — the **five** bring-up patches applied to the **ephemeral clone**
+(`academy-fs-published-fallback` · `academy-fs-published-public` · `academy-fs-published-chapter-body` ·
+`ant-academy-dev-origins` · `ant-academy-back-to-cockpit` — the set `demo-stack/ant-academy.sh` wires at
+`:56`, `:66`, `:75`, `:84`, `:90` and reverts on `--stop`; the M249 Back-to-Cockpit one was missing from this
+count until M257x), plus the `code/.env.local` overlay (`REQUIRE_ORGANIZATION_MEMBERSHIP=0`
 + the **minted** Clerkenstein publishable key + `ACADEMY_DEMO_FS_PUBLISHED=1` in the launch env) — is written and applied by
 `demo-stack/ant-academy.sh` at bring-up. But that config lives **in-process and in-clone**, and a **fresh `/demo-up` was the
 only path that reliably established it**: `ant-academy.sh`'s old "already running" branch **early-exited doing nothing** when it
@@ -211,14 +265,39 @@ academy up fully configured (it always did); the M245 change makes that config *
 
 ### The language switch is a `?lang=` query param, not a `/it` route (the #2 verdict, v2.6 M238)
 
-The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code this
-is **not a code bug** — it decomposes into:
+The M237 triage flagged an academy "language error" (`/it` → 404, the switcher "shows no menu"). On current code the
+`/it` half is **not a code bug**; the "shows no menu" half is **unresolved** (M257x — see the second bullet, which
+used to dismiss it on a premise that was never true). It decomposes into:
 - **Locale is a `?lang=<code>` QUERY PARAM only** (`src/i18n/locale.js` — explicit by-design; there is **no
   `/[locale]` path-prefix route**). A bare `/it` URL 404s because it was never a route. `coerceLocale` falls back to
   `en` for anything unsupported.
-- **The switcher (`src/i18n/LocaleSwitch.jsx`) is a 2-way EN↔IT toggle `<Link>`** that sets `?lang=it` on the current
-  path (mounted in the public header), **not a dropdown menu**. `src/i18n/translate.js` returns the inline-English
-  `defaultEn` on any key miss, so a switch can't error — it degrades to English.
+- **There are TWO switchers, and only one of them is the 2-way toggle.** `src/i18n/LocaleSwitch.jsx` **is** a 2-way
+  EN↔IT toggle `<Link>` that sets `?lang=it` on the current path — and it is mounted **only in the public-storefront
+  header** (`src/views/public/PublicHeader.jsx:20`). **That header renders on `/library` ALONE** — corrected M257x
+  iter-102, which struck the trailing two-route gloss this line used to carry: measured @ `22df69dd`,
+  `PublicHeader` has exactly one mount site, `code/app/(public)/library/page.jsx:28`, and `/free` renders no
+  header of its own — its whole body is `redirect('/?tier=free')` (`code/app/(public)/free/page.jsx:18`), which
+  lands on the **app-shell** home and therefore serves the *other* switcher. (The *"only in the public-storefront
+  header"* half was true and is kept.)
+  The app-shell header mounts a
+  different component, and that one **IS a dropdown menu**: `src/components/LanguageSelector.jsx`
+  (`src/components/TopBar.jsx:76`) renders a flag-only trigger opening a `role="menu"` panel
+  (`LanguageSelector.jsx:88`) of **7** `role="menuitemradio"` options (`:97`) over
+  `SUPPORTED_LOCALES = ['en', 'it', 'es', 'fr', 'de', 'nl', 'pt']`
+  (`src/i18n/locale.js:10`) — and **`TopBar`'s surface set is SEVEN routes, not five** (also corrected at iter-102;
+  this line named `/`, `/chapters/*`, `/latest`, `/bookmarks`, `/my-activity` and closed the list). Measured
+  @ `22df69dd` by mount site: **`/`, `/courses`, `/courses/[slug]`** — all three render `AcademyClient`
+  (`app/(authed)/page.jsx:151`, `courses/page.jsx:92`, `courses/[slug]/page.jsx:219`), whose `TopBar` is at
+  `AcademyClient.jsx:1906` — plus **`/chapters/[slug]`** (`CourseClient.jsx:2091`, `:2141`), **`/latest`**
+  (`LatestClient.jsx:128`), **`/bookmarks`** (`BookmarksClient.jsx:508`) and **`/my-activity`**
+  (`MyActivityClient.jsx:161`). `/my-certificates` renders **no** `TopBar` (`MyCertificatesClient.jsx` imports
+  none). The two routes the old list omitted — `/courses` and `/courses/[slug]` — are precisely the demo's landing
+  routes. **So "the switcher shows no menu" cannot be dismissed as "there is no menu."** This bullet read *"not a dropdown
+  menu"* until M257x; that half is **retracted**, and it was wrong **when written**, not merely stale — the dropdown
+  has been mounted in `TopBar` since `5b05b7d9` (2026-05-05) and 7-locale since `e22f3230` (2026-05-18), both well
+  before M238. What survives is the mechanism: locale is a `?lang=` param either way, never a route.
+  `src/i18n/translate.js` returns the inline-English `defaultEn` on any key miss, so a switch can't error — it
+  degrades to English.
 - **Switching language on a CHAPTER reader** re-runs `resolveServerChapterBody(slug, 'it')` (the chapter RSC reads
   `?lang=` via `localeFromSearchParams` and threads the locale) → in a demo that hit the **same backend-null 404** as
   #3. So it is **fixed by the M238 chapter-body patch**, which serves the locale-aware FS body (the `it/` overlay
@@ -230,15 +309,47 @@ is **not a code bug** — it decomposes into:
 | Layer | Technology |
 |:------|:-----------|
 | **Framework** | Next.js 16 App Router + React 19.2 (React Compiler enabled, Turbopack default) |
-| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate; `@anthropos.work` domain restriction is enforced in the Clerk app. Public routes: `/sign-in/*`, `/no-organization`, `/verify/*`, `/api/ai/chat`, `/library`, `/library/*`, `/free`, `/free/*`, `/local-content/*`, `/catalog.json`, `/academy-manifest.json` (other `/api/*` stay gated). The last three are public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest (gating any of them 307s the fetch through sign-in and breaks it). **NB these are middleware globs, not evidence a page exists** — `/library/*` and `/free/*` are matcher patterns, but the only real pages are `code/app/(public)/library/page.jsx` and `code/app/(public)/free/page.jsx`. **There is no `/library/[slug]` route** (M236 iter-08); the per-course page is `/courses/[slug]`, under `(authed)`. Link a course CTA at `/courses/<slug>`, never `/library/<slug>`. |
+| **Auth** | `@clerk/nextjs` middleware in `proxy.js` (Next 16 renamed `middleware` → `proxy`). `clerkMiddleware()` + org-membership gate (`REQUIRE_ORGANIZATION_MEMBERSHIP`, default ON, fail-closed); **There is NO `@anthropos.work` domain restriction** — the claim that one *"is enforced in the Clerk app"* was **removed at run 81**. No domain predicate exists in `code/` @ `22df69dd`, and the Clerk instance is **shared with the customer-facing platform** (`code/.env.example:66` points sign-up at `app.anthropos.work`), so an instance-level domain restriction would block every paying customer. The *dashboard's* own configuration is not readable from here; what is measurable is the code path and the shared instance, and both refute it. **The public surface is much wider than "a few auth pages"** — it includes the catalog root `/`, `/courses/*` and `/chapters/*`, and three `/api/*` routes. Full enumeration below the table. |
 | **Markdown** | `marked` (client-side rendering) |
 | **Styling** | Vanilla CSS with custom properties (dark theme) |
-| **Fonts** | DM Sans + Instrument Serif + JetBrains Mono (via `next/font/google`) + Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
-| **PWA** | Serwist 9 (configurator mode); service worker compiled by `serwist build` |
+| **Fonts** | **Work Sans + Instrument Serif** — and those two only (`code/app/layout.jsx:1` imports exactly `{ Work_Sans, Instrument_Serif }` from `next/font/google`; `:41`, `:51`). **Neither DM Sans nor JetBrains Mono is loaded** — this row named both until M257x iter-98; `code/academy.css:1` says display + mono usages *"fall back to system fonts."* Plus Font Awesome Pro **icons self-hosted/vendored in the repo** (`code/public/assets/fontawesome/` — `webfonts/*.woff2` + `css/all.min.css`, used as `<i class="fa-solid …">`; **not** pulled from the FA npm registry, so `npm install` needs no FA token) |
+| **PWA** | **manifest only** (`public/academy-manifest.json`, `display: standalone`, wired at `code/app/layout.jsx:132`) — installable but online-only. The Serwist 9 service worker was removed at v0.5 M1 and is regression-fenced against |
 | **Mobile** | Expo SDK 54 / React Native (Expo Router) |
-| **Testing** | Vitest (happy-dom + node), Playwright (e2e). 1000+ Vitest tests + ~26 Playwright e2e spec files (tests/e2e/). |
+| **Testing** | Vitest (happy-dom + node), Playwright (e2e). **~2,700 Vitest cases across 245 test files + 31 Playwright e2e spec files** (`code/tests/e2e/`, `playwright.config.js:13` pins that dir). ⚠️ Read *"1000+ Vitest tests + ~26 Playwright e2e spec files"* until M257x iter-129; the naive `grep -c 'tests/e2e/.*spec'` returns 38 because it also catches 7 `*.spec.js-snapshots/*.png`, so **state the invocation**: `git ls-tree -r --name-only 22df69dd8 \| grep -cE '^code/tests/e2e/[^/]*\.spec\.js$'` → **31**. |
 | **Deployment** | Vercel native (minimal `code/vercel.json` — only `{"framework": "nextjs"}`; Next.js handles routing). Mobile builds via Expo. |
 | **Node** | `>= 22` (declared in `code/package.json` `engines`) |
+
+#### Public routes — the complete `isPublic` matcher
+
+Derived from `code/proxy.js` (`createRouteMatcher([...])`, the `isPublic` list). **Do not paraphrase this
+from memory** — an earlier version of this doc listed a third of it and asserted that "other `/api/*` stay
+gated", which is false in three places:
+
+| Group | Patterns | Why public |
+|:------|:---------|:-----------|
+| Catalog front door | `/`, `/latest(.*)`, `/chapters/(.*)`, `/courses`, `/courses/(.*)` | The M4 public catalog. Anonymous visitors browse it; the RSC swaps in `getPublicCatalogView()` for sessionless requests. The pages still live in the `(authed)` route group under `ClerkProvider` (the catalog island uses Clerk hooks) — the *middleware* is what lets anonymous traffic through |
+| Public-launch listings | `/library`, `/library/(.*)`, `/free`, `/free/(.*)` | Phase-1 public launch: read-only catalog preview + the free-tier listing |
+| Auth / gate pages | `/sign-in(.*)`, `/no-organization` | Clerk hosts the auth UI itself; `/no-organization` is the gate page a signed-in org-less user lands on |
+| Certificate verification | `/verify/(.*)`, **`/api/verify/(.*)`** | Public-shareable cert verification — a recruiter on another device with no session resolves `academyCertificate(certId)` (a `@public` field) and gets the minimized PII-free projection |
+| AI proxy | `/api/ai/chat` | Does its own cookie-based `auth()` server-side |
+| Release provenance | **`/api/_meta(.*)`, `/api/meta(.*)`** | The academy's mirror of the Go services' `/_meta`, so uptime probes can read name/version/build-date without a session. Both spellings, because `next.config.js` rewrites `_meta` → `meta` and the middleware sees the pre-rewrite path |
+| Crawler / agent files | `/robots.txt`, `/sitemap.xml`, `/sitemap(.*)`, `/llms.txt`, `/llms-full.txt`, `/.well-known/(.*)` | Static, must be fetchable anonymously |
+| Assets & machine indexes | `/local-content/(.*)`, `/catalog.json`, `/academy-manifest.json` | Public-by-design: `/local-content/*` for `<audio>` Range requests + cover previews, `/catalog.json` for the external Anthropos backend Talk-to-Data indexer, `/academy-manifest.json` for the PWA manifest. Gating any of them 307s the fetch through sign-in and breaks it |
+| **Dev-only**, `DEV_LOGIN_ENABLED` | `/api/dev/login-as`, `/dev/accept` | The real-Clerk-user login shortcut; must be reachable before a session exists. Production drops both entries *and* the route handler hard-404s |
+| **Dev-only**, `BENCHMARK_VISUAL_BYPASS=1` ∧ `NODE_ENV==='development'` | `/my-certificates`, `/my-activity`, `/bookmarks` | Opens the remaining authed-only surfaces for the benchmark/e2e Playwright pass. `NODE_ENV` is whitelisted, not blacklisted, so unset/`test`/typos stay closed |
+
+Everything not matched: missing session → `/sign-in`; signed-in with zero org memberships → `/no-organization`.
+
+Two things this table does **not** mean:
+
+- **An open route is not an open body.** Anonymous traffic on `/` is served `getPublicCatalogView()`, so no
+  tenant content is ever in the payload; chapter **section bodies** are walled separately by the chapter RSC
+  and the `/api/chapters/*` handler, which self-gate on tenancy (hard 404) and tier. `/api/chapters/*` is
+  **not** in the matcher and is gated at the edge as well.
+- **These are middleware globs, not evidence a page exists.** `/library/*` and `/free/*` are matcher
+  patterns, but the only real pages are `code/app/(public)/library/page.jsx` and
+  `code/app/(public)/free/page.jsx`. **There is no `/library/[slug]` route** (M236 iter-08); the per-course
+  page is `/courses/[slug]`. Link a course CTA at `/courses/<slug>`, never `/library/<slug>`.
 
 ### Local Development
 
@@ -246,7 +357,11 @@ is **not a code bug** — it decomposes into:
 - Node **v22+** (from `code/package.json` `engines.node`)
 - npm (web app uses npm, not pnpm)
 - pnpm — only if you also want to run the mobile app
-- Clerk credentials (use the platform's dev tenant — same `@anthropos.work` domain)
+- Clerk credentials (use the platform's dev tenant — the *same Clerk application* as the rest of the
+  platform). **The account's email domain is irrelevant** — `d5875e34` *"replace @anthropos.work email
+  gate with Clerk org-membership check"* dropped the allowlist, and at `22df69dd8` the gate is
+  **any Clerk organization membership, active or not** (`code/proxy.js:2-5`, `:298`). For solo local dev
+  set `REQUIRE_ORGANIZATION_MEMBERSHIP=0` and no membership is needed either (`:73`, `:91`)
 - _(vestigial — NOT required)_ A Font Awesome Pro npm token. The FA Pro icons are vendored in the repo (`code/public/assets/fontawesome/`), so a fresh, token-less `npm install` succeeds and the app serves working icons. `FONTAWESOME_NPM_AUTH_TOKEN` survives in `code/.env.example` but is **not** needed to install or run.
 
 #### 1. Clone
@@ -264,21 +379,30 @@ cd stack-dev
 git clone git@github.com:anthropos-work/ant-academy.git
 ```
 
-> **In a demo the academy is AUTHENTICATED-as-a-member, keyless (v1.10b "fit-up" M53 F6).** `/demo-up` launches
-> the academy with **both** halves of its own `e2e_persona` cookie bypass set — the server gate
-> `BENCHMARK_VISUAL_BYPASS=1` **and** the client gate `NEXT_PUBLIC_E2E_AUTH=1` — so an `e2e_persona=member`
-> cookie drives a **signed-in** context (server RSC `anonymous=false` + entitlement; client Clerk hooks resolve a
-> synthetic **`E2E Member`**) with **no real Clerk keys**. ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's
-> per-hero [Academy] link was REMOVED — the cockpit is now login-only** (per user request), so it **no longer
-> sets the `e2e_persona` cookie**. Formerly, that link set the cookie browser-side (cookies on `localhost` are
-> port-agnostic, so the cockpit origin's cookie was read by the academy origin) then navigated in, and a hero
-> landed **authenticated**; reaching the demo academy as a member now needs the cookie set by other means (and
+> **In a demo the academy is AUTHENTICATED-as-a-member via real Clerkenstein keys (v2.3 M220 S5/i).**
+> ⚠ **This block described the OPPOSITE model until M257x iter-98, and was self-contradictory besides** — it
+> opened by saying the cockpit sets the `e2e_persona` cookie, denied it mid-paragraph, then asserted it again
+> in the closing line. Measured at rext `main`, both halves are now the other way round:
+>
+> * **The `e2e_persona` BYPASS is gone from the academy's launch env.** `/demo-up` sets **neither**
+>   `BENCHMARK_VISUAL_BYPASS=1` nor `NEXT_PUBLIC_E2E_AUTH=1` (`demo-stack/ant-academy.sh:576-583`), because the
+>   demo academy now gets real Clerkenstein keys. Keeping both would be *worse* than either: `proxy.js`
+>   short-circuits on the persona cookie **before** it resolves the real session, so a presenter logged in as
+>   Maya would be rendered a generic **"E2E Member"**. Fenced by two tests
+>   (`test_the_e2e_persona_bypass_is_gone_from_the_launch_env`, `test_e2e_persona_bypass_is_not_in_the_launch_env`).
+> * **The cockpit DOES still set the cookie — at two live paths**, contrary to the retracted sentence:
+>   client-side on click (`demo-stack/cockpit.py:855`, `_ACADEMY_JS`) and as a `Set-Cookie` on the `/go` 302
+>   (`:1539`); `:370` names both. It is the content-stories academy deep-link that uses them. With the launch-env
+>   bypass gone the cookie is **inert** on a stock demo — set, and not honoured.
+>
+> The historical keyless model (server RSC `anonymous=false` + a synthetic **`E2E Member`**, no real Clerk keys)
+> is what v1.10b M53 F6 shipped and is **no longer how a demo runs**. (Separately, and still true:
 > the academy grid renders **empty** in a demo — the v2.4 **F4** carry, **NOT** a client-side render defect: the
 > catalog is [DB-authoritative](#the-content-model--db-authoritative-catalog-v051-m7) and the demo neither sets
 > `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`. v2.5 **M230** fills it
 > production-faithfully, zero academy-repo edits). The **Cosmo AI assistant stays absent** in a demo (its flag +
-> OpenAI key are deliberately not provisioned — the AI-keys policy). Zero academy-repo edits: the flags live in the gitignored `code/.env.local`; the cookie is set by the
-> standalone cockpit panel. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
+> OpenAI key are deliberately not provisioned — the AI-keys policy). Zero academy-repo edits: the keys live in
+> the gitignored `code/.env.local`. Full mechanics: [`../ops/demo/frontend-tier.md` § ant-academy](../ops/demo/frontend-tier.md).
 
 #### 2. Configure env
 
@@ -324,7 +448,15 @@ pnpm run dev:web     # web preview at :8555 (Playwright-friendly)
 # or run on a real device / simulator with Expo Go
 ```
 
-The mobile app bundles `code/public/content/` at build time via `pnpm run dev:bundle`.
+⚠️ **The mobile bundler is INOPERATIVE, and this line said it bundles `code/public/content/` until run
+81.** `mobile/scripts/bundle-content.ts:27-28` @ `22df69dd` computes
+`CONTENT_DIR = join(REPO_ROOT, 'content')` — the **repo root**, not `code/public/`. That directory was
+deleted at `8199ea5d` (2026-05-20, *"remove orphaned root content/ tree"*) and `ls-tree -r origin/main`
+returns **0** entries under `content/` against **3,406** under `code/public/content/`. The script does a
+bare `readdirSync` with no existence check (`:38`, `:53`), so `pnpm run dev:bundle` **ENOENTs on a clean
+checkout and bundles nothing**. Two things a reader wrongly concluded: that the mobile artifact ships the
+live catalog, and that the tenant-exclusion filter inside that bundler is protecting it. Neither holds
+while the script cannot run. (Inherited: the repo's own `CLAUDE.md` makes the same claim.)
 
 #### 5. Tests
 
@@ -337,7 +469,7 @@ npm run validate -- --all # course-validator across all chapters
 
 ### Repo-Local Claude Skills
 
-`ant-academy/.claude/skills/` ships **its own** set of skills focused on **authoring content** — not to be confused with the platform's `/ant-*` skills in Rosetta:
+`ant-academy/.claude/skills/` ships **its own** set of skills focused on **authoring content**, distinct from Rosetta's stack-ops skills (`/dev-*`, `/demo-*`, `/stack-*`, `/align-*`). *(This line said *"the platform's `/ant-*` skills in Rosetta"* until run 81 — **Rosetta ships no `/ant-*` skill**; none of the 16 in `.claude/skills/` begins with `ant-`.)*
 
 | Skill | Purpose |
 |-------|---------|
@@ -365,12 +497,12 @@ Releases use **Cocogitto** conventional-commit tagging (`cog.toml`).
 
 ### Integration Points
 
-- **Clerk (shared)**: Uses the same Clerk app as the rest of the platform. Domain-gated to `@anthropos.work` so external users cannot enter.
+- **Clerk (shared)**: Uses the same Clerk app as the rest of the platform. ⚠️ **"Domain-gated to `@anthropos.work` so external users cannot enter" is FALSE and was removed at M257x iter-115.** Measured at `ant-academy` `22df69dd`: `code/src/lib/platformUrls.js:1-32` calls the Academy *"a **storefront** in front of the Anthropos platform"* and defines **FLOW A — Account gate** (*"the PRIMARY CTA for this flow — **a new visitor registers**"*) and **FLOW B — Checkout gate** (*"contextually registers → signs in → subscribes **for an anonymous visitor**"*); `code/src/lib/pricing.js` sets `STANDARD_YEARLY = { usd: 399, eur: 349 }` with a live launch promo and coupon codes; `code/src/components/TopBar.jsx:77-88` renders a *"Buy AI Academy"* CTA **to anonymous visitors** and navigates them to platform checkout; `code/src/lib/schema.js:3` publishes `SITE_URL = 'https://aiacademy.anthropos.work'` with an `EducationalOrganization` schema.org block and public SEO copy decks. The repo's own `knowledge/user-types.md` enumerates four user types — Anonymous · Signed-in (free) · Subscriber · Enterprise/Org member — and **no `@anthropos.work` predicate appears in the detection list at all**. A product that sells a $399/yr subscription to an anonymous visitor through a public checkout funnel is not one external users cannot enter. **This document contradicted itself 213 lines earlier**, where it documents anonymous browsing, a *"Phase-1 public launch"*, *"the public surface is much wider than 'a few auth pages'"*, and the literal phrase **"public-storefront"**. (The error is inherited rather than invented — the ant-academy repo's own `CLAUDE.md:11` still says *"internal learning portal for Anthropic employees"* — but the corpus stated it in its own voice, present tense, with no attribution.) **What is true:** Clerk is shared with the platform, and the org-membership gate still applies to the *enterprise* surfaces.
 - **OpenAI (direct, browser, opt-in)**: The in-app "Cosmo" assistant — gated behind `NEXT_PUBLIC_FEATURE_TRAINING_COACH` (default OFF) — calls the **OpenAI Responses API** (`gpt-5.2`, `https://api.openai.com/v1/responses`) directly from the browser using a per-user `localStorage('openai_api_key')`. It is OpenAI-only and does **not** route through the platform's shared `ai` library or the `/api/ai/chat` route. (The separate server-side `/api/ai/chat` route handler does support both OpenAI and Anthropic with server keys, but Cosmo does not use it.)
 - **Studio Desk (loose link)**: `NEXT_PUBLIC_STUDIO_URL` can deep-link from the academy to the Studio Desk UI; nothing required at runtime.
 - **next-web-app (iframe embed):** the Workforce app loads Academy in an iframe with `?embed=anthropos`; `proxy.js` detects this server-side (`Sec-Fetch-Dest=iframe` + an `embed-mode` cookie, or an explicit `?embed=anthropos`), stamps an `x-embed-mode` request header, persists the cookie, and SSRs a light-themed, topbar-less variant (`data-embed` + `data-theme=light`). No data flows back — it is a presentation/cookie coupling only.
 - **Platform academy backend (GraphQL, load-bearing):** the home grid **reads its course catalog** from the platform
-  **academy subgraph** (`app internal/academy`) over GraphQL at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — `getBackendCatalogView()`
+  **`backend` subgraph** (academy types served by `app internal/academy`) over GraphQL at `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` — `getBackendCatalogView()`
   queries `academyCatalogSeries` + `academyCatalogSkillPaths`, tenant-filtered server-side. This is the catalog source of
   truth since v0.5.1 (M7); on failure the grid degrades to `emptyCatalogView()` (0 cards). See
   [*The Content Model*](#the-content-model--db-authoritative-catalog-v051-m7). *(No Connect-RPC and no Redis events — the
@@ -387,6 +519,34 @@ lives in the ephemeral platform clone). So for a **demo**, `ensure-clones.sh` cl
 d2, non-fatal); for **dev**, it's a manual `git clone` — not `make init`.
 
 If you ever need to add a Docker profile (e.g. for an integration-test harness), follow studio-desk's containerized variant as the template.
+
+### The clone advanced to `249430c39` — what moved, and the inference that does NOT follow (M257x iter-256)
+
+Every ref-pinned claim above is measured at `ant-academy` **`22df69dd8`** and stays true at that ref
+(§5 rules 41/44). On **2026-08-10** the clone and the canonical demo pin were advanced to
+`origin/main` = **`249430c39`**, **10 commits** on, under the user's closing condition that the
+milestone may only close against the *current* branches. What that advance contains, measured with
+`git show <ref>:code/ucourses/catalog.js` at both refs rather than read from the commit subjects:
+
+| | `22df69dd8` | `249430c39` | delta |
+|---|---|---|---|
+| `PUBLIC_CHAPTERS` entries | **499** | **554** | **+55** |
+| skill-path keys (the catalog's course objects) | **92** | **92** | **0** |
+
+The 55 are two content families — **open-source/open-weights models** (`kimi-*`, `glm-*`,
+`open-source-*`, `coding-open-models-intro`, …) and **finance back-office** (`excel-copilot-*`,
+`excel-claude-code-*`, `excel-chatgpt-*`, `finance-back-office-*`) — each shipped EN+IT, plus
+`benchmark-it-yourself`.
+
+⚠️ **The tempting inference is wrong and is recorded here so nobody re-derives it:** *"the catalog
+grew by 55, therefore the demo's `65 course cards` observation is stale."* It is **not**. The 65 is a
+render-time count over a filtered subset of the **skill-path** objects, and that population is
+**unchanged at 92**. The advance moved chapters, not cards. See
+[`../ops/demo/frontend-tier.md`](../ops/demo/frontend-tier.md) for what the 65 was measured on.
+
+**Not proven here:** that a demo built at `249430c39` comes up. The advance is a source-and-pin
+change; gate clause 1 (a cold `demo-down --purge` + `demo-up`, 3 consecutive green cycles) has **not**
+been re-run against it and needs a quiet host.
 
 ### Related Documentation
 - [Service Taxonomy](../architecture/service_taxonomy.md) — where Ant Academy sits in the three-tier model

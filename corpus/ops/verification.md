@@ -1,10 +1,25 @@
-# Bring-up Verification — the auto-verify safety net
+# Bring-up Verification — the auto-verify safety net, and the batch gate above it
 
-**The authoritative statement of how a stack proves itself *working* — not just *started*.** Every
-bring-up now ends with an automatic, scoped, **non-fatal** verification pass: a couple of decisive
-cheap-win asserts followed by the full black-box probe set, targeted at the stack's **own offset ports**
-and scoped to the **services actually brought up**. So when a bring-up says "UP", it means
-*verified-working* — not merely *containers-started*.
+**The authoritative statement of how a stack proves itself *working* — not just *started*.** A bring-up
+now ends in **two** layers, and they have deliberately opposite failure semantics:
+
+1. **`autoverify` — scoped, and NON-FATAL.** A couple of decisive cheap-win asserts followed by the full
+   black-box probe set, targeted at the stack's **own offset ports** and scoped to the **services
+   actually brought up**. It proves the stack is *reachable and healthy*. A verify bug never blocks a
+   good stack.
+2. **The Playthrough batch gate (v2.8 M258) — and it is LOUD, not silent.** It drives every seeded
+   hero's journey to completion and emits one consolidated red set; a non-empty set makes the bring-up
+   **exit non-zero**. It proves the stack is *functionally correct*. The stack is still left **UP**
+   regardless — clause 5 — but the shell gets a truthful exit code. § [The layer ABOVE
+   autoverify](#the-layer-above-autoverify--the-playthrough-batch-gate-v28-m258) is the contract.
+
+So "UP" no longer means *containers-started*, and no longer only means *verified-reachable*: it means
+**"UP, and every journey verified."**
+
+> ⚠️ **This lead said the bring-up ends in a non-fatal pass, full stop, until the M258 close.** The M258
+> section was appended without touching it, so a reader who stopped at the top of this file got the
+> pre-M258 model of the very thing the file is authoritative for. Three sibling indexes said the same
+> and are corrected with it: `CLAUDE.md`, [`README.md`](README.md), [`rosetta_demo.md`](rosetta_demo.md).
 
 > **Scope.** This doc covers the **v1.3b "dress rehearsal" / M18** verification net across the
 > `rosetta-extensions` stack tooling: the offset/project/scope awareness added to `stack-verify`, the
@@ -19,7 +34,10 @@ and scoped to the **services actually brought up**. So when a bring-up says "UP"
 > authoring copy at `.agentspace/rosetta-extensions/`, consumed per-stack at a pinned tag) — **no platform
 > repo is modified.**
 >
-> **In scope:** the backend `graphql`-profile services (what exists today). **Out of scope:** the
+> **In scope:** the backend services the **default** profile starts — `core` at platform `0c91421`
+> (`backend`, `gotenberg`, plus the always-on `postgresql`/`redis` floor — **four** at platform
+> `766df6c`, which folded `sentinel` into `app` and deleted its service. It was **five** at `0c91421`
+> and `0dab54d`; `838d907` deleted three services, none of which `core` selected). **Out of scope:** the
 > frontend tier — the frontends don't exist in the stack yet; **M19** adds them and extends the verify
 > service list. Deep behavioural / e2e flows remain the operator-driven `/test-platform` job; this
 > auto-run is the always-on *smoke net*.
@@ -54,6 +72,167 @@ an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `d
 > double-fork on macOS, which has no `setsid`), so they survive the launching session/task ending and a
 > later visit still finds them alive. Previously a bare `nohup` left them in the launcher's process group,
 > so a backgrounded `/demo-up` task's reaping took them down with it.
+
+## The layer ABOVE autoverify — the Playthrough batch gate (v2.8 M258)
+
+Everything above this line proves the stack is **reachable and healthy**. It cannot tell you whether a
+seeded hero can actually *play her journey* — a stack can pass every probe and still be functionally
+broken. So the bring-up now ends in a second, higher gate:
+`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2903` immediately after the `UP.` line
+(`:2867`). After it, **"UP" means "UP, and every journey verified"**.
+
+> ⚠️ **This cited `up-injected.sh:2839` until the M258 close, and that line is neither the hook nor even
+> after the banner** — it is `verify_svcs="$verify_svcs $_u_probeable"`, inside the *autoverify* scope
+> union, **before** `UP.` prints. [`demo-up-defaults.md`](demo/demo-up-defaults.md) cited the guard
+> correctly all along, so the release's two M258 docs disagreed with each other about where its central
+> deliverable lives.
+
+**The hook decides nothing.** It invokes unconditionally and carries the exit code; every skip belongs
+to `batch-gate.sh`. That is not tidiness — the gate is what WRITES `$STACK/batch-gate.json`, and its
+invariant is that *a bring-up which produced no verdict must still leave a record saying so*. While the
+hook re-implemented the `DEMO_NO_BATCH` arm and short-circuited the call, an opted-out bring-up wrote
+nothing, and since `--purge` does not clear the stack dir the **previous** run's verdict survived to be
+read as this one's — a stale `verdict: green · red_count: 0` is byte-identical to a live one apart from
+its `ts`. The only condition the hook still tests is that the gate file *exists*, because an older
+`rosetta-extensions` pin predates it.
+
+**The contract is `D-v28-3`, and every clause is load-bearing:**
+
+| clause | why it is there |
+|---|---|
+| the suite **always runs to completion** | halting at the first red gives you one symptom and hides the other twenty-nine |
+| it **never retries** to mask a flake | `retries: 0` stays; a retry converts a real defect into an intermittent one |
+| **ONE consolidated red set**, at batch end | the operator reads a complete verdict instead of assembling one from scrollback |
+| a non-empty set **escalates to the user** | each item is fixed or given an explicit **written disposition** — red NEVER accumulates silently across runs |
+| the stack is **left UP regardless** | the autoverify precedent: **a test bug must never cost a good demo**. The gate stops, restarts and tears down nothing |
+| the bring-up **exits non-zero, loudly** | loud, not fatal. The stack stays up; the shell gets a truthful exit code |
+
+The order is deliberate: `UP.` prints **before** the batch runs, so "left UP regardless" is visible rather
+than merely true. Verdict artifact: `$STACK/batch-gate.json` (`verdict`, `red_set`, `batch_seconds`,
+`restore_seconds`). Opt out with `DEMO_NO_BATCH=1` — see
+[`demo/demo-up-defaults.md`](demo/demo-up-defaults.md).
+
+### It SKIPS on a `--public-host` stack, and the skip is not a green
+
+A `--public-host` demo **cannot be browsed from its own host**: docker-proxy binds `0.0.0.0`, so a
+connection from the demo host to its own tailscale IP hits the kernel socket and **bypasses
+`tailscale serve`**, which is what terminates TLS (`run-playthroughs.sh:92-105`; M255 spike (e)). Running
+the batch there would fail all 30 Playthroughs for a reason that has **nothing to do with the product** —
+a false-RED factory, and **a false RED is not the safe direction of this bug: it trains its operator to
+disbelieve the gate.**
+
+So on such a stack the gate skips, loudly, and records `verdict: skipped` — which is **never** `green`.
+**The gate is never reported as met where it was never taken.** The skip prints the peer path
+(`--reset-only` on the host, the browser half from a tailnet peer, then the restore). Since
+`--public-host` is default-on (`D-DESIGN-3`), **a bare `/demo-up N` skips the batch; `/demo-up N
+--no-public-host` gates it in one command.**
+
+### …and on any knob that takes away what it needs (M258 close)
+
+The same reasoning generalises, and it was missed for two knobs that were already documented opt-outs.
+**The rule, stated once: the gate skips wherever a documented knob removes something it needs, and it
+records `skipped` — never `green`, and never a red that describes the operator's own configuration.**
+
+| knob | what it removes | what the gate did before |
+|---|---|---|
+| `DEMO_NO_STORIES=1` / `DEMO_STORIES=0` | the heroes, the cockpit the Playthroughs log in through, **and** the per-stack `bin/stackseed` (built only on the stories path) | the reset arm exited 2, the restore exited 2, and the gate reported **ERROR rc=3 on a bring-up that was fine** |
+| `DEMO_NO_UI=1` | next-web + studio-desk + hiring — every browser surface | all 30 journeys RED against frontends the stack does not run: the same false-RED factory, other door |
+
+⚠️ **The stories case had a second, worse mode, and it is the reason this is a skip rather than a nicer
+error.** `$STACK/bin/` survives `--purge`, so on a box where an *earlier* stories bring-up left the
+binary behind, the reset **runs**: it TRUNCATEs the small-200 world the operator asked for and re-seeds
+`stories.seed.yaml` over it. That is the silent world-swap the restore leg exists to prevent, **caused by
+the restore leg**, on a stack whose operator opted out of stories in the first place.
+
+### THE WORLD CONTRACT — why a batch gate needs a restore leg to be honest
+
+`run-playthroughs.sh --reset` is the *real* reset: a full FK-ordered `TRUNCATE` bottoming out at
+`public.{organizations,users,memberships}` **with no `organization_id` predicate**, then a fresh seed of
+`pt-world.seed.yaml`. The showcase orgs, the heroes, their sessions and the content-story fan-out all go.
+Meanwhile `cockpit-manifest.json` and `content-manifest.json` were projected **once at bring-up** and the
+runner never refreshes them.
+
+So the naive composition — bring up, then batch — ends with a **test world behind a presenter cockpit
+still advertising heroes whose rows no longer exist**. Not a silent absence: **a cockpit full of dead
+CTAs.** And that state fully satisfies *"the stack is left UP regardless"*, which is why M258's gate had
+to name a world contract at all — **as first drafted it was passable while shipping a broken demo.** It
+is not hypothetical: M254 left `billion` in exactly that state, with no restoration recorded anywhere.
+
+`playthroughs/e2e/restore-presenter-world.sh` closes it (resolution **(b) restore after**), and the batch
+gate invokes it on **every** path where the reset ran — including a RED one, because a red batch must not
+*also* cost the presenter the demo world. It is **reset-then-seed, never additive** (an additive re-seed
+over pt-world leaves every test row in place — the M42e green-but-wrong trap, forbidden as a reset), and
+it restores all three layers, because **the world is DB + identities + the cockpit's advertised menu**:
+
+1. `stackseed --reset` then a fresh seed of the stories preset;
+2. the Clerkenstein **roster** + a fake-service restart — a stale roster does not merely 400, it produces
+   a **successful-looking WRONG login** (the fake FAPI establishes a session for an unknown identity);
+3. the **cockpit and content manifests** — pure functions of the seed, so no DB is needed.
+
+A failed restore is an **error**, not a green: the stack is UP but **not presenter-usable**, and the gate
+says so and names the recovery command.
+
+#### The post-condition: the three `ok`s are cross-checked against each other
+
+Each of those three layers reports its own success, and **that is not enough** — the incident that proves
+it is this milestone's own. Every export said `ok`, but the cockpit manifest had been written to a
+**second, stale `stacks/demo-N/`** belonging to the other `rosetta-extensions` clone. The live pair was
+therefore a 35-identity **stories roster beside an 11-seat pt-world menu**, and the restore exited 0
+announcing *"presenter world restored"*. No step-level check can see that, because no step did anything
+wrong *in isolation*.
+
+So the restore ends in `playthroughs/e2e/check-cockpit-roster.py`, which reads the **files on disk**
+rather than trusting the exports that produced them, and asks the one question that matters afterwards:
+**can every seat the cockpit advertises actually be logged into?** An orphaned seat is severe rather than
+cosmetic — the fake FAPI **signs an unknown identity in anyway, as whoever was last active**, so the
+failure is a silent WRONG login, not a broken button. An **empty** menu fails too: *"0 orphans out of 0
+seats"* is the absence of a cockpit wearing a healthy one's clothing.
+
+Three things the M258 close had to add for that verdict to be trustworthy, each of which had made it
+un-trustworthy in a different direction:
+
+- **The preset comes from the clone that OWNS the live stack**, never from whichever clone the script
+  sits in (and `DEMO_STORIES_PRESET` wins over both, so a bare invocation restores what the bring-up
+  actually seeded). **The post-condition is structurally blind to this one** — the roster and the menu are
+  both exported from the same preset, seconds apart, so a wrong preset yields a wrong but
+  *self-consistent* pair that passes. It is the single substitution a cross-check cannot catch, so it is
+  prevented at the source instead.
+- **"Docker could not answer" is not "this demo has no cockpit."** Both used to read as an empty roster
+  path, and *three* decisions keyed off that one emptiness: the stack dir fell back to the script's own
+  clone, the roster leg was skipped, and **the post-condition that would have caught the first was
+  disabled by the same condition** — then the restore exited 0. The verifier was switched off by exactly
+  the circumstance that made verification necessary. An unresolvable stack now **fails**, loudly.
+- **A malformed artifact is a diagnosis, not a traceback.** The roster is written by Go, and a nil slice
+  marshals as `null`, not `[]` — which raised `TypeError` *before* the empty-menu rule could fire, so the
+  severe verdict ("zero identities against N seats — every seat is a silent wrong login") was replaced by
+  a stack trace, identically on every re-run.
+
+### Fail-closed on the ledger — four ways a batch can look green without having run
+
+All four are asserted by controls in `playthroughs/manifest/batch_gate_test.go`, which executes the real
+script against a mirrored temp tree:
+
+- **A stale report.** `last-report.json` is written by ptreport *after* the suite. If the runner dies
+  **before** the suite — a missing `stackseed` exits 2 at the reset arm, a documented, reachable path —
+  ptreport never runs and the file on disk is the **previous, possibly green** run's. The report is
+  refused unless its mtime is at or after the batch start (integer epoch on purpose: M236's age check
+  parsed a UTC string as local time and **failed OPEN west of UTC**).
+- **An empty ledger.** `total == 0` is an **error**. *"0 failing out of 0"* is not a pass — it is the
+  absence of a measurement wearing a pass's clothing.
+- **A non-zero runner with an empty red set.** The runner exits non-zero when a Playthrough fails (the
+  normal red path) *and* when it refuses to run at all. **"The suite failed and nothing is failing" is not
+  a green.**
+- **A crash in the reader that decides all of the above** (added at the M258 close, and the sharpest of
+  the four). The verdict is graded on what the red-set reader **prints**: no RED lines and no ERROR lines
+  meant "red set empty", i.e. GREEN. An unhandled exception prints nothing — so **any** crash in the
+  reader was a green. Not hypothetical: ptreport builds its results as a Go slice that is `nil` when
+  nothing reconciles, and **Go marshals a nil slice as `null`, not `[]`**, so the real empty-ledger
+  payload made the reader raise `TypeError` — *two lines before the empty-ledger rule written for it*.
+  Every fixture had hand-written `[]`, the one shape the producer never emits, which is exactly why the
+  hole survived a full harden. Closed three ways at once, because one layer is not enough for a
+  fail-open on the central claim: the whole body is inside the try, the fields are normalised, and the
+  reader must print a terminating **`END` sentinel that the shell requires** — so *"produced no output"*
+  can never again be spelled the same way as *"produced an empty red set"*.
 
 ## The offset/scope model (why it targets the *right* ports)
 
@@ -111,10 +290,30 @@ On a stack brought up with **local content** (demo default; dev `--local-content
 more cheap-wins — gated on the directus **container actually existing**, so a prod-read stack (no local
 Directus) never false-warns even on an unscoped run:
 
-3. **Directus serves the catalog** — `SELECT count(*) FROM directus.directus_collections` via `docker exec
-   <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin assert: a Directus
-   can be UP (`/server/health` 200) but serve **nothing** if the content-model never registered. (Also runs as
-   the `directus-collections` readiness probe.)
+3. **Directus REGISTERED the content model** — `SELECT count(*) FROM directus.directus_collections` via
+   `docker exec <project>-postgresql-1 psql …`, asserted `> 0`. The silent-failure analog of the casbin
+   assert: a Directus can be UP (`/server/health` 200) and have no content model at all. (Also runs as the
+   `directus-collections` readiness probe.)
+
+   > **⚠ This assert used to be described — here and in its own `✓` line — as *"Directus serves the
+   > catalog"*, and it cannot know that.** `directus_collections` is a **registry** table written by the
+   > *structure* replay; the content rows are loaded by a later step and the anon read grants by a third, so
+   > the count is `> 0` on a Directus holding zero items and on one that 403s every read. On M257x clause
+   > 1's three cold cycles it was exactly that: the content replay raised on `directus.sequences`, **0 of
+   > 11986 rows** landed, every anon `/items` read returned 403 — and `autoverify` graded `green:true /
+   > 0 warnings` three times over it, because nothing anywhere in the verify path asked the *running*
+   > Directus for an item. Corrected in M257x harden pass 1; the rule it produced is
+   > [`platform-alignment.md`](platform-alignment.md) §5 rule 14 — **REGISTERED is not SERVED.**
+
+3b. **Directus actually SERVES an item** (`directus-serves-content` readiness probe, M257x harden pass 1) —
+   the measurement the count above cannot make. It asks the **running** Directus over HTTP, on the stack's
+   own offset port, **unauthenticated**, for one item out of a collection it did not choose: the target is
+   **derived** from the stack's own catalog (the non-system `directus.*` table holding the most rows), so a
+   re-modelled surface cannot make the probe stale and it cannot pick a target that guarantees its own
+   success. The derivation is **fail-closed** — no user collection holding a single row IS the defect, not a
+   skip. `403` (holds the content, serves it to nobody), `200` with an empty `data` array (serving, content
+   absent) and no-response are each named distinctly, because they have three different repairs. Scoped to
+   the `directus` service like the others, so a prod-read stack still skips cleanly.
 4. **No prod read** — the per-stack Directus's `DB_CONNECTION_STRING` (read from the container's env) must
    resolve to the stack's **own** Postgres, never a prod host. The runtime mirror of the executed-provision
    firewall gate; warns (non-fatal) if a mis-wired override pointed the local Directus at prod.
@@ -138,14 +337,26 @@ Directus) never false-warns even on an unscoped run:
 - **Liveness** — per service (`lib/services.sh::service_rows` + `probe_service`): docker-health /
   TCP-connect / HTTP-code, at `base+offset`, against `<project>-<svc>-1`.
 - **Readiness** — deeper, correctness probes (`lib/readiness.sh`): postgres schemas present, redis
-  `PING`, GraphQL introspection (`:5050+offset`), gotenberg version (`:3200+offset`), sentinel
-  Connect-RPC handler mounted (`:8087+offset`), storage RPC reachable (`:8301+offset`), and — on a
+  `PING`, GraphQL introspection (`:8082+offset` at `/graphql/query` — re-pointed at M257x iter-13 when the
+  `:5050` router was deleted; a wrong *host* refuses loudly but a wrong *path* connects and 404s, so both
+  halves moved), gotenberg version (`:3200+offset`), sentinel
+  Connect-RPC handler mounted (`:8087+offset`), and — on a
   local-content stack — the per-stack **Directus** liveness (`/server/health` at `:8055+offset`) plus its
-  `directus-collections` serve-check — each resolving the offset port + project container via the same
+  `directus-collections` registration check **and the `directus-serves-content` probe that reads an actual
+  item back over HTTP** (§"cheap-wins" 3/3b above — the registration count alone graded three cold cycles
+  green over a Directus that served nothing) — each resolving the offset port + project container via the same
   `target.sh` helpers. **Both** phases honour the `STACK_SERVICES` scope filter: the readiness phase skips a
   deep probe whose backing service isn't in scope (the same `target_service_selected` gate as liveness), so a
   reduced bring-up never produces a wall of false `down`s in *either* phase. (The directus row is scoped in
   only on a `--local-content` bring-up and gated on the container existing — a prod-read stack stays clean.)
+
+> **The registry still carries merged-away rows on purpose.** `lib/services.sh` keeps `jobsimulation`,
+> `cms`, `storage` and `roadrunner` rows (and `readiness.sh` keeps `probe_storage_rpc`, base
+> `:8300`/`:8301`) for older/rollback clones. None of them can fire on a current stack: `2adcf71`,
+> `d11a403` and `838d907` deleted those containers, and both `/dev-up` and `/demo-up` pass a **derived**
+> `--services` scope that filters the rows out. Running `verify.sh` with **no** `STACK_SERVICES` set
+> probes the whole table and will false-`down` every merged-away row — that is a scope error, not a
+> broken stack.
 
 The full base-port table (the offset-0 source of truth the offset is applied to) lives in
 `stack-verify/lib/services.sh`; the `/test-platform` skill drives the same scripts for the deeper,
@@ -211,7 +422,9 @@ candidate-comparison scoreboard is populated **entirely from the auto-set-dress*
 HIRING sims ride along in the **standard** directus content-surface capture; there is **no** separate 5-sim capture and
 **no `directus.job_position` replay** — 0 rows, unread by the scoreboard, M222 BA-6 / M223 D4) as the org's
 `organization_sim_invitation_links` **positions**, and the `HiringFunnelSeeder` writes each candidate's scored
-`local_jobsimulation_sessions` **mirror** row (the score the scoreboard reads).
+`public.job_simulation_sessions` row (the score the scoreboard reads). ⚠️ **This said "the
+`local_jobsimulation_sessions` MIRROR row" until M257x iter-129** — `app` `20260729133514.sql` dropped that
+table, so a probe written against the old name would have counted a relation that does not exist.
 
 The silent failure it catches: a **cold snapshot cache** (or a starved HIRING-typed pool) leaves `readHiringSimPool`
 **empty** → the seeders **honestly degrade** to 0 positions / 0 sessions (never fabricate) → the recruiter comparison
@@ -223,7 +436,7 @@ downstream M224/M226 render gate as the loud catch; this cheap-win brings that c
   hiring-less demo (a non-stories preset, or `DEMO_STORIES=0`) **skips cleanly**, never false-warns (the same
   discipline as the directus container-presence gate).
 - **Floors:** `≥ 5` positions (the shared-positions contract, `reservedHiringSimRefs`; `< 5` is the cold-cache /
-  starved-pool "dangerous middle") **and** `≥ 40` candidate `local_jobsimulation_sessions` for the hiring org (a full
+  starved-pool "dangerous middle") **and** `≥ 40` candidate `public.job_simulation_sessions` for the hiring org (a full
   comparable cohort — a robust weak lower bound; the ~200 the funnel seeds is the healthy number, and the **strong**
   per-sim `≥ 40` floor is the M224/M226 render probe, not this cheap bring-up assert).
 
@@ -274,7 +487,9 @@ the **wrong, real-Clerk key** *passed the guard and got silently reused*. Conseq
 
 The fix asserts the minted pk is **present in the built bundle** (`docker run --rm … grep -rqs "$PK_DEMO"
 /app/apps/web/.next/static`), **fail-safe toward rebuild**: anything unverifiable rebuilds, because a needless
-~3 min build is strictly cheaper than shipping a real-Clerk-wired demo. All four overlay-borne constants come from
+rebuild is strictly cheaper than shipping a real-Clerk-wired demo. *(The magnitude here used to read "~3 min";
+after v2.8 M257's L1 a next-web rebuild is **53.31 s on `macmini`**, n=3 p50 — the argument is unchanged and the
+trade is now cheaper still.)* All four overlay-borne constants come from
 that one file, so a single probe covers the class.
 
 > **The general rule:** *if a constant is inlined into an artifact, validate it by reading the artifact.* Build-time
@@ -411,6 +626,252 @@ ssh <host> 'bash -lc "go version"'                 # green here + red in pre-fli
 > **The general rule:** *when a check reports a missing dependency on a remote host, first prove the check and
 > the operator are running in the same environment.* A tool's absence and a tool's **invisibility** produce
 > identical output, and only one of them is fixed by installing anything.
+
+## A SUITE NOBODY RUNS IS A SUITE THAT IS RED (v2.8 M256 harden pass)
+
+Two findings from the same pass, both about the tooling's own tests rather than the stack's, and both worth
+stating here because this is the *is-it-actually-working* doc.
+
+**1. Enumerated test rosters go stale silently — and the roster is where the rot hides.** M255's close recorded
+*"Python 1505 pass / 2 skip / 0 fail across **stack-core + demo-stack + stack-injection**"*. `stack-verify/tests`
+is not in that list. Run at the M256 harden pass, it had **5 failures**, all from one cause: `autoverify.sh` grew
+check (f) — the ant-academy `/library/` catalog probe — at M245, and of the four fixtures in `test_verify.py` that
+stub `curl`, exactly **one** was taught about it. The others returned nothing, the probe warned, autoverify
+reported *"N check(s) FAILED"*, and five tests went red — **none of them about the academy**. They also each paid
+the probe's 3×3 s retry, so the suite ran 313 s instead of 163 s.
+
+This is the *same* blind spot M255's own close found for `stack-snapshot`'s Go suite, one directory over: a suite
+outside the roster had been red since v2.6 and two consecutive release closes missed it. **The lesson is not "add
+stack-verify to the list."** It is that *an enumerated roster is a claim that needs its own fence* — the safe form
+is "every section that has tests", discovered, with the count asserted, not a hand-maintained list of the sections
+someone remembered. Until that exists, a close's Python verdict should be read as *"the sections we named are
+green"*, which is a weaker statement than it looks.
+
+**2. A test file can hide tests from the runner it invites you to use.** In six rext modules, a
+`unittest.TestCase` subclass was defined **below** the module's `if __name__ == "__main__": unittest.main()`
+guard. Python executes top to bottom, so the class does not exist when the guard runs: it is never registered,
+never collected, and the run still prints **OK**. Measured — **15 classes / 76 tests**:
+
+```
+# v2.8 M256, BEFORE the repair — this pair no longer reproduces; see the re-measurement below
+python3 demo-stack/tests/test_roster_invariant.py         ->  Ran 22 tests ... OK
+python3 -m pytest demo-stack/tests/test_roster_invariant.py  ->  27 passed
+```
+
+The five silent tests included that file's own RED-proof for the live 12-dead-buttons cockpit defect — the class
+its docstring calls *"the primary user-visible surface, and the one the defect is actually about."* Worst case:
+`stack-injection/tests/test_apply_patch_selfheal.py`, **11 of 27**.
+
+> **⚠️ RE-MEASURED 2026-08-11 (M257x harden pass 70), and both numbers above have moved.** The block is a
+> **dated exhibit of the repaired state, not a command to run**: that same file now answers **32 tests /
+> 32 passed** under both runners — the gap is **zero**, because the repair below landed. A reader who ran
+> the two lines to see the defect would see nothing and conclude the page was wrong about the mechanism.
+>
+> **The repo-wide figure moved too: 15 classes / 76 tests → 1 class / 3 tests.** And the one is instructive
+> rather than residual — it did not survive the repair; it was **created by the harden pass that came to
+> re-measure the class**, which appended a new `TestCase` to the end of
+> `stack-core/tests/test_frozen_expectation_census_m257x.py` and ran it under pytest only. Direct execution
+> answered **`Ran 99 tests ... OK`** while pytest answered **102**. Repaired in the same pass.
+>
+> Two things follow, and the second is the one worth carrying. **(1)** The `test_test_collection_fence.py`
+> fence named below is NOT the gap — it was green, it detects a planted case immediately, and it was simply
+> **never run**, because the pass ran the modules it had touched rather than the family. **(2)** *"Appending
+> to the bottom of the file is the path of least resistance"* is not a historical observation about six
+> files that drifted across releases; it is a live gradient that catches the next writer, including one
+> who has just read this paragraph. The class is closed by the fence, not by the repair — **and only if
+> the fence is actually invoked by whoever adds a member.**
+
+CI was never wrong — every runner uses pytest, which collects by inspection and ignores statement order. What was
+broken is the loop a human or an agent actually uses: `python3 <the one file I am editing>` is what the file's own
+`__main__` block invites, and it skips the part you just wrote. Appending a new hardening class to the bottom of a
+file is the path of least resistance and the guard is already sitting there, which is why six files drifted the
+same way across releases. Guards relocated to end-of-file; fenced repo-wide by
+`stack-core/tests/test_test_collection_fence.py`.
+
+> **The general rule behind both:** *a green verdict is only as wide as the set of things the runner actually
+> looked at.* Both defects produced a confident PASS over an unexamined set — one because a roster did not name a
+> directory, one because a file did not define a class yet. Neither is detectable from the verdict; both are
+> detectable by asserting the **denominator**, which is why every fence this pass landed is fail-closed on how
+> much it scanned.
+
+### The third instance, and the biggest: `verify.sh` said "all live probes passed" over ZERO probes (v2.8 M256 harden pass 2)
+
+The rule above was written about the tooling's *own tests*. The second harden pass found it in **this doc's
+subject** — the live probe runner whose verdict everything downstream quotes.
+
+`live/verify.sh`'s success condition was `fail_count -eq 0`. That is equally true of *"every probe passed"* and
+*"no probe ran"*. Reproduced in one command:
+
+```
+STACK_SERVICES="skillpath" ./live/verify.sh
+  ▶ liveness (is each service reachable?)     # ...no rows
+  ▶ readiness (does each service answer correctly?)
+  ✓ all live probes passed                    # rc 0
+```
+
+`skillpath` was a real service name until **M247** decommissioned it into `app` and deleted its row from
+`lib/services.sh`'s `SERVICES` table. `target_service_selected()` returns 1 for an *unknown* name exactly as it
+does for a *deselected* one, and — the aggravating half — `lib/target.sh`'s own contract has promised since M18
+that *"A name not in the array is ignored **with a warning** (so a typo is visible, not silent)"*. **The warning
+was never implemented.** So a stale, misspelled, or decommissioned name in `STACK_SERVICES` selects nothing,
+silently, and the runner certifies it.
+
+**Why this one propagates further than any other false green in the tree.** `verify.sh`'s rc becomes
+`autoverify.sh`'s *"verify live"* verdict → `warnings=0` → `autoverify.json` `"green": true` → and that file is
+the gate input for `run-latency.sh`, `run-coverage.sh`, `run-studio-fcp.sh` and `buildbench.py`, and is rendered
+as `✓ pass` by `reports/generate.sh`. One unexamined set, five downstream consumers.
+
+Fixed by the same discipline as the two above — **assert the denominator, and state it**:
+
+- zero liveness probes is a hard refusal (`✗ NOTHING WAS PROBED`), naming `STACK_SERVICES`;
+- the success line now reads `✓ all live probes passed (13 liveness + 7 readiness; 0 readiness probe(s) out of
+  scope)`, so a reader sees the set without re-deriving it;
+- the promised unknown-name warning exists, non-fatally (a bring-up's compose scope may legitimately name
+  services this probe table does not model — the **zero** case is what fails).
+
+Live-verified on a local `demo-2`: 13 + 7 at full scope, 2 + 2 under a legitimate `"postgresql redis"` filter,
+refusal on the unknown name.
+
+### Absence of evidence is not evidence — the `-s` trap (v2.8 M256 harden pass 2)
+
+Two of `autoverify.sh`'s bring-up asserts keyed on `[ -s "$STACK_DIR/<log>" ]` and put the success message in the
+`else`. **`-s` is false for a file that does not exist just as it is for one that exists and is empty**, so a
+stack where the patch phase or the frontend-build phase never ran printed:
+
+```
+  ✓ demo-patches: all applied (none refused, none skipped)
+  ✓ frontend builds: ok (the running images are this run's)
+```
+
+The second claim is a **gate input** by `autoverify.sh`'s own comment (`run-latency.sh` refuses to measure without
+it), and it is exactly the claim an absent log cannot support. The distinction is decidable and free:
+`up-injected.sh` **truncates** each log as it enters the phase (`: > "$STACK/demopatch.log"`), so **the file's
+existence is the writer's receipt.** No receipt, no claim — absent is now its own branch and it warns.
+
+> **The generalization worth carrying:** when a check reads an artifact to decide, enumerate **three** states, not
+> two — *present-and-clean*, *present-and-dirty*, and *not-there-at-all*. Collapsing the third into the first is
+> how a phase that never ran becomes a phase that passed. The same shape appeared four times in one pass: `-s` on
+> two logs, a missing `generatedAt` in `run-coverage.sh`, and `EXPECTED_PAIRS` set-but-empty in
+> `aggregate-content.py`.
+
+### A guard that cannot find its subject must not exit 0 (v2.8 M256 harden pass 2)
+
+`rc 0` is what an `&&` chain and a CI step read; a `SKIP` line on stdout is not a signal. `stack-core`'s
+`dev_flag_guard.py` had **two** `SKIP → return 0` paths, so renaming `dev-stack/dev-stack` made the flag
+cross-check silently stop existing — in a file that already reasoned the principle out four lines lower (*"An
+empty result is a FINDING, not a pass"*) for its *empty*-result case but not its *missing-input* case.
+
+The resolution is not "fail on every skip" — it is that **the two skips are different things**:
+
+| situation | verdict | why |
+|---|---|---|
+| no rosetta root found | `rc 0`, and the message says **NOTHING WAS CHECKED** | rext can legitimately be cloned without rosetta beside it; failing a build for that is wrong |
+| `dev-stack/dev-stack` absent | `rc 2` | that file ships **inside rext** — its absence is a broken tree or a moved path, never a rosetta-less checkout |
+
+**`rc 2`, not `rc 1`:** *"could not run"* is a different diagnosis from *"found a problem"*, and collapsing them
+sends the reader in the wrong direction — the same split `ptvalidate` already makes for `datadna`'s exit 3.
+`corpus_index_guard.py` took the same treatment: it reported *"every doc has its directory-README index row"* from
+an empty violation list, which is equally true when **no** directory was index-bearing (rename every `README.md`
+and it sweeps zero docs and passes), so it now counts what it inspected and says so — *"all 82 doc(s) across 6
+index-bearing directory/ies"*.
+
+### A DELETED subject cannot fail a check that iterates the subjects (v2.8 M256 harden-final)
+
+This is the same shape as the casbin-list fence (pass 1) and the `safety_doc_drift` host loop (pass 2), and
+harden-final found it **four more times in one afternoon**. It is worth stating as a rule because it keeps
+arriving in new costumes:
+
+> **A check that RANGES OVER the thing it is checking cannot see a deletion.** The deleted item is absent from
+> the list it would have been compared against, so both sides stay balanced and the check passes over less.
+
+The four instances, and what each one measured:
+
+| Where | What it iterated | What a deletion did |
+|---|---|---|
+| `playthroughs/manifest` | `m.UseCases()` — in every check | Delete a use case **and its spec**: `ptvalidate` reports `manifest VALID`, 30 use cases ↔ 29 ids **balanced**, the Go suite green. A whole milestone deliverable vanishes silently. |
+| `seed-facts-fence` | `SEEDED_HEROES`, the module under test | 11 heroes seeded, **6 enrolled**. The 5 unenrolled were asserted by literal in the specs that play them; renaming one in the seed left the fence green and reddened the Playthrough instead, naming a product regression that had not happened. |
+| `orgless_writers_fence` | files matching `membershipUUID(prefix, i)` | The pattern's scope was a **naming convention**. Rename the call's identifiers and the file is not selected at all — so the fence reports green over a writer with no guard. |
+| `report.AllGreen` / `NoRegressions` | the `Summary` counters alone | Equally true of *"everything passed"* and *"nothing ran"* — and `report_edge_test.go` **asserted the vacuity as correct**, so writing the honest fence turned that test red. |
+
+**The fix is the same each time, and it is not "iterate harder":** add an **EXTERNAL** assertion that names what
+must exist, with a **denominator**. A presence pin that names ids (`pt-onboarding-individual`, …). A reverse
+direction (seed → facts, not only facts → seed) with an explicit, *justified* exemption set. A `Total > 0`
+clause. A floor set to the **measured** count, not comfortably below it — the org-less fence's floor of 6
+against a true count of 8 left room for exactly the two renames it existed to detect, and **slack in a floor
+permits the defect the floor is for**.
+
+**And the exemption must be a property, not a roster.** The citation fence added here excuses a comment block
+that *declares* a file absent (it is documenting an absence, not citing evidence) rather than keeping a list of
+excused filenames — because an enumerated roster is the process bug this milestone has hit repeatedly.
+
+### A citation is a claim about the repository, so it is checkable (v2.8 M256 harden-final)
+
+Two shipped comments in `stack-seeding/seeders` cited **`orgless_footprint_test.go`** as the compensating
+control for the half of the org-less capability no static fence can cover. **That file has never existed** —
+not on disk, not anywhere in git history. The underlying measurement was real (a live uuid sweep on a reseeded
+`demo-2`), but it lived in prose and the comments claimed a committed test.
+
+This is the `demo_knob_guard` `Read at` rot (**28 of 29** citations wrong, guard green) in source comments
+instead of a document — and that guard's fix was scoped to one document's citation format, so it generalised to
+nothing. **A wrong citation is worse than no citation:** it sends the reader somewhere confident and empty, and
+it makes an *unverified* property read as a verified one. Fence it where it lives.
+
+### A gate whose exit code is discarded is not a gate (v2.8 M256 harden-final)
+
+`run-playthroughs.sh` ran `ptreport --gate no-regressions` and threw the result away with `|| echo`, then exited
+with playwright's code. `report.go`'s `!ok` branch is the **only** mechanism that notices a declared Playthrough
+which never ran, and **playwright exits 0 when a spec file is simply absent** — so deleting a spec produced a
+fully green run. Measured: 203 passed, rc 0.
+
+The non-fatality was right for a `--grep` run (every un-grepped id correctly reports *"did not run"*), and the
+comment above it had always said so — *"the whole-suite gate is meaningful on a full (un-grepped) run"*. The
+**code collapsed both cases onto the permissive one**. Splitting them is the fix: binding on a full run,
+advisory with a stated reason on a scoped one.
+
+> **Then the fix itself taught the sharper lesson.** The first version went red live — but via `set -e`, which
+> aborts a bare failing command group before `PTREPORT_EXIT=$?` can run. The full-run case produced the right
+> exit code **by accident**, and the `--grep` case would have aborted with no explanation, silently destroying
+> the advisory path the change existed to preserve. **A right answer reached by the wrong mechanism is not a
+> right answer — it just fails somewhere else.** Put the invocation in an `if` condition (exempt from `set -e`)
+> so the code decides, and re-prove it live. It was caught only because the *diagnostic did not print*.
+
+### A CONTAINER-LIVENESS assert is the cheapest cheap-win there is, and the stack has no restart policy (v2.8 M256 iter-15)
+
+**A clean `Exited (0)` is not a healthy container, and nothing in the bring-up notices.** Measured on `demo-2`:
+Postgres restarted un-cleanly (*"database system was not properly shut down; automatic recovery in progress"*),
+and `jobsimulation` + `cms` **self-terminated by design** on their DB-health monitors — *"DB too many ping
+failures, shutting down"*, exit status **0**, a graceful shutdown working exactly as written. **Nothing restarts
+them.** The stack then sat at **14 of 16 containers "Up"** for an hour.
+
+What that looks like from the outside is the part worth internalising:
+
+- **The application surfaces no error at all.** Every `jobsimulation`-backed surface renders **20 table rows
+  with empty cells** — no empty state, no spinner, no toast, no console error. Held for 40 s of watching.
+- **A `rows > 0` assertion passes on it.** The Playthrough covering that surface failed only three steps
+  later, on a row-link wait, reporting a timeout that blamed a locator — three layers from the cause. An hour
+  went into disbelieving a correct new assertion before anyone read `docker ps -a`.
+- **It is NOT the ENOSPC trap.** Disk was 5 % used, 227 GiB free. [`demo/build-budget.md`](demo/build-budget.md)'s
+  M239-F1 records that a mid-campaign ENOSPC *presents* as `redis exited (1)`, and this looks like its cousin
+  and is not — so check disk, then stop, rather than assuming.
+- **Recovery is `docker start <container>`** — no build, no compose, no teardown. The same class of action
+  `run-playthroughs.sh --reset` already performs on the fake services every run.
+
+**The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
+not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2745`), and an
+`Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
+rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
+the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,
+the same F-6/F-10 hazard recorded at `:252-260` and `:293-303` — **not** a missing check. The genuine coverage
+gap is narrower and was undocumented: the containers with **no `services.sh` row at all** — `fake-fapi`,
+`fake-bapi` and `hiring-app` (`gen_injected_override.py:353,560,581`). **That** is the 14-of-16 arithmetic:
+13 rows in the demo scope against 16 containers. A **container-liveness assert** — *the stack's declared
+container set is all running* — is one line, costs nothing, and would have named this instead of an hour of
+Playthrough archaeology. Routed as `FIX-M256-demo2-service-self-termination` → M257/M258; landed at M257 as
+`autoverify.sh` check **(h)**, which derives its expected set from `services.sh` and adds the injected trio.
+
+**The general rule: check container liveness BEFORE diagnosing a test.** It is the cheapest measurement
+available and it is the one that was taken fourth.
 
 ## What this doc does NOT verify — reach (v2.5 M236, user-authorized)
 

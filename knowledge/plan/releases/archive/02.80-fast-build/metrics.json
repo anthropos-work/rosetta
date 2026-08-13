@@ -1,0 +1,337 @@
+{
+  "release": "v2.8",
+  "codename": "fast build",
+  "closed": "2026-08-12",
+  "milestones": [
+    "M255",
+    "M256",
+    "M257x",
+    "M257",
+    "M258"
+  ],
+  "milestone_close_status": {
+    "M255": "closed-complete (HARD barrier \u2014 opened the release; build-bench + host-headroom, GO verdict)",
+    "M256": "closed-on-gate (iterative; playthrough sharpening, 3 clauses MET after 2 documented re-cuts)",
+    "M257x": "closed-incomplete (iterative; platform realignment. Clause 5 declared OUT OF SCOPE BY USER RULING (TOK-09) and MUST NOT be reported as met. carry-forward.md routes to M258)",
+    "M257": "closed-on-gate (iterative; first-light build \u2014 the one gate in this release that fired on its own terms)",
+    "M258": "closed-incomplete (iterative terminal closer; ACHIEVED BY USER RULING, NOT ON GATE \u2014 4 of 5 clauses proven, the TIMING clause never measured clean. carry-forward.md present)"
+  },
+  "platform_repo_edits": 0,
+  "net_new_third_party_deps": 0,
+  "measurement_method": {
+    "as_of": "2026-08-12, release close Phase 0/4/4b",
+    "measured_by": "close-release review agent covering Phases 0, 4, 4b. Every figure below came from a command run at this close unless the field says otherwise.",
+    "corpus_repo": "rosetta @ c69ec0622fb81a3b0e7e8a793cfda86339f6fc26 (branch release/02.80-fast-build)",
+    "tooling_repo": "rosetta-extensions @ d06a56d35d3ebafe2cb3e3e38d28b791eafa9a17 (tag fast-build-m258-close)",
+    "toolchains": "go1.26.5 darwin/arm64 \u00b7 npm 11.16.0 \u00b7 node v24.18.1 \u00b7 pytest 9.1.1 on Python 3.12.13",
+    "host": "macmini (M4 Pro, arm64) \u2014 PERMANENTLY CONTENDED. Three other review agents were running Python suites concurrently during this measurement. Booleans survive contention; DURATIONS DO NOT and none below is a baseline.",
+    "python": "per-suite pytest --junitxml, PARSED AS XML. Never grepped from piped runner stdout; runner rc captured into a variable per invocation, never read through a pipe (the error made twice in this release).",
+    "go_reproducible_funcs": "git grep -E '^func Test' -- '*_test.go' over the whole rext repo \u2014 the cross-release like-for-like anchor re-anchored at v2.5 M234.",
+    "typescript": "npx playwright test --list (exact; suite not run for the count). Unit subset = rows whose file matches *.unit.spec.ts.",
+    "coverage": "go test -cover, measured directly at this close on the three Go modules the release touched. No line-coverage tool is wired for Python/TS \u2014 the rext convention is behaviour-path + mutation-verify."
+  },
+  "tests": {
+    "python_rext": {
+      "scope": "FIVE measured scopes: demo-stack + dev-stack + stack-verify + stack-injection + stack-core (SCOPED, 5 modules)",
+      "tests": 2455,
+      "passed": 2437,
+      "failed": 9,
+      "errors": 0,
+      "skipped": 9,
+      "by_suite": {
+        "demo-stack": {
+          "tests": 1150,
+          "failed": 9,
+          "skipped": 1,
+          "time_s": 232.0,
+          "m258_recorded": "1150/1140/9/1 \u2014 REPRODUCED EXACTLY"
+        },
+        "dev-stack": {
+          "tests": 180,
+          "failed": 0,
+          "skipped": 0,
+          "time_s": 113.3,
+          "m258_recorded": "180/180/0 \u2014 REPRODUCED EXACTLY"
+        },
+        "stack-verify": {
+          "tests": 281,
+          "failed": 0,
+          "skipped": 0,
+          "time_s": 475.8,
+          "m258_recorded": "281/281/0 \u2014 REPRODUCED EXACTLY (277 tests + 4 subtests)"
+        },
+        "stack-injection": {
+          "tests": 343,
+          "failed": 0,
+          "skipped": 8,
+          "time_s": 11.7,
+          "m258_recorded": "343/335/0/8 \u2014 REPRODUCED EXACTLY"
+        },
+        "stack-core_scoped": {
+          "tests": 501,
+          "failed": 0,
+          "skipped": 0,
+          "time_s": 17.3,
+          "modules": "test_buildbench(159) + test_buildbench_setdress(13) + test_isolation_assert_m257(53) + test_platform_predicate_guard(272) + test_service_doc_status_fence(4)",
+          "m258_recorded": "159+13+53+272+4 = 501 \u2014 REPRODUCED EXACTLY"
+        }
+      },
+      "stack_core_full_sweep": "NOT COMPLETED \u2014 892 of 2419 collected, 13 failed at the stop point, advancing ~2 tests/min under contention. See gaps.stack_core_full_sweep.",
+      "known_failures_reproduced": {
+        "demo_stack_live_clone": 9,
+        "names": [
+          "test_ant_academy::test_apply_revert_round_trip_on_the_real_next_config",
+          "test_demopatch::test_pubweb_manifest_chains_on_studio_against_live_clone",
+          "test_demopatch::test_real_manifest_hashes_reproduce_against_live_clone",
+          "test_migrate_race_live::test_migrate_rerun_is_idempotent_no_duplicate_policy",
+          "test_migrate_race_live::test_migrate_survives_casbin_race_then_seeds_policy",
+          "test_migrate_race_live::test_wait_pg_reports_ready_against_live_container",
+          "test_ssr_origin_chain::test_apply_reproduces_the_pinned_post_sha",
+          "test_ssr_origin_chain::test_pre_sha_matches_the_live_pristine_source",
+          "test_ssr_origin_chain::test_revert_reproduces_the_pinned_pre_sha"
+        ],
+        "attribution": "ALL NINE are live-clone / live-container arms. They are RED because demo-4 is UP and its clones carry applied demo-patches. Attributed at the M258 close against a pristine `git archive HEAD` extract re-sited at the same depth (pristine 12 vs current 11 by name, zero introduced); reproduced here byte-identical by name. NOT a code defect and NOT new.",
+        "rext_census": 11,
+        "rext_census_detail": "stack-core/tests/test_frozen_expectation_census_m257x.py \u2014 11 failed / 99 passed / 29 subtests passed, measured directly at this close. Matches M258's recorded 11 exactly."
+      }
+    },
+    "go_rext_test_funcs": {
+      "count": 2233,
+      "previous_v2_7": 2019,
+      "delta": 214,
+      "source": "git grep -E '^func Test' -- '*_test.go' at rext d06a56d3",
+      "by_section": {
+        "alignment": 70,
+        "clerkenstein": 306,
+        "playthroughs": 168,
+        "stack-secrets": 166,
+        "stack-seeding": 1093,
+        "stack-snapshot": 430
+      },
+      "trajectory": "v2.7 close 2019 -> M255 2023 -> M257x 2130 -> release close 2233",
+      "status": "GREEN (increase, +214, the largest single-release Go growth on record)"
+    },
+    "go_modules": {
+      "total": 6,
+      "failing": 0,
+      "packages_ok": 58,
+      "detail": "alignment 7 ok / clerkenstein 14 ok / playthroughs 4 ok / stack-secrets 4 ok / stack-seeding 16 ok / stack-snapshot 13 ok. Each section has its OWN go.mod \u2014 `go test ./...` from the rext root FAILS BY DESIGN and must never be used as the gate."
+    },
+    "typescript_playwright": {
+      "method": "npx playwright test --list",
+      "collected_total": 424,
+      "by_package": {
+        "playthroughs/e2e": {
+          "collected": 215,
+          "files": 45,
+          "unit": 180,
+          "unit_files": 15
+        },
+        "stack-verify/e2e": {
+          "collected": 209,
+          "files": 30,
+          "unit": 179,
+          "unit_files": 9
+        }
+      },
+      "unit_total": 359,
+      "unit_previous_v2_7": 292,
+      "unit_delta": 67,
+      "note": "v2.7 recorded 292 unit executed (stack-verify/e2e 178 + playthroughs/e2e 114). The +67 is concentrated in playthroughs/e2e (114 -> 180), which is what M256 was about. Live-browser specs were NOT executed at this close (they need a cold reset-to-seed stack, and demo-4 is the USER'S and must not be reset); they were proven at M258 iter-08 and again on the final stack.",
+      "status": "GREEN (increase)"
+    },
+    "playthroughs_suite": {
+      "live": 30,
+      "todo": 1,
+      "todo_disposition": "will-not-build verdict (onboarding.enterprise-workforce-standard.UC1)",
+      "products": 10,
+      "use_cases": 31,
+      "specs": 215,
+      "proven": "30/31 passing cold on demo-4 in its own bring-up (M258 end-state), red_set [], runner_exit 0"
+    }
+  },
+  "lint": {
+    "gofmt_l": "clean \u2014 0 unformatted across all 6 Go sections",
+    "go_vet": "clean \u2014 rc=0 across all 6 modules",
+    "tsc_noEmit": "clean \u2014 rc=0 on both e2e packages",
+    "measured_at": "this close"
+  },
+  "coverage": {
+    "method": "go test -cover on the 3 Go modules this release touched (stack-seeding 68 changed files in seeders/, stack-snapshot, playthroughs), measured directly at this close",
+    "stack_seeding": {
+      "assets": 86.2,
+      "batchcache": 88.5,
+      "blueprint": 94.7,
+      "cmd/content-capture": 36.4,
+      "cmd/datadna": 51.0,
+      "cmd/gen-batch": 91.7,
+      "cmd/stackseed": 58.2,
+      "contentsession": 93.1,
+      "dna": 87.8,
+      "isolation": 97.5,
+      "manifest": 100.0,
+      "pg": 55.3,
+      "scrub": 100.0,
+      "seeder": 88.1,
+      "seeders": 94.4,
+      "services/ai": 97.8
+    },
+    "stack_snapshot": {
+      "capture": 98.0,
+      "cmd/provision-plan": 93.2,
+      "cmd/stacksnap": 77.2,
+      "directus": 99.3,
+      "firewall": 100.0,
+      "manifest": 98.4,
+      "pg": 48.9,
+      "reference": 100.0,
+      "replay": 100.0,
+      "simembeddings": 100.0,
+      "source": 100.0,
+      "store": 90.0,
+      "taxonomy": 100.0
+    },
+    "playthroughs": {
+      "cmd/ptreport": 95.7,
+      "cmd/ptvalidate": 98.8,
+      "manifest": 100.0,
+      "report": 100.0
+    },
+    "vs_previous": {
+      "scrub": "100.0 -> 100.0 (flat)",
+      "contentsession": "93.6 (v2.6) -> 93.1 (-0.5pp, within the 2pp tolerance)",
+      "seeders": "96.1 (v2.6) -> 95.7 (v2.7) -> 94.4 (-1.3pp vs v2.7, within the 2pp tolerance)"
+    },
+    "status": "GREEN \u2014 no comparable package dropped more than 2pp; largest drop is seeders -1.3pp",
+    "watch": "seeders has now fallen three releases running (96.1 -> 95.7 -> 94.4, -1.7pp cumulative). Each step is in tolerance; the TREND is not a gate condition but is recorded so it is not re-derived. cmd/content-capture 36.4% and stack-snapshot/pg 48.9% are the two lowest cells and neither has a comparable prior figure."
+  },
+  "flake_count": 0,
+  "flakes": [],
+  "flake_note": "Every milestone recorded flake_count 0 (M255 3x sequential stack-core \u00b7 M256 3x cold reset-to-seed, 209 passed each, rc captured per run \u00b7 M257 3x with random-ordering ENABLED \u00b7 M257x targeted-by-disclosed-constraint, demo-stack re-run WHOLE twice byte-identical \u00b7 M258 5x consecutive over every suite it touched, identical counts). At this close all five measured Python scopes reproduced their M258 counts EXACTLY, which is independent corroboration rather than a fresh 5x gate. Release flake_count = 0.",
+  "ratchets": {
+    "docstring_literal_ceiling": {
+      "ceiling": 240,
+      "measured_at_close": 249,
+      "breach": 9,
+      "pristine": 248,
+      "pre_release_breach": 8,
+      "grew_this_release": 1,
+      "ceiling_ever_raised": false,
+      "status": "BREACHED \u2014 and it is a HARD TEST FAILURE, not a warning: tests/test_frozen_expectation_census_m257x.py::TheSameClassOutsideAnyPrint::test_the_population_does_not_GROW asserts and fails.",
+      "composition": "dated 121 \u00b7 doc-relative 7 \u00b7 standing 121",
+      "top_sites": "anchor_construct_guard.py 14 \u00b7 platform_predicate_guard.py 14 \u00b7 suite_census.py 14 \u00b7 predicate_enumerator.py 12 \u00b7 buildbench.py 10 \u00b7 anchor_subject_census.py 9",
+      "disposition": "INHERITED DEBT, recorded not absorbed. NOT a new v2.8 regression (breached by 8 before this release). OWED AN EXPLICIT FATE AT RELEASE CLOSE."
+    },
+    "test_module_literal_ceiling": {
+      "ceiling": 653,
+      "measured_at_close": 662,
+      "breach": 9,
+      "status": "BREACHED \u2014 same test module, same hard-failure shape.",
+      "top_sites": "tests/test_frozen_expectation_census_m257x.py 58 \u00b7 tests/test_platform_predicate_guard.py 42 \u00b7 tests/test_iter45_mechanical_fences.py 28 \u00b7 tests/test_derived_count_guard.py 27 \u00b7 tests/test_guard_family.py 27 \u00b7 tests/test_story_org_count_guard.py 26",
+      "disposition": "NOT RECORDED IN ANY MILESTONE metrics.json \u2014 M258's `ratchets` block names only the docstring ceiling. A SECOND breached ratchet was carried unrecorded. Needs the same explicit fate.",
+      "pre_release_value": "NOT MEASURED \u2014 no milestone recorded it, so whether the +9 predates v2.8 or grew inside it CANNOT BE STATED from the artifacts. See gaps."
+    },
+    "comment_literal_ceiling": {
+      "ceiling": 236,
+      "status": "NOT BREACHED (its arm passes)"
+    }
+  },
+  "supply_chain": {
+    "verdict": "YELLOW",
+    "lockfile": "knowledge/plan/releases/archive/02.80-fast-build/dependencies.lock",
+    "net_new_third_party_deps": 0,
+    "scope": "The `rosetta` corpus repo carries ZERO tracked dependency manifests (git ls-files -> empty for go.mod/package.json/requirements/pyproject/Cargo.toml). The entire third-party surface is rosetta-extensions: 6 Go modules, 2 npm packages, and an unmanifested Python surface.",
+    "prod_vs_all": "There is no prod tier. Every artifact is developer/operator tooling run on a workstation against a local stack; nothing is deployed or distributed. prod-only and all-deps audits are therefore identical, and both were run.",
+    "go": {
+      "tool": "govulncheck (installed at this close \u2014 it was absent, and the phase makes it a hard dependency)",
+      "clean_modules": [
+        "alignment",
+        "clerkenstein",
+        "playthroughs",
+        "stack-secrets"
+      ],
+      "findings": [
+        {
+          "id": "GO-2026-5970",
+          "cve": "CVE-2026-56852",
+          "module": "golang.org/x/text",
+          "summary": "Infinite loop on invalid input",
+          "reachability": "CALLED (symbol-level) in TWO modules",
+          "affected": {
+            "stack-seeding": "v0.37.0",
+            "stack-snapshot": "v0.29.0"
+          },
+          "fixed_in": "v0.39.0",
+          "tier": "indirect",
+          "severity": "NO CVSS PUBLISHED by the Go vuln DB or OSV \u2014 both return severity:null. Impact class is DoS-by-infinite-loop.",
+          "published": "2026-07-14",
+          "assessed": "MODERATE in this threat model \u2014 the call paths are stackseed.reloadStackSentinel -> http.Client.Do and content.main -> pgx.Connect / pg.Conn.ExecScript -> pgxpool.Acquire. Inputs are operator-supplied local stack URLs and DSNs, not attacker-controlled. Remedy is a one-line `go get golang.org/x/text@v0.39.0` in two go.mod files."
+        },
+        {
+          "id": "GO-2026-5942",
+          "cve": "CVE-2026-46600",
+          "module": "golang.org/x/net",
+          "summary": "Parsing an invalid SVCB or HTTPS RR can panic in dns/dnsmessage",
+          "reachability": "NOT CALLED \u2014 present in the module graph only (stack-seeding requires v0.55.0)",
+          "fixed_in": "v0.56.0",
+          "tier": "indirect",
+          "severity": "NO CVSS PUBLISHED",
+          "assessed": "LOW/INFORMATIONAL \u2014 unreachable."
+        }
+      ]
+    },
+    "npm": {
+      "tool": "npm audit (--omit=dev and all-deps, both packages)",
+      "result": "0 vulnerabilities, all severities, both runs, both packages",
+      "note": "Every dependency in both packages is a devDependency. @playwright/test ^1.49.0 resolves to 1.61.1; typescript 5.9.3; @types/node 20.19.43. Playwright remains the only non-Go dev/test dependency in the verification tooling (v1.10 M42e)."
+    },
+    "python": {
+      "tool": "NONE RUNNABLE \u2014 see findings",
+      "result": "NOT AUDITED FOR CVEs",
+      "reason": "There is no requirements.txt, pyproject.toml, Pipfile or lockfile anywhere in the tracked tree, so there is no manifest for pip-audit/safety to read and no pinned version set to audit. Third-party imports across all 219 tracked .py files are exactly two: pytest (test runner) and yaml (PyYAML, ONE import site: stack-injection/tests/test_injection.py)."
+    },
+    "internal_modules": {
+      "ai": "github.com/anthropos-work/ai v1.40.1 \u2014 the deliberate, user-acknowledged in-release pin from v1.10 M45, carried UNCHANGED through v2.8. Required by stack-seeding only. NB CLAUDE.md records that a doc-driven 'app does not import it any more' deletion of this repo would break Rosetta's own tooling via exactly this pin.",
+      "colony": "github.com/anthropos-work/colony v0.34.3 \u2014 required by clerkenstein only.",
+      "note": "Neither ships a LICENSE file (first-party org-private). Recorded, not flagged."
+    },
+    "vendored": {
+      "source": "NONE \u2014 no vendor/ directory is tracked in either repo; the 12-month vendored-age check has an empty subject set.",
+      "assets": "12 synthetic StyleGAN2-class avatar JPEGs in stack-seeding/assets/avatars/, license basis reviewed and documented in that directory's LICENSE.md. Not a code dependency."
+    },
+    "licenses": {
+      "result": "NO COPYLEFT ANYWHERE \u2014 0 GPL / 0 LGPL / 0 AGPL / 0 MPL across every resolved module and every npm package.",
+      "distribution": "MIT / BSD-3-Clause / Apache-2.0 only, plus the two first-party org-private modules.",
+      "status": "GREEN \u2014 compatible with commercial distribution."
+    }
+  },
+  "regression_gate": {
+    "as_of": "2026-08-12, release close Phase 4b",
+    "baseline_used": "v2.7 'july jitter'",
+    "baseline_source": "knowledge/plan/metrics-history.md (the v2.7 row) + releases/archive/02.70-july-jitter/release-retro.md. v2.7 has NO metrics.json \u2014 it is the ONLY release from v1.0 to v2.6 missing one. See gaps.",
+    "conditions": {
+      "test_count_decrease": "NONE \u2014 Go funcs 2019 -> 2233 (+214); TS unit 292 -> 359 (+67); Python: demo-stack 910 -> 1150 collected (1140 passed), stack-injection 258 -> 343, stack-verify 154 -> 281, dev-stack net-new to the tally at 180. NO measured scope decreased. Gate not tripped.",
+      "coverage_drop_gt_2pp": "NONE \u2014 largest comparable drop is stack-seeding/seeders -1.3pp (95.7 -> 94.4). Gate not tripped.",
+      "benchmark_regression": "NOT GRADEABLE AT THIS CLOSE, and this is a refusal rather than a pass. The release's headline benchmark (the cold bring-up + batch cycle) was measured at 840.01 s p50 and the INSTRUMENT ITSELF REJECTED all 3 reps (peak load1 40.09/74.77/51.80 against a limit of 10). buildbench calls those 'not usable measurements'. The host is permanently contended and cannot be freed. No benchmark figure from this release may be published as a baseline or compared against one.",
+      "flake_gt_0": "NO \u2014 flake_count 0. Gate not tripped."
+    },
+    "verdict": "YELLOW",
+    "verdict_reason": "All FOUR hard regression conditions pass, so the gate does NOT go RED and does not block Phase 5. YELLOW is carried for three things that are not gate conditions and must not be silently absorbed: (1) TWO literal-ceiling ratchets are BREACHED and hard-failing (docstring 249>240, test-module 662>653) and only ONE of them is recorded in any milestone metrics.json; (2) a CALLED CVE (GO-2026-5970 / CVE-2026-56852) sits in two Go modules with a trivial one-line remedy; (3) the release's own headline benchmark clause was never measured clean and the previous release has no metrics.json to compare against."
+  },
+  "primary_gates": {
+    "M255": "GO (barrier) \u2014 multi-stage .next/standalone prototype: image 4.84 GB -> 379 MB, export leg 146.8 s -> 2.9 s, build wall 225 s -> 49 s",
+    "M256": "MET (3/3 clauses, 2 documented re-cuts) \u2014 30 live Playthroughs, 28/30 negative controls, 12 mutating (target 5)",
+    "M257x": "4 of 5 clauses MET; clause 5 OUT OF SCOPE BY USER RULING (TOK-09) \u2014 MUST NOT be reported as met/green/satisfied",
+    "M257": "MET on its own terms \u2014 the one gate in this release that fired unaided",
+    "M258": "NOT MET \u2014 4 of 5 clauses proven; clause 3 (composed p50 <= 480 s) NEVER MEASURED CLEAN and MUST NEVER BE RECORDED AS MET. Closed by USER RULING on the other four plus a ~401.60 s PROJECTION composed from separately-measured halves. The 290 s warm-cache cycle was DELIBERATELY NOT BANKED."
+  },
+  "gaps": {
+    "stack_core_full_sweep": "The full stack-core suite (98 files, 2419 collected) did NOT complete at this close \u2014 the third close running. It was attempted with per-test -v naming and a watchdog, and reached 892 of 2419 before being stopped to free the contended host. IT IS NOT DEADLOCKED \u2014 it advanced 8 tests in 240 s (~2/min) while three other review agents ran the same suites concurrently. THE SLOW REGION IS NAMEABLE: it crawled through tests/test_fence_provenance.py, whose arms each spawn subprocesses that walk the whole corpus. M255 already recorded the shape ('a 276-test unit suite taking 3.5-4.5 min is SLOW, and the cost is concentrated in the corpus-walking fences'); at 2419 tests that cost is now the reason the suite cannot be swept. 13 failures had accrued by test 892, in 6 modules (test_anchor_subject_census_m257x 5, test_blocking_state_guard 2, test_decommissioned_instruction_guard 2, test_battery_stage 1, test_claim_census_substrate_m257x 1, test_clone_pin_guard 1) \u2014 the census module's own 11 had not been reached yet (it sorts after test_fence_provenance), so the full-sweep failure total is >= 24 and was never established. WHAT WOULD SETTLE IT: run it ALONE on an idle host with pytest-timeout wired per-test and record per-test durations; or shard tests/test_fence_provenance.py and the other corpus-walking fences into their own lane. Until then stack-core is reported BY SCOPED MODULE and must never be described as 'swept clean'.",
+    "previous_release_metrics_json": "releases/archive/02.70-july-jitter/ has NO metrics.json. Every other archived release from 01.00 to 02.60 has one. The v2.8 comparison therefore falls back to metrics-history.md's v2.7 row + the v2.7 retro. Those two v2.7 artifacts DISAGREE with the v2.7 release-review.md (retro 2019/292/910 vs review 2018/290/909) \u2014 explainable as post-fix vs pre-fix readings, and the retro's post-fix numbers are the ones used here and by M255. WHAT WOULD SETTLE IT: backfill archive/02.70-july-jitter/metrics.json from that release's per-milestone files.",
+    "test_module_ceiling_history": "TEST_MODULE_LITERAL_CEILING is breached 662 > 653, but no milestone in this release recorded it, so its pre-release value is unknown and the breach cannot be attributed to or exonerated from v2.8. WHAT WOULD SETTLE IT: measure it against a pristine `git archive` extract of the v2.7 close tag (july-jitter-v27-close-rext-cleanup @ e61b604) \u2014 one command, same shape as M258's own re-attribution.",
+    "python_cve_audit": "Python dependencies were NOT audited for CVEs because no manifest exists to audit. WHAT WOULD SETTLE IT: add a requirements.txt (or pyproject) pinning pytest and PyYAML with hashes, then run pip-audit. The surface is two packages and both are test-only, so the exposure is small \u2014 but 'small' is an argument, not a measurement.",
+    "python_interpreter_split": "The documented runner is the PATH `pytest` (Python 3.12.13). That interpreter has NO PyYAML installed, while /usr/bin/python3 (3.9.6) has PyYAML 6.0.3. Both collect all four sections identically today, so nothing is currently broken \u2014 but a suite whose dependency is present on one interpreter and absent on the documented one is one import away from a false RED. Recorded because it is invisible until it fires.",
+    "live_browser_specs": "65 of the 424 collected Playwright specs are live-browser and were NOT executed at this close: they require a cold reset-to-seed stack, and demo-4 is the USER'S stack and must not be reset. They were proven at M258 iter-08 and again on the final stack's own bring-up (30/31 passing, red_set [], runner_exit 0). WHAT WOULD SETTLE IT: a dedicated demo-N brought up for the purpose."
+  },
+  "headline": "v2.8 'fast build' \u2014 the build-speed release. 5 milestones (M255 barrier -> M256 playthrough sharpening -> M257x platform realignment -> M257 first-light -> M258 proven-live closer), 0 platform-repo edits, 0 net-new third-party deps. Tests: Go funcs 2019->2233 (+214, the largest single-release Go growth on record), TS unit 292->359 (+67), Python 2455 across five measured scopes (2437 passed, 9 known live-clone failures), flake 0, coverage in tolerance (largest drop seeders -1.3pp). Supply chain YELLOW: 1 CALLED CVE (CVE-2026-56852, golang.org/x/text, two modules, one-line fix), 0 copyleft, 0 npm vulns, Python unauditable for want of a manifest. Regression gate YELLOW \u2014 all four hard conditions pass, but TWO literal-ceiling ratchets are hard-failing (only one of them recorded), the headline BUILD-TIME benchmark was never measured clean on a permanently contended host and is a REFUSAL not a pass, and the previous release has no metrics.json to compare against."
+}

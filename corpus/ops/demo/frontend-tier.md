@@ -11,19 +11,105 @@ deliverable that completes the [demo family](README.md): up → snapshot → see
 > for the stack lifecycle this extends. This page is the **frontend-specific** "how the UI tier is built and run".
 
 > **The hard line (non-negotiable).** **Zero platform-repo edits.** next-web-app, studio-desk, and ant-academy
-> stay **byte-for-byte pristine** — their repos are used only as a Docker **build context** (their Dockerfiles
-> consumed UNMODIFIED), and every per-demo difference rides a **gitignored** overlay (`.env.local`) or a
-> tooling-owned file in `rosetta-extensions`. Nothing the demo tooling does touches a tracked platform file.
+> stay **byte-for-byte pristine** — their repos are used only as a Docker **build context**, and every
+> per-demo difference rides a **gitignored** overlay (`.env.local`), a **sha-pinned demo-patch** applied to the
+> demo's own ephemeral clone and reverted after ([`demopatch-spec.md`](demopatch-spec.md)), or a
+> **tooling-owned file in `rosetta-extensions`**. Nothing the demo tooling does touches a tracked platform file.
+
+> ### There are THREE build shapes, not two — and the third is already in production
+>
+> This page used to say the platform Dockerfiles are *"consumed UNMODIFIED"*, full stop, which reads as an
+> exhaustive statement and is not one. **A tooling-owned Dockerfile in `rosetta-extensions` is a fully
+> sanctioned third shape, and the demo has shipped one since M224:**
+> `rosetta-extensions/demo-stack/frontend/hiring.Dockerfile` builds `apps/hiring` from the **same unmodified
+> next-web-app clone** the web app builds from, because the platform's `Dockerfile.dev` hardcodes the WEB app
+> end-to-end (`--filter=@anthropos/web-app`, `start:web`, `EXPOSE 3000`) and cannot be reused verbatim.
+>
+> | shape | who owns the Dockerfile | platform repo is | example |
+> |---|---|---|---|
+> | 1 | the platform | build context, Dockerfile consumed as-is | ⚠️ **no member left.** `next-web` moved to shape 3 at M257 iter-09 and **`studio-desk` (`Dockerfile.dev`) followed at v2.8 M258 TIK-A** — this cell named studio-desk as *the* example until the M258 close |
+> | 2 | the platform | build context, **source** patched in the ephemeral clone + reverted | the demo-patches — **23** on disk (`ls demo-stack/patches/*/*.yaml \| wc -l` at rext `415240f`), of which **18** are image-baked (11 `next-web-app` · 5 `studio-desk` · 2 `app`) and 5 are `ant-academy`, patched-then-reverted around a **native** `next dev` rather than a build. *(This cell read "the 11 demo-patches" — the M224-era distinct-manifest total, four milestones stale. The authoritative inventory is [`demopatch-spec.md` §5](demopatch-spec.md), directory-fenced by `TestPatchInventory`.)* |
+> | 3 | **`rosetta-extensions`** | **build context only** — rext supplies the Dockerfile | **`hiring`** (`frontend/hiring.Dockerfile`), **`next-web`** (`frontend/next-web.Dockerfile`, M257 iter-09) **and `studio-desk`** (`frontend/studio-desk.Dockerfile`, multi-stage prune-and-copy, net-new at v2.8 M258 TIK-A: **1.7 GB → 1.35 GB**). All three of the demo's Docker-built frontends now live here |
+>
+> Shape 3 is *stronger* on the hard line than shape 2, not weaker: nothing in the platform repo is touched at
+> all, not even transiently. **It is the shape v2.8's largest speed lever uses — and as of M257 iter-09 that
+> is no longer a forecast.** L1 landed: both Next images are multi-stage `.next/standalone` builds, and
+> `next-web` moved from shape 1 to shape 3 to get there, because making the platform's own `Dockerfile.dev`
+> multi-stage would have been a platform-repo edit. See [`build-budget.md`](build-budget.md). **The
+> "out of scope / forbidden upstream PR" section at the end of this page predates shape 3 and lists
+> `output:'standalone'` among the things only an upstream PR could deliver. That is no longer true** —
+> M255 proved it needs **zero** source edits and **zero** demo-patches via `ENV NEXT_PRIVATE_STANDALONE=1`
+> in a tooling-owned Dockerfile, and M257 iter-09 shipped exactly that. **That section has now been rewritten
+> with the achieved numbers at the M257 close** (D121: one rewrite, not two) — see §"What's out of scope" at
+> the end of this page for the two-host table.
+>
+> **One flag in that Dockerfile is load-bearing and easy to drop: `turbo … --env-mode=loose`.** Turbo 2
+> defaults to `strict` and forwards only the variables named in `turbo.json`'s `globalEnv`/task `env`;
+> `NEXT_PRIVATE_STANDALONE` is **not** among the 44 names there. Without the flag the variable never reaches
+> `next build`, `output` stays undefined, **the build still exits 0**, and the image is the old ~4 GB one.
+> Both Dockerfiles therefore assert `test -d apps/<app>/.next/standalone` and fail loudly rather than trust
+> it — and at the M257 final harden that assert stopped being trusted too. It had been fenced by *string
+> presence*: two tests checked the text was in the file, which is exactly as strong as the reader's shell
+> grammar. `test_the_standalone_assert_ACTUALLY_FAILS_a_build_not_merely_appears_in_one` now extracts the
+> shipped `RUN` line, runs it under `sh` against a tree with no standalone output, and requires a non-zero
+> exit naming `NEXT_PRIVATE_STANDALONE`. Mutation control: losing the `exit 1` makes the fragment exit 0 and
+> every string assert still passes.
+>
+> **⚠️ The next-web image carries `apps/web/.env` — a real-Clerk publishable key and `CLERK_SECRET_KEY` —
+> and it is loaded at runtime, not merely carried** (measured at the M257 final harden on the real post-L1
+> image: 19,087 bytes at `/app/apps/web/.env`, with **no** `.env.local` beside it; the hiring image has
+> neither). It reaches the runner stage inside `.next/standalone`, and standalone's `server.js` calls
+> `loadEnvConfig` at boot. What keeps a demo honest is that `@next/env` never overwrites an already-set
+> variable and the injected override sets the four `CLERK_*` explicitly — so the residual is the **set
+> difference**: anything in that file compose does not name. The cause is one missing pattern in a
+> **tooling-owned** file: `demo-stack/frontend/next-web.dockerignore` excludes `.env*`, Docker matches
+> `.dockerignore` patterns from the **context root**, and that rule therefore covers `./.env` and nothing
+> nested — while every other rule in the file is deliberately paired with a `**/` twin. **Do not take the
+> one-line fix:** `**/.env*` also excludes `apps/web/.env.local`, the overlay carrying the *minted* key into
+> `next build`, so the tidy repair bakes the **real** Clerk key — the M218 iter-03 incident, re-created by
+> its own fix. Routed as `FIX-M257-dockerignore-env-pattern-unpaired`; the net under it is the ISOLATION
+> gate clause, which books a non-minted key in the bundle as `foreign_pk` and reds the campaign.
 
 ## What `/demo-up` brings up (UI tier)
 
 | App | How it runs | Port (base + offset) | Auth in the demo |
 |-----|-------------|----------------------|------------------|
-| **next-web-app** (Workforce) | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the demo's `graphql` profile | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
-| **studio-desk** | per-demo **Docker** image from the unmodified `Dockerfile.dev`, in the `graphql` profile | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
+| **next-web-app** (Workforce) | per-demo **Docker** image from the **rext-owned** `frontend/next-web.Dockerfile` (build shape 3 above), built from the unmodified `next-web-app` clone, in the demo's `core` profile. *Built from the platform's own `Dockerfile.dev` until M257 iter-09; L1 moved it so the image could be multi-stage without a platform-repo edit.* | **3000** + N×10000 | Clerk-free (Clerkenstein-minted pk baked into the bundle) |
+| **hiring** (the real `apps/hiring`) | per-demo **Docker** image from the **rext-owned** `frontend/hiring.Dockerfile` (build shape 3 above), built from the same unmodified `next-web-app` clone; a **net-new** compose service `hiring-app` with `profiles: [<derived-default>]` | **3001** + N×10000 | Clerk-free (minted pk baked; `CLERK_API_URL` → the fake BAPI alias) |
+| **studio-desk** | per-demo **Docker** image from the **rext-owned** `frontend/studio-desk.Dockerfile` (build shape 3 above), built from the unmodified `studio-desk` clone, in the demo's `core` profile — **same as next-web**. *Built from the platform's own `Dockerfile.dev` until v2.8 M258 TIK-A, which multi-staged it (prune-and-copy) for **1.7 GB → 1.35 GB**, 350 MB/stack.* | **single-port 9000** + N×10000 | Clerk-free (minted pk as a build-arg) |
 | **ant-academy** | **native** `next dev` (Vercel-native; not dockerized) | **3077** + N×10000 | **Clerkenstein-wired (v2.3 M220)** — the demo's minted pk + the disarmed fake BAPI, read from `<stack>/.env.demo-N`. It **shares the demo's session**: a hero who clicks through from next-web arrives at the academy **signed in as herself**. *Was keyless via the `e2e_persona` bypass — see the box below; that is now removed.* |
 
-Example: `demo-2` → next-web on `:23000`, studio-desk on `:29000`, ant-academy on `:23077`.
+Example: `demo-2` → next-web on `:23000`, hiring on `:23001`, studio-desk on `:29000`, ant-academy on `:23077`.
+
+> **The `hiring` row is net-new at M257x — this table listed THREE apps and called itself "what `/demo-up`
+> brings up (UI tier)".** The demo has run **four** since v2.4 M224 ("the callback" — the two-app demo): the
+> real `apps/hiring` is emitted as a `hiring-app` compose service by
+> `stack-injection/gen_injected_override.py:459-509` (called at `:736-737`) on port `3001 + offset` (`:484`, `:504`), and
+> the rest of this page already referred to its image (`demo-N-hiring`) and its build shape without it ever
+> appearing here. **An enumeration presented as complete is a claim.**
+
+> ### ⚠️ NEITHER containerized frontend rides its base-compose profile in a demo — the injection **overrides** both to `core`
+>
+> The studio-desk row used to read *"in the `frontend`/`studio-desk` profiles"*, which was wrong twice over.
+>
+> **In the base compose** (`stack-demo/platform` @ `0c91421df`) the two frontends sit in **different**
+> profiles, and `frontend` is **not** one of studio-desk's: `next-web-app` declares
+> `profiles: [frontend, all]` (`docker-compose.yml:168`) and `studio-desk` declares
+> `profiles: [studio-desk, all]` (`docker-compose.yml:141`). Neither is in `core`, the platform's default
+> (`Makefile:10`, `PROFILE ?= core`). *(Selecting either token **alone** also exits 1 — both declare
+> `depends_on: backend` (`docker-compose.yml:165-167` and `:138-140`) which those profiles do not select, so
+> compose rejects the project as invalid.)*
+>
+> **In a demo neither of those profiles is ever selected.** `up-injected.sh` derives the platform's default
+> profile from the platform's own compose and brings the stack up with **that one only**
+> (`demo-stack/up-injected.sh:2174` → `stack-injection/platform_topology.py profile`, then `:2179-2180`
+> `--profile "$COMPOSE_PROFILE"`). The two frontends reach it because the generated override **re-declares**
+> their profile: `stack-injection/gen_injected_override.py:425` emits
+> `profiles: !override [<derived-default>]` for **each** entry of `FRONTENDS`, which is why the generator's own
+> comment (`:170-174`) says they *"live in the `frontend`/`studio-desk`/`all` profiles in the platform compose,
+> NOT the demo's own default profile — so they DON'T appear in the resolved cfg this generator walks."*
+> So on a current clone **both** rows read `core`, and both read it because rext put them there — not because
+> the platform did. (`hiring` is a rext-owned shape-3 service and is emitted the same way.)
 
 > ### 🔴 The academy used to **POISON the demo session** — and one click destroyed a live demo (v2.3 M220 S5/i)
 >
@@ -228,11 +314,21 @@ image. The tooling makes this cheap-where-it-can:
 - **Built once per `demo-N`, then cached.** The build is **tag-guarded** (`docker image inspect demo-N-next-web`):
   a re-up of the same demo reuses the cached image in **seconds**. Only a **brand-new** `demo-N` (or a frontend
   code/dep change) pays the build.
-- **The residual (honest):** a new `demo-N` costs **one ~3-minute, ~3.7 GB cached build per frontend**
-  (next-web is the heavy one; studio-desk is light). That's the price of zero-platform-edit + per-stack pk/URL
-  baking. *True* zero-rebuild would need runtime-configurable URLs + pk in the platform source — an **optional
-  upstream PR you'd own**, explicitly **out of scope** here (it edits platform repos → forbidden). See §"What's
-  out of scope".
+- **The residual (honest) — rewritten with ACHIEVED numbers at the M257 close (D-v28-10 / D121).** This bullet
+  read *"one ~3-minute, ~3.7 GB cached build per frontend"*. **Both halves are retracted, and it named no
+  host** — which is the defect v2.8's own standing rule (*state the environment with every number*) exists to
+  catch. **Measured on `macmini`** — the local M4 Pro Mac mini, **arm64 with the containerd image store**, a
+  permanently-contended workstation — at M257 iter-09, n=3 cold cycles: a brand-new `demo-N` costs
+  **104.60 s for the whole UI tier**, which is **THREE images, not "per frontend"** (`ui_next_web` 53.31 s ·
+  `ui_hiring` 44.21 s · `ui_studio_desk` 7.08 s, sub-phase p50s). The two Next images weigh **417 MB**
+  (next-web) and **380 MB** (hiring), against **4.04 GB** and **3.94 GB** before L1; the same block on the same
+  host cost **246.23 s** pre-lever. So the retracted *"~3.7 GB"* was an **image size** (roughly right for one
+  image, of three) and the retracted *"~3 minutes"* was per-image wall-clock on a slower host, no longer a
+  figure for anything here. **Seconds do not transfer between
+  hosts** — the pre-L1 UI tier is **436.1 s on `billion`** (x86_64), and that number stays `billion`'s.
+  What is unchanged is *why* a per-demo build exists at all: zero-platform-edit + per-stack pk/URL baking.
+  *True* zero-rebuild would need runtime-configurable URLs + pk in the platform source — see §"What's out of
+  scope", **which is itself re-cut at the end of this page**: `output:'standalone'` is no longer on it.
 - **Built serially, before `compose up`.** The two frontend builds run **one at a time, before** the stack
   starts — kept out of the parallel Go-service fan-out so the build RAM spike never overlaps anything else.
 - **Non-fatal — actually true now (v1.10b M49 #7).** A frontend build failure **warns** but never aborts the
@@ -246,8 +342,27 @@ image. The tooling makes this cheap-where-it-can:
 ## The 12 GB Docker-VM prerequisite
 
 **Runtime is cheap** — measured **~0.66 GiB for BOTH stacks** (dev + demo, 27 containers). The only spike is the
-**build**: a ~3.7 GB next-web compile. On an undersized Docker VM already holding the dev stack, that spike
-**swap-thrashes** (the original "the build takes an hour" symptom was pure memory starvation, not a slow build).
+**build**: a next-web compile lane whose **measured** heap peak is **3,116 MiB on `macmini`** (**3,900 MiB** on
+`billion`, **4,223 MiB** on the retired M1 Pro `laptop`). On an undersized Docker VM already holding the dev
+stack, that spike **swap-thrashes**.
+
+> **⚠️ Retracted at the M257 close (D-v28-10): this prerequisite was reasoned from an IMAGE SIZE used as a
+> MEMORY figure, and the diagnosis beside it was wrongly exclusive.** The paragraph said *"a ~3.7 GB next-web
+> compile"*. **3.7 GB was never a memory measurement** — it was an image size, and post-L1 the next-web *image*
+> is **417 MB on `macmini`**, so the number is now wrong in both readings. The figure this floor actually rests
+> on is the per-lane heap peak in `stack-core/hostprofiles/*.json` (`lane_heap_measured_peak_mib`), which is
+> **measured per host and differs by host**: 3,116 / 3,900 / 4,223 MiB. That band **brackets 3.7 GB**, which is
+> precisely why the wrong number survived four releases — it was approximately right for a reason nobody had
+> checked. **The 12 GB floor itself stands**; it is the derivation that was broken, not the conclusion.
+>
+> The second half — *"the original 'the build takes an hour' symptom was pure memory starvation, **not** a slow
+> build"* — is **half true and wrongly exclusive.** Swap-thrashing on an undersized VM holding a second stack
+> is real, reproducible, and still the thing this section exists to prevent. But M255 measured a cold cycle on
+> a box under **no** memory pressure (`billion`, peak load1 **4.90 of 8**) that still spent **288.4 s** in
+> image export/unpack alone: the build genuinely *was* slow, independently of memory. **Both were true and the
+> sentence asserted only one.** M257's L1 removed the I/O half — `exporting to image` for the two Next images
+> is **136.4 s → 3.8 s** combined on `macmini` — which leaves memory as the dominant remaining build risk, so
+> this prerequisite matters *more* after L1, not less.
 
 > **Set the Docker Desktop VM to 12 GB / swap 3 GB** (Settings → Resources). `/demo-up` runs a **non-fatal
 > pre-flight assert**: below 12 GB it prints a clear warning (raise the VM, or run `DEMO_NO_UI=1`) but continues
@@ -259,7 +374,9 @@ image. The tooling makes this cheap-where-it-can:
 > full 12 GB to the Docker Desktop VM on a **16 GB Mac** *fails to boot* the VM (`no route to host
 > 192.168.65.7:2376`; `context deadline exceeded`) — macOS + Docker Desktop overhead leaves no room. The
 > practical ceiling on a 16 GB box is **~10 GB VM / 2 GB swap** (~9.7 GiB usable), which boots reliably but
-> **cannot co-host the full UI tier** (the ~3.7 GB next-web build spike) alongside a backend stack. On a 16 GB
+> **cannot co-host the full UI tier** (a next-web build lane peaking at **~3.0–4.2 GiB depending on host** —
+> see the retraction above; this parenthetical used to cite the ~3.7 GB *image* size) alongside a backend
+> stack. On a 16 GB
 > host, run the UI tier with **only one stack resident**, or use `DEMO_NO_UI=1` and verify the local-Directus
 > serve at the **data-plane** level (curl cms + the per-stack Directus — the exact surface a browser calls).
 > A 12 GB VM needs a **≥24 GB host** to be comfortable.
@@ -267,15 +384,49 @@ image. The tooling makes this cheap-where-it-can:
 ### Disk headroom — a second non-fatal pre-flight (v1.10b M49 #6)
 
 Alongside the RAM check, `/demo-up` runs a **disk-headroom pre-flight** (mirrors the RAM assert: a warning,
-never a gate). Each demo's images — `demo-N-next-web`, `demo-N-studio-desk`, the `demo-N-<svc>:injected` Go
-services, `demo-N-fake-fapi`/`-fake-bapi` — plus the ~3.7 GB build cache **accumulate**, and dead demo stacks
-used to leave their images behind, so a box could slowly fill until a build hit `ENOSPC` mid-stream.
+never a gate). Each demo's images — `demo-N-next-web`, `demo-N-hiring`, `demo-N-studio-desk`, the
+`demo-N-<svc>:injected` Go services, `demo-N-fake-fapi`/`-fake-bapi` — plus the BuildKit layer cache
+**accumulate**, and dead demo stacks used to leave their images behind, so a box could slowly fill until a
+build hit `ENOSPC` mid-stream.
 
-> **Below ~20 GB free, `/demo-up` warns + offers `docker system prune -af`** (override the floor with
-> `DEMO_DISK_MIN_GIB=N`). It never blocks the bring-up. **The companion fix: `rosetta-demo down <N> --purge` now
-> removes that stack's images** (`demo-N-*`, scoped so it never touches another demo or a dev/base image) — so
-> tearing a demo down with `--purge` reclaims its disk. A **plain `down`** still *keeps* the images (a fast
-> re-up); `--purge` is the "I'm done, reclaim everything" path (it already dropped volumes + the data dir).
+> **⚠️ v2.8 M255 re-sized the floor, because the numbers it was reasoned from were an order of magnitude
+> stale.** This section used to say *"the ~3.7 GB build cache"* and set the floor at ~20 GB. **Measured on
+> `billion`, 2026-07-27: the build cache is 105.4 GB**, one cold-images cycle **peaks at 18 GiB of
+> consumption** (the export leg stages layers before it unpacks them, so peak ≫ the ~12.6 GiB of resident
+> image bytes) and leaves **~2 GiB** behind. The floor is now **25 GiB** = the measured 18 GiB + a 7 GiB
+> reserve, and `stack-core/hostprofiles/billion.json` carries the same arithmetic
+> (`projected_image_gib` 18 + `disk_floor_gib` 7) so the operator warning and the release gate cannot drift.
+> Full derivation + the campaign protocol: [`build-budget.md`](build-budget.md).
+
+> **Below 25 GiB free, `/demo-up` warns + offers a reclaim** (override the floor with `DEMO_DISK_MIN_GIB=N`).
+> It never blocks the bring-up. Prefer `docker builder prune -f --filter until=24h` over
+> `docker system prune -af`: `until=` drops the cache records **not used within** the window — which is
+> exactly the once-only `pnpm install` / `COPY . .` entries (16 of them, 4.029 GB each, **61 % of the whole
+> cache**) — while keeping the base layers every build reuses. **The companion fix:
+> `rosetta-demo down <N> --purge` removes that stack's images** (`demo-N-*`, scoped so it never touches
+> another demo or a dev/base image) — so tearing a demo down with `--purge` reclaims its disk. A **plain
+> `down`** still *keeps* the images (a fast re-up); `--purge` is the "I'm done, reclaim everything" path (it
+> already dropped volumes + the data dir).
+>
+> **⚠️ Volumes: every teardown path now passes `-v`, and it took two fixes to be true (v2.8 M258).** The
+> bitnami Postgres image declares **three** `VOLUME`s while compose binds only `/bitnami/postgresql`, so
+> **every container start mints two anonymous volumes** that any teardown without `-v` orphans —
+> **measured at 178 dangling volumes / 5.297 GB over five days across three stacks.** `--purge` was
+> exonerated by measurement (it already ran `down -v --remove-orphans`); the **plain `down`** was the
+> producer, fixed at M258 iter-14 and carried to the `dev-stack` twin at iter-17.
+>
+> The M258 close closed the third path: the **label sweep**. When compose *refuses* — a stale generated
+> override naming deleted services makes the merged project invalid, so compose touches nothing and every
+> container survives — the containers are removed by `docker rm` instead, and **`docker rm` without `-v`
+> orphans the anonymous volumes just the same.** That is the branch the sweep exists for, so the leak was
+> still fully open on exactly the failure mode that motivated the fix, and now invisible, because the
+> plain-down path was believed fixed. Both twins now run `docker rm -fv`.
+>
+> **Why `-v` is not destructive here, stated because a bare flag reads as one:** a live census of every
+> mount in a demo project found the **only** volume-type mounts in a whole stack are those two anonymous
+> ones — there are **no named volumes to lose** — and the database is a **host bind mount**, which `-v`
+> cannot touch. Fenced in both directions (`dev-stack/tests/test_dev_teardown_sweep_m258.py`), so the day
+> the platform adds a named volume the decision re-opens instead of silently becoming destructive.
 
 > **The free-space signal measures the Docker VM's INTERNAL disk, not host `/` (v2.6 M239-F1 correction).**
 > On Docker Desktop the engine runs in a Linux VM with its **own fixed-size virtual disk** — the filesystem a
@@ -384,28 +535,54 @@ offset frontends would still be CORS-blocked if you ran them (a known gap, not y
 CORS is specifically the **browser→backend** allowlist. With it set, the offset origin gets its `ACAO` header
 and the REST-backed dashboards load.
 
-## ant-academy — native, keyless, session-detached, with a documented fallback
+## ant-academy — native, Clerkenstein-wired, session-detached, with a documented fallback
 
-ant-academy is **Vercel-native** (not in docker-compose) and depends only on Clerk at runtime. `/demo-up`
-launches it natively on `:3077+offset` **keyless** using the repo's own `BENCHMARK_VISUAL_BYPASS` (a dev-only,
-`NODE_ENV=development` flag that opens `/` and `/chapters/*` without a Clerk session), paired with
-`REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip the org gate. The per-demo env is a **gitignored `code/.env.local`**
-overlay (zero academy-repo edits). Launching it natively (vs only documenting the step) resolved the overview's
-open question toward "launch it, fall back if fiddly" — the academy is Vercel-native (not cleanly dockerizable)
-and Clerk-only, so the bypass runs it with no real Clerk keys + no academy-repo edits (#M19-D6).
+ant-academy is **Vercel-native** (not in docker-compose). `/demo-up`
+launches it natively on `:3077+offset` **Clerkenstein-wired** — the demo's minted publishable key + the
+disarmed fake BAPI, read from `<stack>/.env.demo-N` — paired with `REQUIRE_ORGANIZATION_MEMBERSHIP=0` to skip
+the org gate. The per-demo env is a **gitignored `code/.env.local`** overlay (zero academy-repo edits).
+Launching it natively (vs only documenting the step) resolved the overview's open question toward "launch it,
+fall back if fiddly" — the academy is Vercel-native, not cleanly dockerizable (#M19-D6).
 
-> **The demo academy is AUTHENTICATED, not anonymous (v1.10b "fit-up" M53 F6 — the field-review gap close).**
-> The launcher now sets **both** halves of the academy's own `e2e_persona` cookie bypass: the **server** gate
-> `BENCHMARK_VISUAL_BYPASS=1` **and** the **client** gate `NEXT_PUBLIC_E2E_AUTH=1`. With those two set, an
-> `e2e_persona=member` cookie drives a **signed-in** context end-to-end — the server RSC resolves
-> `anonymous=false` + entitlement, and the client Clerk hooks resolve a named **`E2E Member`** identity
-> (progress / certificates / sidebar all active) — with **no real Clerk keys** (the box runs keyless; the client
-> hooks are mocked).
-> > ⚠ **CORRECTION (v2.3.2, 2026-07-15): the cockpit's [Academy] link was REMOVED** — the cockpit is now
-> > **login-only** (one `[Log in as]` CTA per hero, per user request). So the cockpit **no longer sets the
-> > `e2e_persona` cookie**; the paragraph below describes how the academy behaved when reached *via* that
-> > (now-removed) link. Reaching the demo academy as a signed-in member now requires the cookie set by other
-> > means, or it lands anonymous. (The academy grid rendering **empty** in a demo is the v2.4 **F4** carry — **NOT** a
+> ### 🔻 RETRACTED — *"depends only on Clerk at runtime" / "Clerk-only"* (M257x)
+>
+> Both spellings stood in this section, and both were **false** — and self-contradicted three paragraphs
+> later, where this same file already says the catalog is *"DB-authoritative [read from the platform academy
+> subgraph over GraphQL]"* and names the missing endpoint as the **root cause** of the empty grid. One
+> document, two readings.
+>
+> **Measured at `stack-demo/ant-academy` @ `22df69dd8`:** the academy has a **SECOND** runtime dependency —
+> the platform GraphQL endpoint, read from `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`:
+> - `code/src/graphql/server.js:14` reads it and **throws** *"NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT is not set"*
+>   when absent (`:18`); `code/src/graphql/useGraphql.js:18`/`:33` is the client-side twin.
+> - The **course catalog** goes through it: `code/src/lib/serverTenant.js:145`
+>   `const view = (await getBackendCatalogView(eids)) ?? emptyCatalogView()`, and
+>   `code/src/lib/backendContent.js:94-100` is the GraphQL request pair.
+> - So do the **chapter body** (`backendContent.js:146-149`), the **skill path**
+>   (`:175-178`), the beacon route (`code/app/api/academy/beacon/route.js:36`) and certificate verification
+>   (`code/app/api/verify/[certId]/route.js:48`).
+>
+> **This is not a footnote — it is the mechanism of the demo's own F4 defect.** A demo sets that variable
+> **0×**, so every one of those reads returns null and the grid falls to `emptyCatalogView()`. The
+> `academy-fs-published-*` demo-patch family below exists *because* the academy is not Clerk-only. Also
+> retracted downstream in [`content-stories-routes.md:379`](content-stories-routes.md), which already calls the
+> premise stale. *(A third runtime dependency, the AI keys behind `/api/ai/chat`, is documented in
+> [`../../services/ant-academy.md`](../../services/ant-academy.md).)*
+
+> **The demo academy is AUTHENTICATED via real Clerkenstein keys (v2.3 M220 S5/i).**
+> ⚠ **This section described the superseded KEYLESS model until M257x iter-98**, three paragraphs after `:48`
+> and `:84` of this same file had already recorded its removal — one document holding both readings.
+> Measured at rext `main`, the launcher sets **neither** `BENCHMARK_VISUAL_BYPASS=1` **nor**
+> `NEXT_PUBLIC_E2E_AUTH=1` (`demo-stack/ant-academy.sh:576-583`, fenced by two tests). A hero who clicks
+> through from next-web arrives **signed in as herself**, not as a synthetic `E2E Member` — which is the
+> whole point of the change: `proxy.js` short-circuits on the persona cookie *before* resolving the real
+> session, so keeping the bypass alongside real keys would render "E2E Member" over a presenter logged in as
+> Maya.
+> > **The cockpit still SETS the cookie, at two paths** (`demo-stack/cockpit.py:855` client-side and `:1539`
+> > as a `Set-Cookie` on the `/go` 302) for the content-stories academy deep-link — but with the launch-env
+> > bypass gone it is **inert** on a stock demo. The retracted claim that the cockpit "no longer sets" it was
+> > false in both directions: the cookie is set, and it is not honoured. (The academy grid rendering **empty**
+> > in a demo is the v2.4 **F4** carry — **NOT** a
 > > client-side render defect: the catalog is **DB-authoritative** [read from the platform academy subgraph over
 > > GraphQL], and a demo neither sets `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` nor holds academy rows → `emptyCatalogView()`
 > > = 0 cards. Root-cause + read-chain: [`../../services/ant-academy.md` § The Content Model](../../services/ant-academy.md#the-content-model--db-authoritative-catalog-v051-m7).
@@ -579,7 +756,9 @@ landed at `storytelling-postfix-2`:
 
 - `stack-injection/gen_injected_override.py` — appends the two frontends to the injected override (offset
   `ports:!override`, `image: demo-N-*` + `build:!reset null` + `pull_policy:never`, `mem_limit:1g`,
-  `profiles:!override [graphql]`); `--no-ui` clears the tier. Also sets `CORS_EXTRA_ORIGINS` on the **backend**
+  `profiles:!override [<profile>]` — the profile is **derived** from the platform clone via `profile_for()`
+  (`gen_injected_override.py:420`), never a literal: `core` at platform `0dab54d`); `--no-ui` clears the
+  tier. Also sets `CORS_EXTRA_ORIGINS` on the **backend**
   service to the offset frontend origins (see §"Offset-origin CORS"), and **strips the inherited prod
   `DIRECTUS_TOKEN`** (`DIRECTUS_TOKEN=`) on **every** emitted service + both frontends — no prod credential rides
   in a demo container, and studio-desk's prod-Directus *write* path is disarmed (fix16/fix17; see
@@ -612,11 +791,48 @@ landed at `storytelling-postfix-2`:
 
 **True zero-rebuild** — one frontend image that serves every stack with the port/pk switched at *runtime* —
 would require **platform-source changes** (runtime rewrites in `next.config.mjs`, an absolute internal origin for
-SSR `fetch` in `server.graphql.ts`, a `window.__ENV` shim + explicit `publishableKey` on `<ClerkProvider>`,
-optionally `output:'standalone'`). Those are real platform edits with PR/review/prod risk — **forbidden** for the
-demo tooling to make locally. It's documented here as an **optional upstream PR you own** (a deferred/unscheduled deploy-CI
-precedent), **not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted
-cost of staying tooling-only.
+SSR `fetch` in `server.graphql.ts`, a `window.__ENV` shim + explicit `publishableKey` on `<ClerkProvider>`).
+Those are real platform edits with PR/review/prod risk — **forbidden** for the demo tooling to make locally.
+It's documented here as an **optional upstream PR you own** (a deferred/unscheduled deploy-CI precedent),
+**not built** in M19. The honest residual above (one cached build per new `demo-N`) is the accepted cost of
+staying tooling-only.
+
+> **⚠️ Two of the four items above have since been delivered WITHOUT an upstream PR, and the list is now
+> re-cut — with ACHIEVED numbers (M257 close, D-v28-10 / D121: one rewrite, not two).**
+> - **The SSR origin** landed at v2.3 **M218** as the sha-pinned `next-web-ssr-graphql-origin` demo-patch —
+>   shape 2, not a PR. It was worth 37.5 s of every authenticated render.
+> - **`output:'standalone'`** was listed here as PR-only. **It is not, and it is now SHIPPED for both Next
+>   apps.** Next 16's frozen `defaultConfig` reads
+>   `output: !!process.env.NEXT_PRIVATE_STANDALONE ? 'standalone' : undefined`, and no app `next.config` sets
+>   `output` — so **`ENV NEXT_PRIVATE_STANDALONE=1` in a tooling-owned Dockerfile (shape 3) is sufficient**,
+>   with zero source edits and zero demo-patches. M257 iter-09 landed it as multi-stage builds in
+>   `demo-stack/frontend/{next-web,hiring}.Dockerfile`, `next-web` moving shape 1 → shape 3 to get there.
+>   (Gotcha, still load-bearing: turbo 2 defaults to `--env-mode=strict`, which filters the variable out
+>   before `next build` sees it, so the flag silently no-ops without `--env-mode=loose` and the build stays
+>   green with the old image.)
+>
+> **The achieved numbers — two hosts, stated separately, because seconds do not transfer.**
+>
+> | | `billion` (x86_64, containerd) | `macmini` (arm64, containerd) |
+> |---|---|---|
+> | when / what | **M255 spike (a)** — `hiring.Dockerfile`, a proof of the mechanism | **M257 iter-09** — both Next apps, shipped in the gated bring-up |
+> | hiring image | **4.84 GB → 379 MB** | **3.94 GB → 380 MB** |
+> | next-web image | not measured there | **4.04 GB → 417 MB** |
+> | export leg | **146.8 s → 2.9 s** (hiring alone) | **136.4 s → 3.8 s** (both Next apps combined) |
+> | UI-tier phase | 436.1 s pre-lever (n=3 p50) | **246.23 s → 104.60 s** (n=3 p50, **−141.63 s**) |
+>
+> **What that bought at the cycle level, on `macmini` only:** the cold `demo-down --purge` + `demo-up` p50 went
+> **449.51 s → 286.99 s** (n=3, min 280.99 / max 303.44), under M257's **360 s** gate *and* its **300 s**
+> stretch, with `autoverify green:true / 0 warnings`, HEADROOM OK and ISOLATION OK on all three reps, host
+> identity `match` ×3, **0 platform-repo edits** and 0 refused demo-patches. Both images were proven
+> **behaviourally identical** to the ones they replace before the numbers were believed — hiring's `/login`
+> is byte-for-byte **426,914** bytes in both. `billion`'s own post-L1 cycle has **not** been measured; do not
+> infer it from these.
+>
+> **And the ranking moved underneath the plan.** With the UI tier collapsed, the largest single phase is now
+> **`set_dress` at 82.04 s = 28.6 %** of the cycle — a lever (L5) that had been priced at ~30–50 s and ranked
+> **fifth**. Routed as `LEVER-M257-L5-setdress`. Full derivation, the per-phase attribution table and the
+> campaign protocol: [`build-budget.md`](build-budget.md).
 
 ## Related
 - [Demo family index](README.md) · [Lifecycle](../rosetta_demo.md) · [Safety contract](../safety.md) · [Verification](../verification.md)

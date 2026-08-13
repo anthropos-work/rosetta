@@ -40,7 +40,7 @@ Clone a stack's repos (`make init` / `/dev-up` / `/demo-up`'s `ensure-clones`) �
 ## Mission
 
 1. **Read the spec** — [`corpus/ops/secrets-spec.md`](../../../corpus/ops/secrets-spec.md) (the source-dir/zip
-   layout, the 6-repo/56-gene secret-DNA, the per-repo target-file map, the values-blind safety statement, the
+   layout, the 6-repo/64-gene secret-DNA, the per-repo target-file map, the values-blind safety statement, the
    alias/collision rules, the waived class, the `DIRECTUS_TOKEN` non-rearm safety). **Confirm the target is a
    non-prod stack** (`dev-N` / `demo-N`, never production). `provision` hard-refuses the **main dev stack
    (N=0, `anthropos`)** without `--force` — it holds the operator's real source `.env`.
@@ -139,7 +139,7 @@ Clone a stack's repos (`make init` / `/dev-up` / `/demo-up`'s `ensure-clones`) �
 - **Never write prod.** `provision` refuses the main dev stack (N=0) without `--force`; the default target is
   non-prod. On non-prod the `DIRECTUS_TOKEN` family is written **blank** — `provision` defers to the injection
   override and never re-arms the prod-write path (the fix16/17 / `DIRECTUS_TOKEN`-non-rearm class — see
-  [`corpus/ops/safety.md`](../../../corpus/ops/safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m28)).
+  [`corpus/ops/safety.md`](../../../corpus/ops/safety.md#29-secret-provisioning-is-values-blind-and-never-re-arms-the-prod-write-path-v16-m27m30)).
 - **Idempotent.** Copy-if-absent by default — re-running is safe (skips present keys, re-blanks the strip
   keys). `--force` is the deliberate overwrite.
 

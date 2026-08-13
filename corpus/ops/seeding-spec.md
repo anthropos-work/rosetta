@@ -95,10 +95,11 @@ everything in the per-stack Postgres/Redis is inherently isolated (each stack ha
 |---|---|---|
 | **Directus** | shared-pollution-risk | one global instance (`content.anthropos.work`), visible on prod → **writes blocked**, the shared instance **never written**. (Reads: since v1.5 **M22/M23** a **`--local-content`** stack (demo default-on; dev opt-in) serves content from its **own** per-stack Directus — `cms` cut over to the in-network instance — so the read is **local, not live-prod**; the prod **data plane** is read only at capture time. A stack **without** `--local-content` reads public content **live** from prod, a demo **anonymously** with the token stripped — the documented fallback. The asset plane stays on prod public links either way. See [`directus-local.md`](directus-local.md) + [`snapshot-spec.md`](snapshot-spec.md#the-per-stack-directus-store-fork-m10-d2-recipe-corrected-in-fix16).) |
 | **S3 public bucket** | shared-pollution-risk | hardcoded to the prod bucket in compose → `STORAGE_S3_PUBLIC_BUCKET` forced to `""` (local fallback) |
+| **S3 PRIVATE bucket** | shared-pollution-risk *(re-classed at M257x iter-284; was `unclassified`)* | also hardcoded to a **production** bucket in compose since platform `0dab54d` (`docker-compose.yml:82` @ `0c91421`, on `backend`) → forced to `""` in **both** places a demo carries the pointer: `PreflightEnv` (`isolation/audit.go:153-154`, both buckets, every target) and the injected compose override (`stack-injection/gen_injected_override.py:771-772`) — the second one matters because the write that exercised this came from `backend`, not from the seeder. **⚠️ The container-side strip is DEMO-only**; a `dev-N` `backend` still holds the prod bucket — see [`safety.md`](safety.md) §2.3 |
 | **Live Clerk** | shared-pollution-risk | shared dev app → routed to **Clerkenstein**; a real-Clerk base URL is a hard preflight error |
 | **Customer.io / Brevo / AI APIs** | shared-pollution-risk | external; blocked on non-prod (off by default) |
 | **coresignal** | external | read-only; writes blocked on non-prod |
-| **Postgres / Redis / S3-private / pgvector** | per-stack-isolated | seed freely |
+| **Postgres / Redis / pgvector** | per-stack-isolated | seed freely. (`S3-private` is **not** in this class — see its own row above. The code agrees since **M257x iter-284**: `stack-seeding/isolation/isolation.go:93-95` classes `s3-private` as `SharedPollutionRisk`. This cell twice recorded the opposite — iter-98 correctly withdrew a premature "the registry has changed" claim rather than making it true, and iter-284 then made it true; both the class **and** the line number here are the post-284 measurement. See [`safety.md`](./safety.md) §2.2.) |
 
 > **The "shared skillpaths across stacks" myth.** Legacy skillpath sessions appearing across stacks trace to
 > the *shared Clerk identity* (sessions for a shared login leaked via shared auth) — **not** a shared skillpath
@@ -185,10 +186,25 @@ stackseed --stack demo-1 --reset                                 # per-stack res
 inserts 0 rows instead of unique-violating or duplicating the grant. `--reset` truncates the **full**
 seeded fleet child-first FK-safe (`activity_events →` the M34 verified-skill chain `validation_criterion_results
 → validation_attempt_skill_results → validation_attempt_results → user_skill_evidences → user_skills →
-local_jobsimulation_sessions → sessions → skill_path_sessions → assignments → memberships → users →
+job_simulation_sessions → skill_path_sessions → assignments → memberships → users →
 organizations`; the casbin grant is reset by a targeted `DELETE WHERE p_type='g2'`, never a TRUNCATE — it shares
 the sentinel schema with `init_policy.sql`'s global policy). Full per-component re-run contract:
 [`idempotency.md`](idempotency.md).
+
+> **The chain above is ILLUSTRATIVE, not the list (clarified v2.8 M256 pre-flight).** `resetTables`
+> (`stack-seeding/cmd/stackseed/main.go` §`resetTables`) is **~28 relations**, not the 14 named here — later
+> additions include the AI-readiness fleet, `interview_extraction_results` /
+> `interview_aggregated_reports`, `organization_assignment_sessions`,
+> `job_simulation_feedbacks`, `membership_tags` / `tags`, `organization_target_roles` / `user_target_roles`,
+> `membership_skills`, `organization_sim_invitation_links`, and `jobsimulation.{actors,interactions}`. **Read
+> `resetTables` for the authoritative set.** Two further properties worth stating plainly: `doReset` takes **no
+> org filter** — it is whole-stack (guarded by `--stack` + the N=0 `--force` rule), so it does **not** spare a
+> co-resident seeded world; and it **probes `to_regclass` and skips** relations absent from that stack's schema
+> rather than aborting.
+>
+> **`--reset` also serves the Playthrough world.** The dedicated `pt-world` Playthrough seed (test data ≠ demo
+> data) is a `stackseed` preset consumed by exactly this `--reset` → re-seed lifecycle; it is specified in
+> [`demo/playthroughs.md`](demo/playthroughs.md) § *The Playthrough world*, not here.
 
 **The n=0-dev guard, two layers (M13).** `--reset` already refuses N=0 (the main `anthropos` dev stack) unless
 `--force`. M13's **auto-seed on dev build** adds a second, earlier guard in the bring-up's set-dressing pass
@@ -241,6 +257,28 @@ patches `users.go` to real names/avatars/org-domain emails (no more "User N"). T
 from the **real replayed public taxonomy** (the `public`-schema skills/roles catalog; role-coherent via `TaxonomyRefs`, never fabricated), and a
 **seed-side closure gene** (`datadna measure-closure`) proves zero dangling skill refs after seeding. Every
 chain table is `PerStackIsolated`, so the same zero-pollution posture holds.
+
+> **The closure gene now states its own DENOMINATOR — because "0 dangling" used to be vacuous (v2.8 M256 harden
+> pass 2).** The gene read the dangling count alone, so an **unseeded** stack — nothing referenced, therefore
+> nothing dangling — passed with the detail *"every seeded verified-skill node-id resolves in the replayed
+> taxonomy"*, a sentence that is trivially true of an empty set. That mattered because `ptvalidate --stack` runs
+> this gate expressly *"so the seed is not a blind spot"*: a gate that passes on an empty seed makes the seed
+> exactly the blind spot it was added to remove. Measured live rather than argued — on `demo-2` the real seed's
+> query returns **(referenced 225, dangling 0)** and the same query with its four source tables emptied returns
+> **(0, 0)** with the same empty sample, i.e. an identical verdict. The probe now carries the **referenced
+> population** out with the dangling count, zero referenced **FAILS** ("the closure gene measured NOTHING, which
+> is not the same as a closed seed"), and a pass reads `all 225 seeded verified-skill node-id(s) resolve`. The
+> probe's docstring had already taken this position for a *missing* source schema (*"a partial seed is not
+> silently closed"*) — the hole was one step down, where the schemas exist and hold no rows.
+>
+> **The same shape, one file over:** `AuditLog.AssertClean` — the post-run **proof of zero pollution** whose
+> verdict is `isolation: clean (no shared/external writes landed)` — is a loop over the audit ledger, so an
+> **empty** ledger satisfies it. And recording an *allowed* write is **voluntary per-seeder** (`seeder/dag.go`
+> records only the BLOCKED path; each seeder calls `audit.Record` itself), so a seeder that omits its `Record`
+> writes rows the proof never sees. `AssertRecorded` now cross-checks the ledger against the **DAG's own
+> results** — a surface reporting rows with no ledger entry is an *unaudited write* and fails the run — and the
+> success line states how many write attempts the proof covers. Coverage is the invariant, not arithmetic
+> equality; a zero-row surface and a run with no surfaces still pass.
 
 **Full reference: [`demo/stories-spec.md`](demo/stories-spec.md)** — the 7-table chain, the DB-enforced vs
 inserted-but-invisible constraint landmines, the `user_level` (claimed side) requirement, and the
@@ -346,14 +384,16 @@ at M223 (the recruiter + 2 candidate cockpit seats are M224). Full read-model co
 
 Two things make it non-obvious — both are M222 findings the seeder is built to honor:
 
-- **The score is a MIRROR table, not `jobsimulation.sessions`.** The scoreboard reads
-  `public.local_jobsimulation_sessions.score` (the `app` IntelligenceManager mirror), NOT
-  `jobsimulation.sessions.score`. So the `HiringFunnelSeeder` writes the **co-written PAIR** per
-  (candidate × position) — `jobsimulation.sessions` (the federated non-null `Session!`) **and** its
-  `public.local_jobsimulation_sessions` mirror (the score source) — exactly like the `PersonaSeeder`'s
-  chain, **not** like the `AIReadinessFunnelSeeder` (which deliberately skips the mirror and scores off
-  frozen snapshots). Seeding only `jobsimulation.sessions` renders an **EMPTY** comparison — the M219/M222
-  render-gate trap. A test RED-proves it (disabling the mirror write fails the fence).
+- **⚠️ THE MIRROR IS GONE — this bullet is RETRACTED as written (M257x iter-129).** It said *"the score
+  is a MIRROR table, not `jobsimulation.sessions`"* and told a seeder author to write a **co-written
+  PAIR**. `app` migration `20260729133514.sql` **DROPPED** `local_jobsimulation_sessions`, and there is no
+  `jobsimulation` schema on a fresh stack either. **The score source is the one canonical row,
+  `public.job_simulation_sessions.score`**, and `HiringFunnelSeeder` writes exactly that — one row per
+  (candidate × position), `hiring_funnel.go:392`, whose own header records the collapse: *"the pair
+  collapsed into the one canonical write — same row, same id, one table."* The **render-gate trap the
+  bullet existed to warn about is real and survives its mechanism**: a comparison view still renders its
+  chrome with every score blank if the session row is missing, so the seeder is still the thing that makes
+  it non-empty. What changed is that there is now one write, not two.
 - **The 5 "positions" are 5 REAL captured `SIMULATION_TYPE_HIRING` sims — no `directus.job_position`
   replay.** A dedicated **type-aware reader** (`readHiringSimPool`: `directus.simulations WHERE
   type='SIMULATION_TYPE_HIRING'`) resolves them (the generic `contentref` pool is type-blind); the shared
@@ -376,7 +416,40 @@ take assessments), and each admin inherits `org:feature:insights` from the **glo
 policy** via its standard `admin` g2 grant (no net-new grant — M223 D1). The funnel writes **zero skill
 refs**, so `datadna measure-closure` stays green trivially. New reset surface:
 `public.organization_sim_invitation_links` (child-first in `resetTables`); the session pair reuses the
-already-reset `jobsimulation.sessions` + `public.local_jobsimulation_sessions`.
+already-reset `public.job_simulation_sessions` (`resetTables`, `cmd/stackseed/main.go:108` — every entry
+in that list is `public.*`; neither dropped mirror appears in it).
+
+### Insert-then-heal: test the statement that LANDS it, and count PER ROW (v2.8 M256 harden-final)
+
+Several tables here are populated by the platform **row-per-user at user-insert time** — `public.user_params`
+is one, `public.memberships.picture_url` another. A seeder writing to them uses the **insert-then-heal** shape:
+a `CopyRowsIdempotent` (`ON CONFLICT (id) DO NOTHING`) that creates the row when absent, then an `UPDATE` that
+sets the value on the row that already exists.
+
+**On a real stack the COPY is the no-op and the UPDATE is the whole capability.** Two failure modes follow, and
+`OnboardingParamsSeeder` shipped with both:
+
+1. **The tests watched the wrong statement.** Every test inspected the recorded COPY — precisely the statement
+   that writes nothing in production — and none ever looked at the recorded `Exec`s. Measured: **deleting the
+   entire heal loop left the whole `seeders` package green.** The seeder's own comment said *"The UPDATE below
+   is what actually lands it"*, and nothing tested the UPDATE. If a seeder's comment names the load-bearing
+   statement, that is the statement a test must observe.
+
+2. **The post-condition was aggregate.** The guard read `healed == 0`, which fires only when **every** declaring
+   hero fails. With two heroes, one landing and one silently missing gave `healed == 1` and a clean seed —
+   while the error text already claimed per-hero coverage. The predicate must be `healed < len(rows)`, and the
+   message must state **how many of how many** landed.
+
+> **The general rule: a heal's post-condition needs a DENOMINATOR.** "At least one row was touched" and "every
+> row I intended was touched" are different claims, and only the second is the one a seeder is making. Note the
+> sibling contrast — `users.go`'s `picture_url` backfill legitimately matches **0** on a re-seed because it
+> carries an `IS DISTINCT FROM` guard, so the correct predicate is genuinely different there. *Read the
+> statement's own idempotency semantics before choosing the count you assert.*
+
+**Related, same seeder:** its `if idx <= 0 { continue }` guard was unreachable — `personaUserIndexFor` never
+returns `<= 0`, it **falls back to slot 1, which is the story's ADMIN seat**. So the branch could not fire, and
+the failure it named would in fact have written the hero's row onto the org admin. A defensive guard against an
+impossible value is not defence; verify the resolved slot **belongs to the persona that resolved it**.
 
 ## Status
 
@@ -420,7 +493,9 @@ enablement gate-row — nothing wrote that table before), **`AIReadinessConfigSe
 since M219 **BOTH a `closed` AND an `active` cycle** — + `ai_readiness_skills` with **real replayed-taxonomy
 node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), **`AIReadinessFunnelSeeder`** (199 frozen
 `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), and — net-new at
-**M219** — the **interview-aggregated-report seeder** (`jobsimulation.interview_aggregated_reports`, flushed by
+**M219** — the **interview-aggregated-report seeder** (`public.interview_aggregated_reports` — read
+`jobsimulation.…` until M257x iter-129; the seeder writes `public` at `ai_readiness_funnel.go:999` and
+`resetTables` names `public.interview_aggregated_reports` at `cmd/stackseed/main.go:62`, flushed by
 the funnel seeder), **without which the manager's four interview-findings blocks render headings with no content**
 (no seeder had ever written that table). DAG-ordered `config → funnel`.
 
@@ -430,7 +505,7 @@ the funnel seeder), **without which the manager's four interview-findings blocks
 > demo now seeds **both** cycles: the **active** one is what the manager dashboard resolves and live-recomputes
 > (it is what fills Ben's funnel, Aria's full hero card, and the manager's `interview` / `diagnosis` / `sources`
 > sub-sections — all of which were NULL/absent under closed-only), while the **closed** one is retained as cycle
-> *history*. The `--reset` table list gains `jobsimulation.interview_aggregated_reports`.
+> *history*. The `--reset` table list gains `public.interview_aggregated_reports`.
 
 Plus the **`app-aireadiness-snapshot-loadmembers`** app read-path demo-patch that bounds the frozen read's
 whole-org `loadMembers` to the ~199 snapshot users (180 s → 19 ms; a pure, data-identical perf optimization). All
@@ -456,16 +531,17 @@ deterministic id is reserved (`blueprint.HiringOrgID()` = `StoryOrgID("hiring")`
 the auditable manifest (`manifest.Org.IsHiring`, `omitempty` — so every existing preset stays byte-identical). **The
 GATE only** — no HiringSeeder/funnel (M223), no cockpit hero + no Clerkenstein `publicMetadata.isHiring` wiring
 (M224). Why it matters: the recruiter **candidate-comparison read-model** requires `is_hiring=true`, and its score
-renders from the MIRROR table **`public.local_jobsimulation_sessions.score`**, NOT `jobsimulation.sessions.score`
-(the M219-class render-gate trap). The full model — the dual-write, the read-path, the seeder-output write-set —
+renders from **`public.job_simulation_sessions.score`** (⚠️ read *"the MIRROR table
+`local_jobsimulation_sessions`, NOT `jobsimulation.sessions`"* until M257x iter-129; the mirror was dropped
+and the schema no longer exists — the M219-class render-gate trap itself still holds). The full model — the dual-write, the read-path, the seeder-output write-set —
 is [`../services/hiring.md`](../services/hiring.md). Code-of-record: `rosetta-extensions` @ `main` (the M222 S2
 gate commit; tagged when M223 consumes it).
 **v2.4 "casting call" M223 "casting the ensemble"** builds the recruiter vantage on the M222 gate — the **4th
 story (Meridian Talent, 5 admins + 45 candidates)** + **two net-new seeders**: **`HiringConfigSeeder`** (the
 org's 5 shared positions = 5 real captured `SIMULATION_TYPE_HIRING` sims via the type-aware `readHiringSimPool`,
 written as `organization_sim_invitation_links`) and **`HiringFunnelSeeder`** (each candidate's scored
-`SIMULATION_TYPE_HIRING` session PAIR — `jobsimulation.sessions` + the `local_jobsimulation_sessions` **MIRROR**
-the scoreboard reads — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
+`SIMULATION_TYPE_HIRING` session row — `public.job_simulation_sessions`, the one table the scoreboard
+reads (this said "PAIR … + the `local_jobsimulation_sessions` MIRROR" until iter-129) — on the **one** position applied for (round-robined evenly → ~8 per position, M227 fix #3),
 SOME assigned-only, a differentiated score spread).
 The 5 positions are **disjoint-reserved** from the generic sims pool (M219 R-3); the funnel writes **0 skill
 refs** (closure green trivially); the admins inherit `org:feature:insights` from the global `p3` admin policy
@@ -500,3 +576,51 @@ platform's own real defaults — **no-fabrication *by construction***). Proven L
 (employee `aria-completed` + manager `dana-manager`, Northwind) on a cold reset-to-seed, escapes=0. Seeder-contract
 detail: [`../services/ai-readiness.md`](../services/ai-readiness.md) (§ "Seeding contract … 31-skill fidelity,
 v2.7 M250"). Code-of-record: `rosetta-extensions` @ `july-jitter-m250-iter07`.
+**v2.8 "fast build" M256 iter-11 "the refusal"** adds the seed's **first deliberate ABSENCE**: `StoryOrg`
+gains **`SimFeatureDisabled bool` (yaml `sim_feature_disabled`)**, unified through
+**`ResolvedStory.SimFeatureEnabled()`** (`= !SimFeatureDisabled` — the single recognition point, the same shape as
+`IsHiringOrg()`), and the `UsersSeeder` guards the per-membership **g3 `FEATURE_JOB_SIMULATIONS`** casbin grant on
+it. It is an **opt-OUT** on purpose: the grant has been unconditional since M42e iter-09 because a demo whose
+members cannot launch a sim is a broken demo, so the default is unchanged and only an org that asks is withheld.
+Why a seed flag rather than a test fixture: the Playthrough exit gate needs a journey proving the platform
+correctly says **no**, and a refusal faked in the harness proves nothing about the platform — this one comes out
+of Sentinel's own Casbin enforcer (`pt-world` Org B → the deny dialog naming the org, and the launch route never
+reached). **It also exposed that `--reset` was leaking g3 grants** — 540 orphans on `demo-2`, and because seeded
+ids are deterministic, stale rows silently RE-GRANTED the feature to the new world, so the withheld org came up
+granted 20/20; `resetCasbin` now deletes the seeded grouping policies as a class (`g2` + `g3`). The reset half is
+[`idempotency.md`](idempotency.md) §"seed … the fixed `--reset`" #4; the Playthrough half is
+[`demo/playthroughs.md`](demo/playthroughs.md) §"The `blocked` outcome".
+
+**v2.8 "fast build" M256 iter-21 — the silent refusal.** Adds the **`PolicyGrantsSeeder`** (surface
+`"policy-grants"`) + the **`stackseed --policy-check --stack <N>`** gate. `p3` rows
+(`v0` = org scope, `v1` = role, `v2` = feature) are the role→feature grants Sentinel's `m3` matcher reads, and
+they are **platform bootstrap** (`sentinel/init_policy.sql`), not demo data — which is why no seeder had ever
+written one. That file deliberately **withholds** `org:feature:taxonomy:write` (platform commit `c6096d1`,
+*"drop default admin taxonomy:write, add on-demand grants file"*), parking it in
+`sentinel/local_superadmin_grants.sql` whose stated use case is verbatim *"Testing flows that require
+taxonomy:write"* — and **nothing, in any repo, had ever applied that file to a demo or dev stack**, while
+**production carries the row**. So a demo was **faithful to `init_policy.sql` and unfaithful to production**: a
+presenter demonstrating role creation hit a **silent refusal**, and fifteen iters passed before anyone noticed,
+because the product renders a refused mutation as nothing at all. **The generalisable finding: a fidelity check
+against the wrong reference passes.** The honesty line matters too — granting yourself the permission whose
+enforcement is under test *manufactures* the capability, so the milestone escalated rather than force a green;
+applying the **platform's own** on-demand grant, row-identical to production's, is the opposite move. The check
+is **bidirectional** — `MISSING` is an under-grant (the defect that caused this), `EXTRA` is an over-grant (the
+mechanical form of a judgement that had to be made by hand) — and it keys on the whole `(scope, role, feature)`
+tuple, so a grant that moves ROLE reads as a *different* grant rather than as the intended one being present.
+**Two consumers, two contracts:** `--policy-check` **hard-fails** on any drift; the bring-up's policy advisory
+line is **advisory, never fatal**.
+
+**v2.8 M256 also adds three PERSONA axes**, each read in exactly ONE place and each a **closed enum** that fails
+the seed loudly on an unrecognised value — a silent `default:` fall-through would produce precisely the state
+the axis exists to avoid. **`Persona.AIReadiness`** (`""` = derive from the trajectory | `"not_started"` = funnel
+**stage 0**, which an end-user hero could not otherwise be *declared* into: the derivation sends her to
+*already completed*, so a Playthrough on her would have passed on the completed surface — contract in
+[`../services/ai-readiness.md`](../services/ai-readiness.md)). **`Persona.Onboarding`** (`""` | `"org_prepared"`,
+driving the net-new **`OnboardingParamsSeeder`**, which writes `public.user_params.onboarding` — there is no
+onboarding table — with the **insert-then-heal** shape described above). **`Persona.OrgMembership`** (`""` |
+`"none"`: the `UsersSeeder` skips her membership row *and* its casbin grants, and validation **INVERTS** the
+end-user `verified > 0` rule — an org-less hero MUST declare `verified: 0`, because a verified skill's fan-out is
+org-scoped and would otherwise tie her to an org she is not in). The org-less write surface is fenced by a
+**source scan over the membership-uuid call sites**, because those call sites *are* the FK surface. The
+Playthrough-side account is in [`demo/playthroughs.md`](demo/playthroughs.md).

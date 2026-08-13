@@ -2,6 +2,18 @@
 
 Internal experiments hub for the Anthropos team. Hosts PoCs, UI prototypes, and internal tools. **Not part of the main platform** - this is a sandbox for team experimentation.
 
+> ⚠️ **This page's `@anthropos.work`-only access claim is UNVERIFIED, and that is a substrate limit, not a
+> doubt about the claim.** `anthropos-work/experiments` is in **no clone set** and in **no `repos.yml`**
+> (measured at platform `0c91421df`, 0 hits), so nothing here has read its auth code; the page carries no
+> measurement date either. It is recorded as *unclonable*, **not** as *refuted* — the two are different
+> verdicts and this corpus keeps them apart.
+>
+> **Do NOT read the Ant Academy refutation onto this page.** `ant-academy`'s `@anthropos.work` email gate
+> was genuinely removed (`d5875e34`, *"replace @anthropos.work email gate with Clerk org-membership
+> check"*; `code/proxy.js:298` @ `22df69dd8`) — but that is a **different application in a different
+> repo**, and a correction transplanted across subjects is a fabrication, not a repair. Whoever next gets
+> a clone of `experiments` should settle this row from its own source.
+
 ## Quick Facts
 
 | Aspect | Value |
@@ -9,7 +21,7 @@ Internal experiments hub for the Anthropos team. Hosts PoCs, UI prototypes, and 
 | **Repo** | `anthropos-work/experiments` |
 | **Tech Stack** | Vite, Vanilla JS/HTML, Clerk Auth |
 | **Hosting** | Vercel (automated CI/CD) |
-| **Access** | `@anthropos.work` emails only |
+| **Access** | `@anthropos.work` emails only — **UNVERIFIED against source; see the note below** |
 | **Local Port** | 3002 |
 
 ## What's Inside
@@ -78,6 +90,9 @@ Each experiment should:
 ## Architecture Notes
 
 ### Authentication Flow
+
+**Unverified — the repo is in no clone set** (see the note at the top of this page). The flow below is
+inherited, not measured; the domain-check step in particular has never been read against source.
 
 ```
 User visits experiment

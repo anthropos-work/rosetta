@@ -137,6 +137,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.7** | **july jitter** | The **re-ground + fidelity + field-hardening release** — realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into `app` → **3 subgraphs**; jobsim mid-merge; net-new `app` domains; the rext seeder about to break on `skillpath.*`) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane worktree fan-out → prove-on-billion | M246 → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; 9 milestones M246→M254 — M246 barrier [`section`, HARD go/no-go] · M247 corpus-reground · M248 content-mgr-link · M249 cross-app-nav · M250 ai-readiness [`iterative`] · M251 test-health · M252 studio-builder-enable · M253 studio-first-paint [`iterative`] · M254 prove-on-billion [`iterative` closer, a–h live on `billion`]; tooling + docs only, **0 platform-repo edits**; close-release landed all 5 terminal follow-ups → **zero carry-forward**) |
 
+| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → **M257x** → M257 → M258 | ✅ **SHIPPED 2026-08-13 (tag `v2.8`)** (branch `release/02.80-fast-build` merged to `main` + deleted, designed 2026-07-27; **5** milestones — M257x «platform re-alignment» was an **unplanned mid-release insertion**, the corpus having drifted from the platform; measuring against a stale description measures nothing. Tooling + docs only, **0 platform-repo edits** and **0 net-new deps**, both verified. **Achieved: 450 s → 286.99 s on `macmini`** — beating the 360 s gate and its 300 s stretch. ⚠️ **The `666 → 360` framing above is retired:** 666.29 s was measured on `billion` (x86_64/containerd) and **does not transfer** to the arm64 development host; M257 re-pointed its gate to the host that exists and met it there against that host's own 449.51 s — a **36.2 %** cut, not 46 %. Both numbers are true; only their combination would mislead, and this release's own rule — *state the environment with every number* — forbids it. **M257x and M258 closed `closed-incomplete` by user ruling, not on gate**; M258's clause 3 was never measured clean. Carry-forward named item-by-item in `roadmap-vision.md` § v2.8.) |
+
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
 
@@ -148,6 +150,951 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## Done — v2.8 "fast build" (✅ SHIPPED 2026-08-13, tag `v2.8`, branch merged to `main` + deleted)
+
+**Theme.** *From nothing, to live, to provably live — fast.* A **time-to-ready** release on the mature
+demo/dev bring-up + Playthrough machinery. Two standing problems, one spine:
+
+1. **A `/demo-down --purge` + `/demo-up` cycle takes 11 m 12 s** — measured, instrumented, on `billion`
+   ([`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md)). **UI-tier image
+   builds are 66.4 % of it and image export/unpack ALONE is 42.9 %** — and the box **never exceeded load 4.90
+   of 8 cores** with RAM at 74 %. This is **not** a CPU problem. It is serialised I/O (writing 9.4 GB of
+   Next.js image to disk) plus a **deliberate serialisation whose stated reason no longer applies**:
+   `build_frontends()` has exactly one conditional (`NO_UI`), the RAM pre-flight it cites is **cosmetic**
+   (declares its vars `local`, returns no verdict, nothing branches on it), and the Go builds it was meant to
+   avoid overlapping **finish 1.1 s before the UI tier starts**. Meanwhile the UI tier runs *before*
+   `compose up`, so postgres boot, 4 atlas migrations, snapshot replay and the seed **idle for ~7.5 minutes**.
+2. **The Playthrough suite is 18/18 green while the demo still has things that don't work.** Structural, not
+   paradoxical: **1 of 18 Playthroughs proves a WRITE** (mutates *and reads back*); the other 17 are
+   render-presence proofs — and on a *seeded* demo the read path was never the half in doubt. No Playthrough
+   has a **negative control**. Every journey stops at a boundary. Every actor is `entitlement: enterprise`;
+   **outcome `blocked`: 0, outcome `error`: 0** — nothing proves the platform correctly says *no*. Whole
+   surfaces sit at zero: **ant-academy 0, onboarding 0, org-admin 0, talk-to-data 0**. Of the M201 curated 28
+   use cases, **16 are uncovered and 12 have no milestone home anywhere**. Full map:
+   [`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md).
+
+**The machine question, answered as a deliverable — but small.** The release does not hand-tune constants and
+does not build an auto-planner either: it ships **two checked-in, measured host profiles** plus **one hard
+runtime headroom assert** that the gate consumes. Two very different hosts are in scope: `billion` (8 vCPU /
+7.3 GiB / x86_64 / 40 G free) and the M1 Pro laptop (10 cores / 16 GiB / arm64, where the **Docker VM
+allocation** — not host totals — is the real budget). *(Design-reviewed down from a probe-and-plan `hostprofile`
+binary — see D-v28-6.)*
+
+**Shape.** `M255` is a **HARD go/no-go barrier**: everything after it is a number, and today there is exactly
+**one measurement at n=1**. Then the user's stated order, strictly serial — sharpen the detector *before*
+changing the thing it detects.
+
+```
+M255 build-bench & host-headroom ── HARD BARRIER (section)
+       │   measurement floor · headroom assert · union-apply parallelism rule · 3 spikes
+       ▼
+M256 playthrough sharpening (iterative)      faster · effective · covered
+       ▼
+M257 first-light build (iterative)           666 s → ≤ 360 s p50, cold, on billion
+       ▼
+M258 proven-live build (iterative, closer)   up AND self-proven, ≤ 480 s p50
+```
+
+> **2-host parallel option (not assumed).** M256 needs a *stable* demo; M257 tears one down repeatedly. On one
+> box they conflict. With `billion` holding a stable demo for M256 while M257 iterates locally, `M256 ∥ M257` is
+> viable — but it forfeits sharpen-the-detector-first. **Default: serial.**
+
+**Hard constraints (carried over).** **Zero platform-repo edits** — every Dockerfile lever (L1/L3/L4/L7) lands
+as a sha-pinned `demopatch` or an **rext-owned Dockerfile** in the shape `hiring.Dockerfile` already sanctions.
+All tooling in `rosetta-extensions`, tagged, **pushed to origin** (rung zero). Per-stack image isolation is
+non-negotiable — cache *layers*, never *images*, **and prove it** (M257 gate).
+
+### Binding user decisions (2026-07-27)
+
+- **D-v28-1 — codename "fast build".** User's call, overriding the proposed "call time".
+- **D-v28-2 — `M255` stays a `section` barrier** (design call). Three iterative milestones chasing time targets
+  with one n=1 measurement between them would be guessing, and `M255`'s deliverables are enumerable today.
+- **D-v28-3 — batch-gate semantics: no accumulating red.** A run drives the **full batch to completion** —
+  never stops at a step, never retries to hide a flake. At **batch end**, a non-empty red set **escalates to
+  the user for renegotiation** (fix, or an explicit written disposition). **Zero standing red** is the
+  invariant. This settles the strict-vs-non-fatal question for `M258`.
+- **D-v28-4 — coverage scope: land onboarding (5) + org-admin (4)** (design call). The remaining 3 un-homed
+  UCs plus the 5-release-old `M206`/`M207` reservations each get a **written verdict**. No silent gaps.
+- **D-v28-5 — the cockpit logout / Back-to-Cockpit double-click defect is FIXED, no Playthrough** (user's call).
+
+### Design decisions from the adversarial plan review (2026-07-27)
+
+A 23-agent review (7 lenses → 35 findings → 14 adversarially verified → 4 survived; plus a completeness critic
+and a simplification lens) ran against the first draft of this section. Its material outcomes:
+
+- **D-v28-6 — `hostprofile` the auto-planner is CUT; two checked-in measured host profiles + one hard assert
+  replace it.** The original deliverable probed cores/RAM/disk/IO and computed a build plan — for exactly
+  **two** known hosts, over a lane space bounded at **3** (there are only 3 UI images), on a workload its own
+  evidence proves is **I/O-bound, not CPU- or RAM-bound** (peak load 4.90/8; `unpigz` ~40 % during export).
+  Worse, **nothing downstream consumed it** — `hostprofile` appeared in zero lines of M256/M257/M258, M257's
+  levers hardcoded the values it was meant to compute, and M257's gate said *"sampled, not asserted"*. That is
+  **exactly the defect this release retracts**: `preflight_vm_ram()` measures, prints, and changes nothing.
+  Replacement: `stack-core/hostprofiles/{billion,laptop}.json` + a **failing** assert in buildbench's sampler,
+  **wired into M257's gate as falsifiable** and into `up-injected.sh` as the source of lane count + turbo
+  concurrency.
+- **D-v28-7 — the shared-clone patch race is resolved by UNION-APPLY, not by separate clones.** The draft
+  rated this `blocks-release` and asked M255 to choose between two architectures. Inspection settles it: the
+  two builds apply **11 distinct manifests** (`up-injected.sh:496-509` next-web ×9, `:1020-1047` hiring ×7);
+  **5 are the same manifests on the same shared files**, **5 target disjoint trees** (`apps/web/**` ×3 vs
+  `apps/hiring/**` ×2), and one shared-package outlier — `next-web-ssr-graphql-origin` →
+  `packages/graphql/src/server/server.graphql.ts`. Rule: **apply the union once, build both images in parallel
+  from the single clone, revert once** (preserving the studio→pubweb `urls.ts` chain and removing one
+  apply/revert cycle of the chained pair — exactly where G2 drift-refusals historically bite). Backed by a
+  guard test, not by an architecture.
+
+  > **⚠️ CORRECTED at M255 (build), on two points the decision got wrong.**
+  > **(1) The outlier is NOT "inert".** This decision said it was *"inert for the hiring image by its own
+  > manifest header (behaviour-identical when `WUNDERGRAPH_SSR_ENDPOINT` is unset)"*. The manifest header says
+  > nothing about hiring — it says the patch is inert **when the variable is unset** — and the variable **is
+  > set on the hiring container** (`stack-injection/gen_injected_override.py:367`), whose app really does import
+  > the patched module (`apps/hiring/src/app/api/bunny/recording/[sessionId]/route.ts` →
+  > `createServerGraphQLClient`). Under union-apply hiring's behaviour **changes** — for the *better* (it
+  > inherits the M218 SSR fix, worth 37.5 s on that route), but "beneficial" is not "inert", and M257 must
+  > **re-verify the hiring recruiter Playthrough** after flipping union-apply on. The waiver in
+  > `stack-core/union_apply_guard.py` now records the corrected, evidenced reason.
+  > **(2) "revert once LIFO" had no referent in the code.** `demopatch-spec.md` claimed both builds revert
+  > LIFO and in the same order; derived from source, **neither is strict LIFO and the two orders differ**. It
+  > does not matter — every manifest except the `urls.ts` pair owns a file no sibling touches — so the real
+  > invariant is narrower: **studio applies first, pubweb reverts first**. That is what the guard asserts, in
+  > both builds and in both phases. `demopatch-spec.md` §4 is corrected (it also said hiring's fingerprint was
+  > over a "4-manifest union"; it is **7**, a C1 mirrored count that drifted at M232 and M249).
+- **D-v28-8 — the truly-cold bench variant is CUT from the barrier.** It doubled the campaign
+  (n≥3 × 2 variants × 2 hosts = **12 cold cycles ≈ 2.5–3 h**, on a box with a **~4–5 cycle disk runway**) and
+  tested the wrong hypothesis. The warm run already yields three (size, unpack) points — **8.03 / 8.05 / 5.73 s
+  per GB** — and studio-desk paid **9.8 s of unpack with zero new layer bytes exported**, which is precisely
+  the size-driven, cache-independent signature the barrier needed. It is replaced by a **~15-minute direct
+  experiment** (below). Truly-cold survives as an optional one-shot after M257 if L3's value is disputed.
+- **D-v28-9 — M256's speed clause is re-cut against a pinned denominator and an LLM-bound floor.** The draft's
+  `≤ 120 s` was measured against today's 18 tests while clause 3 grows the suite to ~27 in the same milestone,
+  and it ignored that **three specs override the 120 s per-test timeout** (`studio-builder.spec.ts:45` = 300 s,
+  `:91` = 180 s; `assignment-assign.spec.ts:43` = 240 s) because **studio-advanced is an irreducible ~2–3 min
+  live-LLM round-trip** — plausibly ~120 s of the 228 s baseline **on its own**. A suite-wall-clock gate of
+  120 s was arithmetically impossible before a line was written.
+- **D-v28-10 — the §8.5 corpus retraction moves to M257**, so `frontend-tier.md` is rewritten **once** with the
+  *achieved* numbers rather than twice. Its mirror set is **enumerated** (`frontend-tier.md` ×4 sites,
+  `corpus/ops/demo/README.md:139`, `CLAUDE.md:318`) and gated by a **grep assertion** — the draft cited
+  `stack-core/demo_knob_guard.py` as the fence, but that guard matches `${DEMO_*:-default}` knobs and `case`
+  arms and **structurally cannot see prose numbers**. `demo-up-defaults.md` carries none of these claims and is
+  not in the set.
+- **D-v28-11 — "keep it secure" gets three named clauses and an owner.** The word did not appear anywhere in
+  the draft, while the release changes the exposure posture of an unauthenticated, authz-weakened,
+  `0.0.0.0`-published stack in three ways. See the security row in each milestone; `corpus/ops/safety.md` is
+  now a **Delivers** target of M255.
+
+- **D-v28-12 — M256's gate is re-cut for a LOCAL host; clause 1 becomes RELATIVE** (user, 2026-07-28). The
+  gate opened *"On billion, cold reset-to-seed"*, but `billion` moved to a **standing sign-off rule** the same
+  day, so the gate **could not fire** — M256 could progress forever and never close. Rather than leave an
+  unreachable gate or spend host time before there is anything worth measuring, clause 1 is re-expressed as a
+  **relative** target: **median per-Playthrough ≤ 0.79× a same-stack pre-work baseline the first tik measures.**
+  That ratio is not invented — billion's 228 s / 18 tests with ~120 s in the LLM-bound studio lane gives
+  **6.4 s** per non-LLM test, so the original `≤ 5 s` encoded exactly a **21 % cut**. The ambition transfers to
+  any machine; the absolute number does not. Two consequences recorded deliberately: the **suite wall-clock is
+  now REPORTED, not gated** (the denominator grows 18 → ~27 inside the milestone, so an absolute ceiling would
+  measure coverage growth and would get harder to pass the better clause 3 did — a gate punishing its own
+  sibling), and a **comparable absolute billion measurement is routed forward to M258** (Fate 3), which already
+  runs a composed cold cycle on a host. **Until that lands, no M256 number may be quoted as comparable to
+  billion's 228 s.**
+
+- **D-v28-15 — SUPERSEDES D-v28-14. `billion` is the official host; dev/test is LOCAL to a new Mac. `odysseus`
+  is retired from this project** (user, 2026-07-31, mid-M257x). Work stops on odysseus and on the current laptop;
+  both repos move to a new Mac where the dev stack runs **locally**.
+
+  **What it costs, stated before it bites — and it lands squarely on M257.** `billion` is **x86_64 with the
+  containerd image store**; a Mac is **arm64 with overlay2**. M255 *measured* the consequence: the identical
+  Dockerfile and context yield **4.84 GB on billion** and **2.88 GB on an arm64 laptop**, because **the Mac pays
+  no image-unpack leg at all**. M257's **L1 — its single biggest lever, priced at ~200–250 s — targets exactly
+  that unpack/export leg.** On a Mac dev host L1's headroom is near zero, so **build-speed work measured locally
+  will not transfer to billion**, and billion is now demo-only. **M257's gate is therefore un-measurable on the
+  sanctioned hosts as currently written** — it needs either a re-cut against a Mac-native baseline (a different
+  milestone, honestly) or an explicit exception to measure on billion. Flagged, not silently inherited.
+  *(Odysseus was chosen one day earlier precisely because it was a containerd/x86_64 near-twin of billion. That
+  property is what a Mac cannot supply.)*
+
+  > **⛔ THE COST PARAGRAPH ABOVE IS RETRACTED — measured false, 2026-08-11 (M257 iter-04; written down at
+  > iter-05, `DOC-M257-hostclass-retraction`). The DECISION itself stands unchanged**: billion is the official
+  > demo host, dev/test is local to the new Mac, odysseus and the old laptop are retired. Only its predicted
+  > *cost* was wrong — and it was wrong in the direction that paused a milestone for eleven days.
+  >
+  > **This Mac mini (M4 Pro) runs the CONTAINERD image store and PAYS a size-proportional unpack leg.**
+  > Controlled two-size probe: **0.8 s @ 256 MB → 3.0 s @ 1024 MB** (export 3.5 s → 14.3 s). The real
+  > `hiring.Dockerfile` image (4.12 GB) paid **56.6 s export + 19.3 s unpack**. So **L1 keeps a substantial
+  > price locally (~136–152 s)** and **M257's gate IS measurable here** — it was re-pointed from `odysseus` to
+  > `macmini` at M257 iter-05, targets untouched.
+  >
+  > **Two things this got wrong, both worth carrying:**
+  > 1. **`docker info` is not a measurement.** It prints `Storage Driver: overlayfs` on this host, which reads
+  >    at a glance like the laptop's classic `overlay2` graphdriver while the DriverStatus is
+  >    `io.containerd.snapshotter.v1`. `spec-notes.md` F1 had written that trap down *before* this decision was
+  >    made, and it was walked into anyway. **A documented trap does not stop being a trap once documented.**
+  > 2. **"A Mac" is not a host.** The reasoning generalised from the **retired M1 Pro laptop** (classic
+  >    overlay2, `unpack_s_observed: null`) to a *different machine*, on a property that is a per-machine
+  >    Docker Desktop toggle. The release's rule *state the environment with every number* needs its companion:
+  >    **name the machine, not the class.**
+  >
+  > What survives: billion x86_64 vs this host arm64, **4.84 GB vs 4.12 GB** for the identical Dockerfile — a
+  > **~15 %** gap, not the ~40 % the laptop comparison implied — and seconds measured here still do not
+  > transfer to billion. *(Same retraction landed at `state.md` § Hosts and at
+  > `m257-first-light-build/overview.md` § HOST CLASS.)*
+
+  **M257x is less affected** — its gate is about *correctness against origin HEAD*, not seconds. Its cold-cycle
+  and Playthrough clauses run anywhere Docker runs; only the "which host" wording changes.
+
+  **Bootstrap gotcha the new Mac will hit immediately:** `.agentspace/rext.tag` — the rext pin's single source of
+  truth — **is git-ignored**, so a fresh clone has none. `ensure-clones.sh:94-101` treats a pin mismatch as
+  **FATAL exit 1**, and on the old box the SoT was already **63 commits behind main** with the stack-demo clone at
+  a *different* tag, which means **`/demo-up` aborts there today**. On the new Mac the tag must be created
+  deliberately as part of setup. Two docs still call that check "non-fatal" (`ensure-clones.sh:68`'s own header
+  and `corpus/ops/rosetta_demo.md:17-18`) — M257x iter-01 found this and it remains open.
+
+- **D-v28-14 — `billion` is the DEMO machine; `odysseus` is the dev/test host** (user, 2026-07-31). **`billion`
+  is now officially the main demo machine and must not be touched except to deploy a final working demo — it is
+  NOT available for development or testing.** All release development and testing moves to
+  **`devops@100.110.67.14` → `odysseus.taildc510.ts.net`** (Tailscale), and the user's sign-off covers this
+  milestone **and later ones**, including moving to a better/nearer-production machine when a milestone needs it.
+  **This supersedes the per-occasion sign-off rule for dev/test work** — that rule now protects `billion`
+  specifically, and protects it *more* strictly (demo deployment only), not less.
+
+  **What it costs M257, stated plainly: the gate's host changed, so its baseline is no longer measured.** The
+  `666.29 s` p50 is **billion's**, measured on billion. Odysseus is a near-twin on paper — **8 cores / 7 GiB /
+  x86_64 Linux, 189 G free**, against billion's 8 vCPU / 7.3 GiB / x86_64 — which makes the number *plausible*
+  there and **transfers nothing**. This release's own standing rule is *state the environment with every number*,
+  and M255 measured the consequence: the identical Dockerfile and context yield **4.84 GB on billion** and
+  **2.88 GB on an arm64 laptop**. **So M257 must measure odysseus's own cold baseline (n ≥ 3) and check in an
+  `odysseus.json` host profile BEFORE any lever is priced against it.** Until that lands, the `≤ 360 s` target is
+  a **release thesis, not a derived number** — 360 s stays the goal because time-to-ready is what the release is
+  *for*, but if odysseus's measured baseline puts a 46 % cut structurally out of reach, that is a re-scope
+  signal, not a target to grind against.
+
+  **Known prerequisite gap — RE-PROBED 2026-07-31, and the first reading was WRONG.** Odysseus has Docker
+  29.6.2, and **Go IS installed: `go1.26.5` at `/usr/local/go/bin/go`** — it is simply **not on `PATH`** (no
+  `/etc/profile.d` entry, and `/usr/local/bin` is empty). So provisioning must **fix the `PATH`, not install
+  over the toolchain**. **`atlas` is genuinely absent** and does need installing; tailscale 1.98.10 and git
+  2.43.0 are present. The original probe reported "no Go" because it used `ssh host 'cmd'` — a **non-login
+  shell**, which is exactly the false-negative trap documented at
+  `corpus/ops/demo/tailscale-serve.md:133-152` (finding **F2b**): *a tool's absence and a tool's invisibility
+  produce identical output, and only one is fixed by installing anything.* Disprove it in one command before
+  installing: `ssh odysseus 'bash -lc "go version"'`. The `tailscale-serve.md` fresh-Linux-VM prereq list still
+  applies for **atlas** (+ the tailscale operator and the snapshot cache). **One thing to CONFIRM, not assume:**
+  that list specifies **Go 1.25.x** (matching rext's `toolchain go1.25.12`) and the installed toolchain is
+  **1.26.5** — newer than required, which is probably fine but has not been checked against the rext modules'
+  `go`/`toolchain` directives.
+
+- **D-v28-13 — clause 1 gates the LEG, not the suite ratio** (user, 2026-07-29). D-v28-12's relative
+  `≤ 0.79×` was undecidable: iter-12 measured the statistic's noise floor at **2.04×**
+  (0.5281×–1.0762×, six runs, untouched code, no trend), so the threshold sat *inside* its own spread,
+  and at n=6 the figure read **0.8129× — outside the gate**. **The two prior "clause 1 MET" readings
+  are retracted** as favourable samples; the flattering original-16 denominator (0.7063×, inside the
+  gate) was available and **refused**. **No speed work is retracted** — iter-03's `networkidle`
+  removal was measured *at the leg*, **2854 ms → 423 ms**, which suite-ratio variance cannot fake.
+  Clause 1 now requires a **direct before/after measurement of the leg each mechanism targets**; the
+  suite median is reported with its n and range, never gated. **Standing rule, now in
+  `latency-budget.md`: never gate a relative statistic without first measuring its variance.**
+  D-v28-12 derived its threshold carefully and never asked how noisy the measured thing was — a gate
+  tighter than its own noise floor is unfalsifiable, which is this release's own hunted defect class
+  committed in the gate rather than the code.
+
+**Also corrected from the review, without a decision (facts the draft got wrong or thin):**
+`NEXT_PRIVATE_STANDALONE=1` in an rext-owned Dockerfile enables `.next/standalone` with **zero** config edits
+and **zero** demopatches — Next 16's frozen `defaultConfig` reads
+`output: !!process.env.NEXT_PRIVATE_STANDALONE ? 'standalone' : undefined`, and no app `next.config` sets
+`output` (verified across all four). · `ENV NODE_OPTIONS` is **not** a usable seam for a per-lane V8 ceiling:
+`apps/web/package.json:98` and `apps/hiring/package.json:92` re-assign
+`NODE_OPTIONS=--max_old_space_size=8192` **inline** for the `next build` child (the draft's 4096 was the
+Dockerfile ENV, not the effective ceiling). · The dev-path rationale *"the demo path is where 96.8 % of the
+wall-clock is"* was a misuse — 96.8 % is bring-up as a share of the **demo** cycle. The true reason: **the UI
+tier has no dev counterpart** (the main dev stack runs next-web natively; `dev-N` defaults to the frontend-free
+`graphql` profile).
+
+### M255: Build-bench & host-headroom
+
+**Status:** `done` (2026-07-28) · **Shape:** `section` · **HARD go/no-go barrier** — **VERDICT: GO**
+**Goal:** Establish the measurement floor, the headroom assert, and the parallelism rule that every later speed
+lever is judged against.
+
+**Scope — In:**
+1. **`buildbench`** (rext `stack-core`) — generalize the one-off `reset-clean-build.sh` into a repeatable
+   harness: **n ≥ 3 on `billion`, cold-images variant only** (D-v28-8), machine-readable per-phase ledger + the
+   10 s resource sampler. **Every ledger entry records the invocation and a full `DEMO_*` env snapshot** so a
+   gate run is self-describing (neither `autoverify.json` nor the phase log currently records which services
+   were in scope). One **informational n=1** laptop run — not gated.
+2. **Campaign protocol + reclaim** — the draft's campaign was not executable: reps leak ~2 G disk and orphan
+   ~11.6 G cache each, against a **~4–5 cycle runway** on 38–40 G free, with the guard
+   (`DEMO_DISK_MIN_GIB=20`, `up-injected.sh:277` at design time) both **mis-sized** and **non-fatal**. Deliver: a
+   pre-rep **hard-failing** disk/cache assert, an explicit reclaim step between reps, per-rep declaration of
+   the starting `docker system df`, **L6 (scheduled prune) promoted here as campaign hygiene**, and
+   `DEMO_DISK_MIN_GIB` re-sized in the same commit. Note in `build-budget.md` that a mid-campaign ENOSPC
+   presents as the cryptic *"redis exited (1)"* (M239-F1) so a lever is not blamed for it.
+3. **Host profiles + headroom assert** (D-v28-6) — `stack-core/hostprofiles/{billion,laptop}.json`, measured,
+   checked in; plus one assert in the sampler that **fails** when peak load1 > cores − 2, or peak summed heap
+   commitment > 80 % of the Docker-VM/host budget, or free disk < floor + projected image bytes. Record a
+   decision reconciling *"fail loudly"* against the codebase's standing **never-block-a-bring-up** pre-flight
+   contract — the assert gates **buildbench and the M257 gate**, not an operator's bring-up.
+4. **The union-apply parallelism rule** (D-v28-7) — one paragraph + a guard test asserting (i) the two manifest
+   lists' shared members are byte-identical and (ii) every non-shared member's `path:` is under a disjoint
+   `apps/*` tree or explicitly waived as inert. Plus the per-stack image-isolation invariant.
+5. **Three spikes:**
+   - **(a) The 15-minute L1 experiment** — prototype the multi-stage shape on **`demo-stack/frontend/hiring.Dockerfile`,
+     which rext already owns outright** (no demopatch, no platform-edit question), and measure the export delta
+     directly. This **replaces** the truly-cold campaign as the barrier test. Record that standalone is enabled
+     via `ENV NEXT_PRIVATE_STANDALONE=1` — a Next-*private* API, valid because no app `next.config` sets
+     `output`; fallback is a `next.config.mjs` demopatch per app.
+   - **(d) Plateau or I/O ceiling?** Is peak load1 4.90/8 a plateau — if BuildKit is I/O-throttled, L2's win is
+     smaller than the naive ~200 s.
+   - **(e) NEW — host-vs-peer topology for M258.** A `--public-host` demo **cannot be browsed from its own
+     host** (docker-proxy binds `0.0.0.0`, bypassing `tailscale serve` → `ERR_SSL_PROTOCOL_ERROR`), and
+     `--public-host` is **default-on** for the demo path (D-DESIGN-3). So *"one cold command on billion"* may
+     be unachievable as literally worded. A ~20-minute answer that determines M258's gate text.
+6. **`corpus/ops/demo/build-budget.md`** — net-new; the §0b blind area. What "fast" means for a bring-up, the
+   per-phase attribution model, the baseline, the gate, the headroom contract. Modelled on `latency-budget.md`
+   (including **state the environment with every number**).
+7. **Security (D-v28-11) + the §8.6 cert hazard — explicitly NON-GATING hygiene.** `$STACK/certs` **survives
+   `--purge`** and the mint block was guarded on `[ ! -f $CERTS/fapi.crt ]` alone, so
+   billion's `tailscale cert` minted **2026-07-11** has never been re-minted; a 90-day cert silently expires
+   around **2026-10-09**, and the failure path drops to `gen_local_fapi_cert` with only a warning — a remote
+   browser silently loses trust. Ship the expiry-aware re-mint **and** the paired `safety.md` §3 amendment
+   covering the renewal path and that silent fallback.
+
+**Out:** any actual speed lever (M257) · the §8.5 prose retraction (**moved to M257**, D-v28-10) · host
+`daemon.json` changes (disabling the containerd snapshotter would orphan all 26 existing images) · the
+truly-cold bench variant (optional, post-M257).
+
+**Barrier condition:** spike (a) is the decider. **If the multi-stage prototype on `hiring.Dockerfile` does not
+materially cut the export leg, L1 collapses** and M257's exit gate must be re-cut **with the user** before M257
+starts.
+
+**Depends on:** — · **Parallel with:** none (it is the barrier) · **Estimated complexity:** medium-large
+**KB dependencies:** `corpus/ops/demo/frontend-tier.md` · `corpus/ops/demo/demopatch-spec.md` ·
+`corpus/ops/demo/latency-budget.md` · `corpus/ops/verification.md` · `corpus/ops/safety.md` ·
+`corpus/ops/demo/tailscale-serve.md`
+**Delivers → `corpus/ops/demo/build-budget.md`** (net-new) **+ `corpus/ops/safety.md`** (§3 cert-renewal
+amendment)
+
+#### Closure (2026-07-28)
+
+**Barrier PASSED — GO.** Spike (a), a ~15-minute experiment on the rext-owned `hiring.Dockerfile`, took the
+image **4.84 GB → 379 MB** and its export leg **146.8 s → 2.9 s** (build wall 225 s → 49 s). L1 does not
+collapse; it is if anything *conservative*. Enabled by `ENV NEXT_PRIVATE_STANDALONE=1` — no config edit, no
+demopatch (D-M255-2).
+
+**The measurement floor exists.** `buildbench` + two measured host profiles + a hard headroom assert + the
+union-apply fence + a `Read at` anchor fence, shipped in rext (tags `fast-build-m255-buildbench`, `-1`, `-2`,
+`-3` on origin). **Gated baseline on `billion`: n=3 p50 `666.29 s`** (min 658.15, max 881.01), 3/3 green, superseding
+the n=1 672.4 s it agrees with to **0.9 %**. The headroom model was *validated*, not merely applied: predicted
+5,400 MiB, reps peaked 5,446 / 5,579 / 5,398 MB (~3 %).
+
+**Three findings reshaped the release rather than merely satisfying the milestone:**
+- **L2 re-priced from ~200 s to ≲45 s and re-sequenced AFTER L1** (D-M255-6) — L1 deletes the export legs L2
+  existed to overlap, and the headroom assert derives `max_parallel_ui_lanes = 1` on both hosts. Spike (d)
+  refuted *both* standing hypotheses. M257's `re_scope_trigger` was re-derived 480 → 420 s as a consequence,
+  and its margin is now openly thin: 666.29 → 360 needs 306 s against 300–350 s of levers.
+- **D-v28-7's "inert outlier" premise is REFUTED** (D-M255-3) — `WUNDERGRAPH_SSR_ENDPOINT` *is* set on
+  hiring-app and there is a real one-hop import chain, so union-apply is a real (beneficial) change for hiring.
+  **M257 must re-verify the hiring recruiter Playthrough** once it flips union-apply on.
+- **The corpus argued against the barrier's own build shape** (D-M255-5) — `frontend-tier.md` presented
+  "Dockerfiles consumed UNMODIFIED" as exhaustive and listed `output:'standalone'` under *forbidden*. The
+  rext-owned-Dockerfile third shape is now documented.
+
+**Also delivered:** net-new `corpus/ops/demo/build-budget.md` (the §0b blind area), the `safety.md` §3.5.4
+cert-renewal amendment, the campaign/reclaim protocol (the draft's campaign was not executable — ~2 G/cycle
+leak against a ~4–5 cycle runway), and the §8.5-class corpus corrections.
+
+**Found and fixed at close:** `stack-snapshot`'s directus-surface test had been **RED since v2.6** (M244's
+`e74e563` added a 15th table without moving a hardcoded 14) — missed by the v2.6 *and* v2.7 closes because
+their test rosters never named `stack-snapshot`. Plus a gofmt-dirty file, and the **plan-number mirror fence**
+landed (the one item the harden pass could not) — `billion.json` now carries `gated_baseline.total_p50_s` as a
+number, 8 prose mirrors are fenced against it, and the fence is RED-proven.
+
+**Deferrals:** 3 Fate-1 landed · **4 Fate-3 → M257** (the harden pass had routed five to "M255 harden resume",
+which is not a named milestone and could not survive the close) · 0 dropped · **0 escape-hatch**.
+
+**Tests:** Python **1505 pass / 2 skip / 0 fail** (stack-core alone 226 → 272); Go **2023** test funcs (+4),
+**0 of 6** modules failing; flake **0**. **0 platform-repo edits, 0 net-new deps.**
+Retro: [`retro.md`](releases/archive/02.80-fast-build/m255-build-bench-host-headroom/retro.md) ·
+Metrics: [`metrics.json`](releases/archive/02.80-fast-build/m255-build-bench-host-headroom/metrics.json)
+
+### M256: Playthrough sharpening
+
+**Status:** `done` (2026-07-30) · **Shape:** `iterative` · **`closed-on-gate`** — 32 iters, 3 harden passes
+**Goal:** Make the Playthrough suite a detector you can trust and afford — individually faster, actually
+proving function rather than presence, and covering the journeys that are silently unwatched.
+
+> ## Closure — 2026-07-30 · `closed-on-gate`
+>
+> **All four gate obligations MET.** Clause 1's flake half MET (**3 consecutive cold reset-to-seed runs,
+> `209 passed` each, rc captured per run `0/0/0`, zero flake**); its leg half **N/A**, no speed mechanism having
+> landed in the closing iters. Clause 2: controls **28 of 30** (`D103` carve-out) · mutating **12** of ≥5 ·
+> `blocked` **1** of ≥1. Clause 3: org-admin **4/4** · onboarding **4 landed + 1 written verdict** of the
+> CURATED 5 (`D104`) · verdicts **31/31, 0 `unimplementable`**. Plus **`D-v28-5` FIXED and proven live** at
+> iter-25. Full ledger: [`m256…/progress.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/progress.md)
+> § Gate Outcome Ledger.
+>
+> **What shipped.** **18 → 30 live Playthroughs** (+1 verdicted TODO), mutating **1 → 12**, negative controls
+> **0 → 28 of 30**, `blocked` **0 → 1**, and **two whole products** the curated corpus had left un-homed for
+> five releases: **org-admin** (0 → 4 of 4) and **onboarding** (0 → 4 of the curated 5, *the first thing every
+> real user does*, which the milestone's own pre-flight audit had priced as impossible). Net-new seed
+> capabilities: `Persona.AIReadiness` (funnel stage 0), `Persona.Onboarding` (`org_prepared`),
+> `Persona.OrgMembership: none` (the org-less user), `PolicyGrantsSeeder` + **`stackseed --policy-check`**
+> (bidirectional), and snapshot replay **Phase 5** (identity-sequence advancement — two `public` identity
+> columns had been broken on **every demo ever built**).
+>
+> **⚠️ Behavioural change downstream consumers must know:** **`run-playthroughs.sh` is now BINDING** on a full
+> run (advisory on a scoped one). It previously discarded ptreport's exit code with `|| echo`, and Playwright
+> exits 0 when a spec file is simply *absent* — so a deleted Playthrough produced a fully green run. **Anything
+> that ran the suite and trusted a zero exit is now genuinely gated.**
+>
+> **The transferable finding is about the gates, not the suite: all three clauses turned out unmeetable as
+> first authored.** Clause 1 was re-cut **twice** (`D-v28-12` → `D-v28-13`) once its threshold was measured to
+> sit **inside its own 2.04× noise floor**; clauses 2 and 3 each needed a named carve-out. *A gate authored
+> before the work is a hypothesis about the work.* The flattering reading was available every time and refused
+> every time — most sharply at `D-v28-13`, where the untouched control subset read `0.7063×`, **inside** the
+> gate, and was rejected as a hand-picked denominator; two earlier "clause 1 MET" readings were **retracted**.
+>
+> **~43 checks that reported success without having checked**, across 3 harden passes (**6 → 11 → 9 — a FLAT
+> yield**, which is why the cap was accepted un-stabilized with residuals *enumerated*: a flat yield means the
+> seam is broad, not nearly closed) plus ~9 inside the iters and 8 at close. Highlights: a probe runner
+> certifying *"all live probes passed"* over **zero probes** — an exit code **four other gates read as
+> health**; a committed `.only` shrinking the suite to **1 of 20 at exit 0**; a green gate that parsed UTC as
+> local and **failed OPEN west of UTC**; **three capabilities whose entire implementation could be deleted with
+> the suite green**, including **all of snapshot Phase 5 under the end-to-end test**; and **a declared
+> Playthrough deletable story-and-spec without turning the run red — four ways at once**.
+> **And the two fences shipped as the generalisable fixes were themselves instances of the class**: the liveness
+> fence counted `not.toBeVisible()` as *proof the page was alive*, and the bounded-interaction fence **never
+> scanned the retry loop it is named after**.
+>
+> **The close's own best finding is about measurement, not code.** A raw NUL byte inside an adversarial fuzz
+> input made `tests/url-shapes.unit.spec.ts` **`data` to `file(1)` and BINARY to `grep(1)`** — which then
+> reported **no matches, with no error and no change to its exit code**, while its **79 tests ran and passed**.
+> A 43 KB pin was invisible to every shell-based sweep, as an *absence of hits*. **Two independent reviewers
+> concluded from that silence that a predicate the file exercises by name was dead code**; one recommended
+> deleting it. Every *"nothing references this, so it is dead"* conclusion in this project rests on grep
+> reporting honestly, and it fails in the direction that looks clean. Fenced, and written into
+> [`retro.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/retro.md).
+>
+> **Two refusals that are deliverables.** iter-18 declined to ship an onboarding journey whose green depends on
+> **scraping a real person's public profile** (flaky by construction, and its RED would misreport as an
+> Anthropos regression) → a machine-checked `will-not-build` verdict `ptreport` now renders. iter-20 refused to
+> **grant itself the permission whose enforcement was under test** and escalated — **and its own hypothesis was
+> then refuted** by a production policy read, which is exactly what escalating is for.
+>
+> **Ratified at close** under the user's standing delegation, their right to overrule at release close
+> preserved: **`D103`** (clause 2 MET at 28/30, studio pair a named carve-out — *a control over a known false
+> green would certify the false green*), **`D104`** (clause 3's onboarding half MET at 4 landed + 1 written
+> verdict of the curated 5), and the **iter-31/32 deviation** (the routed repair was impossible — there is no
+> Role screen — after a source read had been relayed as an observation; **D118**).
+>
+> **Deferrals — the audit returned RED and every item was re-fated.** 8 items carried a target that no longer
+> existed (*"a later tik of M256"*), 6 rows read OPEN for landed work, and the longest chronic had been
+> re-typed **~10 times across 25 iters**. Resolution: **4 LAND-NOW** · **10 LAND-NEXT** (**6 → M258**, **2 →
+> M257**, 2 landed instead) · **1 DROP** · **3 Fate-2 confirmed** · **4 platform-bound** → the net-new
+> [`platform-defect-register.md`](platform-defect-register.md) (there was **no register anywhere in this
+> repo**, so all four would have archived with the milestone) · **3 KEEP-DEFERRED-WITH-SIGNOFF awaiting the
+> user** (`PERF-M256-parallel-lane`, `PT-M257-self-evaluation`, `PT-M257-talk-to-data` — roadmap calls, not
+> routing ones) · **0 escape-hatch to a future release**. Every Fate-3 destination is a **named milestone
+> whose own `overview.md` was edited** — M255's close routed four items to *"M255 harden resume"*, which was
+> not a milestone, and its retro says that should have been rejected when written.
+>
+> **Process:** **eight sub-agent deaths** (internet drop, session limit, stall watchdog, four API 529s) with
+> **zero work lost**, because every iter committed and pushed **both** repos before the next began. One iter
+> (21) was closed by the coordinator directly when spawns were failing — and its running-ledger line was the
+> one artifact that step missed, found only by this close's iter-ledger audit. **0 platform-repo edits ·
+> 0 net-new deps.**
+>
+> **Closing headline numbers** (moved here from `state.md` 2026-08-06 — `context.md` § state.md contract puts
+> closed-milestone write-ups in this file, never in `state.md`):
+>
+> - **Python (rext):** **1,723 pass / 2 skip / 0 fail** over four suites (stack-core 287 · demo-stack 1000 ·
+>   stack-verify 171 · stack-injection 267), counts from **JUnit XML, never grepped stdout**, one invocation
+>   per suite with rc captured into a variable. Same-scope vs M255's three-suite 1,505: **1,552 (+47)**.
+> - **Go (rext):** **2,130** test funcs (M255: 2,023, **+107**) · **0 of 6** modules failing, 58 packages ok.
+>   NB rext is **not one Go module** — `go test ./...` from the root fails by design; run each section.
+> - **Playwright:** **209 tests in 43 files** (was 204/42); unit **174** (was 169).
+> - **Playthroughs: 30 live + 1 verdicted TODO** · mutating **12** · negative controls **28 of 30** ·
+>   `blocked` **1** · written verdicts **31/31, 0 `unimplementable`** · `ptvalidate` VALID rc 0.
+> - **Flake: 0** (3 consecutive cold reset-to-seed, rc `0/0/0`). **Platform-repo edits: 0. Net-new deps: 0.**
+>
+> **v2.8 baselines to beat** (also moved from `state.md`):
+>
+> | | Baseline | v2.8 target |
+> |---|---|---|
+> | Cold `--purge` + `demo-up` (billion) | **666.29 s** (n=3 p50; min 658.15) | **≤ 360 s p50** (M257) · stretch 300 |
+> | Composed up-and-proven cycle | *does not exist* | **≤ 480 s p50**, zero standing red (M258) |
+> | Playthrough suite, ABSOLUTE on billion | **228 s** (dominated by one LLM-bound test) | re-measure = **reporting only**, M258 |
+
+**Exit gate** (three clauses, all objective, all on `billion`, all measured on the **post-coverage** suite):
+1. **Faster** — **median per-Playthrough ≤ 5 s** *and* **full post-coverage suite p50 ≤ 200 s wall-clock**,
+   **0 flake across 3 consecutive runs**. The **irreducibly LLM-bound studio lane is budgeted separately** and
+   excluded from the median (D-v28-9): `pt-studio-advanced-generate` is a real ~2–3 min live-LLM round-trip
+   (`studio-builder.spec.ts:45` sets a 300 s timeout) and plausibly accounts for ~120 s of the 228 s baseline
+   on its own. **Negative-control runs are a separate execution and do not count toward the timed p50.**
+2. **Effective** — **every** Playthrough passes a **negative control** (demonstrably RED when its outcome is
+   absent) · **≥ 5 mutating Playthroughs** — *mutating* meaning **mutates state and reads it back**, the
+   `playthroughs.md:169-172` sense, which is what makes the "from 1" baseline true · **≥ 1 `blocked` outcome**.
+3. **Covered** — **onboarding (5) + org-admin (4) LANDED**, and every remaining uncovered curated UC carries a
+   **written verdict** (named future milestone or drop). **Zero silent gaps.**
+
+Plus **D-v28-5**: the cockpit logout / Back-to-Cockpit **double-click defect is fixed** (no Playthrough added).
+
+**⚠️ The headline speed lever's premise is FALSE — corrected here before iter-01 (review finding R1).** The
+draft asserted *"17 of 18 mutate nothing, so a read-only lane at `workers: N` is safe under the existing
+rationale."* Both halves are wrong:
+- **The count.** `playthroughs/e2e/tests/skillpath-legacy.spec.ts:21-23` **self-declares** *"MUTATION: starting
+  a path creates progress state"* (mechanism: `getOrCreateSkillPathSession`, a server-side create-on-read),
+  echoed at `lib/skill-path-page.ts:47-48`. Three more are **unclassified** (`studio-builder.spec.ts` ×2 fire a
+  real LLM generation; `aisim-chat-launch.spec.ts:61` clicks Start Simulation). Only **10 of 18** carry an
+  explicit "(no mutation)" note. **The safe/unsafe partition the lever consumes does not exist in any artifact.**
+  Correct statement: **17 of 18 are UNCLASSIFIED for mutation; ≥ 1 demonstrably mutates.**
+- **Postgres is not the binding surface.** Clerkenstein's fake FAPI holds **one global active seat, one
+  `signedIn` flag, one `sessID` per stack** (`clerk-frontend/registry.go:67,75`; `server.go:100-105`). Every
+  login goes `hero-login.ts:44-53` → `cockpit-login.ts:58-73` → `POST /v1/demo/select` →
+  `handleSelectIdentity` (`server.go:573-586`), which re-points the seat **and** sets
+  `s.signedIn = false; s.sessID = ""` **globally**. Under `workers: N`, worker 2's login signs worker 1 out
+  mid-journey and its `/v1/me` 401s — and `server.go:454-466` reads `activeUserLocked()` **with no cookie
+  input**, so **`storageState` reuse does not isolate it either**. Two in-repo comments already record this
+  verdict (`stack-verify/e2e/tests/m224-candidate-heroes.spec.ts:10-15`; `content-stories.spec.ts:128-130`).
+- **The existing rationale sanctions only two paths** — stack-per-worker, or per-worker seed partitions
+  (`spec-drafts/playthroughs/spec.md:447-450`; `corpus/ops/demo/playthroughs.md:441-443`). The draft invented a
+  third and declared it safe.
+
+**So parallelism is an ENABLER to be priced at iter-01, not a free lever.** Candidate enablers, both rext-owned
+and zero-platform-edit: a **cookie/`__client`-scoped Clerkenstein registry**, or **one fake-FAPI per worker**.
+Deliver a machine-checked per-spec **`MUTATES` / `READ-ONLY` / `UNKNOWN`** tag (greppable, fenced by a test)
+that the lane consumes instead of an assumed 17. `storageState` reuse alone buys ~30 s of the ~108 s needed.
+
+**Iteration protocol:** [`corpus/ops/demo/playthroughs.md`](../../corpus/ops/demo/playthroughs.md) — the
+M203/M204 coverage-iteration protocol, with the **4-state reporting map**.
+
+**Bootstrap tok (iter-01) — already seeded.**
+[`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md), compiled 2026-07-27 and
+reviewed by the user. iter-01 extends it into a ranked triage + the first strategy, and must answer: **how is a
+negative control produced** without a platform edit and without mutating the shared world, and **what does the
+parallel-lane enabler cost**.
+
+**Coverage arithmetic (M201 curated corpus, 28 UCs):** covered **12** · uncovered **16** · reserved by `M206`
+**3** · reserved by `M207` **1** · **un-homed 12** (onboarding ×5 · org-admin ×4 ·
+`workforce.organization-feedback` · `profile-skills.import` · `talk-to-data.query`).
+
+**Depends on:** M255 · **Parallel with:** none by default · **Estimated complexity:** very-large
+**Re-scope trigger:** if **> 3** un-homed UCs prove `unimplementable-without-platform-edit`, **or** a negative
+control proves unimplementable for **> 3** Playthroughs, escalate.
+**KB dependencies:** `corpus/ops/demo/playthroughs.md` · `corpus/ops/demo/coverage-protocol.md` ·
+`corpus/ops/demo/cockpit-spec.md` · `corpus/services/clerkenstein.md` · `corpus/ops/seeding-spec.md` ·
+`knowledge/plan/spec-drafts/playthroughs/spec.md`
+**Delivers → `corpus/ops/demo/playthroughs.md`** (the count, the streams, the negative-control contract, the
+mutation classification, the batch-gate rule) **+ `corpus/services/clerkenstein.md`** (if the seat registry is
+re-scoped)
+
+### M257x: Platform re-alignment
+**Status:** `done` — **closed 2026-08-11**, **288 iters + 73 harden passes** (branch
+`m257x/platform-realignment`, merged into `release/02.80-fast-build`).
+
+> ### ⚠️ CLOSED BY USER RULING — **NOT** on gate. Do not restate this as a gate-met close.
+>
+> | clause | state |
+> |---|---|
+> | 1 — cold `--purge` + `up`, 3 consecutive green cycles | **MET** (re-proven at the shipping pin, iter-271) |
+> | 2 — full Playthrough suite on that stack | **MET** — 30 live / 0 failing / 0 error, twice cold (iter-276) |
+> | 3 — checked-in migration-status map, fenced against `repos.yml` | **MET** — fenced **both directions** |
+> | 4 — zero rext writes to a schema the platform no longer creates | **MET** — `REXT_TRANSITIONAL_SCHEMAS` is EMPTY |
+> | 5 — KB-fidelity GREEN/YELLOW-0-blockers over `corpus/{services,architecture}/**` | **OUT OF SCOPE BY USER RULING** |
+>
+> **Clause 5 was never met and is not being declared met.** Its last measurement is iter-131's
+> `P = 29 / N = 47`, and that `P` is a **FLOOR**, not a reading of the tree as it stands. `TOK-09`
+> (user, 2026-08-11) narrowed the definition of done to **architecture + repo/component register +
+> buildability** — all three proven, not asserted — and states in terms: *"This is a scope ruling, not a
+> declaration that the unmeasured reading came out clean, and it must never be reported as one."*
+>
+> The ruling chain: `D-M257x-256-1` (user, 2026-08-10) superseded the gate-4-of-5 framing with a
+> working-stack condition; **`TOK-09` superseded that in turn.** `TOK-07` (iter-116) and `TOK-08`
+> (iter-119) were each refuted by their own pre-registered arithmetic; `TOK-09` is **user-supplied**,
+> not triggered — which is why it exists despite `TOK-08`'s sealed rule barring an agent-authored
+> successor.
+
+**What it delivered.** The consolidation is a **5-service program**, mapped: `roadrunner` was **deleted and
+replaced in-process**, not merged into `app` (`git log --all --diff-filter=A -- internal/roadrunner` →
+**0 commits, ever**, in a 6,728-ref clone, with a positive control returning 3), and `cms`'s ECS service is
+**destroyed** — settled by cloning `infrastructure`, a repo that had never been in any clone set, which made
+the question look *unmeasurable* when it was only *uncloned*. **A clone-set limit is not a measurement
+limit.** All **93** `anthropos-work` repos are enumerated with a home and a verdict
+(`corpus/architecture/org-repos.md`) — a denominator this corpus never had. The recurring class now has a
+**written procedure** (`corpus/ops/platform-alignment.md`, authored by iter-01 because it did not exist) and
+a **machine fence** behind it. Zero platform-repo edits across 288 iterations; zero net-new dependencies.
+
+**Closing metrics.** 655 rosetta + 339 rext commits · 5,177 Python tests passed across 5 rext suites · 6 Go
+sections ok · guard family **31 GREEN / 0 RED / 0 could-not-check** at the merge sha · **0** escape-hatch
+deferrals. The close itself found 47 items and landed 31: the corpus **front door** (`corpus/README.md`,
+`README.md`, `corpus/ops/README.md`) was the one layer 288 iterations of per-service sweeps never reached —
+`corpus/README.md:48` still carried the exact *"8 Go microservices (Backend, CMS, Sentinel, etc.)"* phrase
+that harden pass 57 records as already hunted down and corrected in `CLAUDE.md`. Two gates that reported a
+pass they had not earned were fixed in the tooling that *measures* the gate. 15 drifted handbook test counts
+were reconciled, and 8 iterations that had closed with no ledger line were reconstructed.
+
+**Three facts that must survive this close.** (1) A demo attempted `s3:PutObject` against the **production**
+storage bucket and only an **IAM policy on an account we do not control** refused it; iter-284's containment
+is proven by a unit test **on the emitter and on no running stack**, `demo-2` predates it by nine hours, and
+the dev-side strip is demo-only — **routed to M258, not fixed**. (2) The final harden stopped at
+`cap reached without stabilization` because the whole-section instrument is **itself partially blind on this
+host** (one interpreter cause, eight symptoms) — that is the finding, not a gap in what was measured.
+(3) The tooling fixes landed at this close are in the rext **authoring copy** and are **not on a pushed
+tag**, so no stack can obtain them yet — *tagging is not publishing*.
+
+**Carry-forward → M258:** 11 items in 5 root-cause clusters + 1 block fate over the carried-token tail. See
+[`carry-forward.md`](releases/archive/02.80-fast-build/m257x-platform-realignment/carry-forward.md). **Not routed to
+M257** — at the time of writing, its own `exit_gate` still named `odysseus`, retired by `D-v28-15`. *(That
+reason expired at **M257 iter-05**, which re-pointed the gate at `macmini`. The routing itself is unchanged —
+M258 remains the owner — but it can no longer be justified by an ungradeable M257 gate.)*
+
+*Historical note on this block's own accuracy: it was `planned` at 101 iters (corrected at iter-102,
+deferral-audit F17), **re-rotted and was corrected again at iter-120** while reading "102 iters / Gate 2 of
+5" seventeen iters late, and at close it read "119 iters + 26 harden passes" — **169 iters and 47 harden
+passes stale**. A Fate-1 item that decays three times is a standing-maintenance item; see
+`deferrals-audit.md` §11.*
+
+**Shape:** `iterative`
+**Dir:** [`releases/archive/02.80-fast-build/m257x-platform-realignment/`](releases/archive/02.80-fast-build/m257x-platform-realignment/overview.md)
+**Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it
+down where it cannot rot, and make **both** rosetta (corpus) and rosetta-extensions (tooling) work against the
+platform as it is now.
+
+**Why it was inserted (2026-07-31, user call — M257 paused behind it).** M257's iters 02–03 found the demo
+**could not have been built cold on any machine for four days**, and that the gate's own health check queried a
+**dropped table** behind a `|| echo 0` that turned the error into `0` — a number indistinguishable from *"seeded,
+just thinly."* Two blockers were fixed; the third is not a fix. Platform `repos.yml` @ origin `236771f10`
+(2026-07-29T14:14Z) sets `migrations: false` for cms/jobsimulation/roadrunner — *"`app` is the ONLY repo with
+migrations… they own no local schema"* — so a fresh stack never creates the `jobsimulation` schema, while rext
+still writes **~15 `jobsimulation.*` tables**. Latent only because our clones are stale; our own
+`stack-dev/platform/repos.yml` still lists **skillpath**, decommissioned back in v2.7.
+
+**This is the THIRD occurrence of one class** — v2.1 skiller→app broke the seeder, v2.7 skillpath→app broke it
+again (and the corpus asserted skillpath live Tier-1 in ~30 files), now jobsimulation. Each time it was
+re-derived from scratch. **A recurring class with no written procedure will recur**, so the protocol doc is a
+deliverable, not a formality.
+
+**Exit gate** (both repos in the gate by construction — clauses 1/2/4 are rext, 3/5 are the corpus), against
+platform @ **origin HEAD**, never a pinned pre-drift commit:
+1. cold `--purge` + `demo-up` on **the dev host** → `autoverify green:true / 0 warnings`, **3 consecutive cycles**.
+   *(Was **odysseus**, which `D-v28-15` retired from this project on 2026-07-31 — dev/test is LOCAL to the new
+   Mac, `billion` is demo-only. A gate clause naming a retired host cannot be met as written; corrected at
+   iter-102, deferral-audit F17. This is the milestone's own recurring class found in its own exit gate — the
+   second such, after `D-M257x-101-4`.)*
+2. the **full Playthrough suite passes on that stack** (30 live / 0 failing) — so a green bring-up cannot mean an empty world;
+3. a checked-in **migration-status map** — every service, its state, **cited to platform source**, **machine-fenced against `repos.yml`**;
+4. **zero rext writes to a schema the platform no longer creates**, by a FENCE watched going RED;
+5. KB-fidelity **GREEN, or YELLOW with 0 blockers**, over `corpus/services/**` + `corpus/architecture/**`.
+
+**Iteration protocol:** `corpus/ops/platform-alignment.md` — **Delivers →**, authored by iter-01. It does not
+exist yet, and that absence is the gap this milestone closes.
+**Re-scope trigger:** two consecutive alignment attempts invalidated by new platform commits landing
+mid-milestone ⇒ escalate; the answer is then a **pinning-and-tracking policy**, not more alignment work. The
+platform ships coordinated multi-repo changes — `repos.yml` moved **39 minutes after** the mirror-drop commit.
+**Depends on:** nothing — it unblocks M257 and M258.
+**Parallel with:** none. It changes the ground everything else stands on.
+**Estimated complexity:** large.
+
+
+### M257: First-light build
+
+**Status:** `done` — **closed 2026-08-12, `closed-on-gate`.** · **Shape:** `iterative`
+
+> ✅ **THE GATE FIRED, on its own terms.** **p50 286.99 s** on `macmini` (n=3 — 286.99 / 303.44 / 280.99)
+> against a **360 s** gate and **under the 300 s stretch**, with `autoverify green:true / 0 warnings`,
+> **HEADROOM OK 3/3** and **ISOLATION OK 3/3**, host identity `match` ×3, **0 platform-repo edits** and 0
+> refused demo-patches. Not a user ruling and not a narrowed definition of done — distinct from M257x, which
+> closed `closed-incomplete` by ruling one day earlier. **9 iters (7 tiks + 2 toks); ONE lever landed of
+> eight priced, and it cleared the gate alone.**
+>
+> **L1** — multi-stage the two Next images to `.next/standalone` from **rext-owned** Dockerfiles (`next-web`
+> moved build shape 1 → 3, so no platform-repo edit was needed): images **4.04 GB → 417 MB** and
+> **3.94 GB → 380 MB**, `exporting to image` **136.4 s → 3.8 s**, UI tier **246.23 → 104.60 s (−141.63)**
+> against a pre-lever `macmini` baseline of **449.51 s** (n=3, *contended and labelled*, and RED by contract
+> on headroom — a baseline, never a gate pass). `backend_builds`' −12.37 s is booked as **variance**, not
+> credited to the lever. **billion's 666.29 s was never the denominator and does not transfer.**
+>
+> **Both falsifiable clauses actually fired during the milestone**, which is what makes the pass mean
+> something: HEADROOM failed 2 of 3 reps on the baseline campaign (peak load1 19.48 / 14.52 vs 10);
+> ISOLATION was proven able to fail by 19 unit + 3 live controls after two fail-opens only a live artefact
+> could reveal. The headline was **re-graded twice under code that changed after it was taken** — at the
+> final harden, and again at the close under three instrument fixes — and did not move.
+>
+> **The close landed the milestone's remaining declared scope** (`D-v28-10` / `D121`): the §8.5 corpus
+> retraction and the achieved-numbers rewrite of `frontend-tier.md` + `build-budget.md`, **once**, plus the
+> grep gate `D-v28-10` promised and that had never existed. Two of the plan's cites were wrong on arrival,
+> four had drifted **+61 lines**, and a **seventh live site was never enumerated at all** — so the fence is
+> keyed to the **claim**, not to a site list. It is **positional, not absence-based**: this corpus quotes
+> what it retracts, so demanding absence would trade being wrong for being silent.
+>
+> **And the close found three fail-opens in the gate instrument itself**, all in code this milestone wrote,
+> none caught by nine iters of per-commit review or three harden passes — visible only when the code was
+> read as a whole. Clause 3 fell back to the **host** filesystem on a VM profile (the two-machines
+> substitution `load1_core_basis` exists to refuse — the two clauses of one assert held opposite policies);
+> `isolation_ok` was computed in `build_report` and **read by nothing**, so `buildbench report <dir>` printed
+> `gateable: true` over a directory with no isolation block; the RED reason string named six causes and not
+> isolation. **The fixture that hid the second had hidden the same class one iter earlier.**
+>
+> **The ranking moved underneath the plan:** with the UI tier collapsed, **`set_dress` is the largest single
+> phase at 82.04 s = 28.6 %**, where L5 was priced ~30–50 s and ranked **fifth**. Routed to M258 as
+> `LEVER-M257-L5-setdress` with 14 other Fate-3 items — **0 escape-hatch deferrals**, no `carry-forward.md`
+> (a `closed-on-gate` close produces none), everything recorded **at the destination**. The close also fixed
+> a routing that had never reached one: **M257x's carry-forward had zero mentions in M258's `overview.md`**,
+> the `BIND_HOST` failure recorded in that same file.
+>
+> **The lesson worth keeping:** *a gate that names a dead thing does not fail — it abstains, and abstention
+> is invisible.* Three iters closed an accurate "metric delta 0" and none could say "and no delta is
+> achievable", because the gate's **subject** (`odysseus`) was retired one day after `TOK-01` named it.
+> **Check a gate for GRADEABILITY before checking it for satisfaction.** Full record:
+> [`m257…/retro.md`](releases/archive/02.80-fast-build/m257-first-light-build/retro.md) · `metrics.json` ·
+> `progress.md` § Gate Outcome Ledger.
+
+> ▶️ **RESUMED (history).** It was paused behind M257x after 3 closed iters; M257x's close unpaused it, and iter-04's
+> re-survey found **both** premises the pause rested on were **stale**. (1) iter-03's architectural blocker was
+> already fixed by M257x (`c0e075e`), verified by fence and live DB rather than by commit subject. (2) The
+> host-class premise — *"the Mac pays no unpack leg"* — is **measured false** (see the retraction under
+> `D-v28-15`): this Mac mini runs the containerd image store and pays a size-proportional unpack leg, so L1
+> keeps a substantial price locally and the gate is measurable here. **iter-05 re-pointed the `exit_gate` from
+> the retired `odysseus` to `macmini`, targets untouched** — a stale-reference repair, not a re-scope.
+> **BANKED and not to be redone:** both gate-honesty instruments landed with mutation-proven controls, B1+B2
+> fixed, the baseline mirror fence parameterised by host (4 → 28 tests), and `macmini.json` measured and
+> checked in (deliberately without a `gated_baseline`). *(The odysseus bring-up is banked history only — that
+> host is retired.)* **Still owed:** the `n ≥ 3` baseline on `macmini` — which will be taken on a
+> **permanently contended** box and labelled as such — and `FIX-M257-load1-units-vm`, the live form of
+> `INVESTIGATE-M257-load1-48`: clause 1 grades **host** load1 against a **VM-allocation** core count, so on
+> this host it computes a limit of **6** where the correct one is **10** and **fails closed**. *(The original
+> odysseus reading of `load1` **48.7** is now un-reproducible — that host is gone — and the units mismatch is
+> not its cause; odysseus was `native-linux`.)*
+**Goal:** Collapse the cold demo bring-up so going live is a coffee, not a lunch — spending the machine
+deliberately, never exhausting it, and without weakening a single safety guard.
+
+**Exit gate:** a cold-images `demo-down --purge` + `demo-up` reaches **`autoverify green:true / 0 warnings`**
+in **p50 ≤ 360 s across 3 consecutive cycles on `macmini`** — the local M4 Pro Mac mini, profile
+`stack-core/hostprofiles/macmini.json`. *(The host moved twice: **D-v28-14** took it off billion, **D-v28-15**
+retired `odysseus`, and this line named odysseus until **M257 iter-05** re-pointed it — a gate naming a retired
+host cannot be graded at all. **`macmini`'s own baseline is still UNMEASURED** — M257 owes it, and owes it
+labelled **contended**, because that box is a permanently-busy workstation and waiting for quiet is waiting
+forever.)* (the **46 % cut** below is against **billion's** M255-measured n=3 p50 of **666.29 s**, which
+**does not transfer** — re-derive it against `macmini`'s `gated_baseline` once that field is filled), **0
+platform-repo edits**, **all 7 demopatch guards (G1–G7) passing**, and two **falsifiable** asserts (D-v28-6,
+D-v28-11) — *the gate FAILS if either trips*:
+- **headroom:** peak load1 ≤ cores − 2 **and** peak summed heap commitment ≤ 80 % of the host budget **and**
+  free disk ≥ floor + projected image bytes, from the sampler — **not "sampled, not asserted"**;
+- **isolation:** **no built image contains another stack's baked publishable key or offset origin**, asserted
+  by post-build image inspect. L1/L3 change exactly the layers that carry them.
+
+*Stretch: ≤ 300 s.* Note the gate is a **ceiling**: the lever arithmetic lands at ~240–300 s, leaving ~93–158 s
+of unspent levers (L4/L5/L7/L8/L10) as reserve for M258's composition.
+
+**In-scope wiring (D-v28-6):** `up-injected.sh` **derives** the UI-tier lane count and `turbo --concurrency`
+from the checked-in host profile — **delete L4's hardcoded 8-core assumption**. Note that `ENV NODE_OPTIONS` is
+**not** a usable seam for the per-lane V8 ceiling: `apps/web/package.json:98` and `apps/hiring/package.json:92`
+re-assign `--max_old_space_size=8192` inline for the `next build` child.
+
+**Levers, ranked by measured seconds recoverable:**
+| | Lever | Est. |
+|---|---|---|
+| **L1** | Multi-stage the two Next images — collapse the 141.9 s + 136.7 s export **and** the 85.7 s unconditional unpack leg (L9). Enabled by `ENV NEXT_PRIVATE_STANDALONE=1`, zero config edits | **~200–250 s** |
+| **L2** | Build `next-web` ∥ `hiring` under the **union-apply rule** (D-v28-7) **and** overlap the UI tier with `compose up` | **~200 s** |
+| **L3** | Manifests-first `COPY` so the `pnpm install` layer survives a source-only change — **never once reused**: 16 entries × 4.029 GB = **61 % of the build cache**, all `Usage count: 1`. Must copy root `package.json` + `pnpm-lock.yaml` + `pnpm-workspace.yaml` **plus all 16 workspace `package.json`s** | **~55 s** + an ~8 GB/cycle leak |
+| **L4** | Drop `--concurrency=1` from `pnpm turbo build` — value from the host profile, not hardcoded | ~20–35 s |
+| **L5** | Speed the taxonomy replay (78.0 s / 330,261 rows + 2 pgvector reindexes). **The chief win on the `/dev-up` path** | ~30–50 s |
+| **L7** | Multi-stage `studio-desk` (1.71 GB shipping a full dev toolchain for a Vite bundle) | ~8 s |
+| **L8** | Cache the Directus bootstrap + restart (15.6 s of pure container-boot latency) | ~15 s |
+| **L10** | Serial fat: ~12 serial `git fetch`es · 23 serial `demopatch revert` shells · Go tooling compiled 4–5×/bring-up (`stackseed` **twice**) · 4 `atlas migrate apply` targets serial · the whole tailscale-serve plan re-emitted to add one port | ~20–50 s |
+
+*(L6 — scheduled BuildKit prune — moved to **M255** as campaign hygiene. L9 — the unconditional unpack leg — is
+folded into L1; it is not a build flag.)*
+
+**Also in scope (D-v28-10):** the **§8.5 corpus retraction**, landing **once**, with the *achieved* numbers.
+Enumerated mirror set: `corpus/ops/demo/frontend-tier.md` (**4 live sites** — `:255`, `:273`, `:274`, `:286`),
+`corpus/ops/demo/README.md:139`, `CLAUDE.md:318`. **Re-anchored 2026-07-31** (M257 pre-flight): the four
+`frontend-tier.md` cites were `:231`, `:249`, `:262`, `:271` — **pre-M255 line numbers**. M255's own doc commit
+shifted them **+24** and neither this entry nor the M257 overview was re-anchored, so the enumeration that
+*is* the work list pointed at a cert callout, a minted-pk line, a non-fatal callout and a blank line. The old
+`:271` (*"the ~3.7 GB build cache"*) is additionally a **no-op** — M255 already retracted it at `:299-306` —
+and the live claim at `:274` (*"pure memory starvation"*) was named in prose with **no line cite at all**.
+Gated by a **grep assertion** for the retracted strings —
+`demo_knob_guard.py` matches knobs and `case` arms and **cannot see prose numbers**. The claims:
+*"~3.7 GB build cache"* (**actual 105.4 GB — ~28× off**) · *"~3 min per frontend"* (right for the two Next
+apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions **"hiring" 4 times in 676 lines** — the
+under-documentation point stands; the original *"zero times in 623 lines"* figure was stale) ·
+*"~3.7 GB first build"* (measured 4.77 / 4.67 GB) · studio *"pure memory starvation, not a slow build"*
+(refuted).
+
+**Dev path.** `/dev-up` shares **L5 / L6 / L10**. Measured and reported per iter; **not separately gated** —
+**because the UI tier has no dev counterpart** (the main dev stack runs next-web natively; `dev-N` defaults to
+the frontend-free `graphql` profile), so the 446 s / 66.4 % block simply does not exist there.
+
+**Operational lever to document (not a gate):** plain `rosetta-demo down N` (no `--purge`) keeps the images and
+makes a re-up cost seconds — the fast-cycle option whenever a wiped DB is not required. `--purge` additionally
+removes **5 hidden images** that `compose up` then rebuilds inline with no per-service log, so the three
+cache-reuse checks (`:562`, `:849`, `:1077`) can **never** hit on a purge cycle.
+
+**Depends on:** M256 · **Parallel with:** none by default · **Estimated complexity:** very-large
+**Re-scope trigger:** ~~> 480 s~~ → **re-derived to 400 s at iter-08** against `macmini`'s measured
+`gated_baseline`, exactly as the overview demanded the moment that field was filled. *(This line said
+**480 s** and `:491` below said **420 s** — two values for one trigger, both scaled from `billion`'s
+666.29 s. Corrected at the M257 close; the trigger never fired, because L1 alone landed at 286.99 s.)*
+**KB dependencies:** `corpus/ops/demo/build-budget.md` (M255) · `corpus/ops/demo/frontend-tier.md` ·
+`corpus/ops/demo/demopatch-spec.md` · `corpus/ops/rosetta_demo.md` · `corpus/ops/idempotency.md` ·
+`corpus/ops/safety.md` · `corpus/ops/snapshot-spec.md`
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (rewritten once, achieved numbers) **+
+`corpus/ops/demo/build-budget.md`**
+
+### M258: Proven-live build
+
+**Status:** `done` — **closed 2026-08-12, `closed-incomplete`: ACHIEVED BY USER RULING, NOT ON GATE** ·
+**Shape:** `iterative` · **the closer**
+
+> ## ⚠️ CLAUSE 3 IS NOT MET AND MUST NEVER BE RECORDED AS MET
+>
+> **Clauses 1, 2, 4 and 5 are proven** — 1, 2 and 5 re-proven on the final stack in its own bring-up.
+> **Clause 3 — composed p50 ≤ 480 s over 3 consecutive cold cycles — was never measured clean.** The user
+> ruled the goal achieved on the other four plus a **~402 s clean PROJECTION**, having concluded the CPU
+> contention on this box is not removable. This is the shape of **M257x's `TOK-09`**, and it is deliberately
+> **not** the shape of **M257**, whose gate fired on its own terms one day earlier. Do not read the two alike.
+>
+> **Every number with its status attached, or do not quote it:**
+> **840.01 s** is **instrument-rejected** (3/3 `headroom=FAIL`; `buildbench` calls those reps *"not usable
+> measurements"*) · **401.60 s** is a **PROJECTION**, never measured as one cycle · the **~290 s** cycle was
+> **deliberately not banked** — warm-cache, missing the export/unpack leg that is **46.2 %** of a cold one,
+> on the quietest box of the milestone. **That refusal is the honest reading and is preserved as such.**
+> · **179.37 s** is `batch_gate`'s own p50 — **inside M256's 200 s budget, while contended.** The batch half
+> is not what is slow.
+>
+> **Re-scope: NOT fired, deliberately.** 840 > 600, but the reps are instrument-rejected *and* the remedy the
+> trigger prescribes (split the suite) misses the diagnosis entirely.
+
+**What it shipped.** The bring-up now ends in a **second, higher gate**: after `UP.`, `batch-gate.sh` drives
+every seeded hero's journey to completion under `D-v28-3` and the bring-up **exits non-zero, loudly**, on a
+non-empty red set — while the stack is **left UP regardless**. With it, the **world-contract restore leg**
+(resolution (b)), because the suite's reset is destructive to the presenter demo, plus a post-condition that
+cross-checks the restored menu against the identities that can serve it.
+
+**`END-M258-one-stack`: MET.** `demo-4` is the only stack up, built by the **fixed** tooling from the newest
+platform mains (`platform` `766df6c` · `app` `c52dbc51e`), and it **proved itself in the same command**:
+`red_set: []` · `runner_exit: 0` · 30/31 passing · `autoverify green:true / warnings:0` · **12/12 cockpit
+seats**. Cockpit `http://localhost:47700`. Build-and-verify first, teardown last — enforced *in code*.
+
+**The user reshaped this milestone twice mid-flight, and both are load-bearing:** (a) the ruling above;
+(b) **space optimisation added as a NEW GOAL** (`TOK-02`, user-directed) under the binding constraint *space
+must not be bought with time*. Both delivered: **11.54 GB of real SSD reclaimed at ZERO build-time cost**,
+with the **21.03 GB reclaimable build cache deliberately untouched** — the constraint honoured rather than
+quoted. The anonymous-volume leak was stopped **at its producer** on both the demo and dev paths.
+
+**The 15-red escalation was CLOSED, not carried.** Platform `766df6c` folded **sentinel into `app`** — the
+**8th** merge — while three of our post-seed reload sites still drove the deleted container's RPC and logged
+the miss as *"non-fatal"*, which was false. A stale casbin enforcer refuses **every** org-scoped read and
+write with `forbidden` at HTTP 200. **The partition was the proof**: 15 failing journeys all org-scoped, 15
+passing all user-scoped. `batch_seconds` **629 → 129** — **the suite was slow because it was broken.**
+
+**The corpus caught up with the 8th merge:** six structural classes across **26 files** at iter-18 (floor
+3→2 · `core` 5→4 · `repos.yml` 4→3 · cross-process RPC edges 1→0 · Go services of ours 2→1 · folded domains
+7→8), and production graded **`mid-fold`, not `merged-into-app`** — the first fold of eight where the tables
+did **not** move. The close swept **16 more files** the first pass missed, and taught the docs that describe
+a bring-up that the batch gate exists at all.
+
+**Harden: 5 passes, STABILIZED** — the milestone's first and only, cumulative over 20 iters. It found **four
+defects in the milestone's own youngest code**, including a fence **satisfied by its own comment** and two of
+three reload sites unfenced — one the **restore leg**, whose miss costs a *user* a stack. **The close found
+eight more, two of them fail-opens to GREEN** (a crash in the red-set reader printed nothing, and "nothing"
+was graded as "red set empty"; and a hook that re-decided the opt-out wrote no verdict, letting the previous
+run's file be read as this one's).
+
+**Closure artifacts:** [`carry-forward.md`](releases/archive/02.80-fast-build/m258-proven-live-build/carry-forward.md)
+· [`deferrals-audit.md`](releases/archive/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) (YELLOW, **0
+escape-hatch**) · [`metrics.json`](releases/archive/02.80-fast-build/m258-proven-live-build/metrics.json) ·
+[`retro.md`](releases/archive/02.80-fast-build/m258-proven-live-build/retro.md). rext ships at
+**`fast-build-m258-close`**, verified on origin. 0 platform-repo edits.
+
+**Original plan follows.**
+**Goal:** A demo stack comes up **and proves itself** — one cold command, and what you get is not "UP" but
+"UP and every journey verified".
+
+**Exit gate:** one cold command brings the stack up **and** drives the **full Playthrough batch to completion**
+with **zero standing red**, at **total p50 ≤ 480 s across 3 consecutive cold reset-to-seed cycles**,
+reproducible, **0 platform-repo edits**, **and the stack is left in a presenter-usable world** (see the world
+contract). The gate text **names the host topology** answered by M255 spike (e).
+
+> **480 s is a sum of two ceilings** (M257's 360 + M256's 200 → over budget on ceilings alone) and is reachable
+> only if M257 lands nearer its ~240–300 s estimate, spending part of its ~93–158 s of unspent levers. The
+> 600 s re-scope trigger is the release valve. *Do not read 480 s as expected — read it as the target.*
+
+**Batch-gate behaviour (D-v28-3), the design's core:** the suite **always runs to completion** — never halts at
+the first red, never retries to mask a flake. At batch end it emits **one consolidated red set**. Empty → the
+gate. Non-empty → **escalates to the user for renegotiation**, once, at batch end; each item fixed or given an
+explicit written disposition. Red **never accumulates silently across runs**. The stack is **left UP
+regardless**; the bring-up **exits non-zero and says so loudly**.
+
+**⚠️ The world contract — MUST be decided at iter-01 (review finding R2).** The only existing runner is
+`run-playthroughs.sh --reset`, which `TRUNCATE ... CASCADE`s `resetTables` down to
+`public.{organizations,users,memberships}` **with no `organization_id` predicate**
+(`stack-seeding/cmd/stackseed/main.go:733`, list `:44-125`), re-seeds **only** `pt-world.seed.yaml`, and
+re-exports the Clerkenstein roster over the live mount with `os.Create` (**truncating, not merging**,
+`main.go:225`). Meanwhile `cockpit-manifest.json` and `content-manifest.json` are projected **once at bring-up**
+(`up-injected.sh:2256`, `:2274`) and the runner never refreshes them. **So the naive composition ends with a
+test world behind a presenter cockpit full of dead CTAs** — and that state satisfies *"the stack is left UP"*,
+i.e. **the gate as first drafted was passable while shipping a broken demo**. This is not hypothetical: M254
+left `billion` in exactly that state (`m254-prove-on-billion/iter-09/decisions.md:3` — *"the demo is now the
+Playthrough world"*), with no restoration recorded. M258 would make that the outcome of **every** bring-up.
+
+Two admissible resolutions — pick one at iter-01:
+- **(a) pt-world-native** — bring the stack up via the already-wired `DEMO_STORIES_PRESET` seam
+  (`up-injected.sh:218`, `:225`; documented at `demo-up-defaults.md:47`). Self-consistent roster + manifests, no
+  TRUNCATE, no dead CTAs — precedent at `playthroughs.md:429` (M204 did exactly this). **But it is not a
+  presenter demo.**
+- **(b) restore after** — reset → suite → **re-seed the stories preset + re-export the demo roster + restart
+  the fakes**. **Cheap, not expensive:** `--reset` does **not** wipe the snapshot-replayed taxonomy (no catalog
+  tables in `resetTables`, so the 78.0 s replay is not repaid), the stories seed measures **7.6 s**, and the
+  manifests need no re-export (`--cockpit-export` is "(no DB)"; ids are deterministic). **Restore leg ≈ 20–45 s.**
+
+**Iteration protocol:** the prove-on-billion lineage (M221 → M236 → M244 → M254): **fresh agent per run** ·
+sub-agents **foreground-poll** long operations, never background-and-yield · the coordinator watchdog is never
+stood down · **pre-flight rung zero** (*tagging is not publishing* — verify the rext tag is on **origin**) ·
+**state the environment with every number**.
+
+**Security (D-v28-11):** state explicitly whether the baked-in batch changes what a `--public-host` demo
+exposes **while it runs** — it adds automated password-free cockpit hero logins to **every** bring-up on a
+stack `safety.md` Part 3 documents as published on all interfaces by default.
+
+**Shape note.** The review argued M258 is *"M257 plus one invocation line"* and should be a `section` milestone
+(480 = 360 + 120, no new measurement, no new lever). It stays **`iterative`** per the user's explicit ask — but
+with its one genuine unknown (host topology) moved forward to M255 spike (e) and the world contract named
+above, **it should close in 1–2 iters**. If iter-01 confirms the composition is mechanical, converting it to
+`section` is a legitimate in-flight simplification.
+
+**Depends on:** M256, M257 · **Parallel with:** none · **Estimated complexity:** medium
+**Re-scope trigger:** if the composed p50 exceeds 600 s after 3 tiks, split into a fast smoke lane gating the
+bring-up + a full lane after, and renegotiate the gate.
+**KB dependencies:** `corpus/ops/verification.md` · `corpus/ops/demo/playthroughs.md` ·
+`corpus/ops/demo/build-budget.md` · `corpus/ops/demo/tailscale-serve.md` · `corpus/ops/safety.md` ·
+`corpus/ops/rosetta_demo.md` · `corpus/ops/idempotency.md`
+**Delivers → `corpus/ops/verification.md`** (the bring-up now ends in a functional batch gate) **+
+`corpus/ops/demo/playthroughs.md`** (the baked-in lifecycle + the world contract)
+
+### v2.8 — parallelism matrix
+
+| Pair | Can parallelize | Shared surface | Merge risk | Note |
+|---|---|---|---|---|
+| M255 ∥ anything | **no** | — | — | It is the barrier |
+| **M256 ∥ M257** | **yes-with-caveats** | `playthroughs/e2e/*` vs `demo-stack/up-injected.sh` — **disjoint files** | low | Blocked by **resource**, not code: M256 needs a *stable* demo, M257 tears one down repeatedly. Viable only 2-host. **Default: serial** |
+| M257 ∥ M258 | **no** | M258 composes M257's output | — | |
+| M256 ∥ M258 | **no** | M258 runs M256's suite | — | |
+
+### v2.8 — risk map
+
+| Risk | Severity | Mitigation |
+|---|---|---|
+| **The fake-FAPI global seat blocks any parallel Playwright lane** — one active seat / `signedIn` / `sessID` per stack, no cookie scoping, so `storageState` reuse does not isolate it. M256's speed clause depends on an enabler that must be built | **degrades-quality** *(was: unrecognised)* | Named in M256; enabler priced at iter-01 (cookie-scoped registry or fake-FAPI per worker, both rext-owned) |
+| **The composed M258 command leaves a test world behind a presenter cockpit** — dead CTAs, and the first-draft gate passed anyway | **degrades-quality** *(was: unrecognised)* | The world contract, decided at iter-01; restore leg priced at ~20–45 s |
+| Parallel `next-web` ∥ `hiring` on the shared clone | **degrades-quality** *(was: blocks-release)* | **Downgraded by D-v28-7**: union-apply + LIFO revert + a guard test. Inspection shows the manifest union is already conflict-free |
+| L1/L3/L4/L7 touch canonical-repo Dockerfiles | degrades-quality | Zero-platform-edit holds: `NEXT_PRIVATE_STANDALONE` needs **no** config edit; otherwise demopatch or rext-owned Dockerfile |
+| Cross-stack image reuse would leak a baked pk / offset origin | **blocks-release** | Now a **falsifiable M257 gate clause** (post-build image inspect), not an invariant on trust |
+| **The bench campaign exhausts billion's disk mid-milestone** — ~2 G/cycle leak, ~11.6 G/cycle orphaned, ~4–5 cycle runway, guard mis-sized and non-fatal; ENOSPC presents as *"redis exited (1)"* | **blocks-release** | M255 item 2: hard-failing pre-rep assert + reclaim step + L6 promoted + `DEMO_DISK_MIN_GIB` re-sized |
+| The 46 % cut may be unreachable if BuildKit is I/O-throttled | degrades-quality | M255 spike (d) answers it before M257's gate is fixed; M257 carries a numeric re-scope trigger |
+| Onboarding Playthroughs may have no seedable pre-onboarding state | degrades-quality | M256 open question; falls to a written disposition under D-v28-4 rather than blocking |
+| `NEXT_PRIVATE_STANDALONE` is a Next-*private* API that could change on a minor bump | nice-to-resolve | Documented in `build-budget.md` with the `next.config.mjs` demopatch fallback |
+| Cert silently expires ~2026-10-09 mid-release; failure path drops to an untrusted local cert with only a warning | blocks-release *(if it fires)* | M255 item 7 (non-gating) + the `safety.md` §3 amendment |
+| Red-set renegotiation becomes a per-run interrupt | nice-to-resolve | **D-v28-3**: full batch to completion, **one** escalation at batch end |
 
 ---
 

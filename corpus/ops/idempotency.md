@@ -38,7 +38,7 @@ become **safe to retry**, which is the foundation the later milestones build aut
 | **migrate** | `demo-stack/migrate-demo.sh` (demo) · `dev-stack/migrate-dev.sh` (dev peer, v2.1 M211) | **SAFE** (idempotent) | Schemas `IF NOT EXISTS`; `CREATE EXTENSION … IF NOT EXISTS` (the `extensions` schema bootstrap — the M25-D9 cold-DB-init fix); atlas is declarative/revision-tracked; `init_policy.sql` applied only when `casbin_rules` is empty. **+ the first-run-race hardening** (below). |
 | **snapshot-replay** | `stacksnap replay` (`stack-snapshot/replay/`) | **SAFE** (idempotent) | **Per-stack-isolated `TRUNCATE`-then-reload** before COPY — a 2nd replay REPLACES, never appends. |
 | **directus-provision** | `dev-setdress.sh::provision_directus_step` / `boot_directus_step` (M22) | **SAFE** (converges) | `CREATE SCHEMA IF NOT EXISTS`; **bootstrap guarded on the `directus_collections` sentinel** (a half-bootstrap re-bootstraps); the structure/serve-row apply rides the replay's gap-gated auto-provision (no-op once provisioned); the serving container is the **compose service** (re-up reuses the name; the bootstrap `docker run` is `--rm`, no name clash); restart is idempotent. |
-| **seed** | `stackseed` (`stack-seeding/`) | **SAFE** (idempotent) | **Idempotent COPY** (`ON CONFLICT (id) DO NOTHING`) for every deterministic-id surface + a **`WHERE NOT EXISTS`** casbin grant. `--reset` clears the **full** fleet. |
+| **seed** | `stackseed` (`stack-seeding/`) | **SAFE** (idempotent) | **Idempotent COPY** (`ON CONFLICT (id) DO NOTHING`) for every deterministic-id surface + a **`WHERE NOT EXISTS`** casbin grant. `--reset` clears the **full** fleet — including **both** seeded casbin grouping types (`g2` role + `g3` feature; the g3 half was missing until v2.8 M256 iter-11, see §4 below). |
 
 Before M17 the latter two were **NOT idempotent** (a 2nd replay doubled / duplicate-key-aborted; a 2nd
 seed unique-violated or duplicated the casbin grant). The guards below close those.
@@ -57,6 +57,37 @@ There are two correct ways to re-run a bring-up step. M17 makes the tooling supp
 `stackseed --reset` is the **middle ground**: it truncates the seeded tables (per-stack only) so a
 re-seed lands on an empty surface, without tearing the whole stack down.
 
+### ⚠️ Since v2.8 M258 a bring-up is itself DESTRUCTIVE-then-RESTORATIVE
+
+The two models above describe a re-run as something an operator chooses. **The bring-up now performs one
+on its own**, and that is a material change to this doc's contract, so it is stated here rather than left
+to be discovered.
+
+A `/demo-up N` that gates itself (i.e. `--no-public-host`, with the stories world and UI tier on) ends in
+the **Playthrough batch gate**, which runs `run-playthroughs.sh --reset` — the *real* reset, a full
+FK-ordered `TRUNCATE` bottoming out at `public.{organizations,users,memberships}` **with no
+`organization_id` predicate** — and re-seeds `pt-world.seed.yaml`. So model 3 fires inside model 1.
+
+What makes that safe rather than a footgun is the **restore leg** the gate always runs afterwards, on
+every path where the reset ran — including a red one, because a red batch must not *also* cost the
+presenter the demo world. It is **reset-then-seed, never additive** (an additive re-seed over `pt-world`
+leaves every test row in place — the M42e green-but-wrong trap, and forbidden as a reset), and it restores
+all three layers of the world: the DB, the Clerkenstein identities, and the cockpit's advertised menu —
+then **cross-checks the last two against each other**, because each layer reporting its own success is
+exactly the state in which the original defect shipped.
+
+Two properties worth carrying into any re-run reasoning here:
+
+- **The taxonomy is not repaid.** No catalog table is in `resetTables`, so the snapshot-replayed taxonomy
+  survives the reset and the ~78 s replay is not re-run. The measured restore leg is ~7 s, not the 20–45 s
+  originally assumed.
+- **A stack whose stories world is OFF is not put through this at all.** The gate skips (recording
+  `verdict: skipped`, never `green`) rather than TRUNCATing a `small-200` world and re-seeding stories
+  over it — which is precisely what it did until the M258 close on any box where an earlier stories
+  bring-up had left `$STACK/bin/stackseed` behind, since `--purge` does not clear the stack dir.
+
+Full contract: [`verification.md`](verification.md) § the Playthrough batch gate.
+
 ## For engineers
 
 ### migrate — SAFE, plus the first-run-race hardening (ISSUE-7 + M17)
@@ -74,6 +105,12 @@ leaving an empty `casbin_rules` and a blanket-403 stack (ISSUE-7). M17 closes th
   + `wait_sentinel_running` (`docker inspect`) — runs *before* the first `docker exec psql`, so postgres is
   accepting connections and sentinel has a window to create `casbin_rules` itself. A timeout logs a WARN and
   proceeds (the reactive guard still recovers), so the wait only ever *removes* flakiness.
+  > ⚠️ **The proactive half no longer occurs, and this said it did until the M258 close.** Since platform
+  > `766df6c` (v11.0) `sentinel` is folded into `app` and **there is no sentinel container**, so
+  > `wait_sentinel_running` — the call is still there — always runs out its bound to the WARN, and the
+  > **reactive `init_policy.sql` guard is the only path that creates `casbin_rules`**. That is exactly why
+  > the reactive guard was retained rather than replaced, so the outcome is unchanged and the *reason* it
+  > holds is not the one written here. Every bring-up now pays the wait's full timeout for nothing.
 - **The schema-create step** is `|| log`-guarded too: `ON_ERROR_STOP=0` makes psql continue past a failing
   statement internally, but the psql *process* still exits non-zero — which under `set -e` would abort the
   script (e.g. an unavailable extension). The schemas are the must-haves; a missing extension is non-fatal.
@@ -158,9 +195,26 @@ make a re-seed safe:
    skipped every M7c activity/session/assignment surface, so even a reset-then-seed collided on the leftover
    rows. M17 extends it to the **full deterministic-id fleet, child-first FK-safe**
    (`activity_events → jobsim sessions → skill_path_sessions → assignments → memberships → users →
-   organizations`). The casbin g2 grant is **not** TRUNCATEd — it shares the `sentinel` schema with
-   `init_policy.sql`'s global policy (the ~47 `p`-rows), so a TRUNCATE would wipe platform bootstrap; it gets
-   a **targeted** `DELETE … WHERE p_type='g2'` (`resetCasbin`) instead, leaving the policy intact.
+   organizations`). The casbin grants are **not** TRUNCATEd — they share the `sentinel` schema with
+   `init_policy.sql`'s global policy (the ~47 `p`-rows), so a TRUNCATE would wipe platform bootstrap; they get
+   a **targeted** `DELETE … WHERE p_type IN ('g2','g3')` (`resetCasbin`) instead, leaving the policy intact.
+4. **The `g3` half of that DELETE was MISSING until v2.8 M256 iter-11 — and it made `--reset` not a reset.**
+   `resetCasbin` deleted only `g2`, so the per-membership **g3 `FEATURE_JOB_SIMULATIONS`** grants accumulated
+   across every reset a stack ever ran: measured on `demo-2`, **731 g3 rows for 140 memberships, 540 of them
+   orphaned** (pointing at membership ids from worlds long since truncated). Litter is the mild half. The
+   correctness half is that **seeded ids are deterministic**: a truncated membership is re-created with the
+   **same uuid**, so a stale g3 row from a previous seed **silently re-grants** the feature in the new world.
+   An org whose blueprint said it had *not* enabled AI Simulations came up granted **20/20**. The cleanup is now
+   written against the seeding fleet's grouping policies **as a class**, named once in `resetCasbinPTypes` and
+   pinned by `cmd/stackseed/reset_casbin_test.go` (exact-set: too few leaks state, too many widens a destructive
+   DELETE past what the fleet seeds).
+
+   **Why it survived four releases undetected, which is the transferable part:** every test wanted the grant to
+   be **PRESENT**. An additive leftover in a reset path is invisible for exactly as long as nothing asserts an
+   ABSENCE — the leak was found on the **first run** of the first Playthrough that needed the platform to refuse
+   something (`pt-aisim-org-feature-blocked`; see [`demo/playthroughs.md`](demo/playthroughs.md) § "The `blocked`
+   outcome"). **When auditing a reset path, enumerate what it deletes against what the seeders WRITE**, not
+   against what previous bugs taught you to check.
 
 > **Tested:** the merge SQL builders (the `ON CONFLICT` shape, the no-constraints temp, reserved-column
 > quoting), a re-seed-inserts-nothing-new check, the casbin `WHERE NOT EXISTS` guard, and the

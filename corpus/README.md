@@ -4,14 +4,19 @@ This directory contains all Project Rosetta documentation. For the full project 
 
 > ## ⚠️ The backend is a monolith
 >
-> `skiller`, `skillpath`, `roadrunner`, `jobsimulation` (jobsim-in-app) and `cms` (cms-in-app
-> v8.0, app **v1.360.0**) are all **folded into `app`** and served in-process by the single
-> `backend` service. The GraphQL federation composes **one** subgraph, and every application
-> table lives in the **`public`** Postgres schema.
+> **Seven** services — `skiller`, `skillpath`, `jobsimulation` (jobsim-in-app),
+> `cms` (cms-in-app v8.0, app **v1.360.0**) and, since the v9.0 "support-in-app" program,
+> `storage`, `messenger` and `customerio-sync` — are all **folded into `app`** and served
+> in-process by the single `backend` service. **`roadrunner` was listed here as an eighth folded service
+> until M257x iter-137. It was DELETED, not folded** — `app/internal/roadrunner/` exists at no ref and was
+> never added, and Judge0 is reached from inside the **jobsimulation** domain. Platform `838d907` (merged `0c91421`, 2026-08-05)
+> deleted the last three compose services, so `docker-compose.yml` declares **5** services and
+> `repos.yml` **4** entries. The GraphQL federation composes **one** subgraph, and every
+> application table lives in the **`public`** Postgres schema.
 >
 > Their service docs are kept for domain knowledge and carry a merge banner. Start from
-> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown for
-> jobsimulation and cms is tracked as **M810**; skillpath's is **M507**.
+> [`services/backend.md`](./services/backend.md). Standalone-deployment teardown is tracked as **M810** and has **LANDED for both**: for jobsimulation at `6092c6d2` (which deleted the ECS service *and* the ECR repository), **and for cms too** — `infrastructure` @ `13c248e6` declares **no `module "cms"` at all** and `terraform/production/services.tf:64-70` records what the apply destroyed. **⚠️ This line said M810 was *"uneven — not moved for cms"* until M257x iter-137**, four days after iter-123 measured it and two corpus-wide sweeps (iter-127, iter-132) repaired that predicate at 20 sites; the front-door index was the site neither sweep's search reached. `cms/terraform/main.tf:39` `service_desired_count = 0` is **orphaned dead code**, not evidence of production state. What is still pending for cms is the legacy **schema** drop, a separate M810 step. See the fenced per-service statement in [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md).
+> skillpath's teardown is **M507**.
 
 ## Directory Structure
 
@@ -23,7 +28,7 @@ Complete architecture documentation for the Anthropos platform.
 *   [Frontend Architecture](./architecture/frontend_architecture.md): Deep dive into the Next.js monorepo.
 *   [External Services](./architecture/external_services.md): Third-party integrations (Clerk, Directus, GraphQL).
 *   [Dependency Map](./architecture/dependency_map.md): Matrix of service inter-dependencies.
-*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries (colony, proto, ai, authn, taxonomy).
+*   [Shared Libraries](./architecture/shared_libraries.md): The five internal Go libraries — **and that is not the imported set.** A service a stack builds imports **five private modules: `analytics-go`, `colony`, `proto`, `storage`, `taxonomy`** (`app/go.mod:14-18` @ `app` `ad9f3c498`, all direct). ⚠️ **This line said *"four — `ai`, `colony`, `proto`, `taxonomy`"* until M257x iter-133**: `ai` was folded into `app` in-tree at `1e457fa70` (2026-08-04), and `analytics-go` and `storage` were never listed at all. **`authn` is a dependency of no service**: it ships inside colony as `colony/authn`, and the standalone repo is legacy.
 
 *   [Security & Compliance](./architecture/security_compliance.md): Data protection, EU compliance, multi-tenancy isolation.
 *   [AI Architecture](./architecture/ai_architecture.md): Models, provider routing, voice engine, recording, cost tracking.
@@ -39,17 +44,17 @@ Registry of development tools and toolchains.
 ### [Services](./services/)
 Individual service documentation and developer maps.
 
-*   **[Services Index](./services/README.md): every service doc, enumerated and grouped — start here rather than guessing a filename.** Covers the core backend tier, the gateway + frontends, the cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and the archived/merged redirects (`skiller`, `chronos`, `intelligence`).
-*   **Core Backend Services**: 8 Go microservices (Backend, CMS, Sentinel, etc. — skiller was merged into Backend, July 2026)
+*   **[Services Index](./services/README.md): every service doc, enumerated and grouped — start here rather than guessing a filename.** Covers the core backend tier, the gateway + frontends, the cross-cutting subsystems (AI-readiness, hiring, Clerk, Clerkenstein), and the archived/merged redirects (`skiller`, `skillpath`, `chronos`, `intelligence`).
+*   **Core Backend Services**: **ONE** Go service — `app` (backend), and no others. **This line read *"8 Go microservices (Backend, CMS, Sentinel, etc.)"* until M257x close, then ***"**TWO** Go services — `app` (backend) and `sentinel`"* until M258 iter-18** — true at platform `0c91421`, and **RETRACTED at `766df6c`** (v11.0, the 8th merge), which folded `sentinel` into `app` as `app/internal/sentinel/` and deleted both its compose service and its `repos.yml` entry. Eight services have now been folded into `app`, `cms` and `sentinel` among them; since `766df6c` the `core` profile starts **four** containers of which **one** is ours, and the always-on floor is **two** (`postgresql`, `redis`), not three. See [`architecture/platform-migration-status.md`](./architecture/platform-migration-status.md) — the fenced map, one row per service.
 *   **Gateway & Frontend**:
-    *   [GraphQL Gateway](./services/graphql-wundergraph.md): WunderGraph Cosmo Router (Apollo Federation v2)
+    *   ~~[GraphQL Gateway](./services/graphql-wundergraph.md)~~: **DELETED from the platform** at `2adcf71` (2026-07-31) — no `graphql` container, no federation, no supergraph. GraphQL is served directly by `backend` at `:8082/graphql/query`. The doc survives as the decommission record.
     *   [Next Web App](./services/next-web-app.md): Main customer-facing frontend (Workforce + Hiring)
 *   **Integrations**:
     *   [Clerk Integration](./services/clerk-integration.md): Identity / authentication / organizations — what it's used for, dependent repos, SDKs
 *   **Studio Services & Standalone Internal Apps**:
     *   [Studio-Desk](./services/studio-desk.md): Content design tool
-    *   [Studio-Room](./services/studio-room.md): AI generation pipeline (embedded in CMS)
-    *   [Ant Academy](./services/ant-academy.md): Internal learning portal for `@anthropos.work` employees (Next.js 16 + Expo, Vercel)
+    *   [Studio-Room](./services/studio-room.md): AI generation pipeline — **embedded in the `app` (backend) image** since cms-in-app, pulled in by CI; never a standalone deployment (this line said *"embedded in CMS"* until M257x close)
+    *   [Ant Academy](./services/ant-academy.md): the AI-academy product — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only (Next.js 16 + Expo, Vercel)
 
 ### [Ops](./ops/)
 Operations guides for setting up, running, and updating the platform.
@@ -59,9 +64,9 @@ Operations guides for setting up, running, and updating the platform.
     *   [Rosetta Demo](./ops/rosetta_demo.md): The lifecycle mechanism — bring-up, the unified first-available-N registry (v1.3/M12), port-offset, Clerkenstein injection, per-stack isolation, teardown.
     *   [Seeding Spec](./ops/seeding-spec.md): The `stack.seed.yaml` blueprint, the dependency-DAG, the **production-isolation boundary**, the data-DNA, the shipped presets (incl. the `dev-min` dev auto-seed).
     *   [Snapshot Spec](./ops/snapshot-spec.md): Capture a **public** reference surface once from a safe prod source, manifest-cache it, replay per-stack — tenant-data firewall + snapshot-fidelity (v1.2). Dev is a full-fidelity peer (v1.3/M13).
-    *   [Secrets Spec](./ops/secrets-spec.md): Provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip) — **values-blind** — verified by the 6-repo/56-gene secret-coverage DNA + the keep-listed gate; the `DIRECTUS_TOKEN` non-rearm safety (v1.6/M27–M30). Driven by `/stack-secrets`.
+    *   [Secrets Spec](./ops/secrets-spec.md): Provision every repo's target `.env` (`dev-N`/`demo-N`) from one secret source (dir/zip) — **values-blind** — verified by the 6-repo/64-gene secret-coverage DNA + the keep-listed gate; the `DIRECTUS_TOKEN` non-rearm safety (v1.6/M27–M30). Driven by `/stack-secrets`.
     *   [DB Access](./ops/db-access.md): Read-only prod DB access + the public-vs-customer boundary (v1.2/M9a).
-    *   [Safety & Security](./ops/safety.md): The code-cited safety contract — never reads private data, never touches prod (v1.3/M15).
+    *   [Safety & Security](./ops/safety.md): The code-cited safety contract (v1.3/M15). **Neither guarantee is unqualified** — the read side carries the v2.5 content-story prod-read exception (§3.8), and the write side is a claim about *the pointers this tooling knows to override*, which was proven incomplete on 2026-08-11. Read the doc before citing either.
     *   **Content stories (v2.5 "the playbill")** — real prod sessions, cloned + scrubbed, so a demo shows real played content:
         *   [Content Stories — route map](./ops/demo/content-stories-routes.md): per content product × vantage, the exact result route, classified by prove-by-render (M231).
         *   [Session Clone Spec](./ops/demo/session-clone-spec.md): the write side — the `ContentStorySeeder`, the scrub, and the **accepted residual re-identification risk** (M232).

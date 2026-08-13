@@ -117,15 +117,17 @@ added as a sibling spec/runner under `stack-verify` so it reuses verify's offset
 > a way that looks exactly like a product bug:
 >
 > - A `--public-host` demo **bakes the MagicDNS origin into the frontend build**, so the app's own GraphQL
->   client calls `https://<magicdns>:<15050+offset>/graphql`.
+>   client calls `https://<magicdns>:<8082+offset>/graphql/query` (it was `<5050+offset>/graphql` until M257x
+>   iter-13 re-pointed it off the deleted Cosmo router).
 > - `docker-proxy` binds `0.0.0.0`, so a connection **from the demo host** to its own `100.x` tailscale IP hits
 >   the kernel socket and **bypasses `tailscale serve`** — the thing that terminates TLS. Plain HTTP then
 >   answers a TLS handshake: `ERR_SSL_PROTOCOL_ERROR` / *"wrong version number"*.
 > - Every GraphQL call fails ⇒ every page is a permanent loading spinner ⇒ **every section reports
 >   `region-not-found`** and the persona checks fail for want of an org name and an avatar.
 >
-> Measured on `billion`: from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS; **from a
-> tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
+> Measured on `billion` (M219, before the router deletion — `:15050` no longer exists; the finding is about
+> the loopback path, not that port): from the host, https on `:13000`, `:15050` **and** `:18082` all fail TLS;
+> **from a tailnet peer all three answer.** The demo was healthy throughout. The first M219 sweep run this way reported
 > `failingSections=21, personaFailures=3` — a **systemic false-RED**, and exactly the sort that gets "fixed" by
 > weakening asserts. From the correct vantage the same build reported `failingSections=0, personaFailures=0`.
 >
@@ -345,7 +347,7 @@ doesn't add failures — a deeper crawl that holds coverage).
 | **Entitlement/policy-gated empty page (a deny modal)** | the page gates on a Sentinel Casbin policy the seeder never wrote (e.g. `/sim/.../start` deny modal when the org lacks the `FEATURE_JOB_SIMULATIONS` `g3` grant) | `stack-seeding` (seed the `g3` feature grant per membership — `identity.go`/`users.go`) | re-seed the demo **+ reload Sentinel policy** (restart `<demo>-sentinel-1` — `LoadPolicy()` runs once at startup, no watcher) |
 | **Federation / content error (403/500/panic)** | the page reads replayed content not serve-granted | `stack-snapshot` serve-grants (`directus/structure.go`) | re-replay snapshot into the demo |
 | **Directus schema-drift content 500 — COLUMN class** (M46/DD, Option A) | a cms `SetFields("*", …)` content query (e.g. simulations) SELECTs a column the **captured Directus structure** lacks because the platform added it after the capture → `Directus 500: column <collection>.<col> does not exist` → the content fetch fails (the ~60–90 s "latency" is the router **retrying**). **Cache-masked** in a warm sweep; surfaces only on a **cold** federation tier (restart cms+router+directus). DIAGNOSE via `docker logs <stack>-directus-1 \| grep 'does not exist'` + diff the **full `*`-expanded SELECT** Directus generates against the replayed physical columns (the full SELECT lists every requested column before execution → the COMPLETE missing COLUMN set in one pass, not bounded by Postgres reporting only the first). | a reproducible **post-replay column backfill** — an idempotent `ALTER TABLE directus.<collection> ADD COLUMN IF NOT EXISTS <col> <type> [DEFAULT …]` in `demo-stack/up-injected.sh`'s `NO_SETDRESS` block (next to the FK indexes, on the demo's own offset Postgres, schema `directus`), gated on local content + `DEMO_NO_DIRECTUS_DRIFT_FIX`, non-fatal, values-blind (the FK-indexes mechanism class). DEMO-LOCAL DDL — the `cms`/`app` clones stay pristine. **Scope:** column drift ONLY — NOT the serve-grant closure row below. | re-up (the backfill runs post-replay) — verify on a **COLD** tier (restart cms+router+directus) so it isn't cache-masked |
-| **Directus serve-grant CLOSURE gap — RELATION/COLLECTION class** (M46/DD → **CLOSED by M46 Path 2**) | a cms deep-fetch (`GetJobSimulation`: `sequences.knowledge.*`, `sequences.assets_files.directus_files_id.*`, `sim_features.*`, `translations.*`, …) traverses a target/junction collection (`knowledge_asset`, `sequences_files`/`_2`, `directus_files`, `sim_features`, `sim_translations`, `simulations_translations`, `sim_roles_tasks`) the M40 [serve-grant](#…) `servedCollections` set does NOT register/grant/relate → Directus drops the **whole parent alias** (e.g. `sequences`) → cms `s.Sequences[0]` **panics** (`index out of range`) → a federated non-nullable field (`jobSimulation.title`) is null → the whole section (e.g. activity-dashboard's activity-table) never hydrates. DIAGNOSE via `probe-empty.spec.ts` (the `insightsByJobSimulations.rows.@.jobSimulation` DOWNSTREAM_SERVICE_ERROR) + `docker logs <stack>-cms-1 \| grep 'index out of range'` + check `directus.directus_{collections,relations,permissions}` for the traversed collections. **NOT an Option-A column backfill** (an `ADD COLUMN` won't help) and the relation metadata must be CAPTURED from prod (never hand-fabricated — the M25 subtle-FK-bug risk). **⚠ cms caches `GetJobSimulation` per-id responses in Redis DB 5 (`simulations_<id>_<hash>`, 24 h TTL, cache-FIRST) — so a re-replay into an ALREADY-running demo can serve a poisoned EMPTY-sequences entry cached during the serve-grant settle. A FRESH `/demo-up` starts empty + provisions directus before cms queries it (no poison); to fix in place, clear DB 5 `simulations_*`.** | **The fix (M46 Path 2):** EXPAND `servedCollections` in `stack-snapshot/directus/structure.go` to the full deep-fetch closure (the 7 collections above) + a SYNTHESIZED `directus_files` SYSTEM read grant (`serveFilesCollection`/`serveFilesPermissionSQL`) + **RECAPTURE** the prod Directus structure (the relation/field metadata is captured, never fabricated). | **a FRESH `/demo-up`** off the regenerated cache (the capture-path live-acceptance pattern — re-capture + cache-bust + fresh up); on an already-running demo, re-replay the serve rows + **clear the cms Redis DB-5 `simulations_*` cache** |
+| **Directus serve-grant CLOSURE gap — RELATION/COLLECTION class** (M46/DD → **CLOSED by M46 Path 2**) | a cms deep-fetch (`GetJobSimulation`: `sequences.knowledge.*`, `sequences.assets_files.directus_files_id.*`, `sim_features.*`, `translations.*`, …) traverses a target/junction collection (`knowledge_asset`, `sequences_files`/`_2`, `directus_files`, `sim_features`, `sim_translations`, `simulations_translations`, `sim_roles_tasks`) the M40 [serve-grant](../snapshot-spec.md#the-public-policy-serve-grant-m40-method-acting-m40--relational-metadata--synthesized-read-grants) `servedCollections` set does NOT register/grant/relate → Directus drops the **whole parent alias** (e.g. `sequences`) → cms `s.Sequences[0]` **panics** (`index out of range`) → a federated non-nullable field (`jobSimulation.title`) is null → the whole section (e.g. activity-dashboard's activity-table) never hydrates. DIAGNOSE via `probe-empty.spec.ts` (the `insightsByJobSimulations.rows.@.jobSimulation` DOWNSTREAM_SERVICE_ERROR) + `docker logs <stack>-cms-1 \| grep 'index out of range'` + check `directus.directus_{collections,relations,permissions}` for the traversed collections. **NOT an Option-A column backfill** (an `ADD COLUMN` won't help) and the relation metadata must be CAPTURED from prod (never hand-fabricated — the M25 subtle-FK-bug risk). **⚠ cms caches `GetJobSimulation` per-id responses in Redis DB 5 (`simulations_<id>_<hash>`, 24 h TTL, cache-FIRST) — so a re-replay into an ALREADY-running demo can serve a poisoned EMPTY-sequences entry cached during the serve-grant settle. A FRESH `/demo-up` starts empty + provisions directus before cms queries it (no poison); to fix in place, clear DB 5 `simulations_*`.** | **The fix (M46 Path 2):** EXPAND `servedCollections` in `stack-snapshot/directus/structure.go` to the full deep-fetch closure (the 7 collections above) + a SYNTHESIZED `directus_files` SYSTEM read grant (`serveFilesCollection`/`serveFilesPermissionSQL`) + **RECAPTURE** the prod Directus structure (the relation/field metadata is captured, never fabricated). | **a FRESH `/demo-up`** off the regenerated cache (the capture-path live-acceptance pattern — re-capture + cache-bust + fresh up); on an already-running demo, re-replay the serve rows + **clear the cms Redis DB-5 `simulations_*` cache** |
 | **Out-of-demo link (escape)** | a baked/rendered link host points at prod | the demo **injection + env link-rewriting** (`demo-stack/up-injected.sh` build-args / `stack-injection/gen_injected_override.py`) — rewrite the host to the offset port. **Precondition (M42m iter-02):** the platform must expose a **per-URL `NEXT_PUBLIC_<thing>_URL` override** for that host (rewritable in the gitignored `apps/web/.env.local` overlay or a build-arg, zero-edit — e.g. next-web's `ACADEMY_URL` reads `NEXT_PUBLIC_ACADEMY_URL`). If the host is instead behind a **coarse mode-flip** (`NEXT_PUBLIC_NODE_ENV`) or a **hardcode** with no per-URL knob (e.g. next-web's `STUDIO_URL` — a `NEXT_PUBLIC_NODE_ENV` ternary, wrong-port + side-effecting on flip), the host is **platform-bound** → this row does NOT apply; it's a **re-scope trigger** (the rewrite needs a platform-source edit). Diagnose: find the constant's source, check for a dedicated `NEXT_PUBLIC_<thing>_URL` read vs a mode-flip/hardcode. | re-build the frontend (baked URL) or re-emit the override + restart |
 | **Platform-bound escape (no per-URL override)** | a baked link host is hardcoded / behind a coarse mode-flip with no `NEXT_PUBLIC_<thing>_URL` knob (e.g. next-web's `STUDIO_URL`) — the env-rewrite row above does NOT apply | the **demo-patch tool** (`demo-stack/patches/demopatch` + a content-anchored manifest, M42m iter-03): source-patch the demo's **EPHEMERAL gitignored clone** before the build to read `NEXT_PUBLIC_<thing>_URL` (a behavior-identical fallback ternary kept), then **trap-revert** after the image bakes — CANONICAL repos NEVER touched (**7** guards, incl. G7 the apply post-condition: hard path-assert demo-clone-only, drift-refuse, never-commit, idempotent, self-owned reversal, demo-only, apply post-condition). Wired into `up-injected.sh` (apply-before-build + RETURN-trap revert) with the offset value in the `.env.local` overlay; default-on + non-fatal (`DEMO_NO_PATCH=1` opts out). The clone is left git-clean; `ensure-clones.sh` **R1** pristine-reverts a crash-left patch + **R1b** sweeps a crash-left tooling `.dockerignore` (byte-identical + untracked guards). Resolved the Studio `studio.anthropos.work` escape demo-only (139→0). | re-build the frontend (the patch bakes into the image; revert is automatic) |
 | **Cross-port demo-local surface blank / login-loops / wrong-eject** (studio-desk class, v1.10 postfix) | a demo-local link to a **different port** than next-web (e.g. "Anthropos Studio" → studio-desk `:9000+offset`) doesn't render the authenticated home for the **logged-in hero** — it opens a blank `/undefined`, a dead `:3000` redirect-loop, a `/login` loop, or ejects to `WEB_APP_URL` (the non-admin redirect when the hero's membership doesn't resolve) | **authenticate via Clerkenstein, never bypass**: studio-desk drives its **own** fake-FAPI handshake (per-app — the cross-port `__session` cookie is **not** needed; the FAPI holds the active seat server-side) verified networklessly via `CLERK_JWT_KEY`. The **injection override** (`gen_injected_override.py`) wires the runtime `CLERK_*` (← `DESK_CLERK_*` minted by `up-injected.sh`) + pins `CLERK_SIGN_IN_URL`/`WEB_APP_URL` at the offset next-web (the requireAuth fallback). For the **admin gate** (`checkEnterpriseAndAdmin` reads the fake BAPI's `getOrganizationMembershipList`), make the fake BAPI **roster-aware** (`cmd/fake-bapi` reads the same `FAKE_FAPI_ROSTER` + seeds each hero's `(org, user)→org_role`) so a manager passes and an employee is correctly redirected. The harness gate is closed by the crawl's **cross-port FOLLOW** (`crawl.ts` `onCrossPortFollow` → `coverage.spec.ts`) **in the logged-in context**: a blank/login-loop/un-offset-`:3000`/eject destination FAILS the gate | re-up (the roster re-seeds + the override re-emits, no rebuild) for the env/BAPI; **clear the cached image** (`docker image rm demo-N-studio-desk`) only to re-bake a stale pk/offset |
@@ -430,8 +432,10 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   A crawl that navigates with `waitUntil: 'networkidle'` eats the full per-page timeout on **every** page,
   exhausts the test budget, and false-scores perfectly-good `http=200` pages as empty/error (the M42e baseline
   reported 44 "failures" that were all this flake — the true count was 8). The harness navigates with
-  `waitUntil: 'domcontentloaded'`, then races a **short bounded** `networkidle` settle (`.catch(()=>{})` on a
-  ~1.5 s ceiling) for hydration + first data paint, and never blocks on never-idle. Screenshots are captured
+  `waitUntil: 'domcontentloaded'`, then races a **bounded** `networkidle` settle (`.catch(()=>{})` on the
+  `SETTLE_CEILING_MS` ceiling — **4 s**, raised from the original ~1.5 s at iter-09 because 1.5 s collapsed the
+  BFS frontier; see the iter-09 note below) for hydration + first data paint, and never blocks on never-idle.
+  Screenshots are captured
   **inline** (an `onPage` hook in the crawl, while the page is already loaded) — never a 2nd full re-navigation
   pass, which would re-introduce the timeout and double the nav count. The crawl also guards every assert
   against a **closed page** (the test-timeout race can close the page mid-assert): `page.isClosed()` is checked
@@ -505,13 +509,21 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
   triage: an empty page gated by a **missing entitlement/policy row** → `stack-seeding` (seed it); an empty page
   filled only by a **runtime server computation** (a sim/skill-path RESULT keyed by sessionId) → crawl-scope.
   Re-instating a skip on a seedable failure is a dishonest scope-out (the gate-honesty failure mode).
-- **A casbin/policy seed applied to a LIVE stack needs a Sentinel policy RELOAD before it takes effect (M42e
-  iter-09 lesson).** Sentinel's Casbin enforcer calls `LoadPolicy()` **once at startup** with **no watcher** —
-  a raw INSERT into `casbin_rules` (the seeder's path) is invisible to the running in-memory enforcer until it
-  reloads. On a fresh `/demo-up` the seed precedes Sentinel start, so this never bites; it bites only a
+- **A casbin/policy seed applied to a LIVE stack needs a Casbin policy RELOAD before it takes effect (M42e
+  iter-09 lesson).** The Casbin enforcer calls `LoadPolicy()` **once at startup** — a raw INSERT into
+  `casbin_rules` (the seeder's path) is invisible to the running in-memory enforcer until it
+  reloads. On a fresh `/demo-up` the seed precedes the PDP's start, so this never bites; it bites only a
   **re-seed of a running stack** (a Phase C re-apply of a casbin-touching seeder). Re-apply step: **restart the
-  demo's `<demo>-sentinel-1` container** (re-runs `LoadPolicy()` on startup) — or call the `Reload` RPC. The
+  demo's `<demo>-backend-1` container** (re-runs `LoadPolicy()` on startup). The
   app's 1-min in-process feature cache also expires on its own. Demo-local container op, zero platform edit.
+  > ⚠️ **This step said *"restart the demo's `<demo>-sentinel-1` container … or call the `Reload` RPC"* until
+  > M258 iter-18, and both halves are now dead.** Platform **`766df6c`** (v11.0) folded the PDP into `app` as
+  > `app/internal/sentinel/` and deleted the `sentinel` compose service, so there is no `<demo>-sentinel-1`
+  > container to restart; `app` deleted its Connect-RPC listener in the same release (`app/main.go:1310`,
+  > *"NO RPC SERVER"*), so there is no `Reload` RPC to call either. The enforcer now lives in the `backend`
+  > process — restart **that**. The *"no watcher"* premise also changed: cross-replica invalidation is Redis
+  > **Pub/Sub** on channel `sentinel:policy:invalidate` (`app/internal/sentinel/watcher.go:55`), so publishing
+  > to that channel is the no-bounce alternative. A single-replica demo still reloads fine on restart.
 - **Some pages render their real content OUTSIDE `<main>` — fall back to `<body>` innerText when `<main>` is
   below the floor (M42e iter-09 lesson).** The sim `/start` launch UI (`AISimulationStartWithoutSession`) mounts
   a sibling region with an EMPTY `<main>` while the visible launch content (~625 chars) lives in `<body>`. A
@@ -607,10 +619,18 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     the aggregate's skill set — visible as a `context canceled` storm in `<stack>-backend-1` logs; the taxonomy
     translation surface is served by the backend subgraph since the skiller→app merge). That is the
     **same N+1 family as the M46 per-object Sentinel RPC**, in the translation path. **And a materialized
-    snapshot mirror only helps if the read path CONSULTS it** — the default AI-readiness dashboard GET always
-    takes the live-recompute branch (`buildLiveResponse`; the `ai_readiness_live_snapshots` read is gated behind
-    a *closed* `CycleID`), so seeding the snapshot table would NOT short-circuit the default call — the
-    short-circuit itself is a platform-read-path change. **Decompose like M46:** if a demo-patch can batch/relax
+    snapshot mirror only helps if the read path CONSULTS it** — *as of the M51 iteration this paragraph
+    records*, the default AI-readiness dashboard GET took the live-recompute branch (`buildLiveResponse`;
+    the **`ai_readiness_snapshots`** read was gated behind a *closed* `CycleID` — `buildResponseFromSnapshots`
+    calls `ListAIReadinessSnapshots`, `readiness.go:771-772`), so seeding the snapshot
+    table would NOT short-circuit the default call. **This sentence named `ai_readiness_live_snapshots`
+    until M257x iter-49** — a different table entirely: the **askengine / Talk-to-Data write-side mirror**,
+    which says so in its own docstring (`live_snapshots.go:54-57`) and which the twin twelve lines below
+    already named correctly. iter-48 rewrote this sentence's tense and its retraction and preserved the
+    wrong table name it had not noticed. **⚠️ No longer true at platform HEAD** — see the
+    correction below (`readiness.go:308-312` also reaches `buildResponseFromSnapshots` on the nil-`CycleID`
+    path). This sentence stood in the PRESENT tense thirteen lines above its own retraction until M257x
+    iter-48. **Decompose like M46:** if a demo-patch can batch/relax
     the translation fan-out or make the default call read snapshots (the `app-targetrole-authz-skip` precedent),
     that's demo-local; if not, it's the milestone Re-scope trigger (`unimplementable-without-platform-edit`) —
     escalate, never edit the platform, and never widen the harness budget to mask a server that can't answer.
@@ -620,9 +640,13 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     alternative — a CLOSED cycle whose read takes `buildResponseFromSnapshots` (a pre-computed frozen read).
     iter-07 seeded the cycle closed + a frozen `ai_readiness_snapshots` row per member (DB-verified correct:
     199 snapshots, 78.4% stage-3, heroes right) — and the GATED sweep STILL held at the same failing count.
-    The frozen branch EXISTS in code but the DEFAULT dashboard GET never takes it: `app
-    GetAIReadinessWithOptions` reaches `buildResponseFromSnapshots` ONLY for `opts.CycleID != nil &&
-    status=="closed"` — the nil-CycleID default is hardcoded to `buildLiveResponse`. An AUTHENTICATED network
+    The frozen branch EXISTS in code, and at the time of this iteration the DEFAULT dashboard GET did not
+    take it. **⚠️ That is no longer true of platform HEAD, and it is not a hardcode — corrected M257x
+    iter-46** (`FIX-M257x-iter43-coverage-protocol-livepath`): `app/internal/aireadiness/readiness.go:308-312`
+    reaches `buildResponseFromSnapshots` on the **nil-CycleID** path too, whenever the org has **no active
+    cycle and a latest closed one** — which is exactly the shape M51 seeds. Read the paragraph below as the
+    contemporaneous iter-07 finding it was, not as a current statement about the read path. An AUTHENTICATED
+    network
     probe (log in as the hero, log every outbound backend request URL + query params + whether it completes)
     proved the demo FE fires the data GET **WITHOUT `?cycle=`** (the live path — it hangs) and never fires the
     `/cycles` list that would supply `latestClosedCycle.id`. **Lesson: a server-side fast branch is necessary
@@ -660,8 +684,9 @@ The generic `build-mstone-iters` tik/tok cadence applies. This protocol adds:
     org-scale-slow and its cost is NOT a demo-patchable authz gate, the remaining zero-edit path is the
     disclosed-presenter-note (data proven-correct in the DB, slow-only) — which needs the user's EXPLICIT
     sign-off; a platform fix (bound `loadMembers` in the snapshot path / a frozen_tags column so it needn't
-    re-join live members) is the Re-scope trigger. Reusable diagnostic:
-    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts`.**
+    re-join live members) is the Re-scope trigger. **The "reusable diagnostic"
+    `stack-verify/e2e/tests/probe-aireadiness-deeplink.spec.ts` was never committed — the file does not exist
+    (corrected v2.8 M256 pre-flight). Reproduce with `probe-empty.spec.ts` against the deep-link instead.**
     **Build pitfalls (each cost a full re-seed):** the injected Go images are built from a build-scratch clone
     AFTER `apply-authn.sh` vendors the **disarmed colony** (Clerkenstein token acceptance); a standalone `app`
     rebuild that SKIPS that step ships a backend that calls real `api.clerk.com`, rejects every demo token, and
@@ -775,7 +800,7 @@ The roadmap called this "the result page." It is **six distinct surfaces across 
 | `player-interview` | same route, interview sims | **~205 chars by design** — an acknowledgement only; the player is *not* shown a report | the acknowledgement text |
 | `player-skillpath` | `/skill-path/<id>` | 2.9k–11k chars: chapters + a progress signal ("Continue (45%)" / "100% complete") | chapter/path structure **and** a progress indicator |
 | `player-academy` | `/courses/<slug>` (**ant-academy**, a different app) | ~3.7k chars: `COURSE · 12 CHAPTERS`, title, chapter list | course/chapter structure **and 0 Draft chips** |
-| `manager-dashboard` | `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` (`skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | header (`<player>'s Results for <sim>`, "N skills measured") **plus an attempts TABLE** | the **table rows** — the header alone is chrome |
+| `manager-scored` (was `manager-dashboard` pre-M248) | **`/sim/<slug>/<userId>/result/<sessionId>` with `isManagerView=true`** — the real per-session manager result view (**M248 moved it**; the pre-M248 `/enterprise/activity-dashboard/ai-simulations/<simId>/<membershipId>` scoreboard is no longer the graded surface. `skill-paths` was REMOVED at iter-07 — that surface is unimplemented) | the shared `AISimulationResultContainer`: a persisted score + a performance narrative, in the **session's language** (EN or IT), with "Evaluated Skills" **collapsed** behind a Show-Details toggle the sweep never clicks | a **persisted `N/100` score** on a substantial (`readable ≥ 400`) page — language-agnostic + collapse-proof; the old attempts-table/`Results for` header anchors are the WRONG gate here (an Italian 5406-char render has neither). `evaluated skills` / `skills measured` is kept as an additional acceptor; `undefined undefined` fails |
 | `manager-interview` | `/enterprise/activity-dashboard/interviews/<simId>/<membershipId>` | ~590 chars: breadcrumb naming the player over an attempts table with "View Report" — **no `Results for` header at all** | an attempt row |
 
 **Shape selection is by ROUTE, never by sniffing content.** Every shape after the first was discovered by
@@ -914,11 +939,16 @@ on** — and there it went unnoticed through all ten iters:
   console output, never of the machine-readable reading. Drops now go to `dropped.jsonl` and **fail the run**.
 - **Pin the denominator from outside.** A sweep that runs 26 of 29 pairs and lands all 26 is **not** a pass,
   and no self-consistent ledger can detect that. `EXPECTED_PAIRS=29` makes the count itself an assertion.
-  *(The concrete value grows with the content pool — `content-denominator.json` pins `expected_pairs=49`
-  since M241's EN/IT growth; M244's live `billion` sweep landed **47/47**, the 2 Bunny-absent voice **player**
-  cells held presence-only. The `29` here is the M236-era illustration, not the current denominator.)*
+  *(The concrete value tracks the content pool and the presence-only withholdings — M241's EN/IT growth took it
+  to **49**, M244's live `billion` sweep landed **47/47** (the 2 Bunny-absent voice **player** cells held
+  presence-only), and the **M254 close** moved the same 2 voice cells to **manager**-presence-only as well, so
+  `content-denominator.json` now pins `expected_pairs=`**45** — 24 player + 21 manager. The `29` here is the
+  M236-era illustration, not the current denominator; **read the pin file, never a number in this doc**.)*
 - **The runner's exit code is the verdict.** `run-content-stories.sh` ended on the aggregator with its
-  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now `exec`s the aggregator.
+  result swallowed, so the script exited 0 whether 29/29 or 0/29 landed. It now runs the aggregator as its
+  **last statement and forwards its status verbatim** (`python3 aggregate-content.py "$OUT"; exit $?`) —
+  deliberately **not** `exec`, because `exec` would replace the shell and the `EXIT` trap that removes the
+  temporary manifest would never fire.
   *(`run-coverage.sh` already carries the same lesson in a comment — "swallowing it with `|| true` is what
   let a failed sweep exit 0 for four releases" — and the newer runner reintroduced it anyway. A lesson
   written down in one runner does not propagate to its siblings by itself.)*
@@ -984,8 +1014,11 @@ routes by **bare string prefix**. Four iters touched each side; no test touched 
 Go side throws nothing, fails no Go test and no TS test, and just grades every academy page against the
 wrong shape. That *is* the iter-08 defect, and after iter-08 nothing prevented its return.
 `stack-verify/e2e/tests/content-route-contract.unit.spec.ts` reads the **checked-in canonical manifest** and
-asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08;
-reconciled to **49** since M241's EN/IT growth — see the denominator note above).
+asserts the grader understands every route in it — including the landable count (**29** at M236 iter-08; **49**
+after M241's EN/IT growth; **45** since the M254 close moved the 2 voice cells to manager-presence-only too).
+The test reads `expected_pairs` **from `content-denominator.json`** and asserts `buildPairs()` over the canonical
+preset equals it — it hard-codes no number, so the pin file is the only place a denominator lives. See the
+denominator note above.
 
 ---
 

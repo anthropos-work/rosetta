@@ -1,0 +1,192 @@
+# dependencies.lock — v2.8 "fast build"
+#
+# WHAT WAS ACTUALLY IN THIS RELEASE. Supply-chain incident-response record, Phase 0 of
+# /developer-kit:close-release. Every row below came from a command run at close, not from a manifest read.
+#
+# Generated: 2026-08-12 (release close, Phase 0)
+# Corpus repo : rosetta @ c69ec0622fb81a3b0e7e8a793cfda86339f6fc26 (branch release/02.80-fast-build)
+# Tooling repo: rosetta-extensions @ d06a56d35d3ebafe2cb3e3e38d28b791eafa9a17 (tag fast-build-m258-close)
+# Toolchains  : go version go1.26.5 darwin/arm64 | npm 11.16.0 | node v24.18.1 | pytest 9.1.1 on python 3.12.13
+#
+# SCOPE NOTE — READ THIS BEFORE TRUSTING A COUNT.
+#   The `rosetta` corpus repo carries ZERO tracked dependency manifests (verified:
+#   `git ls-files | grep -E 'go.mod|package.json|requirements|pyproject|Cargo.toml'` -> empty).
+#   It is a docs + plan repo. The ENTIRE third-party surface of this release lives in the second
+#   tree, `.agentspace/rosetta-extensions`, and is enumerated here.
+#   Untracked live-stack clones under rosetta-extensions/demo-stack/stacks/ (e.g. demo-1/clones/app)
+#   carry their own go.mod/requirements.txt. They are EPHEMERAL PLATFORM CLONES, not this release's
+#   dependencies, and are deliberately excluded.
+#
+# There is no 'prod' tier in this repo. Every artifact here is developer/operator tooling that runs
+# on a workstation against a local stack; nothing is deployed or distributed to a customer. The
+# prod-only vs all-deps audit split is recorded anyway, and is identical for that reason.
+
+====================================================================================================
+ECOSYSTEM: Go  (6 modules, each with its own go.mod — rosetta-extensions is NOT one module)
+====================================================================================================
+
+--- module: alignment  (anthropos.dev/alignment) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   ABSENT — module requires nothing outside the Go standard library.
+    integrity: n/a (no external module in the graph)
+
+--- module: clerkenstein  (clerkenstein) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   12 module zips + 55 go.mod hashes (dirhash h1: — the ecosystem's integrity primitive)
+    MODULE                                                         VERSION            LICENSE        INTEGRITY (h1: dirhash)
+    github.com/anthropos-work/colony                               v0.34.3            PROPRIETARY (first-party, anthropos-work org-private; no LICENSE file) h1:y/T9ceL8LaFLfBHWgXOcjzMFXWOdLBq6XzDWR1MX56g=
+    github.com/clerk/clerk-sdk-go/v2                               v2.6.0             MIT            h1:OgxysA1iHcL9mZp3ie/F8e5sBmX4xKRXR7p0BVbut98=
+    github.com/davecgh/go-spew                                     v1.1.1             (not downloaded to module cache at audit time) h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+    github.com/go-jose/go-jose/v3                                  v3.0.5             Apache-2.0     h1:BLLJWbC4nMZOfuPVxoZIxeYsn6Nl2r1fITaJ78UQlVQ=
+    github.com/google/go-cmp                                       v0.5.9             (not downloaded to module cache at audit time) h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
+    github.com/google/uuid                                         v1.6.0             BSD-3-Clause   h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+    github.com/jarcoal/httpmock                                    v1.3.1             (not downloaded to module cache at audit time) h1:iUx3whfZWVf3jT01hQTO/Eo5sAYtB2/rqaUuOtpInww=
+    github.com/pmezard/go-difflib                                  v1.0.0             (not downloaded to module cache at audit time) h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+    github.com/stretchr/testify                                    v1.11.1            (not downloaded to module cache at audit time) h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+    github.com/svix/svix-webhooks                                  v1.93.0            MIT            h1:B62I/AKg9dWs1ERgDdiJF3M8XbFbY1SSrBKRaORauLw=
+    golang.org/x/crypto                                            v0.52.0            BSD-3-Clause   h1:RMs7fP2rXdep0CftQlK8Uf+kibLm7qkCcradZWYz988=
+    gopkg.in/yaml.v3                                               v3.0.1             Apache-2.0     h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+
+--- module: playthroughs  (github.com/anthropos-work/rosetta-extensions/playthroughs) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   2 module zips + 2 go.mod hashes (dirhash h1: — the ecosystem's integrity primitive)
+    MODULE                                                         VERSION            LICENSE        INTEGRITY (h1: dirhash)
+    gopkg.in/check.v1                                              v0.0.0-20161208181325-20d25e280405 (not downloaded to module cache at audit time) h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+    gopkg.in/yaml.v3                                               v3.0.1             Apache-2.0     h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+
+--- module: stack-secrets  (github.com/anthropos-work/rosetta-extensions/stack-secrets) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   ABSENT — module requires nothing outside the Go standard library.
+    integrity: n/a (no external module in the graph)
+
+--- module: stack-seeding  (github.com/anthropos-work/rosetta-extensions/stack-seeding) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   38 module zips + 70 go.mod hashes (dirhash h1: — the ecosystem's integrity primitive)
+    MODULE                                                         VERSION            LICENSE        INTEGRITY (h1: dirhash)
+    github.com/Azure/azure-sdk-for-go/sdk/azcore                   v1.21.0            MIT            h1:fou+2+WFTib47nS+nz/ozhEBnvU96bKHy6LjRsY4E28=
+    github.com/Azure/azure-sdk-for-go/sdk/azidentity               v1.13.1            (not downloaded to module cache at audit time) h1:Hk5QBxZQC1jb2Fwj6mpzme37xbCDdNTxU7O9eb5+LB4=
+    github.com/Azure/azure-sdk-for-go/sdk/internal                 v1.12.0            MIT            h1:fhqpLE3UEXi9lPaBRpQ6XuRW0nU7hgg4zlmZZa+a9q4=
+    github.com/AzureAD/microsoft-authentication-library-for-go     v1.6.0             (not downloaded to module cache at audit time) h1:XRzhVemXdgvJqCH0sFfrBUTnUJSBrBf7++ypk+twtRs=
+    github.com/anthropos-work/ai                                   v1.40.1            PROPRIETARY (first-party, anthropos-work org-private; no LICENSE file) h1:AhgWrXYJxB9jUFFrisr6FPjJL2SO0ebD05Uq4rhIoEo=
+    github.com/avast/retry-go/v4                                   v4.7.0             MIT            h1:yjDs35SlGvKwRNSykujfjdMxMhMQQM0TnIjJaHB+Zio=
+    github.com/davecgh/go-spew                                     v1.1.1             (not downloaded to module cache at audit time) h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+    github.com/dlclark/regexp2                                     v1.11.5            MIT            h1:Q/sSnsKerHeCkc/jSTNq1oCm7KiVgUMZRDUoRu0JQZQ=
+    github.com/golang-jwt/jwt/v5                                   v5.3.0             (not downloaded to module cache at audit time) h1:pv4AsKCKKZuqlgs5sUmn4x8UlGa0kEVt/puTpKx9vvo=
+    github.com/google/uuid                                         v1.6.0             BSD-3-Clause   h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+    github.com/jackc/pgpassfile                                    v1.0.0             MIT            h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
+    github.com/jackc/pgservicefile                                 v0.0.0-20240606120523-5a60cdf6a761 MIT            h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
+    github.com/jackc/pgx/v5                                        v5.9.2             MIT            h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+    github.com/jackc/puddle/v2                                     v2.2.2             MIT            h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
+    github.com/json-iterator/go                                    v1.1.12            MIT            h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
+    github.com/kr/pretty                                           v0.3.1             (not downloaded to module cache at audit time) h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
+    github.com/kr/text                                             v0.2.0             (not downloaded to module cache at audit time) h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
+    github.com/kylelemons/godebug                                  v1.1.0             (not downloaded to module cache at audit time) h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
+    github.com/modern-go/concurrent                                v0.0.0-20180306012644-bacd9c7ef1dd Apache-2.0     h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
+    github.com/modern-go/reflect2                                  v1.0.2             Apache-2.0     h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
+    github.com/openai/openai-go/v3                                 v3.31.0            Apache-2.0     h1:3KxL3H+gw6vBkBW6dmcwhbFqP4kyMgmaWTsuRheyF8w=
+    github.com/pkg/browser                                         v0.0.0-20240102092130-5ac0b6a4141c (not downloaded to module cache at audit time) h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
+    github.com/pmezard/go-difflib                                  v1.0.0             (not downloaded to module cache at audit time) h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+    github.com/rogpeppe/go-internal                                v1.15.0            (not downloaded to module cache at audit time) h1:D0RCU5rMAp+SpgkiNdrjfJ+LX4J1M32V2NeCY7EJ6hc=
+    github.com/samber/go-gpt-3-encoder                             v0.3.1             MIT            h1:YWb9GsGYUgSX/wPtsEHjyNGRQXsQ9vDCg9SU2x9uMeU=
+    github.com/samber/lo                                           v1.53.0            MIT            h1:t975lj2py4kJPQ6haz1QMgtId2gtmfktACxIXArw3HM=
+    github.com/stretchr/testify                                    v1.11.1            (not downloaded to module cache at audit time) h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+    github.com/tidwall/gjson                                       v1.18.0            MIT            h1:FIDeeyB800efLX89e5a8Y0BNH+LOngJyGrIWxG2FKQY=
+    github.com/tidwall/match                                       v1.2.0             MIT            h1:0pt8FlkOwjN2fPt4bIl4BoNxb98gGHN2ObFEDkrfZnM=
+    github.com/tidwall/pretty                                      v1.2.1             MIT            h1:qjsOFOWWQl+N3RsoF5/ssm1pHmJJwhjlSbZ51I6wMl4=
+    github.com/tidwall/sjson                                       v1.2.5             MIT            h1:kLy8mja+1c9jlljvWTlSazM7cKDRfJuR/bOJhcY5NcY=
+    golang.org/x/crypto                                            v0.51.0            (not downloaded to module cache at audit time) h1:IBPXwPfKxY7cWQZ38ZCIRPI50YLeevDLlLnyC5wRGTI=
+    golang.org/x/net                                               v0.55.0            BSD-3-Clause   h1:bcvxaJn3e1U6InsFWt1JUq1aSjnRxLzT2rtD2KfkDF8=
+    golang.org/x/sync                                              v0.20.0            BSD-3-Clause   h1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=
+    golang.org/x/sys                                               v0.45.0            (not downloaded to module cache at audit time) h1:dO4czNzziLiiXplLQgBCEpCvXQ3dnkn0SdaZSYdQ+FY=
+    golang.org/x/text                                              v0.37.0            BSD-3-Clause   h1:Cqjiwd9eSg8e0QAkyCaQTNHFIIzWtidPahFWR83rTrc=
+    gopkg.in/check.v1                                              v1.0.0-20201130134442-10cb98267c6c (not downloaded to module cache at audit time) h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
+    gopkg.in/yaml.v3                                               v3.0.1             Apache-2.0     h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+
+--- module: stack-snapshot  (github.com/anthropos-work/rosetta-extensions/stack-snapshot) ---
+    go.mod   go 1.25.0 / toolchain go1.25.12
+    go.sum   10 module zips + 20 go.mod hashes (dirhash h1: — the ecosystem's integrity primitive)
+    MODULE                                                         VERSION            LICENSE        INTEGRITY (h1: dirhash)
+    github.com/davecgh/go-spew                                     v1.1.1             (not downloaded to module cache at audit time) h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+    github.com/jackc/pgpassfile                                    v1.0.0             MIT            h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
+    github.com/jackc/pgservicefile                                 v0.0.0-20240606120523-5a60cdf6a761 MIT            h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
+    github.com/jackc/pgx/v5                                        v5.9.2             MIT            h1:3ZhOzMWnR4yJ+RW1XImIPsD1aNSz4T4fyP7zlQb56hw=
+    github.com/jackc/puddle/v2                                     v2.2.2             MIT            h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
+    github.com/pmezard/go-difflib                                  v1.0.0             (not downloaded to module cache at audit time) h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+    github.com/stretchr/testify                                    v1.11.1            (not downloaded to module cache at audit time) h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+    golang.org/x/sync                                              v0.17.0            BSD-3-Clause   h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=
+    golang.org/x/text                                              v0.29.0            BSD-3-Clause   h1:1neNs90w9YzJ9BocxfsQNHKuAT4pkghyXc4nhZ6sJvk=
+    gopkg.in/yaml.v3                                               v3.0.1             Apache-2.0     h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+
+====================================================================================================
+ECOSYSTEM: npm  (2 packages — Playwright verification tooling; ALL deps are devDependencies)
+====================================================================================================
+
+--- package: playthroughs/e2e  (rosetta-playthroughs-e2e 0.1.0, private:True) ---
+    lockfileVersion 3   declared devDependencies: {"@playwright/test": "^1.49.0", "@types/node": "^20.0.0", "typescript": "^5.6.0"}
+    PACKAGE                            VERSION      TIER  LICENSE      RESOLVED / INTEGRITY
+    @playwright/test                   1.61.1       dev   Apache-2.0   https://registry.npmjs.org/@playwright/test/-/test-1.61.1.tgz
+                                                                       sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==
+    @types/node                        20.19.43     dev   MIT          https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz
+                                                                       sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==
+    fsevents                           2.3.2        dev   MIT          https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz
+                                                                       sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
+    playwright                         1.61.1       dev   Apache-2.0   https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz
+                                                                       sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==
+    playwright-core                    1.61.1       dev   Apache-2.0   https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz
+                                                                       sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==
+    typescript                         5.9.3        dev   Apache-2.0   https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz
+                                                                       sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+    undici-types                       6.21.0       dev   MIT          https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz
+                                                                       sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
+
+--- package: stack-verify/e2e  (rosetta-test-platform-e2e 0.1.0, private:True) ---
+    lockfileVersion 3   declared devDependencies: {"@playwright/test": "^1.49.0", "@types/node": "^20.19.43", "typescript": "^5.9.3"}
+    PACKAGE                            VERSION      TIER  LICENSE      RESOLVED / INTEGRITY
+    @playwright/test                   1.61.1       dev   Apache-2.0   https://registry.npmjs.org/@playwright/test/-/test-1.61.1.tgz
+                                                                       sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==
+    @types/node                        20.19.43     dev   MIT          https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz
+                                                                       sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==
+    fsevents                           2.3.2        dev   MIT          https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz
+                                                                       sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
+    playwright                         1.61.1       dev   Apache-2.0   https://registry.npmjs.org/playwright/-/playwright-1.61.1.tgz
+                                                                       sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==
+    playwright-core                    1.61.1       dev   Apache-2.0   https://registry.npmjs.org/playwright-core/-/playwright-core-1.61.1.tgz
+                                                                       sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==
+    typescript                         5.9.3        dev   Apache-2.0   https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz
+                                                                       sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
+    undici-types                       6.21.0       dev   MIT          https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz
+                                                                       sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
+
+====================================================================================================
+ECOSYSTEM: Python  (stdlib-only by convention — NO manifest exists; see FINDING SC-4)
+====================================================================================================
+
+    219 tracked .py files across stack-core (155), demo-stack (42), stack-injection (13),
+    dev-stack (6), stack-verify (6), playthroughs (1).
+    Third-party imports found across ALL tracked .py (derived, not asserted):
+        pytest   — test runner only, never imported by shipped tooling
+        yaml     — PyYAML, single import site: stack-injection/tests/test_injection.py
+    Everything else resolves to the Python standard library or a sibling module in-tree.
+
+    THERE IS NO requirements.txt, NO pyproject.toml, NO Pipfile and NO lockfile ANYWHERE in the
+    tracked tree. Python dependencies are therefore UNPINNED and UNHASHED. The versions BELOW are
+    the ones this host resolved at close — they are an observation, not a pin, and another box may
+    resolve differently:
+        pytest   9.1.1   (interpreter /opt/homebrew/opt/python@3.12/bin/python3.12, Python 3.12.13)
+        PyYAML   ABSENT from that interpreter (present as 6.0.3 on /usr/bin/python3 3.9.6)
+    integrity: NONE AVAILABLE — no lockfile exists to carry one.
+
+====================================================================================================
+VENDORED SOURCE
+====================================================================================================
+
+    NONE. No vendor/ directory is tracked in either repo; `git ls-files | grep -E '(^|/)vendor/'`
+    is empty in both. The 12-month vendored-age check therefore has an empty subject set.
+
+    ONE vendored ASSET set, license-reviewed:
+      stack-seeding/assets/avatars/  — 12 x face-NN.jpg, 160x160, ~5-7 KB each.
+      StyleGAN2-class SYNTHETIC portraits of non-existent people, fetched 2026-06-25.
+      License basis (stack-seeding/assets/avatars/LICENSE.md): no real subject => no consent/
+      privacy/publicity right; no human authorship of output pixels => no copyright to license.
+      Not a code dependency; adds no module.
+

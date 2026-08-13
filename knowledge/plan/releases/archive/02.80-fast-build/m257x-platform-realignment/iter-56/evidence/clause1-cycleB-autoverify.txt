@@ -1,0 +1,21 @@
+{"project":"demo-1","offset":10000,"warnings":0,"green":true,"ts":"2026-08-03T15:26:37Z"}
+48:  ⚠   ant-academy    2/6 short: ANTHROPIC_API_KEY, FONTAWESOME_NPM_AUTH_TOKEN, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY
+49:  ⚠   app            5/9 short: AWS_SESSION_TOKEN, ELEVENLABS_API_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY
+50:  ⚠   next-web-app   4/6 short: AZURE_OPENAI_KEY, STRIPE_SECRET_KEY
+51:  ⚠   platform       16/29 short: ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, MISTRAL_API_KEY, NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT, OPENAI_API_KEY, PUBLIC_HOST, SENTRY_DSN, SKILLER_AZURE_OPENAI_ENDPOINT_URL, SKILLER_AZURE_OPENAI_KEY, SKILLER_OPENAI_KEY, STRIPE_SECRET_KEY
+52:  ⚠   sentinel       0/1 short: SENTRY_DSN
+53:  ✓ secret-coverage: critical keys 100% present (standard gaps, if any, warned above)
+80:==> [demo-1] ⚠ preflight: Docker VM RAM = 11.6 GiB (< 12 GiB recommended for the ~3.7 GB frontend build).
+87:preflight: ⚠ app-targetrole-authz-skip — whole-file sha DRIFTED (88f25f06… → 7dc28c30…) but the anchor is intact (1x).
+91:preflight: ⚠ app-aireadiness-snapshot-loadmembers — whole-file sha DRIFTED (130e58f7… → f4995650…) but the anchor is intact (1x).
+101:    apply-app-authz-skip: ⚠ app-targetrole-authz-skip — whole-file sha DRIFTED (88f25f06… → 7dc28c30…) but the anchor is intact (1x).
+107:    apply-app-aireadiness-loadmembers: ⚠ app-aireadiness-snapshot-loadmembers — whole-file sha DRIFTED (130e58f7… → f4995650…) but the anchor is intact (1x).
+426:stacksnap: ⚠ surface "sim-embeddings" was captured from schema "cms", but on demo-1 its tables live in "public" — replaying into "public".
+471:==> [demo-1]   ✓ Sentinel policy reloaded via AuthorizationService/Reload (LoadPolicy re-run) — sim /start renders, no manual restart
+473:==> [demo-1]   ✓ FK indexes ensured (membershipskill_membership, membershiptag_membership) — per-membership lookups are index scans, not seq scans
+475:==> [demo-1]   ✓ Directus schema-drift reconciled (directus.simulations.is_interview_validation_enabled) — the cms * sim query resolves, the activity-dashboard renders real content
+477:==> [demo-1]   ✓ Directus content URLs rewritten demo-local (simulations + skill_paths) — the library drill-downs no longer eject to production
+480:▶ autoverify demo-1 (offset 10000) — cheap-win asserts + scoped verify (non-fatal)
+481:  ✓ backend /api/health 200 on :18082
+482:  ✓ sentinel.casbin_rules = 1251 (authz policy loaded)
+483:  ✓ directus.directus_collections = 21 (the content model is REGISTERED — serving is proven separately by directus-serves-content)

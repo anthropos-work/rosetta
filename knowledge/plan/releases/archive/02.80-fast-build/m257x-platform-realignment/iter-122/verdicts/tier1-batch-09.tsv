@@ -1,0 +1,44 @@
+B09-001	SUPPORTS	flow.go:109 is exactly `h.subServer.AddSubscriber("cms", ...)` — the standalone messenger does subscribe to the cms stream as the row says.
+B09-002	SUPPORTS	graphql-wundergraph/terraform/main.tf:20 reads `service_desired_count = 1` inside `module "graphql"`, i.e. the router is still declared in prod terraform.
+B09-003	SUPPORTS	docker-compose.yml:53 is `DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work` and I read the whole backend `environment:` block (:46-94) — it is the only DIRECTUS_* key, so the "exactly ONE / no DIRECTUS_BASE_ADDR" pair holds; the `0dab54d` label is stale but the tree at 0c91421 carries the identical line.
+B09-004	SUPPORTS	gen_injected_override.py:86 is verbatim `DIRECTUS_DATA_CONSUMERS = ("cms", "backend")`, and the stack-demo rext clone HEAD is 09d06070fd99..., the exact pin the unit names.
+B09-005	SUPPORTS	stack-core/gen_override.py:58 is verbatim the same two-member tuple; the dev-twin claim holds at the named pin 09d06070.
+B09-006	SUPPORTS	docker-compose.yml:110 is `profiles: [core, backend, all]` inside the `backend:` block (opened :28); read whole file — backend and gotenberg (:183) are the only two `core` members, and postgresql/redis/sentinel carry no profiles key.
+B09-007	SUPPORTS	cms/terraform/main.tf:39 is `service_desired_count = 0` inside `module "cms"` — the module is still declared and scaled to zero, as asserted.
+B09-008	SUPPORTS	:151 is the next-web-app build arg `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT: http://...:8082/graphql/query`, inside the `next-web-app:` block (:143) — a frontend targeting backend, exactly as the unit says.
+B09-009	UNRESOLVABLE	Unit pins `app b948604 v1.366.0`; this tree's app is at ad9f3c49 where :980-982 is the courseBuilderDeps struct and the DIRECTUS_BASE_ADDR log.Fatalf has moved to :1090-1092 — the claim is verifiably right at the tree, just not at the cited line.
+B09-010	SUPPORTS	gen_injected_override.py:698-699 is `if with_directus and name in DIRECTUS_DATA_CONSUMERS: env.append(f"DIRECTUS_BASE_ADDR={DIRECTUS_INNETWORK_ADDR}")` — the re-point over the tuple, at the named pin 09d06070.
+B09-011	SUPPORTS	test_injection.py:1109 is `def test_backend_the_actual_reader_is_repointed(self):` and its own comment says it replaces test_only_cms_is_repointed_not_other_services, which asserted the OPPOSITE — both halves of the unit's claim.
+B09-012	SUPPORTS	Read the full backend `environment:` block :46-94 at platform 0c91421 (the tree's actual ref): DIRECTUS_PUBLIC_BASE_ADDR at :53 is the only DIRECTUS_* entry, so "exactly ONE" is measured, not asserted.
+B09-013	UNRESOLVABLE	Same b948604 pin as B09-009; at this tree's app ad9f3c49 the `log.Fatalf("DIRECTUS_BASE_ADDR is required...")` is at :1092, not :980-982.
+B09-014	SUPPORTS	The census resolved this into app/terraform/locals.tf, but the row is the Cosmo-Router fact sheet and the citation is repo-relative: graphql-wundergraph/terraform/locals.tf:8 is exactly `port = 8080`.
+B09-015	SUPPORTS	Same mis-resolution: graphql-wundergraph/terraform/main.tf:48-49 are `"containerPort": ${local.port}` / `"hostPort": ${local.port}` with local.port=8080 — literally the container-8080-to-host-8080 mapping claimed.
+B09-016	SUPPORTS	graphql-wundergraph/config.prod.yaml:5 is `listen_addr: 0.0.0.0:8080` verbatim.
+B09-017	UNRESOLVABLE	Unit pins docker-compose.yml at `2adcf71^1` (1e8e754); this tree's platform is 0c91421 where :19-27 is sentinel's env/networks/depends_on, and the gateway block no longer exists — the four-service depends_on cannot be checked here.
+B09-018	PARTIAL	CLAUDE.md:39 does assert the compose stack builds from the production Dockerfile (the proposition), but the words the unit puts in quotation marks — "Since cms-in-app the platform compose `graphql` service builds from the production Dockerfile (platform #20)" — are line 33's table cell, not line 39's text.
+B09-019	SUPPORTS	go.mod:14-18 lists exactly analytics-go, colony, proto, storage, taxonomy; grep of the whole file confirms those are the only `anthropos-work` requires, so there is no `anthropos-work/ai` (sentinel/go.mod likewise has none).
+B09-020	SUPPORTS	report_agent.go:31 is `defaultAgentModel = "eu.anthropic.claude-sonnet-4-6"`.
+B09-021	SUPPORTS	askengine/bedrock.go:25 is `DefaultModelID = "eu.anthropic.claude-sonnet-4-6"` (with DefaultRegion eu-west-1 on the next line).
+B09-022	SUPPORTS	coursebuilder/bedrock.go:23 is `DefaultAuthorModelID = "eu.anthropic.claude-opus-4-8"`, the author half of the pair cited.
+B09-023	SUPPORTS	markdownManager.go:30 is `mistralocr.New(aiKey)` inside `func NewMarkdownManager` at :29; I also verified field `ocr *mistralocr.Client` at :14 and the mistralocr import at :10, exactly as parenthesised.
+B09-024	SUPPORTS	pdf2md.py:24 is `from mistralai import Mistral`, and the file uses `model="mistral-ocr-latest"` (:127) — the OCR-CLI characterisation holds.
+B09-025	SUPPORTS	jobsimulation.go:1302 is `aiVendor := simulation.Openai` immediately followed by the `if seq.AIVendor != nil` override — i.e. openai is the unset default in the cms content layer.
+B09-026	SUPPORTS	bedrock.go:106-113 is the doc-comment plus `newUnderlyingClient`: key present → NewAnthropicClientWithModel(key, directModelID(modelID)); absent → NewBedrockClientWithModel — the either/or, and the bare-model-id normalisation, both as claimed.
+B09-027	SUPPORTS	ai.py:627-664 is the `class AnthropicProvider(AIProvider)` block ending at `return Anthropic(api_key=self.api_key)` — the range brackets the provider the row names.
+B09-028	UNRESOLVABLE	Unit pins `app b948604`; at this tree's ad9f3c49 main.go:770 is a worker-handler argument and the `logger.Info("coursebuilder model backend", ..., coursebuilder.ModelBackendName())` boot log is at :880.
+B09-029	SUPPORTS	markdownManager.go:30 backs the cms-domain member of the enumeration; I grepped every `mistral` hit in app's Go tree and all of them are the mistralocr OCR client or its comments/tests — nothing non-OCR, so the "every use" quantifier is not overstated by this citation.
+B09-030	SUPPORTS	studio/tools/pdf2md.py:24 imports Mistral in a standalone argparse CLI that calls `mistral-ocr-latest` — the in-image-studio-tree OCR member of the same enumeration.
+B09-031	SUPPORTS	jobsimulation.go:905 is `AIVendor *AIVendor \`json:"ai_vendor"\`` — a pointer field, i.e. the nullable Directus field claimed.
+B09-032	SUPPORTS	simulator/ai/ai.go:58-59 is `case simulation.Openai:` / `aiVendor = internalAi.Openai` — precisely the mapping described.
+B09-033	SUPPORTS	jobsimulation/ai/ai.go:80 is `openaiClient, err := openai.NewOpenAI(openaiKey)` under an `// openai client` comment.
+B09-034	SUPPORTS	ai.py:704-724 is `get_client`, whose `providers` dict is exactly {openai, azure, anthropic} — the provider set the bullet names.
+B09-035	SUPPORTS	gen.py:45-48 is the `secrets_keys` list with all six bare names in the order the unit enumerates them, including the ANTHROPIC_* pair on :48 that iter-115 had cut off.
+B09-036	SUPPORTS	backend.go:130 is `"/api/webhook/clerk"` inside app's own `/api` echo group (authn skip list); the handler it routes to lives in the same package tree (api.go:250 HandleClerkWebhookEvent), so the endpoint is demonstrably app/backend's, not Sentinel's.
+B09-037	SUPPORTS	docker-compose.yml:141 is `profiles: [studio-desk, all]` inside the `studio-desk:` block (:112) — the profile the note claims still exists at this ref.
+B09-038	SUPPORTS	:161 is the runtime env `NEXT_PUBLIC_BACKEND_API_URL=http://...:8082` and :152 the matching build arg, both in the next-web-app block — the :8082 REST base the passage attributes to them.
+B09-039	SUPPORTS	talkToData/api.ts:214 carries the quoted sentence essentially verbatim ("uses POST so we can send a JSON body — that rules out EventSource"), which is the reason-for-no-EventSource the passage cites it for.
+B09-040	SUPPORTS	docker-compose.yml:18 is sentinel's `DB_CONNECTION=...?search_path=sentinel&sslmode=disable` — alive with its own schema, as the bullet says.
+B09-041	SUPPORTS	repos.yml:18-20 is `- name: sentinel / type: go / migrations: false` — the flag-plus-alive pairing the bullet builds on.
+B09-042	SUPPORTS	docker-compose.yml:185-186 is `networks:` / `app-network:` — the extra token is indeed a network declaration, not a service.
+B09-043	SUPPORTS	app/terraform/main.tf:181 is `service_desired_count = 1` inside `module "backend"`; the cell's own 2035f9a-vs-ad9f3c49 note holds — the anchor resolves identically at this tree's ad9f3c49.
+B09-044	SUPPORTS	repos.yml:14-17 is `- name: app / type: go / migrations: true / schema: public`, and the other three entries (sentinel, next-web-app, studio-desk) are all `migrations: false`, so "the only migrating repo" is measured too.

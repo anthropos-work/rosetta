@@ -16,7 +16,8 @@ Brings a DEV stack to a running, set-dressed state. One skill for the whole dev 
   the real public reference data, a light `dev-min` seed, and the per-stack-Directus firewall check.
   The per-stack Directus itself is **opt-in for dev** via `--local-content` (v1.5 M22/M23): with the flag,
   the recipe is **EXECUTED** (bootstrap → apply-structure → replay → boot a per-stack Directus on an offset
-  port) and `cms`'s `DIRECTUS_BASE_ADDR` is **cut over** to it, so the stack's content is **self-contained**;
+  port) and **`backend`'s cms domain** has its `DIRECTUS_BASE_ADDR` **cut over** to it (there is no `cms`
+  service — the domain is `app/internal/cms/`), so the stack's content is **self-contained**;
   without the flag (the dev default), the recipe is print-only and the stack reads content **live from prod**
   (the documented fallback). See [`corpus/ops/directus-local.md`](../../../corpus/ops/directus-local.md).
 
@@ -51,23 +52,50 @@ before/after each step, request confirmation before installs or destructive ops,
 
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
-   cloned → all repos via `make init` (incl. `ant-academy`) → CMS studio submodule (`cd cms && make
-   init-studio`) → `platform/.env` configured → services up (`make up` — expect **11 containers** in
-   `graphql` post-merge; the `skiller` container is gone since July 2026, its taxonomy tables merged into
-   `app`'s `public` schema) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   cloned → the **4** `repos.yml` repos via `make init` (`app`, `sentinel`, `next-web-app`, `studio-desk`)
+   → `platform/.env` configured (use `/stack-secrets`) → services up (`make up` — **re-derive the container
+   count from `make ps`**; expect **5** on the default `core` profile, and the long-quoted "11" is three
+   merge waves stale) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
-   → health. **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
-   — it bootstraps the extensions + schemas, atlas-migrates the 4 merged services (`app:public`/`cms`/
-   `jobsimulation`/`skillpath`), and loads the casbin policy in one call (mirrors `demo-stack/migrate-demo.sh`;
-   closes the M25-D9 gap where the un-editable platform `make migrate` doesn't create `extensions` → a cold
-   `make reset-db`/`make migrate` fails `schema "extensions" does not exist`). See `corpus/ops/setup_guide.md`
-   § Full Database Reset.
-4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm 11 healthy containers
-   (`make ps`) — the merged 4-subgraph platform (no `skiller` container), GraphQL gateway on
-   `localhost:5050`. Then **start native processes in tmux** (required —
-   these are not in the `graphql` Docker profile and must outlive the Claude session):
+   → health.
+
+   > **Two steps that used to be here are DEAD — do not run them.**
+   > **(a) `ant-academy` is NOT cloned by `make init`.** It is deliberately absent from `repos.yml`
+   > (v1.10b M49 #5), so for a dev stack you `git clone` it by hand only if you need it (native-only,
+   > port 3077, never in docker-compose).
+   > **(b) There is no CMS studio submodule step.** `cd cms && make init-studio` **fails outright** — `cms`
+   > is not cloned and has no compose service.
+   > **⚠️ But the studio runtime is still REQUIRED, and this note used to imply it was not** (corrected
+   > M257x iter-270). *"`studio-room` is pulled into the `app` image by CI"* is true of CI and inverts the
+   > causality locally: `app/Dockerfile` hard-COPYs `studio/` and `pip install`s it, so a local `make up`
+   > **dies** with `"/build/studio": not found`. For the **main dev stack (`N = 0`)** you must
+   > `git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio` before `make up`
+   > (the path is gitignored). For an **additional `dev-N`**, `dev-stack up N` acquires it itself — it
+   > derives the consumer set from `repos.yml` and refuses if it cannot.
+
+   **The cold DB-init is automated (v2.1 M211): run `stack-dev/rosetta-extensions/dev-stack/migrate-dev.sh`**
+   — it bootstraps the extensions + schemas, atlas-migrates **the set it DERIVES from `repos.yml`**, and loads
+   the casbin policy in one call (mirrors `demo-stack/migrate-demo.sh`; closes the M25-D9 gap where the
+   un-editable platform `make migrate` doesn't create `extensions` → a cold `make reset-db`/`make migrate`
+   fails `schema "extensions" does not exist`). **At `0c91421` that set is ONE pair — `app:public`** —
+   because `app` is the only repo `repos.yml` marks `migrations: true`. This step used to be described as
+   *"atlas-migrates the 4 merged services (`app:public`/`cms`/`jobsimulation`/`skillpath`)"*, which was the
+   old **hardcoded** list and is wrong on 3 of its 4 entries: `cms` and `jobsimulation` are `migrations:
+   false` with their `schema:` keys deleted, and `skillpath` is not in `repos.yml` at all. The tooling was
+   changed to derive rather than hardcode (M257x iter-02/iter-16) precisely so this could not drift again.
+   See `corpus/ops/setup_guide.md` § Full Database Reset.
+4. **Start + verify health** (the former `/start-platform` pass): `make up`, confirm the containers are healthy
+   via `make ps` — **expect 4 on the default `core` profile** (`postgresql`, `redis`, `backend`,
+   `gotenberg`); **re-derive it rather than trusting memory**, and know that the long-quoted "11" is three
+   merge waves stale. This is the merged platform with **one subgraph** (no `skiller`, `skillpath`, `cms`,
+   `jobsimulation` or `roadrunner` subgraph). **GraphQL is `backend` itself on
+   `localhost:8082/graphql/query`** — the Cosmo router was deleted from compose at platform `2adcf71`
+   (2026-07-31); nothing listens on `:5050`. Full expected-service table + the three merge waves:
+   [reference.md](reference.md) § *Expected service set*.
+   Then **start native processes in tmux** (required —
+   these are not in the default Docker profile — `core` at `0dab54d` — and must outlive the Claude session):
    ```bash
    # next-web-app (always native — required)
    tmux has-session -t anthropos-web 2>/dev/null || \
@@ -140,7 +168,7 @@ surface at all** since M5; the guard is what found it.)
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--profile P` | `graphql` | compose profile |
+| `--profile P` | **derived from the platform clone** (`core` at `0dab54d`) | compose profile. The default is no longer a literal: `dev-stack` reads `backend`'s own `profiles:` list and **dies loud** if it cannot (M257x iter-85 — the literal was `graphql`, and asking for a retired token exits 0 and starts only the always-on floor) |
 | `--no-setdress` | off (set-dress is **on**) | bare bring-up of `dev-N` — no snapshot, no seed |
 | `--no-snapshot` | off (snapshot is **on**) | seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs) |
 | `--local-content` | **off** (dev reads content live from prod) | EXECUTE a per-stack Directus so content is self-contained (v1.5 M22/M23) |
@@ -168,9 +196,10 @@ not, so it stays local until you say otherwise.
   naming the exact fix command. A half-satisfied public path is never shipped.
 - **Pass nothing and NOTHING happens** — no `tailscale` process, no cert mint, no serve config, no new files.
   This is fenced by a tripwire stub, not asserted in prose (`dev-stack/tests/test_dev_public_host.py`).
-- It fronts only the ports **your profile actually publishes** (default `graphql` ⇒ the backend API + Cosmo
-  GraphQL), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the next
-  bring-up.
+- It fronts only the ports **your profile actually publishes** (default `core` ⇒ the backend API on `:8082`,
+  which is where GraphQL is served now — platform `2adcf71` deleted the Cosmo router, so there is no `:5050`
+  to front), because `tailscale serve` *binds* the ports it fronts — fronting a dead one would block the
+  next bring-up.
 - ⚠️ **Transport, not authentication.** This puts the stack behind the tailnet's TLS + authenticated device
   mesh. It does **not** add auth. Read [`corpus/ops/safety.md`](../../../corpus/ops/safety.md) **Part 3** and
   the runbook [`corpus/ops/demo/tailscale-serve.md`](../../../corpus/ops/demo/tailscale-serve.md) before using it.

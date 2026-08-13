@@ -1,0 +1,4 @@
+decommissioned-instruction-guard: OK — 17 instruction(s) naming a decommissioned service, all marked historical.
+decommissioned-instruction-guard: population 17 across 10 file(s); decommissioned set = 16 service(s) derived from corpus/architecture/platform-migration-status.md
+decommissioned-instruction-guard: assertion D — 1 deletion-instruction block(s) scanned, 3 candidate line(s), 0 live; reach = 430 build-input line(s) from 2 clone root(s)
+decommissioned-instruction-guard: refused (counted, never guessed): excluded: the map that defines the set x2, fence is a listing, not a command block x2, prose mention carries no imperative x111

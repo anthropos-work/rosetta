@@ -1,6 +1,6 @@
 # Clerkenstein
 
-**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading; v2.2 "panorama" M213 MagicDNS/egress; v2.3 "cue to cue" M217 self-healing demopatch gate + **M218 the roster-aware fake BAPI**) · **Last updated:** 2026-07-14
+**Status:** v0.3 (v1.0 "body double" · M1 + M2 + M2b + M2c `@clerk/express` + M3 deploy/injection; v1.9 "storytelling" M37 multi-identity seat-switch; v1.10 "method acting" M39 roster org-name threading; v2.2 "panorama" M213 MagicDNS/egress; v2.3 "cue to cue" M217 self-healing demopatch gate + **M218 the roster-aware fake BAPI**; v2.8 "fast build" M257x iter-108 pin re-derivation) · **Last updated:** 2026-08-06
 **Repo:** the `clerkenstein/` **section** of the `rosetta-extensions` monorepo — authored at
 `.agentspace/rosetta-extensions/clerkenstein`, consumed per-stack at a pinned tag as
 `stack-demo/rosetta-extensions/clerkenstein`. (It is **not** "its own git" — see *One monorepo, two clone
@@ -9,13 +9,20 @@ roles* below, which this line used to contradict.) · **Measured by:** the
 
 > **The demo-patch mechanism is specified in [`../ops/demo/demopatch-spec.md`](../ops/demo/demopatch-spec.md).** It is the sanctioned **zero-platform-edit escape hatch**: patch the demo's own ephemeral clone before the image build, revert after — the canonical repos are never touched. Read it before adding or re-pinning a patch. Since M217 the gate is **self-healing**: the *anchor* is the contract, the whole-file sha is only a baseline.
 
-> **This is a pointer.** The full, self-contained documentation now lives **in the clerkenstein repo's own
-> knowledge base** (added in M2b): start at `stack-demo/rosetta-extensions/clerkenstein/knowledge/kb-index.md`. This page
+> **This is a pointer.** The full, self-contained documentation now lives **in the `clerkenstein/` section's
+> own knowledge base** (added in M2b): start at
+> `.agentspace/rosetta-extensions/clerkenstein/knowledge/kb-index.md` — the **authoring copy**, per *One
+> monorepo, two clone roles* below; a stack's pinned-tag clone carries the same tree at
+> `stack-demo/rosetta-extensions/clerkenstein/…`. This page
 > keeps only the platform-side orientation + the cross-links a rosetta reader needs — it deliberately does
-> **not** duplicate the repo's KB.
+> **not** duplicate that KB.
 
 > **One monorepo, two clone roles.** `rosetta-extensions` is ONE private monorepo with sections
-> (`clerkenstein`, `demo-stack`, `stack-injection`, `stack-core`, `stack-seeding`, `alignment`). It is
+> — **eleven** of them: `alignment`, `clerkenstein`, `demo-stack`, `dev-stack`, `playthroughs`,
+> `stack-core`, `stack-injection`, `stack-secrets`, `stack-seeding`, `stack-snapshot`, `stack-verify`
+> (⚠️ **this listed six until M257x iter-129**, and `CLAUDE.md` listed nine — the SAME under-count in two
+> places, and the repair that fixed `CLAUDE.md` this iter reached only that one cell until the complement
+> read found this twin. `§5` rule 54, committed by the run that was applying it). It is
 > authored / built / tested / aligned in the **authoring copy** at `.agentspace/rosetta-extensions/`, then
 > **tagged**, and consumed by each stack via that stack's own **pinned-tag** clone
 > (`stack-demo/rosetta-extensions @ <tag>`). So the KB above is **read from the authoring copy**; a running
@@ -35,22 +42,29 @@ It is the **first mirror produced by the M0 alignment process** (not a hand-buil
 >
 > | surface | score | note |
 > |---|---|---|
-> | **Go SDK** (`clerk-2.6.0`, M1) | **97.2% overall · 100% critical** — **26/27 genes**, 14 capabilities | Gate is ≥95 / =100 ⇒ **MET**. The 2.8% is **one deliberately RED gene** (see below). |
+> | **Go SDK** (`clerk-2.6.0`, M1) | **100% overall · 100% critical** — **27/27 genes**, 14 capabilities | Gate is ≥95 / =100 ⇒ **MET**. (Was 97.2% / 26-of-27 until M219 landed the org-eid fix — see below.) |
 > | **JS/FAPI** (`clerk-js-5`, M2) | 100% / 100% (9 genes) | |
 > | **multi-identity seat-switch** (`clerk-multi-1`, M37) | 100% / 100% (9 genes) | |
 > | **deployment/injection** (`clerk-deploy-1`, M3) | 100% / 100% (7 genes) | |
-> | **`@clerk/express`** (`clerk-express-1`, M2c) | **UNMEASURABLE on a box without `@clerk/express` `node_modules`** — the runner cannot build, exits **rc=2, with NO score**. | **Not** a pass. Routed forward as `TEST-M219-expressrun-dep-gate`. |
+> | **`@clerk/express`** (`clerk-express-1`, M2c) | **UNMEASURABLE on a box without `@clerk/express` `node_modules`** — the runner cannot build, exits **rc=3 (`ExitUnmeasurable`), with NO score**. | **Not** a pass. ⚠️ **rc=2 is
+> now `ExitRegressed` — a MEASURED regression** (`alignment/cmd/alignctl/run.go:134-135`); do not read a 2
+> as a missing Node module. |
 >
-> **So "all five surfaces at 100%" is false on two counts**, and the previous version of this paragraph
-> asserted it. Four surfaces are measured; the fifth is dependency-gated and frequently produces *no number
-> at all* — which nothing treated as a failure.
+> **So "all five surfaces at 100%" is still false — but on ONE count now, not two.** It was two at M218
+> (a RED gene *and* an unmeasurable surface); M219 closed the RED gene. What remains: four surfaces are
+> measured and at 100%; the fifth is dependency-gated and frequently produces *no number at all* — which
+> nothing treated as a failure.
 >
-> **The deliberately RED gene (M218 D16).** `MembershipOrgIdentity/real-org-eid` ships **failing, on
-> purpose**. The fake BAPI fabricates `organization.public_metadata.eid` as `"org_eid_" + orgID` instead of
-> the roster's real org UUID. It could not be fixed inside M218 (the milestone's exit gate was a p95 over 5
+> **The formerly-RED gene (M218 D16) — ✅ RESOLVED at M219.** `MembershipOrgIdentity/real-org-eid` shipped
+> **failing on purpose** for one milestone. The fake BAPI *fabricated* `organization.public_metadata.eid` as
+> `"org_eid_" + orgID` instead of the roster's real org UUID. It could not be fixed inside M218 (the milestone's exit gate was a p95 over 5
 > cold reset-to-seed cycles graded on a specific binary; a runtime change restarts that count), so rather
-> than **omit the field and keep a clean 100%**, the divergence is named in the report on **every single
-> run** until it lands. Routed forward as `FIX-M219-bapi-org-eid`.
+> than **omit the field and keep a clean 100%**, the divergence was named in the report on **every single
+> run** until it landed. **It has landed:** `clerk-backend/store.go:138` (`SeedOrgIdentity`) and `:151`
+> (`LookupOrgEid`) ship the real roster org UUID, and the DNA records it —
+> `clerkenstein/alignment/dna/clerk-2.6.0.json:131`: *"M219 landed the fix … taking the Go surface
+> 97.2% -> 100%."*
+> The Go surface is **27/27**. `FIX-M219-bapi-org-eid` is CLOSED.
 >
 > **Why this matters more than the number.** Before M218, Clerkenstein scored **100% critical / 100%
 > overall / 0 divergences while its fake BAPI returned the wrong human for every hero** — `GET
@@ -62,12 +76,13 @@ It is the **first mirror produced by the M0 alignment process** (not a hand-buil
 Driven to the gate across: the Go surface (`clerk-sdk-go/v2 @ v2.6.0`, M1), the JS/FAPI surface (9/9 genes, `@clerk/clerk-js` v5 / `@clerk/nextjs` v6, M2), the
 **multi-identity seat-switch** surface (9/9 genes, `clerk-multi-1` — the v1.9 M37 registry + active-seat
 selection, so a demo can present as any seeded hero; the multi-session FAPI semantics real clerk-js exhibits
-with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (9/9 genes, `@clerk/express`
+with `single_session_mode=false`), the **`@clerk/express`** Node-backend surface (**13 genes across 5
+capabilities** — dependency-gated, so frequently *unmeasured*; see the ⚠ box above — `@clerk/express`
 ^1.3.47, M2c — RS256/JWKS, the genuine SDK *satisfied*, not reimplemented), and the **deployment/injection**
 surface (7/7 genes, `clerk-deploy-1` — the disarmed `colony/authn/provider/clerk` drop-in compiles against
-the platform's real `colony @ v0.34.3` and satisfies its contract; added after **M3** showed *behavioural*
+a real `colony`, pinned at **`v0.34.3`**, and satisfies its contract; added after **M3** showed *behavioural*
 alignment ≠ *deployability* — see [`alignment_testing.md`](../architecture/alignment_testing.md#what-alignment-proves--and-what-it-doesnt-the-m3-lesson)).
-The DNAs + mirror + goldens + runners live in the clerkenstein repo; the `/align-dna` + `/align-run`
+The DNAs + mirror + goldens + runners live in the `clerkenstein/` section; the `/align-dna` + `/align-run`
 skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc live in rosetta, while the
 `alignctl` harness is the `rosetta-extensions/alignment/` section (a sibling of `clerkenstein/`).
 
@@ -81,7 +96,8 @@ skills + the [`alignment_testing.md`](../architecture/alignment_testing.md) doc 
 
 ## Repo structure (library-named, since M2b)
 
-The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b-D2):
+The `clerkenstein/` section is organised **one dir per mocked dependency** (M2b reorg, decision M2b-D2) —
+every dir below is a subdir of `rosetta-extensions/clerkenstein/`, not a repo root:
 
 | Dir | Mocks | What it is |
 |---|---|---|
@@ -90,7 +106,7 @@ The repo is organised **one dir per mocked dependency** (M2b reorg, decision M2b
 | `clerk-frontend/` | `@clerk/clerk-js` + `@clerk/nextjs` | fake Frontend API + publishable-key codec — **mints** JWTs |
 | `clerk-webhook/` | `svix` | the signed-webhook injector |
 | `shared/` | — | universal-key HS256 JWT (the mint side + verify side agree here) |
-| `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony @ v0.34.3`) |
+| `deploy/` | `colony/authn/provider/clerk` | the disarmed provider drop-in — **deployable** into a vendored colony fork (compiles against real `colony`, **pinned `v0.34.3` — behind `app`'s `v0.35.2`**, see the ⚠️ below) |
 | `cmd/` | — | standalone binaries: `mintpk` (authoritative publishable-key minter) · `fake-fapi` / `fake-bapi` (standalone fake servers for demos; `fake-fapi` loads `FAKE_FAPI_ROSTER` for M37 multi-identity) |
 | `alignment/` | — | the measurement harness: `cmd/{clerkrun,jsfapirun,multirun,expressrun,deployrun}` + `dna/` (five) + `golden{,-js,-multi,-express,-deploy}/` + `scripts/` |
 
@@ -125,10 +141,14 @@ make the route correct, each pinned by a test in `clerk-frontend/meorgmembership
   user with **no** memberships gets an empty list at 200 (mirroring the BAPI contract).
 
 The data needed no new assembly: `/v1/me` already returns `userRes.OrganizationMemberships`. The role keeps
-Clerk's **prefixed** form (`org:admin`) — studio-desk's `STUDIO_ACCESS_ROLES` gate reads it, so dropping the
-prefix would bounce every hero.
+Clerk's **prefixed** form (`org:admin`) as a **fidelity** choice — it is what real Clerk emits on this route.
+It is *not* a hard gate requirement: studio-desk's `STUDIO_ACCESS_ROLES` accepts **both** forms
+(`['admin', 'org:admin', 'content_creator', 'org:content_creator']` — `src/index.ts:96` and
+`app/services/userService.ts:16`, each carrying the comment "Both the prefixed (`org:*`) and bare role keys
+are accepted"), so an unprefixed `admin` would pass too.
 
-> **Not yet a measured gene.** `alignment/dna/clerk-js-5.json` has a `Me` capability for `GET /v1/me` but
+> **Not yet a measured gene.** `clerkenstein/alignment/dna/clerk-js-5.json` has a `Me` capability for
+> `GET /v1/me` but
 > **no** gene for this route, so alignment scoring does not cover it — the unit tests do. Adding one needs a
 > real-Clerk golden capture (`/align-dna`), i.e. a milestone, not a patch. Tracked as a known DNA gap.
 
@@ -142,6 +162,57 @@ token mint, and the handshake cookies all resolve the same hero): `?__clerk_iden
 (the cockpit's [Login as] deep-link) + the `/v1/demo/{identities,select}` control plane. The single-identity
 path is byte-identical (a one-member registry). Measured by the `clerk-multi-1` DNA (`alignment/cmd/multirun`,
 9 genes, 100%/100%) — a *new measured surface* that holds while the existing four stay green.
+
+> **⚠️ "Server-authoritative" means SINGLE-TENANT: one active seat per stack, no client scoping** (documented
+> v2.8 M256 pre-flight; the same limitation is disclosed from the presenter side in
+> [`../ops/demo/cockpit-spec.md`](../ops/demo/cockpit-spec.md) § *Limitation — one seat per stack*). The
+> coherence the paragraph above sells is bought by holding the seat **process-wide**, not per client:
+> `clerk-frontend/registry.go` keeps a single `activeKey` (`Registry.active()` / `Registry.Select()`), and
+> `clerk-frontend/server.go`'s `type Server` keeps **one** `signedIn`, **one** `clientID`
+> (`"client_clerkenstein"`, a constant) and **one** `sessID` (`"sess_clerkenstein"`, also a constant, minted in
+> `establishLocked`). Three consequences a consumer must design around:
+> - **`POST /v1/demo/select` (`handleSelectIdentity`) is destructive to the current session.** It re-points the
+>   seat **and** sets `signedIn = false; sessID = ""` — globally. A second seat-switch anywhere on the stack
+>   signs the first browser out.
+> - **The read path takes NO request input.** `handleMe`, `handleToken`, `handleClient` and
+>   `handleMeOrganizationMemberships` all discard (or ignore) the `*http.Request` and answer from
+>   `activeUserLocked()`. `r.Cookie(...)` is called **nowhere** in `clerkenstein/` — cookies are only ever
+>   *emitted*. So **per-browser `storageState` cannot isolate two identities**, and a token refresh silently
+>   re-mints whoever the *current* seat is. `handleSignOut` likewise ignores its `{id}` route param and logs the
+>   whole stack out.
+> - **Therefore: concurrency is one-identity-at-a-time per stack.** Two people on two deeplinks, or two
+>   parallel Playwright workers, will swap identities mid-flight. The sanctioned workaround is **a stack each**
+>   (a fake FAPI each). Making the seat per-client — keying the registry by `__client`/cookie and threading it
+>   through the `/v1/me`, token-mint, client-view and handshake surfaces — is an **auth-model change with an
+>   alignment-DNA consequence** (the `clerk-multi-1` DNA has no gene for concurrent-seat isolation), not a
+>   config knob.
+
+> **⚠️ An explicit sign-out is STICKY until an explicit login — and a SEAT SWITCH is not a sign-out** (D81,
+> v2.8 M256 iter-16/iter-25). `Server` carries a **`signedOut`** flag alongside `signedIn`. Three rules:
+>
+> - **`POST /v1/client/sessions?_method=DELETE`** — what `@clerk/clerk-js`'s `signOut()` actually sends, a POST
+>   with a `_method` override and **not** a `DELETE` — sets it. Before the fix no `DELETE` route was registered
+>   and nothing read `_method`, so the request **404'd**, `handleSignOut` never ran, and the next handshake
+>   silently re-established the same seat. The user-visible symptom was *"I have to click logout twice"*.
+>   `_method` is a **dispatch whitelist**: an override the server does not understand is ignored, never obeyed.
+> - **While `signedOut` is set, a BARE handshake DECLINES** — it will not re-establish a session on its own.
+>   Every *explicit* establish path (a handshake carrying an identity, a sign-in form, `POST /v1/demo/select`)
+>   clears the flag, so a demo can always get back in; a missing clear on any ONE of them **strands the stack
+>   signed-out**, which is why there is a test per entry door rather than one per fix.
+> - **`/v1/demo/select` drops the session but must NOT set the flag** — it is a seat switch, and setting it
+>   would make the cockpit's own `[Log in as]` land on a signed-out browser. This was found by driving the
+>   cockpit live after five green unit tests had passed over the same code.
+>
+> **The guard is a FRONT-DOOR guard, not a revocation — stated because it is a real limitation.** Every test
+> observes it through `GET /v1/me`, which reads the server's in-memory flag; the browser's state comes from the
+> handshake cookies. A *declined* handshake still 303s back having minted an RS256 `__session`, and the only
+> differentiator is an **empty `sid`** claim. Nothing revokes an already-issued token either (no `jti`, no
+> denylist, 1 h `exp`), so a token captured before the sign-out keeps working. Acceptable for a deliberately
+> disarmed mock on a demo — see [`../ops/safety.md`](../ops/safety.md) §3 — but it means the flag governs
+> *establishment*, not *access*. Pinned by `clerk-frontend/server_test.go`:
+> `TestServer_signOutOnThePathClerkJSActuallySends`, `TestServer_signOutIgnoresAMethodOverrideItDoesNotUnderstand`,
+> `TestServer_seatSwitchIsNotASignOut`, `TestServer_signedOutFlagIsClearedByEveryEstablishPath`,
+> `TestServer_seatSelectAfterSignOutCanLogBackIn`.
 
 **Roster org-name threading (v1.10 M39).** The roster now carries each hero's **story org name + slug**, so a
 logged-in hero's **top bar reads her real company** (e.g. "Cervato Systems") instead of the hardcoded
@@ -203,8 +274,20 @@ and why a MagicDNS FQDN (`billion.taildc510.ts.net`, also dotted) validates nati
 mocks the standalone `colony/authn` interface), the platform actually consumes `colony/authn/provider/clerk`
 *inside* the `colony` module. So the **deployable** drop-in lives in `deploy/colony-authn/`: the disarmed
 provider — same package, same `Clerk` type, same `NewProvider(apiKey)` signature — compiled against the
-platform's **real** `colony @ v0.34.3` so an injected demo app accepts Clerkenstein-minted tokens with zero
-source changes. It is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
+**real** `colony`, pinned at `v0.34.3`, so an injected demo app accepts Clerkenstein-minted tokens with zero
+source changes.
+
+> **⚠️ The `v0.34.3` pin is the ARTIFACT's, and it is BEHIND the platform** (v2.8 M257x iter-23). At platform
+> `2adcf71`, `app/go.mod` reads `colony v0.35.2` — and `app` is the service an injected demo actually runs.
+> **`sentinel` has since moved too** — it is on `colony v0.35.2` at `f2c46190` (`sentinel/go.mod:8`), taken
+> there by `88036d7` *"chore(deps): update dependencies to latest versions"* — so the softening clause this
+> paragraph used to carry (*"`sentinel` and `storage` are still on `v0.34.3`"*) is **false for `sentinel`**
+> and now rests on the frozen `storage` repo alone, which nothing clones or builds. **Both live Go services
+> are on `v0.35.2`; the artifact's pin is behind the whole live platform, not part of it.** A
+> `clerk-deploy-1` score taken against `v0.34.3` **is not measuring the binary under test**. This is precisely
+> the drift the deployment DNA exists to catch, so re-run `deployrun` against `v0.35.2` before quoting 7/7 as
+> current. (`app` is likewise on `clerk-sdk-go/v2 v2.7.0`, not `v2.6.0` — `CHECK-M257x-iter22-clerk-sdk-drift`.)
+That drop-in is **identity-agnostic** (straight-through claim mapping — it extracts whatever the token
 carries, not a hard-coded user). Its contract is checked at *compile time* and scored by the
 `alignment/cmd/deployrun` runner (the `clerk-deploy-1` DNA). `cmd/` ships the supporting standalone tools:
 `mintpk` (the authoritative publishable-key minter) and `fake-fapi` / `fake-bapi` (standalone fake servers
@@ -212,8 +295,13 @@ for demos).
 
 ### Remote HTTPS over the tailnet (v2.2 "panorama" M213)
 
-Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in via `/demo-up --public-host
-<magicdns>`) touches three Clerkenstein-adjacent seams — all **gated** so an unset host is byte-identical:
+Making a demo reachable from another machine on a **Tailscale** tailnet touches three Clerkenstein-adjacent
+seams. ⚠️ **This said "opt-in via `/demo-up --public-host <magicdns>`" until run 81 and that is FALSE for
+the demo path**: since v2.3 M220 (`D-DESIGN-3`) remote reach is **DEFAULT-ON via auto-discovery** — a bare
+`/demo-up N` probes tailscale, mints a trusted cert and publishes the stack on the tailnet. It is
+**opt-OUT** (`--no-public-host` / `DEMO_NO_PUBLIC_HOST=1`, `demo-stack/up-injected.sh:27-40,108-116`);
+`--public-host` now only *forces a host and skips discovery*. **Only `/dev-up` is still opt-in.** This is
+the exposure axis — a reader believed a bare `/demo-up N` stayed local. Seams — all **gated** so an unset host is byte-identical:
 
 - **FAPI cert → `tailscale cert`.** For a MagicDNS host the fake-FAPI cert is minted via `tailscale cert` (a real
   Let's Encrypt cert **trusted tailnet-wide, no per-machine CA install**) instead of mkcert/openssl — **same output
@@ -229,12 +317,15 @@ Making a demo reachable from another machine on a **Tailscale** tailnet (opt-in 
   alignment gene deliberately mints a dotless pk to test the consumer's rejection. (#M213-D-PK-1)
 - **clerk-js egress is overridable.** The FAPI proxies the clerk-js bundle from `cdn.jsdelivr.net` (its one outbound
   dependency); **`FAKE_FAPI_CLERKJS_CDN`** overrides that base so a locked-down network can point at a mirror. (#M213-D-EGRESS-1)
-- **…and it is UNBOUNDED and UNCACHED — the proxy's real contract (documented in M218; it had never been
-  written down).** `clerk-frontend/server.go:187` fetches the bundle with a bare **`http.Get`**, which is
-  `http.DefaultClient` — i.e. **`Timeout: 0`, no timeout at all**. There is **no server-side cache**: the
-  only caching is a *response-side* `Cache-Control: public, max-age=3600` header (`:194`), so **every full
-  page load in a cold browser re-fetches from the CDN**, and the fake FAPI re-fetches from jsdelivr each
-  time. Consequences, in order of severity:
+- **…and it WAS unbounded and uncached until M220 — ✅ FIXED, kept here because the failure mode is still
+  worth recognising.** As documented at M218, `clerk-frontend/server.go` fetched the bundle with a bare
+  **`http.Get`** (`http.DefaultClient`, **`Timeout: 0`**) and held no server-side cache, so every cold page
+  load re-fetched from jsdelivr. **M220 closed it:** `clerk-frontend/server.go:35-67` now serves the
+  clerk-js bundle **from disk** with the CDN as a *bounded* fallback — `clerkJSFetchTimeout = 15s` on an
+  explicit `clerkJSClient` (commented *"Explicitly NOT http.DefaultClient"*), a disk cache at
+  `FAKE_FAPI_CLERKJS_CACHE`, and a test asserting no `http.Get(` survives on that path. **A slow or
+  blocked jsdelivr is therefore NO LONGER a plausible cause of a long demo login** — look elsewhere.
+  The consequences below describe the pre-M220 behaviour, in order of severity:
   - next-web's **entire authenticated tree is client-gated on clerk-js**, so this sits squarely **on the
     login path**. Measured at **0.17–0.19 s healthy** — but **~127 s if egress blackholes**, with *no
     timeout to cut it short*. It is an **unbounded internet dependency in the login path of a demo the
@@ -267,7 +358,7 @@ The **live cross-machine acceptance** is **M215**. The full remote-access recipe
 [`../ops/demo/tailscale-serve.md`](../ops/demo/tailscale-serve.md); bring-up mechanics:
 [`recipe-browser-login.md §B`](../ops/demo/recipe-browser-login.md).
 
-## Read next (in the clerkenstein repo)
+## Read next (in the `clerkenstein/` section)
 
 - **`knowledge/kb-index.md`** — the KB entry point (scope, architecture, alignment, injection, coverage).
 - **`knowledge/scope.md`** — what it is/isn't + the disarmed-by-design properties.
@@ -275,9 +366,14 @@ The **live cross-machine acceptance** is **M215**. The full remote-access recipe
 - **`knowledge/injection.md`** — the four per-library injection recipes (each labelled built+gated /
   spike-proven / recipe-only) for disarming the platform's Clerk with no platform-code change.
 - **`knowledge/alignment.md`** — how fidelity is measured against a pinned Clerk version + the **drift
-  runbook** (M1b: `gate.sh` / `drift-check.sh` exit-code contract / weekly CI; re-`/align-dna` +
-  re-`/align-run` on a Clerk bump). `ALIGN_DIR` default is `../../alignment` (the sibling section; scripts
-  live at `alignment/scripts/`).
+  runbook** (M1b: `gate.sh` / `drift-check.sh` exit-code contract; re-`/align-dna` + re-`/align-run` on a
+  Clerk bump). The scripts are **mirror-side**, at `clerkenstein/alignment/scripts/` — the reusable
+  `rosetta-extensions/alignment/` harness section has no `scripts/` dir; `ALIGN_DIR` (default
+  `../../alignment`, relative to `clerkenstein/alignment/`) is how they find the sibling harness's
+  `alignctl`. The weekly-cron CI workflow they reference (`clerkenstein/.github/workflows/alignment.yml`)
+  is **git-tracked but inert** — GitHub Actions only reads `.github/workflows` at the *repository root*, so
+  the gate is a manual `/align-run`; see
+  [`alignment_testing.md`](../architecture/alignment_testing.md#how-m1-m1b-m2-and-m2c-consume-this).
 - **`knowledge/coverage-index.md`** — per-package test coverage + known gaps.
 - Per-library `README.md` in each dir for the code-level entry point.
 

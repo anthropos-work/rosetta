@@ -1,0 +1,44 @@
+B02-001	SUPPORTS	gotenberg.go:31 builds the POST to gotenbergURL+/forms/libreoffice/convert — the plain-HTTP consumption site the banner names (URL read at app main.go:261)
+B02-002	SUPPORTS	compose:59 is JUDGE0_BASE_URL=http://52.48.139.23:2358 inside backend's environment block, exactly the direct-Judge0 edge asserted
+B02-003	SUPPORTS	main.go:325 is pubsub.NewPublisher(serviceName, redisClientStream) and :230-232 defaults serviceName to "backend"; the app clone IS ad9f3c49, the ref the bullet names
+B02-004	SUPPORTS	subscriber_wiring.go:248 is subs[d.Streams.Backend] = backendSelfSub — the self-stream subscriber registration claimed
+B02-005	SUPPORTS	cms/terraform/main.tf:39 is service_desired_count = 0 inside a still-declared module "cms" (:30); clone ca50c817 shows exactly the asserted shape
+B02-006	UNRESOLVABLE	jobsimulation clone is 462343b0, not post-6092c6d2: :15-22 is the atlas_migration data block and module "jobsimulation" is still declared at :31-49, so the deletion claim cannot be decided here
+B02-007	UNRESOLVABLE	pin is @ app b948604; tree is ad9f3c49 where the mux handlers are at :1306-1338 and :1185-1228 is cms manager/worker wiring
+B02-008	SUPPORTS	app/CLAUDE.md:109 does list SkillPathSessionService in its RPC-mux sentence — precisely the stale-own-docs claim
+B02-009	SUPPORTS	app/knowledge/architecture.md:28 RPC row lists SkillPathSessionService, as the unit says
+B02-010	UNRESOLVABLE	pin is @ app b948604; at the tree ref ad9f3c49 the `if labsAPIURL := os.Getenv("LABS_API_URL")` guard is at :854 and :743-746 is the skillpath publisher
+B02-011	SUPPORTS	service-dependencies.md:52 carries the literal http://backend.internal.anthropos:8081 in the past-tense sentence under "no external callers of app's RPC mux left"; app clone IS ad9f3c49
+B02-012	SUPPORTS	test_platform_predicate_guard.py:435 contains the literal in a test fixture body; the rosetta-extensions clone HEAD is exactly the pinned 09d06070
+B02-013	SUPPORTS	app/terraform/locals.tf:6 is project = "backend" at the tree ref ad9f3c49, which the unit explicitly claims is unchanged
+B02-014	UNRESOLVABLE	pin is @ b948604f; at ad9f3c49 service_discovery_namespace_id sits at app/terraform/main.tf:195 and :58 is an unrelated sentinel-DSN comment
+B02-015	SUPPORTS	messenger clone IS fa47850d; variables.tf:77-80 declares cms_rpc_address with type+description and no default (siblings at :82/:87/:92 as listed)
+B02-016	UNRESOLVABLE	pin is @ b948604f; the unit itself discloses the move and at ad9f3c49 cms_rpc_address is at :309 while :197 is an unrelated DSN comment
+B02-017	UNRESOLVABLE	pin is @ b948604f; at ad9f3c49 main.go:1276 is an argument in a constructor list, not the skiller AddSubscriber call
+B02-018	SUPPORTS	subscriber_wiring.go:209 is subs[d.Streams.Skiller] = d.Skiller.SkillerSubscriber() — the map-built registration claimed for ad9f3c49
+B02-019	SUPPORTS	main.go:1579-1581 is the single `for stream, sub := range streamSubscribers { subServer.AddSubscriber(stream, sub) }` loop
+B02-020	SUPPORTS	compose:110 is `profiles: [core, backend, all]` and closes the backend service block (28-110); studio-desk starts at :112
+B02-021	UNRESOLVABLE	pin is @ app b948604; the LABS_API_URL conditional is at main.go:854 at the tree ref ad9f3c49, so :743-746 cannot be graded here
+B02-022	SUPPORTS	compose:48 is AUTHORIZATION_ADDRESS=http://sentinel:8087 at platform 0c91421 (the tree ref) and no *_RPC_ADDR appears anywhere in the 187-line file
+B02-023	SUPPORTS	compose:57 is GOTENBERG_URL=http://gotenberg:3200 in backend's environment block
+B02-024	SUPPORTS	compose:183 is `profiles: [core, backend, all]` inside the gotenberg block (170-183), so gotenberg is in the default core profile
+B02-025	SUPPORTS	gotenberg.go:31 is the plain net/http POST to gotenbergURL — the consumption site the bullet cites
+B02-026	SUPPORTS	compose:59 sets JUDGE0_BASE_URL on backend, the direct Judge0 edge claimed
+B02-027	UNRESOLVABLE	pin is @ app b948604; the quoted "Additive + DORMANT … until the M809 re-point" comment lives at main.go:1317-1318 at the tree ref ad9f3c49, not :1205-1211
+B02-028	SUPPORTS	gqlauthz.go:190-191 returns next(ctx) when org is nil/uuid.Nil, ahead of the middleware's only Sentinel call (OrgCheckUserPermission at :222)
+B02-029	SUPPORTS	gate.go:27-49 is courseBuilderAccessGate calling authz.OrgCheckFeaturePermission; backend.go:227 binds it as cbGate and the manager is NewSentinelManager (main.go:313)
+B02-030	SUPPORTS	main.go:524-525 construct internalstorage.NewManager / NewPublicManager in-process at the named ref ad9f3c49
+B02-031	SUPPORTS	main.go:504 is the comment "…the standalone service takes no traffic and STORAGE_RPC_ADDR is gone"; grep shows 3 occurrences in Go, all comments, 0 read sites
+B02-032	UNRESOLVABLE	pin is @ b948604f; at ad9f3c49 main.go:287 is the subsystem-switch logger.Info and the unit's own ad9f3c49 pin for that publisher is :325
+B02-033	UNRESOLVABLE	pin is @ b948604f; at ad9f3c49 wiring.go:127 is the asynq producer client, the unit's own ad9f3c49 pin being :132
+B02-034	UNRESOLVABLE	pin is @ b948604f; at ad9f3c49 main.go:1276 is a constructor argument, not the SKILLER_STREAM AddSubscriber
+B02-035	SUPPORTS	main.go:325 is the `backend` self-stream publisher at ad9f3c49, exactly what the ad9f3c49 half of the bullet asserts
+B02-036	SUPPORTS	subscriber_wiring.go:203-248 is buildStreamSubscribers assembling the 6-entry stream→subscriber map, the rebuilt subscriber side claimed
+B02-037	SUPPORTS	main.go:1579-1581 is the single AddSubscriber loop over that map
+B02-038	SUPPORTS	jobsimwiring/worker.go:24-35 imports hibiken/asynq and starts asynq.NewServer (queues include TimersQueue) inside the app binary — Chronos's timers now in the backend process
+B02-039	SUPPORTS	manager.go:101 is m.signInTokenCl.Create inside the admin impersonation manager, the product feature the row describes
+B02-040	SUPPORTS	resolver_admin_audit.go:20-22 checks permission.ActionObjectTaxonomy / permission.UserActionWrite in ImpersonateUser, exactly as stated
+B02-041	SUPPORTS	route.ts:79 mints the Clerk sign-in token and :85-88 redirects to /dev/accept; next-web-app clone IS 8297c684
+B02-042	SUPPORTS	devLogin.ts:28 is verbatim DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production', and route.ts:33-34 hard-404s on it
+B02-043	SUPPORTS	auth.setup.ts:72 mints a ticket via createSignInToken and the 87-line file contains no NODE_ENV gate, as the row asserts
+B02-044	SUPPORTS	dev.ts:83 mints the sign-in token and :89 redirects to /dev-accept.html; studio-desk clone IS 41ee357

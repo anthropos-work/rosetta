@@ -1,0 +1,45 @@
+diff --git a/packages/core-js/src/constants/urls.ts b/packages/core-js/src/constants/urls.ts
+index ebfdf9e76..d6a6dfe70 100644
+--- a/packages/core-js/src/constants/urls.ts
++++ b/packages/core-js/src/constants/urls.ts
+@@ -1,4 +1,5 @@
+-export const PUBLIC_WEBSITE_URL = 'https://anthropos.work';
++export const PUBLIC_WEBSITE_URL =
++  process.env.NEXT_PUBLIC_PUBLIC_WEBSITE_URL || 'https://anthropos.work';
+ export const PUBLIC_HIRING_URL = 'https://hiring.anthropos.work';
+ export const PUBLIC_WEBSITE_PRICING_INDIVIDUALS_URL = `${PUBLIC_WEBSITE_URL}/pricing/#pricing-individuals`;
+ export const WEB_APP_URL =
+@@ -10,9 +11,10 @@ export const HIRING_APP_URL =
+     ? 'http://localhost:3001'
+     : 'https://hiring.anthropos.work';
+ export const STUDIO_URL =
+-  process.env.NEXT_PUBLIC_NODE_ENV === 'development'
++  process.env.NEXT_PUBLIC_STUDIO_URL ||
++  (process.env.NEXT_PUBLIC_NODE_ENV === 'development'
+     ? 'http://localhost:9000'
+-    : 'https://studio.anthropos.work';
++    : 'https://studio.anthropos.work');
+ export const ACADEMY_URL =
+   process.env.NEXT_PUBLIC_ACADEMY_URL || 'https://aiacademy.anthropos.work';
+ 
+diff --git a/packages/ui/src/NavBar/NavbarTop.tsx b/packages/ui/src/NavBar/NavbarTop.tsx
+index dda7f3552..f4792dd0e 100644
+--- a/packages/ui/src/NavBar/NavbarTop.tsx
++++ b/packages/ui/src/NavBar/NavbarTop.tsx
+@@ -229,9 +229,16 @@ export function NavbarTop({
+     };
+ 
+     if (!hiddenSidebar) {
++      // demo-patch: next-web-back-to-cockpit — a fail-closed "Back to Cockpit" item in the presenter's account
++      // dropdown (rendered only when NEXT_PUBLIC_COCKPIT_URL is baked; behaviour-identical off-demo via _compact).
++      const cockpitUrl = process.env.NEXT_PUBLIC_COCKPIT_URL;
++      const backToCockpitMenuItem: MenuItemProps | null = cockpitUrl
++        ? { ...logOutMenuItem, label: 'Back to Cockpit', key: cockpitUrl, type: MenuType.outbound }
++        : null;
+       return _compact([
+         mapItem(settingsMenuItem, 0),
+         showStandaloneLanguage ? null : languageMenuItem,
++        backToCockpitMenuItem ? mapItem(backToCockpitMenuItem, 0) : null,
+         mapItem(logOutMenuItem, 0),
+       ]);
+     }

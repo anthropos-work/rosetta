@@ -1,0 +1,11 @@
+=== contention evidence, run 81 suite window ===
+2026-08-07T12:19:15Z
+cores: 12
+14:19  up 1 day,  4:24, 4 users, load averages: 10.57 10.79 14.29
+--- external (hyperspace/anima8) processes ---
+  count=15  aggregate_cpu=776.3% (= 7.8 cores of 12)
+--- my own pytest ---
+  cpu=0.0%
+  cpu=0.0%
+  cpu=0.0%
+  cpu=0.0%

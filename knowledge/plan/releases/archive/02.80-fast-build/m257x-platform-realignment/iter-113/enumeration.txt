@@ -1,0 +1,28 @@
+fence-tree: /Users/marco/workspace/anthropos/rosetta/.agentspace/rosetta-extensions @ af7d6e9ba · describe=fast-build-m257x-iter-101-14-gaf7d6e9
+predicate-enumerator: 24 predicate(s) over 40 corpus file(s); 29 detected seed(s) -> 71 enumerated site(s); multiplier 2.45x
+  P01  seeds=1  sites=1  x1.0  ceiling=12  headroom=11(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P02  seeds=1  sites=2  x2.0  ceiling=15  headroom=12(open 0)  forms=authored(2)+subj(3)
+  P03  seeds=1  sites=2  x2.0  ceiling=17  headroom=14(open 0)  forms=authored(2)+subj(1)
+  P04  seeds=1  sites=1  x1.0  ceiling=3  headroom=2(open 0)  forms=authored(1)+subj(3)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P05  seeds=1  sites=1  x1.0  ceiling=21  headroom=20(open 0)  forms=authored(2)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P06  seeds=1  sites=1  x1.0  ceiling=3  headroom=2(open 0)  forms=authored(2)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P07  seeds=1  sites=2  x2.0  ceiling=4  headroom=1(open 0)  forms=authored(1)+subj(1)
+  P08  seeds=1  sites=1  x1.0  ceiling=4  headroom=2(open 0)  forms=authored(2)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P09  seeds=3  sites=6  x2.0  ceiling=9  headroom=2(open 0)  forms=authored(2)+subj(3)
+  P10  seeds=1  sites=11  x11.0  ceiling=61  headroom=46(open 0)  forms=authored(3)+subj(3)
+  P11  seeds=1  sites=1  x1.0  ceiling=3  headroom=2(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P12  seeds=1  sites=2  x2.0  ceiling=6  headroom=3(open 0)  forms=authored(2)+subj(2)
+  P13  seeds=3  sites=3  x1.0  ceiling=8  headroom=5(open 0)  forms=authored(3)+subj(4)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P14  seeds=1  sites=1  x1.0  ceiling=7  headroom=5(open 0)  forms=authored(1)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P15  seeds=1  sites=5  x5.0  ceiling=28  headroom=16(open 0)  forms=authored(2)+subj(2)
+  P16  seeds=1  sites=1  x1.0  ceiling=6  headroom=5(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P17  seeds=1  sites=1  x1.0  ceiling=5  headroom=3(open 0)  forms=authored(2)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P18  seeds=2  sites=2  x1.0  ceiling=4  headroom=1(open 0)  forms=authored(2)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P19  seeds=1  sites=1  x1.0  ceiling=2  headroom=1(open 0)  forms=authored(1)+subj(1)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P20  seeds=1  sites=1  x1.0  ceiling=2  headroom=0(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-PROVEN
+  P21  seeds=1  sites=22  x22.0  ceiling=78  headroom=34(open 0)  forms=authored(1)+subj(1)
+  P22  seeds=1  sites=1  x1.0  ceiling=37  headroom=36(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P23  seeds=1  sites=1  x1.0  ceiling=13  headroom=12(open 0)  forms=authored(2)+subj(3)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+  P24  seeds=1  sites=1  x1.0  ceiling=20  headroom=19(open 0)  forms=authored(1)+subj(2)  NO-EXPANSION  SMALL-CLASS-ADJUDICATED
+predicate-enumerator: 16 predicate(s) did NOT expand (P01, P04, P05, P06, P08, P11, P13, P14, P16, P17, P18, P19, P20, P22, P23, P24). A multiplier of 1.0 is evidence the ENUMERATION is not working, not that the predicate is rare — iter-96 measured 3.92x on a smaller, less-repaired corpus (TOK-07). 16 of them are SETTLED against a measured subject ceiling (P01, P04, P05, P06, P08, P11, P13, P14, P16, P17, P18, P19, P20, P22, P23, P24): every site in the corpus that mentions the subject is already reached, so there is nothing wider to find.
+predicate-enumerator: OK — every detected seed is re-found by its own predicate's forms; the enumerated set is a superset of the reading's detections

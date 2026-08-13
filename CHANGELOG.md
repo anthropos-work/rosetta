@@ -2,6 +2,69 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.8] "fast build" — 2026-08-13
+
+**The time-to-ready release.** *From nothing, to live, to provably live, fast.* Measure the machine and spend
+it deliberately, then collapse the bring-up, then bake the journey suite into it so a stack comes up **and
+proves itself**.
+
+### Added
+- **The journey suite now runs as part of every demo bring-up** (M258). One command brings the stack up and
+  drives all 31 journeys to completion, emitting a single consolidated failure list at the end — it never
+  halts at the first failure and never retries to mask a flake. The stack is left running regardless; the
+  bring-up exits non-zero and says so loudly.
+- **The demo is restored to a presenter-usable world after the suite runs** (M258), with a post-condition
+  that checks the restored artifacts agree with each other, not merely that each step succeeded.
+- **A repeatable build bench with measured, checked-in host profiles and a hard headroom assert** (M255) —
+  a build can now be refused for lack of machine headroom, and the refusal is a result.
+- **A fenced platform-consolidation map** (M257x), machine-checked against the platform's own `repos.yml` in
+  both directions, plus the first complete register of all 93 organisation repositories.
+- **Space reclamation classified by its coupling to time** (M258) — zero-coupling reclaims taken in full,
+  image size treated as *favourably* coupled (smaller is also faster), and the build cache placed out of
+  bounds by default so disk is never bought with build time.
+
+### Changed
+- **A cold demo bring-up went from 450 s to 287 s** on the development host (M257), beating the 360 s target
+  and its 300 s stretch. The two front-end images went **8 GB → 0.8 GB** combined, collapsing image export
+  from 136 s to under 4 s. Achieved with **zero platform-repo edits**.
+- **The Playthrough suite grew 18 → 30 live journeys** (M256), with negative controls on 28 of 30 and the
+  runner's own gate made binding.
+- **11.54 GB of disk returned at zero build-time cost** (M258); the anonymous-volume leak was stopped at its
+  producer on both the demo and developer paths.
+
+### Fixed
+- **Freshly seeded users were silently denied every organisation-scoped action** (M258). A retired
+  authorisation service was folded into the backend upstream while our seeding still notified the deleted
+  service and logged the miss as harmless; the permission engine kept serving its boot-time policy. Requests
+  were refused while returning HTTP 200. Fifteen journeys were affected; the suite also ran 629 s instead of
+  129 s, because it was waiting on refusals that could never succeed.
+- **Troubleshooting instructions told operators to delete two lines the backend build requires** (M257x).
+- **A demo could reach production object storage** (M257x). Nothing was written — an access-denied policy we
+  do not control was the only thing in the way. Closed at both pointers, and the safety document's
+  unqualified "a demo cannot write production" claims were qualified to what the design actually guarantees.
+- **Both teardown paths printed a recovery command that re-created the volume leak** just fixed (v2.8 close).
+
+### Deprecated / Removed
+- `sentinel` is no longer a service in a local stack — folded into `app` upstream at platform `766df6c`. The
+  always-on floor is now **two** containers, the default profile starts **four**, and **one** Go service in a
+  local stack is ours. Corrected across the corpus.
+
+### Supply chain
+- `golang.org/x/text` **v0.37.0 / v0.29.0 → v0.39.0** in two modules, clearing a *symbol-reachable*
+  advisory (`CVE-2026-56852`). **Zero net-new third-party dependencies** across the release; zero copyleft.
+
+### Known limitations
+- **The composed bring-up-plus-suite timing was never measured clean.** All three cold reps were rejected by
+  the instrument itself under host contention; the ~402 s figure is a **projection** from separately-measured
+  halves, and a flattering ~290 s warm-cache cycle was deliberately not banked.
+- **The journey gate skips on the default bring-up path.** Remote access is on by default, and a demo in
+  that mode cannot be reached from its own host, so the suite records itself as *skipped* — never as passed.
+  Ask for the non-remote mode to make it gate.
+- **A false green remains in the studio journey**: it matches the empty page scaffolding before the AI
+  generation completes, so it can pass without the generation happening.
+- **The largest test suite has never completed a full sweep** on the development host.
+- Full carry-forward is named item by item in `knowledge/plan/roadmap-vision.md`.
+
 ## [v2.7] "july jitter" — 2026-07-25
 
 **The re-ground + fidelity + field-hardening release.** Realign the demo + corpus to the platform's true

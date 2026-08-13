@@ -1,0 +1,687 @@
+{
+  "fence_tree": {
+    "path": "/Users/marco/workspace/anthropos/rosetta/.agentspace/rosetta-extensions",
+    "sha": "8f05780475412410c3bcd0ea00b4d86d629057ad",
+    "dirty": true,
+    "describe": "fast-build-m257x-iter-101-12-g8f05780-dirty"
+  },
+  "files_scanned": 40,
+  "predicates": [
+    {
+      "id": "P01",
+      "statement": "The Mistral OCR client in `app` is constructed at markdownManager.go:19.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:34"
+      ],
+      "forms": [
+        "markdownManager.go:19"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/ai_architecture.md:34"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P02",
+      "statement": "All Go services access AI through the shared `ai` module github.com/anthropos-work/ai.",
+      "seeds": [
+        "corpus/architecture/external_services.md:554"
+      ],
+      "forms": [
+        "All Go services access AI through the shared"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/external_services.md:554"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P03",
+      "statement": "The platform's Anthropic models are Claude 4.5 / 4 / 3.7 / 3.5 Sonnet.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:87"
+      ],
+      "forms": [
+        "Claude 3.7 Sonnet"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/ai_architecture.md:87",
+        "corpus/architecture/ai_architecture.md:264"
+      ],
+      "n_seeds": 1,
+      "n_sites": 2,
+      "multiplier": 2.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P04",
+      "statement": "The platform's speech-model set includes TTS v2 and TTS v2 HD.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:89"
+      ],
+      "forms": [
+        "TTS v2 HD"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/ai_architecture.md:89"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P05",
+      "statement": "variables.tf:635-638 declares anthropic_api_key and main.tf:555 injects ANTHROPIC_API_KEY.",
+      "seeds": [
+        "corpus/services/coursebuilder.md:48"
+      ],
+      "forms": [
+        "internal/coursebuilder/bedrock.go:105-114"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/coursebuilder.md:48"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P06",
+      "statement": "The LiveKit EU/US split is on the endpoint only, not on the agent name.",
+      "seeds": [
+        "corpus/architecture/external_services.md:723"
+      ],
+      "forms": [
+        "GPT Realtime agents"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/ai_architecture.md:185",
+        "corpus/architecture/external_services.md:679",
+        "corpus/architecture/external_services.md:723"
+      ],
+      "n_seeds": 1,
+      "n_sites": 3,
+      "multiplier": 3.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P07",
+      "statement": "The flag_use_realtime_openai arm's only effect is swapping the endpoint to openai-hosted.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:218"
+      ],
+      "forms": [
+        "openai-hosted"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/ai_architecture.md:218",
+        "corpus/services/jobsimulation.md:163"
+      ],
+      "n_seeds": 1,
+      "n_sites": 2,
+      "multiplier": 2.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P08",
+      "statement": "The M51 iter-08/09 block that carries the re-anchored call site is at ai-readiness.md:496.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:49-52"
+      ],
+      "forms": [
+        "when the two disagree, the name wins"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/ai-readiness.md:52"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P09",
+      "statement": "AIReadinessClient.tsx's orgEnabled gate, effectiveCycleId, isFetched gate and tab-filter read sit at :133-134/:153-154/:166-170/:599.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:84",
+        "corpus/services/ai-readiness.md:334-335",
+        "corpus/services/ai-readiness.md:482-484"
+      ],
+      "forms": [
+        "AIReadinessClient.tsx",
+        "orgEnabled"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/ai-readiness.md:82",
+        "corpus/services/ai-readiness.md:84",
+        "corpus/services/ai-readiness.md:108",
+        "corpus/services/ai-readiness.md:109",
+        "corpus/services/ai-readiness.md:334",
+        "corpus/services/ai-readiness.md:482"
+      ],
+      "n_seeds": 3,
+      "n_sites": 6,
+      "multiplier": 2.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P10",
+      "statement": "The Go service invokes studio/gen.py and studio/postgen.py through bash -c.",
+      "seeds": [
+        "corpus/services/cms.md:287"
+      ],
+      "forms": [
+        "studio/gen.py"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/architecture_overview.md:128",
+        "corpus/architecture/external_services.md:672",
+        "corpus/architecture/service_taxonomy.md:38",
+        "corpus/architecture/service_taxonomy.md:51",
+        "corpus/services/cms.md:95",
+        "corpus/services/cms.md:164",
+        "corpus/services/cms.md:287",
+        "corpus/services/studio-room.md:35",
+        "corpus/services/studio-room.md:343",
+        "corpus/services/studio-room.md:374"
+      ],
+      "n_seeds": 1,
+      "n_sites": 10,
+      "multiplier": 10.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P11",
+      "statement": "The email-override validator's placeholder package is messenger/pkg/aireadinessemail, not app/internal/messenger/aireadinessemail.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:270"
+      ],
+      "forms": [
+        "messenger/pkg/aireadinessemail"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/ai-readiness.md:270"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P12",
+      "statement": "The Directus voice-engine nil-default lives at cms/directus/collections/jobsimulation.go:1594-1597.",
+      "seeds": [
+        "corpus/services/jobsimulation.md:160"
+      ],
+      "forms": [
+        "ELEVENLABS_EU_TEMPLATE_AGENT_ID"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/jobsimulation.md:160"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P13",
+      "statement": "customerio-sync was the only platform compose service ever built from a git-URL context.",
+      "seeds": [
+        "corpus/services/customerio-sync.md:163-164",
+        "corpus/services/customerio-sync.md:85-86",
+        "corpus/services/customerio-sync.md:64"
+      ],
+      "forms": [
+        "compose service built that way",
+        "the only service built that way",
+        "build pattern was unique in the platform"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/customerio-sync.md:64",
+        "corpus/services/customerio-sync.md:85",
+        "corpus/services/customerio-sync.md:164"
+      ],
+      "n_seeds": 3,
+      "n_sites": 3,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P14",
+      "statement": "graphql-wundergraph's own CLAUDE.md Version Tracking section is stale.",
+      "seeds": [
+        "corpus/services/graphql-wundergraph.md:274"
+      ],
+      "forms": [
+        "Version Tracking"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/graphql-wundergraph.md:274"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P15",
+      "statement": "roadrunner/terraform/main.tf:19 was last touched at 87d8d44 (2026-06-19).",
+      "seeds": [
+        "corpus/services/roadrunner.md:13-14"
+      ],
+      "forms": [
+        "roadrunner/terraform/main.tf:19"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/platform-migration-status.md:90",
+        "corpus/services/README.md:21",
+        "corpus/services/README.md:42",
+        "corpus/services/roadrunner.md:13"
+      ],
+      "n_seeds": 1,
+      "n_sites": 4,
+      "multiplier": 4.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P16",
+      "statement": "Storage's compose environment block at platform 0dab54d declares eight variables.",
+      "seeds": [
+        "corpus/architecture/dependency_map.md:19"
+      ],
+      "forms": [
+        "docker-compose.yml:126-131",
+        "services/storage.md",
+        "service_taxonomy.md",
+        "DB_CONNECTION"
+      ],
+      "forms_were_derived": true,
+      "sites": [
+        "corpus/architecture/README.md:17",
+        "corpus/architecture/architecture_overview.md:12",
+        "corpus/architecture/architecture_overview.md:55",
+        "corpus/architecture/architecture_overview.md:152",
+        "corpus/architecture/architecture_overview.md:173",
+        "corpus/architecture/architecture_overview.md:186",
+        "corpus/architecture/architecture_overview.md:194",
+        "corpus/architecture/architecture_overview.md:368",
+        "corpus/architecture/dependency_map.md:19",
+        "corpus/architecture/dependency_map.md:22",
+        "corpus/architecture/external_services.md:144",
+        "corpus/architecture/external_services.md:878",
+        "corpus/architecture/platform-migration-status.md:329",
+        "corpus/architecture/security_compliance.md:279",
+        "corpus/architecture/service_taxonomy.md:149",
+        "corpus/architecture/shared_libraries.md:96",
+        "corpus/architecture/shared_libraries.md:270",
+        "corpus/services/README.md:8",
+        "corpus/services/README.md:85",
+        "corpus/services/ant-academy.md:498",
+        "corpus/services/chronos.md:168",
+        "corpus/services/chronos.md:200",
+        "corpus/services/cms.md:104",
+        "corpus/services/cms.md:312",
+        "corpus/services/customerio-sync.md:78",
+        "corpus/services/customerio-sync.md:150",
+        "corpus/services/gotenberg.md:84",
+        "corpus/services/graphql-wundergraph.md:280",
+        "corpus/services/hiring.md:47",
+        "corpus/services/hiring.md:52",
+        "corpus/services/hiring.md:55",
+        "corpus/services/intelligence.md:8",
+        "corpus/services/intelligence.md:17",
+        "corpus/services/jobsimulation.md:83",
+        "corpus/services/jobsimulation.md:118",
+        "corpus/services/messenger.md:100",
+        "corpus/services/messenger.md:204",
+        "corpus/services/next-web-app.md:164",
+        "corpus/services/roadrunner.md:206",
+        "corpus/services/sentinel.md:125",
+        "corpus/services/sentinel.md:150",
+        "corpus/services/skillpath.md:62",
+        "corpus/services/skillpath.md:117",
+        "corpus/services/storage.md:248",
+        "corpus/services/studio-desk.md:377",
+        "corpus/services/studio-desk.md:431",
+        "corpus/services/studio-room.md:387",
+        "corpus/services/studio-room.md:506"
+      ],
+      "n_seeds": 1,
+      "n_sites": 48,
+      "multiplier": 48.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P17",
+      "statement": "storage's StorageService Connect handler is declared in storage:sdk/storage/v1/service.go.",
+      "seeds": [
+        "corpus/services/backend.md:37-41"
+      ],
+      "forms": [
+        "storage@4ce8ece5:sdk/storage/v1/service.go"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/backend.md:39"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P18",
+      "statement": "studio-desk's Express backend holds the GraphQL client and calls the platform GraphQL API.",
+      "seeds": [
+        "corpus/services/studio-desk.md:38",
+        "corpus/services/studio-desk.md:46"
+      ],
+      "forms": [
+        "cms domain** (in-process inside",
+        "8082/graphql/query"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/README.md:19",
+        "corpus/architecture/architecture_overview.md:3",
+        "corpus/architecture/architecture_overview.md:122",
+        "corpus/architecture/architecture_overview.md:123",
+        "corpus/architecture/architecture_overview.md:127",
+        "corpus/architecture/architecture_overview.md:284",
+        "corpus/architecture/architecture_overview.md:334",
+        "corpus/architecture/dependency_map.md:23",
+        "corpus/architecture/dependency_map.md:24",
+        "corpus/architecture/dependency_map.md:88",
+        "corpus/architecture/external_services.md:3",
+        "corpus/architecture/external_services.md:191",
+        "corpus/architecture/external_services.md:192",
+        "corpus/architecture/external_services.md:198",
+        "corpus/architecture/external_services.md:227",
+        "corpus/architecture/external_services.md:403",
+        "corpus/architecture/external_services.md:483",
+        "corpus/architecture/external_services.md:526",
+        "corpus/architecture/external_services.md:766",
+        "corpus/architecture/external_services.md:775",
+        "corpus/architecture/frontend_architecture.md:39",
+        "corpus/architecture/frontend_architecture.md:55",
+        "corpus/architecture/platform-migration-status.md:94",
+        "corpus/architecture/service_taxonomy.md:3",
+        "corpus/architecture/service_taxonomy.md:47",
+        "corpus/architecture/service_taxonomy.md:117",
+        "corpus/architecture/service_taxonomy.md:286",
+        "corpus/architecture/service_taxonomy.md:375",
+        "corpus/architecture/service_taxonomy.md:395",
+        "corpus/architecture/service_taxonomy.md:418",
+        "corpus/architecture/service_taxonomy.md:429",
+        "corpus/services/README.md:52",
+        "corpus/services/academy-backend.md:13",
+        "corpus/services/backend.md:301",
+        "corpus/services/backend.md:307",
+        "corpus/services/cms.md:113",
+        "corpus/services/cms.md:197",
+        "corpus/services/graphql-wundergraph.md:9",
+        "corpus/services/graphql-wundergraph.md:58",
+        "corpus/services/graphql-wundergraph.md:156",
+        "corpus/services/graphql-wundergraph.md:173",
+        "corpus/services/graphql-wundergraph.md:200",
+        "corpus/services/graphql-wundergraph.md:228",
+        "corpus/services/hiring.md:420",
+        "corpus/services/jobsimulation.md:257",
+        "corpus/services/next-web-app.md:15",
+        "corpus/services/next-web-app.md:74",
+        "corpus/services/next-web-app.md:80",
+        "corpus/services/next-web-app.md:95",
+        "corpus/services/next-web-app.md:134",
+        "corpus/services/next-web-app.md:136",
+        "corpus/services/next-web-app.md:162",
+        "corpus/services/studio-desk.md:21",
+        "corpus/services/studio-desk.md:38",
+        "corpus/services/studio-desk.md:46",
+        "corpus/services/studio-desk.md:140",
+        "corpus/services/studio-desk.md:181",
+        "corpus/services/studio-desk.md:300"
+      ],
+      "n_seeds": 2,
+      "n_sites": 58,
+      "multiplier": 29.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P19",
+      "statement": "studio-desk declares GCLOUD_SERVICE_ACCOUNT at .env.example:120.",
+      "seeds": [
+        "corpus/services/studio-desk.md:107"
+      ],
+      "forms": [
+        "app/builder-skill-path"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/studio-desk.md:107"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P20",
+      "statement": "archiveStudioTask is declared in app's cms_queries.graphqls at line 106.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:48-49"
+      ],
+      "forms": [
+        "archiveStudioTask",
+        "cms_queries.graphqls:106"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/service_taxonomy.md:48",
+        "corpus/architecture/service_taxonomy.md:49"
+      ],
+      "n_seeds": 1,
+      "n_sites": 2,
+      "multiplier": 2.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P21",
+      "statement": "d11a403 re-pointed all four of messenger's *_RPC_ADDR at http://backend:8083.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:425"
+      ],
+      "forms": [
+        "cross-process **Connect-RPC** edge"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/platform-migration-status.md:93",
+        "corpus/architecture/service_taxonomy.md:425",
+        "corpus/services/backend.md:47",
+        "corpus/services/backend.md:302",
+        "corpus/services/jobsimulation.md:145",
+        "corpus/services/sentinel.md:85"
+      ],
+      "n_seeds": 1,
+      "n_sites": 6,
+      "multiplier": 6.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P22",
+      "statement": "The Cosmo Router is deployed in the VPC's public subnets.",
+      "seeds": [
+        "corpus/architecture/security_compliance.md:22"
+      ],
+      "forms": [
+        "Cosmo Router"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/architecture/architecture_overview.md:3",
+        "corpus/architecture/architecture_overview.md:45",
+        "corpus/architecture/architecture_overview.md:62",
+        "corpus/architecture/architecture_overview.md:71",
+        "corpus/architecture/architecture_overview.md:89",
+        "corpus/architecture/architecture_overview.md:251",
+        "corpus/architecture/architecture_overview.md:284",
+        "corpus/architecture/architecture_overview.md:325",
+        "corpus/architecture/architecture_overview.md:423",
+        "corpus/architecture/dependency_map.md:23",
+        "corpus/architecture/external_services.md:3",
+        "corpus/architecture/external_services.md:358",
+        "corpus/architecture/external_services.md:365",
+        "corpus/architecture/external_services.md:403",
+        "corpus/architecture/external_services.md:475",
+        "corpus/architecture/frontend_architecture.md:39",
+        "corpus/architecture/frontend_architecture.md:55",
+        "corpus/architecture/security_compliance.md:22",
+        "corpus/architecture/service_taxonomy.md:3",
+        "corpus/architecture/service_taxonomy.md:117",
+        "corpus/architecture/service_taxonomy.md:390",
+        "corpus/architecture/service_taxonomy.md:403",
+        "corpus/architecture/service_taxonomy.md:507",
+        "corpus/architecture/service_taxonomy.md:514",
+        "corpus/services/README.md:52",
+        "corpus/services/backend.md:307",
+        "corpus/services/cms.md:197",
+        "corpus/services/customerio-sync.md:153",
+        "corpus/services/graphql-wundergraph.md:37",
+        "corpus/services/graphql-wundergraph.md:72",
+        "corpus/services/graphql-wundergraph.md:74",
+        "corpus/services/graphql-wundergraph.md:256",
+        "corpus/services/graphql-wundergraph.md:271",
+        "corpus/services/jobsimulation.md:122",
+        "corpus/services/next-web-app.md:12",
+        "corpus/services/next-web-app.md:15",
+        "corpus/services/studio-desk.md:132"
+      ],
+      "n_seeds": 1,
+      "n_sites": 37,
+      "multiplier": 37.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    },
+    {
+      "id": "P23",
+      "statement": "Ant Academy is an internal @anthropos.work-domain-gated portal that external users cannot enter.",
+      "seeds": [
+        "corpus/services/ant-academy.md:474"
+      ],
+      "forms": [
+        "so external users cannot enter"
+      ],
+      "forms_were_derived": false,
+      "sites": [
+        "corpus/services/ant-academy.md:474"
+      ],
+      "n_seeds": 1,
+      "n_sites": 1,
+      "multiplier": 1.0,
+      "no_expansion": true,
+      "missed_seeds": []
+    },
+    {
+      "id": "P24",
+      "statement": "The platform's docker-compose still contains a messenger service block.",
+      "seeds": [
+        "corpus/services/sentinel.md:5"
+      ],
+      "forms": [
+        "docker-compose.yml:48",
+        "AUTHORIZATION_ADDRESS",
+        "clerk-integration.md"
+      ],
+      "forms_were_derived": true,
+      "sites": [
+        "corpus/architecture/architecture_overview.md:249",
+        "corpus/architecture/architecture_overview.md:267",
+        "corpus/architecture/architecture_overview.md:268",
+        "corpus/architecture/dependency_map.md:7",
+        "corpus/architecture/external_services.md:32",
+        "corpus/architecture/external_services.md:69",
+        "corpus/architecture/external_services.md:85",
+        "corpus/architecture/platform-migration-status.md:93",
+        "corpus/architecture/service_taxonomy.md:330",
+        "corpus/architecture/service_taxonomy.md:425",
+        "corpus/architecture/shared_libraries.md:183",
+        "corpus/services/README.md:68",
+        "corpus/services/backend.md:48",
+        "corpus/services/backend.md:302",
+        "corpus/services/clerkenstein.md:371",
+        "corpus/services/jobsimulation.md:146",
+        "corpus/services/sentinel.md:5",
+        "corpus/services/sentinel.md:85",
+        "corpus/services/sentinel.md:89"
+      ],
+      "n_seeds": 1,
+      "n_sites": 19,
+      "multiplier": 19.0,
+      "no_expansion": false,
+      "missed_seeds": []
+    }
+  ],
+  "seeds_total": 29,
+  "sites_total": 211,
+  "multiplier": 7.28,
+  "no_expansion": [
+    "P01",
+    "P02",
+    "P04",
+    "P05",
+    "P08",
+    "P11",
+    "P12",
+    "P13",
+    "P14",
+    "P17",
+    "P19",
+    "P23"
+  ],
+  "seed_recall_failures": []
+}

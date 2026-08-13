@@ -1,0 +1,251 @@
+{
+  "_source": "iter-109/verdicts/adj-{1,2,3,4}.md — the UPHELD, IN-SCOPE bookings, one row per distinct PREDICATE (the field each adjudicator booked), never one row per anchor. Seeds are the anchors the reading DETECTED; they are inputs to the enumeration, not its denominator (TOK-07 rule 1).",
+  "_scope": "corpus/services + corpus/architecture. iter-109's one OUT-OF-SCOPE upheld booking (CLAUDE.md:248) is deliberately absent, and the 3 REJECTED bookings are absent because they are not false.",
+  "predicates": [
+    {
+      "id": "P01",
+      "statement": "The Mistral OCR client in `app` is constructed at markdownManager.go:19.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:34"
+      ],
+      "forms": [
+        "markdownManager.go:19"
+      ]
+    },
+    {
+      "id": "P02",
+      "statement": "All Go services access AI through the shared `ai` module github.com/anthropos-work/ai.",
+      "seeds": [
+        "corpus/architecture/external_services.md:554"
+      ],
+      "forms": [
+        "All Go services access AI through the shared"
+      ]
+    },
+    {
+      "id": "P03",
+      "statement": "The platform's Anthropic models are Claude 4.5 / 4 / 3.7 / 3.5 Sonnet.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:87"
+      ],
+      "forms": [
+        "Claude 3.7 Sonnet"
+      ]
+    },
+    {
+      "id": "P04",
+      "statement": "The platform's speech-model set includes TTS v2 and TTS v2 HD.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:89"
+      ],
+      "forms": [
+        "TTS v2 HD"
+      ]
+    },
+    {
+      "id": "P05",
+      "statement": "variables.tf:635-638 declares anthropic_api_key and main.tf:555 injects ANTHROPIC_API_KEY.",
+      "seeds": [
+        "corpus/services/coursebuilder.md:48"
+      ],
+      "forms": [
+        "internal/coursebuilder/bedrock.go:105-114"
+      ]
+    },
+    {
+      "id": "P06",
+      "statement": "The LiveKit EU/US split is on the endpoint only, not on the agent name.",
+      "seeds": [
+        "corpus/architecture/external_services.md:723"
+      ],
+      "forms": [
+        "GPT Realtime agents"
+      ]
+    },
+    {
+      "id": "P07",
+      "statement": "The flag_use_realtime_openai arm's only effect is swapping the endpoint to openai-hosted.",
+      "seeds": [
+        "corpus/architecture/ai_architecture.md:218"
+      ],
+      "forms": [
+        "openai-hosted"
+      ]
+    },
+    {
+      "id": "P08",
+      "statement": "The M51 iter-08/09 block that carries the re-anchored call site is at ai-readiness.md:496.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:49-52"
+      ],
+      "forms": [
+        "when the two disagree, the name wins"
+      ]
+    },
+    {
+      "id": "P09",
+      "statement": "AIReadinessClient.tsx's orgEnabled gate, effectiveCycleId, isFetched gate and tab-filter read sit at :133-134/:153-154/:166-170/:599.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:84",
+        "corpus/services/ai-readiness.md:334-335",
+        "corpus/services/ai-readiness.md:482-484"
+      ],
+      "forms": [
+        "AIReadinessClient.tsx",
+        "orgEnabled"
+      ]
+    },
+    {
+      "id": "P10",
+      "statement": "The Go service invokes studio/gen.py and studio/postgen.py through bash -c.",
+      "seeds": [
+        "corpus/services/cms.md:287"
+      ],
+      "forms": [
+        "studio/gen.py"
+      ]
+    },
+    {
+      "id": "P11",
+      "statement": "The email-override validator's placeholder package is messenger/pkg/aireadinessemail, not app/internal/messenger/aireadinessemail.",
+      "seeds": [
+        "corpus/services/ai-readiness.md:270"
+      ],
+      "forms": [
+        "messenger/pkg/aireadinessemail"
+      ]
+    },
+    {
+      "id": "P12",
+      "statement": "The Directus voice-engine nil-default lives at cms/directus/collections/jobsimulation.go:1594-1597.",
+      "seeds": [
+        "corpus/services/jobsimulation.md:160"
+      ],
+      "forms": [
+        "ELEVENLABS_EU_TEMPLATE_AGENT_ID"
+      ]
+    },
+    {
+      "id": "P13",
+      "statement": "customerio-sync was the only platform compose service ever built from a git-URL context.",
+      "seeds": [
+        "corpus/services/customerio-sync.md:163-164",
+        "corpus/services/customerio-sync.md:85-86",
+        "corpus/services/customerio-sync.md:64"
+      ],
+      "forms": [
+        "compose service built that way",
+        "the only service built that way",
+        "build pattern was unique in the platform"
+      ]
+    },
+    {
+      "id": "P14",
+      "statement": "graphql-wundergraph's own CLAUDE.md Version Tracking section is stale.",
+      "seeds": [
+        "corpus/services/graphql-wundergraph.md:274"
+      ],
+      "forms": [
+        "Version Tracking"
+      ]
+    },
+    {
+      "id": "P15",
+      "statement": "roadrunner/terraform/main.tf:19 was last touched at 87d8d44 (2026-06-19).",
+      "seeds": [
+        "corpus/services/roadrunner.md:13-14"
+      ],
+      "forms": [
+        "roadrunner/terraform/main.tf:19"
+      ]
+    },
+    {
+      "id": "P16",
+      "statement": "Storage's compose environment block at platform 0dab54d declares eight variables.",
+      "seeds": [
+        "corpus/architecture/dependency_map.md:19"
+      ]
+    },
+    {
+      "id": "P17",
+      "statement": "storage's StorageService Connect handler is declared in storage:sdk/storage/v1/service.go.",
+      "seeds": [
+        "corpus/services/backend.md:37-41"
+      ],
+      "forms": [
+        "storage@4ce8ece5:sdk/storage/v1/service.go"
+      ]
+    },
+    {
+      "id": "P18",
+      "statement": "studio-desk's Express backend holds the GraphQL client and calls the platform GraphQL API.",
+      "seeds": [
+        "corpus/services/studio-desk.md:38",
+        "corpus/services/studio-desk.md:46"
+      ],
+      "forms": [
+        "cms domain** (in-process inside",
+        "8082/graphql/query"
+      ]
+    },
+    {
+      "id": "P19",
+      "statement": "studio-desk declares GCLOUD_SERVICE_ACCOUNT at .env.example:120.",
+      "seeds": [
+        "corpus/services/studio-desk.md:107"
+      ],
+      "forms": [
+        "app/builder-skill-path"
+      ]
+    },
+    {
+      "id": "P20",
+      "statement": "archiveStudioTask is declared in app's cms_queries.graphqls at line 106.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:48-49"
+      ],
+      "forms": [
+        "archiveStudioTask",
+        "cms_queries.graphqls:106"
+      ]
+    },
+    {
+      "id": "P21",
+      "statement": "d11a403 re-pointed all four of messenger's *_RPC_ADDR at http://backend:8083.",
+      "seeds": [
+        "corpus/architecture/service_taxonomy.md:425"
+      ],
+      "forms": [
+        "cross-process **Connect-RPC** edge"
+      ]
+    },
+    {
+      "id": "P22",
+      "statement": "The Cosmo Router is deployed in the VPC's public subnets.",
+      "seeds": [
+        "corpus/architecture/security_compliance.md:22"
+      ],
+      "forms": [
+        "Cosmo Router"
+      ]
+    },
+    {
+      "id": "P23",
+      "statement": "Ant Academy is an internal @anthropos.work-domain-gated portal that external users cannot enter.",
+      "seeds": [
+        "corpus/services/ant-academy.md:474"
+      ],
+      "forms": [
+        "so external users cannot enter"
+      ]
+    },
+    {
+      "id": "P24",
+      "statement": "The platform's docker-compose still contains a messenger service block.",
+      "seeds": [
+        "corpus/services/sentinel.md:5"
+      ]
+    }
+  ],
+  "_forms": "Authored where a token-derivation cannot reach the proposition — measured at iter-112: a large share of this residual is PROSE, not code citations, so there is no literal to derive. Every authored form is a substring of its own seed line, and SEED RECALL is fail-closed, so a form that does not find the site it was written for is a RED. P16 and P24 are left DERIVED deliberately, as the control that the derived path still runs."
+}

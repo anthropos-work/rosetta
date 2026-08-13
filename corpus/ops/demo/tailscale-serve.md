@@ -169,7 +169,11 @@ The canonical prereq list + these install commands also live in
 > (`billion` had **none** — hence the Go host-prereq above). That doc lives in a **different repo, out of the
 > rosetta corpus** — flagged here for whoever owns the odyssey KB to refresh; not fixed from here.
 
-> **12 GB Docker-VM floor (UI tier).** The full UI tier's next-web build spikes to ~3.7 GB. The
+> **12 GB Docker-VM floor (UI tier).** The full UI tier's next-web build lane spikes to a **measured
+> 3.0–4.2 GiB depending on host** (`lane_heap_measured_peak_mib`: 3,116 on `macmini` · 3,900 on `billion` ·
+> 4,223 on the retired `laptop`). *Retracted at the v2.8 M257 close: this line said "~3.7 GB", an **image
+> size** quoted as a memory figure — and it was the last live copy of that claim anywhere in the corpus,
+> outside the enumerated mirror set the retraction was planned against.* The
 > [`frontend-tier.md`](frontend-tier.md) §"The 12 GB Docker-VM prerequisite" floor applies; on the M215 run RAM
 > held (5.7 GB free) with next-web + studio-desk up. A RAM-tight VM can do a backend-only first pass with
 > `DEMO_NO_UI=1` (Step 5).
@@ -247,7 +251,7 @@ verb ever reads, echoes, or logs a secret value. The `GH_PAT` in the bundle both
 (Step 1) and rides into the Docker builds as `GH_ACCESS_TOKEN`.
 
 The secret source is laid out **by repo** (`<root>/.agentspace/secrets/<repo>/<target-file>`); the full layout +
-the 6-repo/56-gene coverage DNA + the `DIRECTUS_TOKEN`-stays-blank safety are in
+the 6-repo/64-gene coverage DNA + the `DIRECTUS_TOKEN`-stays-blank safety are in
 [`../secrets-spec.md`](../secrets-spec.md). `/demo-up` runs `/stack-secrets` as an auto-provision step, so a demo
 is self-sourced from `.agentspace/secrets`; you can also pre-run it explicitly with `/stack-secrets demo-1`.
 
@@ -307,7 +311,8 @@ plaintext services are fronted by `tailscale serve` over the trusted cert, and t
 ```bash
 HOST=billion.taildc510.ts.net
 curl -s  https://$HOST:18082/api/health                                   # backend  (8082+off) → OK
-curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15050/health       # cosmo    (5050+off) → 200
+# NB (M257x iter-13): the cosmo row is GONE. `:15050` has no listener and is no longer fronted —
+# GraphQL rides `backend`'s :18082 at /graphql/query. The M215 run below predates the router deletion.
 curl -s -o /dev/null -w '%{http_code}\n' https://$HOST:15400/v1/client    # FAPI-own-TLS (5400+off) → 200
 ```
 
@@ -328,24 +333,53 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 > curl: (35) OpenSSL/3.0.13: error:0A00010B:SSL routines::wrong version number
 > ```
 >
-> Measured on `billion`: **from the VM, https on `:13000`, `:15050` and `:18082` ALL fail TLS; from a tailnet
-> peer all three answer 307/200/200.** From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
+> Measured on `billion` (M219, before the router deletion): **from the VM, https on `:13000`, `:15050` and
+> `:18082` ALL fail TLS; from a tailnet peer all three answer 307/200/200.** (`:15050` no longer exists —
+> the finding is about the loopback path, not about that particular port.) From a *peer*, WireGuard delivers the packet to `tailscaled`, which serves
 > the trusted cert — which is why `tailscale serve status` can list a mapping that nevertheless does not apply to
 > traffic you originate locally.
 >
 > **Consequence for testing.** A `--public-host` demo bakes the MagicDNS origin into the frontend build, so the
-> app's own GraphQL client calls `https://<magicdns>:15050/graphql`. Drive that app from a browser **on the VM**
+> app's own GraphQL client calls `https://<magicdns>:18082/graphql/query` (`:15050/graphql` before the M257x
+> iter-13 re-point). Drive that app from a browser **on the VM**
 > and every GraphQL call dies `ERR_SSL_PROTOCOL_ERROR`, every page renders a permanent loading spinner, and every
 > content assert fails for reasons that have nothing to do with the product. **Browser-driven suites (the
 > coverage sweep, the Playthroughs) must run from a tailnet PEER** — see
 > [`coverage-protocol.md` § WHERE you run the sweep is part of the test](coverage-protocol.md).
+>
+> #### The mechanism is a BIND COLLISION, not an unavoidable property of the loopback path (v2.8 M255)
+>
+> The description above — *"lands on the kernel socket instead of being intercepted by `tailscaled`"* — is
+> right about **what happens** and slightly off about **why**, and the difference is the whole fix. A wildcard
+> `0.0.0.0:P` bind **prevents `tailscaled` from creating its own `100.x:P` listener at all**; you cannot bind a
+> specific address on a port a wildcard already holds. So `serve` keeps working for **peers** (their traffic
+> arrives through the WireGuard tunnel and never consults the host's port table) while the node has no local
+> listener to reach.
+>
+> **Controlled A/B on `billion`** — two identical HTTP servers differing only in bind address, each fronted by
+> `tailscale serve`:
+>
+> | backend bind | `tailscaled` listener? | node-local `https://<magicdns>:<port>/` |
+> |---|---|---|
+> | `127.0.0.1:14998` | **yes** — `100.110.136.3:14998` | **HTTP 200, `ssl_verify=0` (trusted), 40 ms** |
+> | `0.0.0.0:14997` | **no** (IPv4) | fails — `wrong version number`, `ssl_verify=1` |
+>
+> **So the node CAN browse its own trusted `serve` origin** — provided nothing else holds the wildcard bind.
+> The seam is one line, `up-injected.sh:146`
+> (`if [ -n "$STACK_PUBLIC_HOST" ]; then BIND_HOST="0.0.0.0"; else BIND_HOST=""; fi`), and publishing on
+> loopback instead would **also remove the non-tailnet LAN exposure** that [`../safety.md`](../safety.md) §3.1
+> discloses. Two riders: it makes `serve` load-bearing for *all* off-box access (a serve failure becomes
+> "unreachable" rather than "reachable over plain HTTP"), and `tailscaled` binds the v6 address even in the
+> wildcard case, so the v4/v6 behaviours differ. **Not changed here** — it is scoped to **M258**, whose
+> *"one cold command on billion"* gate depends on it. Evidence:
+> `knowledge/plan/releases/02.80-fast-build/evidence/m255-spikes.md` § spike (e).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at **`https://$HOST:17700`**
 (`7700+off`) — on a `--public-host` demo it is fronted by `tailscale serve` behind the **same trusted MagicDNS
 cert** as every other browser-facing port (M220 S4; see the correction at § "the last plain-HTTP surface is
 gone" below). It lists the seeded heroes; each **[Log in as]** is a link to the FAPI handshake:
 
-> ⚠️ **This step previously read `http://$HOST:17700` — "deliberately *not* fronted by `tailscale serve`".**
+> ⚠️ **This step previously said `http://$HOST:17700` — "deliberately *not* fronted by `tailscale serve`".**
 > That was true up to v2.3 M220 S3 and is **false now**: `gen_tailscale_serve.py` carries `('cockpit', 7700)`
 > on its own `DEMO_STORIES`-gated axis and `up-injected.sh` fronts it. Following the old text verbatim points
 > the operator at the wrong scheme on the demo's **entry point** — the one page a presenter actually opens.
@@ -430,9 +464,10 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
   called at all.)
 - **`DEV_PUBLIC_HOST`, not `STACK_PUBLIC_HOST`.** `up-injected.sh` *exports* the latter, so an inherited value
   would otherwise flip a dev stack public with no flag on the command line. Dev has its own namespace.
-- **Only the ports your `--profile` actually publishes are fronted** (default `graphql` ⇒ backend API + Cosmo
-  GraphQL). The demo's fixed registry does not apply: `tailscale serve` **binds** what it fronts, so fronting a
-  port with no listener would hold it against the next bring-up.
+- **Only the ports your `--profile` actually publishes are fronted** (default `core` at platform `0dab54d` ⇒ the
+  backend API on `:8082+off`, which is also where GraphQL is served since `2adcf71` deleted the Cosmo router —
+  there is no second GraphQL port to front). The demo's fixed registry does not apply: `tailscale serve` **binds**
+  what it fronts, so fronting a port with no listener would hold it against the next bring-up.
 - **No cockpit, no Clerkenstein.** A dev stack authenticates against **real Clerk** and has no presenter
   launcher. §3.2's *"unauthenticated, authz-weakened build"* is a description of a **demo**, not of this.
 
@@ -447,14 +482,15 @@ by default). See [`../safety.md`](../safety.md) **§3.5.3**.
 ## The topology — HTTPS everywhere, one MagicDNS host, per offset port
 
 A demo runs its browser-facing services on **offset ports** (`base + N*10000`): next-web `3000+off`, **the
-apps/hiring 2nd app `3001+off`** (the TOK-02 two-app hiring demo — v2.4 "casting call"), the Cosmo GraphQL router
-`5050+off`, the backend REST `8082+off`, studio-desk `9000+off`, ant-academy `3077+off`, and the fake Clerk FAPI
+apps/hiring 2nd app `3001+off`** (the TOK-02 two-app hiring demo — v2.4 "casting call"), the backend
+`8082+off` — **REST *and* GraphQL, since platform `2adcf71` deleted the Cosmo router and M257x iter-13 deleted
+its `("graphql", 5050)` front row** (fronting a port with no listener yields a trusted-cert endpoint that
+always refuses, which is worse than absent because it looks configured) — studio-desk `9000+off`, ant-academy `3077+off`, and the fake Clerk FAPI
 `5400+off`. Under `--public-host`, each is reached over **HTTPS on the MagicDNS host at the same offset port**:
 
 ```
 teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tailscale serve ──▶ http://127.0.0.1:13000  (next-web / apps/web)
                    ── https://billion.taildc510.ts.net:13001 ──▶  tailscale serve ──▶ http://127.0.0.1:13001  (apps/hiring — the recruiter's 2nd app)
-                   ── https://billion.taildc510.ts.net:15050 ──▶  tailscale serve ──▶ http://127.0.0.1:15050  (cosmo)
                    ── https://billion.taildc510.ts.net:18082 ──▶  tailscale serve ──▶ http://127.0.0.1:18082  (backend)
                    ── https://billion.taildc510.ts.net:19000 ──▶  tailscale serve ──▶ http://127.0.0.1:19000  (studio-desk)
                    ── https://billion.taildc510.ts.net:13077 ──▶  tailscale serve ──▶ http://127.0.0.1:13077  (ant-academy, native)
@@ -497,10 +533,10 @@ localhost) so no site can drift:
 | **studio-desk redirects** (`CLERK_SIGN_IN_URL` / `WEB_APP_URL`) | `http://localhost:3000+off` | `https://$HOST:3000+off` | `gen_injected_override.py` (runtime env) |
 | **Baked browser URLs** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `_BACKEND_API_URL`, `_HOSTING_URL`, `_STUDIO_URL`, `_ACADEMY_URL`, `_PUBLIC_WEBSITE_URL`, `VITE_GRAPHQL_ENDPOINT`, `VITE_WEB_APP_URL`) | `http://localhost:…` | `https://$HOST:…` | `up-injected.sh` (`$SCHEME`) — the image cache-validators embed `$SCHEME` too, so an http-baked image is rebuilt under an https host |
 | **studio-desk SPA sign-in** (`VITE_CLERK_SIGN_IN_URL`) | *(was the un-offset `localhost:3000/login` default)* → now `http://localhost:3000+off/login` | `https://$HOST:3000+off/login` | `up-injected.sh` — baked via a gitignored `.env.production.local` overlay (no Dockerfile ARG; see §"The patch tail") |
-| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **`127.0.0.1:13077` bind** (`-H 127.0.0.1` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
+| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **loopback bind** (an explicit `-H` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`; the literal is `-H localhost` since v2.8 M257x iter-10 — same loopback property, and the only loopback literal next@16 does not re-normalize out from under its own origin check), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
 | **FAPI cert** | `mkcert`/openssl (local trust) | `tailscale cert` (tailnet-wide trust) | `up-injected.sh` (M213) |
 | **Cockpit bind** | `127.0.0.1` (loopback, `cockpit.py --host` default) | `0.0.0.0` | `up-injected.sh` (M212) |
-| **ant-academy bind** | **`127.0.0.1`** (loopback, `-H 127.0.0.1` — landed v2.3 M221 F-M220-5; was `*:13077` from `next dev`'s own `0.0.0.0` default) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
+| **ant-academy bind** | **loopback** (`-H localhost` — explicit loopback landed v2.3 M221 F-M220-5, was `*:13077` from `next dev`'s own `0.0.0.0` default; literal corrected `127.0.0.1` → `localhost` at v2.8 M257x iter-10, which fixed a 30 s 500 on `/`) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
 | **Registry** | no interaction | records `external_host` for `/stack-list` | `up-injected.sh` (M212) |
 
 **Mixed-content clean.** With HTTPS-everywhere, no browser-facing call resolves to plain `http://` — the scheme
@@ -590,8 +626,9 @@ applied to the demo's **ephemeral clone** — **never a checked-in platform clon
 3. **next-web SSR GraphQL origin (`next-web-ssr-graphql-origin`, M218) — the one that exists *because of*
    `--public-host`.** `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` is a single build-time constant serving two consumers
    with **incompatible** reachability: the **browser** needs the public origin
-   (`https://<public-host>:15050+off/graphql`), the **SSR pass** needs the container origin
-   (`http://graphql:8080/graphql`). Because `NEXT_PUBLIC_*` is build-inlined into the *server* bundle too, the
+   (`https://<public-host>:8082+off/graphql/query`), the **SSR pass** needs the container origin
+   (`http://backend:8082/graphql/query` — `gen_injected_override.py:77-79`; both were `:5050+off/graphql` and
+   `http://graphql:8080/graphql` until M257x iter-13 re-pointed them off the deleted router). Because `NEXT_PUBLIC_*` is build-inlined into the *server* bundle too, the
    SSR pass fetched the public URL **from inside the container**, where the tailnet IP **blackholes** (ts-input
    drops the SYN-ACK on the docker bridge) → undici's 10 s connect timeout × 3 attempts + 6 s backoff
    ≈ **37.5 s per authenticated render**, on both vantages (they block on the same shared authenticated layout).
@@ -682,7 +719,7 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
   and the two servers *used to* differ: the **cockpit** (`cockpit.py --host`) defaults to **`127.0.0.1`**
   (loopback), while **ant-academy** (`next dev`) has an OWN default of **`0.0.0.0`** — so until M221 **the academy
   was world-published on `*:13077` on every demo, flag or no flag**, exactly like the containers. **✅ LANDED v2.3
-  M221 (F-M220-5):** `ant-academy.sh` now passes **`-H 127.0.0.1`** on the localhost path (`-H 0.0.0.0` only under
+  M221 (F-M220-5):** `ant-academy.sh` now passes an explicit loopback **`-H localhost`** on the localhost path (`-H 0.0.0.0` only under
   a public host), so **both** host-native servers now bind loopback by default on a localhost demo (the
   *"loopback by default"* framing is no longer cockpit-only — see [`../safety.md`](../safety.md) Part 3). The demo
   **container** ports remain `0.0.0.0` by design — that half is unchanged.

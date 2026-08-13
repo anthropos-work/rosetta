@@ -1,65 +1,181 @@
 ---
-active_release: "v2.7 «july jitter» — SHIPPED 2026-07-25 (tag v2.7; release→main merged). The re-ground + fidelity + field-hardening release: realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into app → 3 subgraphs; jobsim mid-merge; net-new app domains; the rext seeder re-pointed off skillpath.*) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). 9 milestones M246→M254, barrier → 7-lane fan-out → prove-on-billion; tooling + docs only, 0 platform-repo edits. Close-release landed all 5 terminal follow-ups (zero carry-forward)."
-active_branch: "main (release/02.70-july-jitter merged + deleted at close-release)"
+active_release: "(none — v2.8 «fast build» SHIPPED 2026-08-13, tag `v2.8`. Awaiting /developer-kit:design-roadmap for the next release.)"
+active_branch: "release/02.80-fast-build"
 active_milestone: "(between releases)"
-last_closed: "M254 — 2026-07-25 (prove-on-billion; iterative, closed-on-gate); v2.7 release closed 2026-07-25"
-phase: "between releases — awaiting /developer-kit:design-roadmap (v2.8 not yet designed)"
-last_updated: "2026-07-25"
+last_closed: "v2.8 — 2026-08-13 (release)"
+phase: "between releases — awaiting /developer-kit:design-roadmap. v2.8 shipped 2026-08-13 (tag `v2.8`): 450 s -> 286.99 s cold bring-up on `macmini`, beating the 360 s gate and its 300 s stretch; the journey suite now runs inside every bring-up; 11.54 GB reclaimed at zero build-time cost; 0 platform-repo edits and 0 net-new deps, both verified. M257x + M258 closed `closed-incomplete` BY USER RULING, not on gate — M258 clause 3 (composed p50 over 3 cold cycles) was NEVER measured clean and must never be recorded as met. Carry-forward named item-by-item in roadmap-vision.md § v2.8."
+last_updated: "2026-08-13"
 ---
 
 # State
 
-**Between releases.** v2.7 "july jitter" **SHIPPED 2026-07-25** (tag `v2.7`; `release/02.70-july-jitter`
-merged to `main` + deleted). The **re-ground + fidelity + field-hardening** release (the v1.3b / v2.1 / v2.3 /
-v2.6 lineage): *realign the demo + corpus to the platform's true current state, and fix what drifted.* **9
-milestones M246 → M254**, tooling + docs only, **0 platform-repo edits**. No milestone is active; the next step
-is **`/developer-kit:design-roadmap`** to design **v2.8** (NOT yet designed — do not treat it as active).
+**v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
+**3 of 5 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 / § M257x — not here.
 
-> **The headline finding (release thesis):** the skiller→app merge (v2.1) was **one step of a "consolidate every
-> runtime engine into app" program.** `app` is **~386 commits** ahead of the old stack pin; **skillpath is now
-> FULLY decommissioned into `app`** (M501–M507: gone from `repos.yml`/compose/subgraphs → **3 subgraphs**,
-> sessions → `public.skill_path_sessions`); **jobsimulation is mid-merge** (dormant, the next shoe); and `app`
-> grew undocumented domains (coursebuilder, AI Labs + credits/stripe, askengine, a server-owned academy). v2.7
-> re-grounded the corpus + demo to this topology and re-pointed the rext seeder off `skillpath.*` before it broke.
+## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
-## v2.7 shape — barrier → 7-lane fan-out → prove-on-billion  (all 9 SHIPPED)
+- 🎬 **`billion` — the OFFICIAL host.** Demo deployment only. Not for development or testing.
+- 💻 **dev/test = LOCAL to the new Mac.** The old laptop and **`odysseus` are both retired** from this project.
+- ✅ **~~Host-class mismatch blocks M257~~ — RETRACTED, and M257 then MET its gate here.** It read *"a Mac
+  is arm64/**overlay2** … pays no unpack leg … the gate is **un-measurable**."* **False for this machine**:
+  it runs the **containerd image store** and pays a size-proportional unpack leg (**56.6 s export + 19.3 s
+  unpack** on the real 4.12 GB hiring image). The generalisation came from the **retired M1 Pro laptop** —
+  *"a Mac"* is a class; the fact that mattered is a per-machine Docker Desktop toggle. **Never re-derive
+  this from `docker info`**, which prints `Storage Driver: overlayfs` here and is what made the wrong
+  reading look right — **grade it with a probe.** L1 was worth **−141.63 s**; the cycle closed at **p50
+  286.99 s**. Still true: **4.84 vs 4.12 GB** for the identical Dockerfile, and **seconds here do not
+  transfer to billion**, whose post-L1 cycle is **unmeasured**.
+- 🔧 **New-Mac bootstrap:** `.agentspace/rext.tag` is **git-ignored** → a fresh clone has no pin, and a mismatch
+  is **FATAL** in `ensure-clones.sh:94-101`. Create it deliberately. (On the old box the SoT was 63 commits
+  behind `main`, so `/demo-up` aborted there.)
 
-```
-M246 re-sync & re-point (HARD go/no-go barrier)  ✅
-  ├─▶ M247 corpus re-ground ─────────┐ ✅
-  ├─▶ M248 content-mgr-link ─────────┤ ✅
-  ├─▶ M249 cross-app-nav ────────────┼──▶ M253 studio-first-paint ✅
-  ├─▶ M250 ai-readiness (iterative) ─┤ ✅
-  ├─▶ M251 test-health ──────────────┤ ✅
-  ├─▶ M252 studio-builder-enable ────┤ ✅
-  └─────────────────────────────────────▶ M254 prove-on-billion (iterative closer) ✅
-```
 
-Full per-milestone closure narratives (decisions, deliverables, test deltas, code-of-record tags) live in
-`roadmap.md`'s `## Done — v2.7` `### M{N}` blocks; the release review + retro + metrics live in
-`releases/archive/02.70-july-jitter/`.
+## Next up
 
-## Headline numbers (v2.7 close-release, 2026-07-25 — triple-clean PASS)
-- **Go:** **2019** rext test funcs (`git grep -E '^func Test'`, +9 vs v2.6's 2010; tooling+docs release). Runtime: stack-seeding 1192 pass / playthroughs 131 pass / 0 fail; `gofmt`/`go vet`/`go build` clean.
-- **TypeScript (unit):** **292** executed / 0 fail (stack-verify/e2e 178 + playthroughs/e2e 114); `tsc` clean. + 40 live-browser specs (proven at M254; need a running stack).
-- **Python (rext):** **demo-stack 910 pass / 0 fail / 1 skip** (the v2.6 8-fail `g-testhealth` carry ELIMINATED at close); stack-injection 258 / 9 skip; stack-verify 149 pass / 5 environmental-fail (live local stack, academy down — byte-identical ×3, not regressions).
-- **Live on billion (M254):** Playthroughs **18/18**; content-stories **45/45 landable + 4 voice presence-only** (denominator 47→45 formalized at close); p95 click→ACCESS **1.43 s emp / 1.41 s mgr** (<5 s); studio first-paint **p50 637–726 ms** (<1 s); AI-readiness both vantages; Back-to-Cockpit 4/4, 0 prod-ejects.
-- **Flake: 0** (triple-clean byte-identical ×3). **Supply chain: GREEN** (0 net-new deps). **Platform-repo edits: 0.**
+**`/developer-kit:close-release` for v2.8 "fast build"** — all five milestones closed, branch
+`release/02.80-fast-build`. It inherits **one conscious block fate** rather than a scatter of silent punts:
+[`m258…/carry-forward.md`](releases/archive/02.80-fast-build/m258-proven-live-build/carry-forward.md) +
+[`deferrals-audit.md`](releases/archive/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) name every item
+with its fate. **0 escape-hatch deferrals** at the milestone close.
 
-## Recently shipped releases (max 3; older → roadmap.md / roadmap-legacy.md)
-- **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; 9 milestones M246→M254; prove-on-billion a–h live; **zero carry-forward** (all 5 terminal follow-ups landed at close); 0 platform edits.
-- **v2.6 "sound check" — 2026-07-23** (tag `v2.6`) — reliability / field-hardening; 8 milestones M237→M244; prove-on-billion 8/8 live.
-- **v2.5 "the playbill" — 2026-07-20** (tag `v2.5`) — content-vantage: empty-academy fill + the content-stories cockpit tab; 8 milestones M229→M236.
+**Three items are owed the user's explicit fate there** (they cross a release boundary, which revokes a
+deferral's authority): `F2` (`ptvalidate` unwired, M256→M257→M258) · `PROFILE-M257-provisional-fields`
+(M255→M257→M258) · `RATCHET-M257-literal-ceilings-breached` (**pre-existing breach of 8** — 249 vs a
+ceiling of 240; **never raised by anyone, at any point**).
 
-## Standing backlog (fated destinations)
-- **v2.7 close-release LANDED (zero carry-forward):** all 5 terminal follow-ups the user elected to land — `FIX-M254-g-testhealth` (carry eliminated, demo-stack 8-fail → 910 pass/1 skip), `FIX-M254-c-academy-durable` (idempotent reapply + logging), `(b)-voice manager_presence_only` (denominator 47→45 formalized), `verify.sh` skillpath default drop, rext-hygiene inert set. rext close tags on origin: `july-jitter-v27-close-rext-cleanup @ e61b604` + `july-jitter-v27-close-followups @ a5b1288`.
-- **DROPPED:** DEF-M250-01 `participants_filter` (D18) · DEF-M215-03(a)/F11 (design-time) · DEF-M239-01 (v2.6).
-- **Still unscheduled (vision):** DEF-M10-01 (S3/Bunny voice media — voice presence-only) · DEF-M21-01 · CAVEAT-1 · M314b (platform) · **M205** residual (tier gates + ATS) · Playthroughs futures **M206–M207**.
+⚠️ **The one number v2.8 never took is a clean composed p50** — not engineering, a quiet box. The arithmetic
+already fits (247.79 s bring-up + ~129–179 s batch ≈ 377–427 s vs 480), and `LEVER-M257-L5-setdress` is
+**still unspent**, now with a named target (the taxonomy replay, ~88 % of `set_dress`).
+
+## Phase
+
+**v2.8 is feature-complete.** M258 closed 2026-08-12 **`closed-incomplete` — ACHIEVED BY USER RULING, NOT
+ON GATE.** Clauses 1/2/4/5 proven (1, 2 and 5 re-proven on the final stack in its own bring-up); **clause 3
+— composed p50 ≤ 480 s over 3 cold cycles — NOT MET, and it must never be recorded as met.** ⚠️ **Read it
+like M257x's `TOK-09`, not like M257**, whose gate fired on its own terms one day earlier. Full narrative:
+[`roadmap.md`](roadmap.md) § M258.
+
+**Every M258 number carries its status or must not be quoted:** **840.01 s** instrument-rejected (3/3
+`headroom=FAIL`) · **401.60 s** a PROJECTION, never one measured cycle · **~290 s** deliberately **not
+banked** (warm-cache, missing the export/unpack leg that is 46.2 % of a cold one) · **179.37 s** is
+`batch_gate`'s own p50, **inside M256's 200 s budget while contended** — the batch half is not what is slow.
+
+**`END-M258-one-stack` MET, and it is the USER'S stack.** `demo-4` is the only stack up, built by the
+**fixed** tooling from the newest platform mains (`platform` `766df6c` · `app` `c52dbc51e`), and it proved
+itself in the same command. **Cockpit `http://localhost:47700`. Do not tear down, re-seed, restart or
+reset it.**
+
+⚠️ **Open safety item, inherited by the release close and still not closed:** a demo reached the
+**production** S3 bucket and only an **IAM policy on an account we do not control** refused it. Containment
+is proven by a unit test on the emitter and **on no running stack**. Owner: `corpus/ops/safety.md` + M257x
+`carry-forward.md` cluster 1.
+
+## Standing rules (outlive the milestone — do NOT move these into `phase:`)
+
+Each rule's derivation lives at its owner; these are the headlines a reader must not miss.
+**`§5`** = [`corpus/ops/platform-alignment.md`](../../corpus/ops/platform-alignment.md) § 5, which owns the
+numbered rules in full.
+
+- **§5 rule 44 — no single search tool is safe.** Gitignored-but-tracked files, NUL-bearing source and
+  nested untracked repos each blind a *different* instrument. Use the mechanized per-tree path
+  (`anchor_construct_guard._clone_of`), never a hand rule — **rule 44's own worked recipe returns 2 where
+  it publishes 22.**
+- **TWO INSTRUMENTS, and conflating them cost M257x repeatedly.** The guard family and the graded read
+  measure different things: a guard going green says nothing about corpus sentence-level fidelity, and a
+  reading says nothing about the fences. (M257x's clause 5 — the graded read — was placed **out of scope
+  by the user**, `TOK-09`. It was never met. Do not resurrect it as a claim of cleanliness.)
+- **A guard's green is only as strong as its own load-bearing word** — when a guard qualifies its own
+  claim, the qualifier IS the blind spot. `anchor_construct_guard` said *"every **resolvable** anchor"*
+  while ≥7 upheld findings resolved to the wrong construct; it now PRINTS its floor (`KNOWN_WEAKNESS`),
+  widening measured and declined (`D-M257x-121-4`). **Every count of that class is a floor.**
+- **Read the SUBSTRATE before believing a defect** — a checkout behind its own fetched `origin/main` does
+  not merely fail to confirm a claim, **it manufactures evidence against a true one** (6 of 13 clones
+  stale; 4 adjudicators booked a true claim as contradicted). **And the mirror:** reading at HEAD instead
+  of the census ref **inflated** the re-pin backlog 3.1× (iter-126). Derivation: `D-M257x-122-4`.
+- **NEVER quote this milestone's read-derived error rate as corpus-wide**, and quote its two governing
+  measurements together or neither: test–retest recall **~35 %** (iter-119), and the published rate is a
+  **hunted-sample artifact — 0.70 % over 427 exhaustive adjudications vs ≥ 13.3 % hunted**, over-stating
+  the population **~19×** (`D-M257x-122-3`). The corpus publishes no error rate at all; keep it that way.
+- **§5 rule 53 — every mutation asserts it APPLIED** before its result is interpreted, and is a control
+  only for the clause it can **isolate**. Three of harden pass 26's silently failed to apply, each reading
+  as *"the controls survive."*
+- **§5 rule 51 — state the invocation AND the expected wall time with every whole-suite count.**
+- **§5 rule 54 — a correction that reaches ONE cell is not a correction.** It must reach every site
+  publishing the retracted claim: the router (24 sites), `db-backup` (3), `cms`'s *"assert neither"* (5).
+- **RE-SCOPE TRIGGER: occurrence 3, NOT firing.** It fired at iter-53 and the remedy shipped as TOK-04;
+  35+ clean iters since, so *"two CONSECUTIVE invalidated attempts"* is false on its own words.
+
+## v2.8 shape
+
+**M255** (section, HARD barrier) ✅ *VERDICT GO* → **M256** ✅ `closed-on-gate` → **M257x** ✅
+`closed-incomplete` *(user ruling)* → **M257** ✅ `closed-on-gate` *(449.51 → **286.99 s** p50, gate 360)* →
+**M258** ✅ `closed-incomplete` *(user ruling — clause 3 never measured clean)*. **ALL 5 CLOSED.** Strictly
+serial by the user's order — *sharpen the detector before changing what it detects*. Per-milestone detail:
+[`roadmap.md`](roadmap.md).
+
+## Binding user decisions (2026-07-27, + later)
+
+**`D-v28-1` … `D-v28-15` are held in full in [`roadmap.md`](roadmap.md)** — including the two that produced
+standing rules: **`D-v28-3`** (batch-gate semantics — **zero standing red** is the invariant) and
+**`D-v28-12`/`D-v28-13`** (***never gate a relative statistic without first measuring its variance***).
+M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in that file's § M256 closure;
+`HARDEN-CAP-ACCEPTED-D105` is in [`m256…/decisions.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/decisions.md).
+
+## Recently closed milestones (max 5)
+
+_The v2.8 milestones shipped with the release; full narratives live in
+`releases/archive/02.80-fast-build/` and `roadmap.md` § M255 / M256 / M257x / M257 / M258._
+
+- **M258 — 2026-08-12** · proven-live build · **`closed-incomplete`, BY USER RULING, NOT on gate** —
+  clause 3 (composed p50 over 3 cold cycles) **NOT MET and never to be recorded as met**; 840.01 s is
+  instrument-rejected and a flattering ~290 s warm-cache cycle was deliberately not banked.
+- **M257 — 2026-08-12** · first-light build · **`closed-on-gate` — the gate FIRED on its own terms**,
+  p50 **286.99 s** vs 360 s, every clause green on all 3 reps including both falsifiable ones.
+- **M257x — 2026-08-11** · platform re-alignment · **`closed-incomplete`, BY USER RULING (`TOK-09`)** —
+  clause 5 out of scope by that ruling, never met, never measured clean.
+
+## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
+- **v2.8 "fast build" — 2026-08-13** (tag `v2.8`) — time-to-ready; M255→M256→M257x→M257→M258;
+  **450 s → 286.99 s** cold bring-up on `macmini` (gate 360 s, stretch 300 s); the journey suite now runs
+  **inside** every bring-up; 11.54 GB reclaimed at zero build-time cost; 0 platform edits, 0 net-new deps.
+  ⚠️ **M257x + M258 closed by USER RULING, not on gate**; M258 clause 3 never measured clean. Real
+  carry-forward → `roadmap-vision.md` § v2.8.
+- **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;
+  prove-on-billion a–h live; **zero carry-forward**; 0 platform edits.
+- **v2.6** 2026-07-23 (`v2.6`) · **v2.5** 2026-07-20 (`v2.5`).
+
+## Standing backlog (fated destinations — this is an INDEX; each row's owner is the link)
+
+Every item below is owned by the linked file. iter-129 closed the last three that were owned by **this
+section and nothing else**, so no fate now depends on a field the next close overwrites.
+
+| class | owner |
+|---|---|
+| **Consumed by v2.8** — the M256-clause-3 re-fating of the reserved Playthrough futures M206 / M207, each with a written verdict rather than a sixth re-reservation | [`roadmap-vision.md`](roadmap-vision.md) |
+| **Awaiting the user's signature** — `PERF-M256-parallel-lane` · `PT-M257-self-evaluation` · `PT-M257-talk-to-data` (roadmap calls, not routing ones) | [`roadmap.md`](roadmap.md) § M256 closure |
+| **Platform defects** Rosetta cannot fix (zero platform edits binding) — **7** entries with `file:line`, **3 of them M257x**; it had **zero** until iter-102 | [`platform-defect-register.md`](platform-defect-register.md) |
+| **DROPPED** + **still unscheduled** — incl. the three moved out of here at iter-129 (`DEF-M250-01` · `CAVEAT-1` · `PT-M256-resume-fixture-pair`) | [`roadmap-vision.md`](roadmap-vision.md) § Unscheduled backlog |
 
 ## Process flags (do NOT auto-push)
-- **v2.7 is merged to `main` + tagged `v2.7` LOCALLY at close-release; NOT pushed to origin** — the user runs origin publishes on their own cadence.
-- **v2.5's** `release→main` merge + `v2.5` tag are **LOCAL-ONLY**, not pushed to origin (R5). **v2.6** likewise merged to main locally (commit `5cf51ed`); confirm the `v2.6` tag + origin push on the user's cadence.
-- **A stray `(M245)` commit** sits on `main` (post-v2.6 academy docs, untracked in the plan) — v2.7 numbering started at **M246** to skip it.
-- rext code-of-record: all v2.7 `july-jitter-*` tags are on **origin** (rung-zero verified); the rext authoring copy is at `july-jitter-v27-close-followups @ a5b1288`.
 
-_Last updated: 2026-07-25 — v2.7 "july jitter" SHIPPED (close-release: release→main merged, tag v2.7, all 5 terminal follow-ups landed [zero carry-forward], triple-clean PASS, 0 platform edits). Awaiting `/developer-kit:design-roadmap` for v2.8._
+- 📌 **Provenance of every `billion`-measured M255 number now lives with the milestone that took it** —
+  [`m255…/progress.md`](releases/archive/02.80-fast-build/m255-build-bench-host-headroom/progress.md) § Provenance
+  (moved there at iter-129, its first durable owner): the window, the pre-freeze condition, the 658/666/672
+  cluster, and the three claims owed a re-confirmation on the first post-freeze campaign.
+- ⚠️ **The stack's PINNED `stackseed` can be older than the authoring copy.** M256 added three `Persona`
+  fields, so a `--reset` with the stack's binary **truncates the world and then fails to re-seed**, leaving it
+  EMPTY. Shadow the authoring build on `PATH` for any reset. Cost the M256 close one run before it was found.
+- **v2.7 is merged to `main` + tagged `v2.7` LOCALLY; NOT pushed to origin** — the user runs origin publishes
+  on their own cadence. **v2.5** and **v2.6** are likewise local-only.
+- rext code-of-record: authoring copy on `main`; **M258's tooling ships at `fast-build-m258-close` @
+  `d06a56d` — on origin, rung-zero verified** (`main` pushed to the same sha).
+- **Rung zero:** `git push --tags` is part of shipping a tool. Verify a tag is on **origin** before any
+  prove-it-live step.
+- **`run-playthroughs.sh` is BINDING since M256** — a full run exits non-zero when ptreport's gate is unmet
+  (advisory on a scoped run). Anything that ran the suite and trusted a zero exit is now genuinely gated.
+
+_Last updated 2026-08-12 — the M258 close, and v2.8's last milestone. Both trees clean; `rosetta-extensions` pushed + tagged `fast-build-m258-close`, `rosetta` local-only by the user's cadence._
+
+> **Budget note:** the M258 close had to TRIM this file three times to meet the **15,360-byte** cap
+> (16,097 → 15,634 → 15,448 → here). **No budget was raised to fit it.** Derivation + the re-raise guard:
+> [`context.md` § state.md contract](context.md).

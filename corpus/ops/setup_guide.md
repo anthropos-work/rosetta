@@ -33,8 +33,16 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `docker --version && docker compose version`
 3.  **Visual Studio Code**: [Install VS Code](https://code.visualstudio.com/).
     *   *Verification*: `code --version`
-4.  **Go** (v1.23+): `brew install go`
+4.  **Go** (**v1.25+**): `brew install go`
     *   *Verification*: `go version`.
+    *   **Why 1.25 and not 1.23** (corrected M257x iter-240 — this line read `v1.23+` while
+        [the remote-VM block below](#) said `Go 1.25.x`, in the same document): the host Go builds the
+        **rext tools**, and all six `rosetta-extensions` sections with a `go.mod` declare `go 1.25.0` +
+        `toolchain go1.25.12`. On Go 1.23 the build does not simply work — it either downloads a 1.25
+        toolchain (default `GOTOOLCHAIN=auto`, so it needs network) or hard-fails with
+        `go.mod requires go >= 1.25.0` under `GOTOOLCHAIN=local`. **`app` and `sentinel` do not constrain
+        this number** — they declare `go 1.26.x` but build *inside Docker* on `golang:1.26-bookworm`, so
+        the host never compiles them.
 5.  **Node.js** (v24+ required) & **pnpm**:
     *   `next-web-app/package.json` declares `"engines": { "node": ">=24.0.0" }`. Older Node versions will fail `pnpm install` with `WARN  Unsupported engine`.
     *   **Recommended**: Use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions:
@@ -83,7 +91,9 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
         ```
     *   *Verification*: `docker ps`.
 3.  **Visual Studio Code**: [Install VS Code](https://code.visualstudio.com/docs/setup/linux).
-4.  **Go** (v1.23+):
+4.  **Go** (**v1.25+** — same derivation as the macOS block above: the rext sections declare
+    `go 1.25.0` + `toolchain go1.25.12` and run on the host; `app`/`sentinel` build inside Docker and do
+    not constrain it):
     *   [Official Install](https://go.dev/doc/install) is recommended to get the latest version, as apt repos are often outdated.
     *   *Verification*: `go version`.
 5.  **Node.js** (v24+ required) & **pnpm**:
@@ -185,6 +195,19 @@ The skill will:
 
 See [`.claude/skills/dev-up/SKILL.md`](../../.claude/skills/dev-up/SKILL.md) for details.
 
+> **⚠️ The two paths are NOT equivalent, and this section implied they were until M257x iter-266.**
+> `/dev-up` runs a **fatal secret-coverage pre-flight before it builds anything** —
+> `dev-stack/dev-stack:244` calls `stack-secrets/preflight.sh --stack dev-N` and **`die`s at `:246`** when a
+> **critical** key is missing (a standard-missing key only warns; `DEV_NO_SECRET_PREFLIGHT=1` opts out).
+> **Nothing in the by-hand path below runs it**, so following this guide manually gives up a gate the
+> automated path enforces.
+>
+> That gate is not hypothetical: **it is the one that would have caught M257x iter-262's dev bring-up
+> failure.** A hand-built `.env` was missing `INVITATION_HMAC_SECRET`; `backend` refused to boot and
+> **returned exit code 0**, so it read as a graceful shutdown and `docker ps` showed an *absence* rather
+> than a crash. Run the check yourself before `make up` — see [Verify secret coverage before you
+> build](#verify-secret-coverage-before-you-build--the-gate-dev-up-enforces-and-this-guide-does-not).
+
 ---
 
 ## 2. GitHub SSH Access Setup
@@ -283,32 +306,82 @@ make init
 ```
 *Verification*: `make status` should list all repos with their branch and status.
 
-This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. As of 2026-07:
+> **⚠️ `make init` is SKIP-IF-PRESENT, and a skip is not a check.** It clones a repo only when the
+> sibling directory is absent; when one is already there it prints `<repo> already exists, skipping`
+> and **adopts that working tree at whatever ref it happens to hold** — a stale checkout, another
+> project's branch, a dirty tree. The line reads like progress and there is no ref comparison anywhere
+> in the step. M257x iter-262 hit exactly this on a bring-up that otherwise went to plan: `studio-desk`
+> was adopted **13 files / +97 / −46 behind** its own `main`, and nothing in `make init`'s output said
+> so. **`make status` is what tells you** — read it, do not skim it, and run
+> `git -C <repo> fetch && git -C <repo> status -sb` on anything that says "skipping" before you build
+> against it.
+
+This clones the repos declared in `platform/repos.yml` as siblings of `platform/`. At platform
+`0c91421` (2026-08-05) that is **four** repos:
 
 | Repo | Type | Has Migrations |
 |------|------|---------------|
-| `app` | Go backend | Yes (public schema) |
-| `cms` | Go backend | Yes (cms schema) |
-| `jobsimulation` | Go backend | Yes (jobsimulation schema) |
-| `sentinel` | Go backend | No |
-| `storage` | Go backend | No |
-| `messenger` | Go backend | No |
-| `roadrunner` | Go backend | No |
+| `app` | Go backend | Yes (`public` schema) |
+| `sentinel` | Go backend | No (it creates its own `sentinel` schema) |
 | `next-web-app` | Node.js (pnpm) | No |
 | `studio-desk` | Node.js (npm) | No |
-| `ant-academy` | Node.js (npm) — Next.js 16 + Expo, runs natively only | No |
-| `graphql-wundergraph` | Node.js (npm) | No |
 
-> **Note**: `chronos` and `intelligence` were removed from local orchestration (platform commits `045857c`, `fdfa189`); `skiller` was merged into `app` in July 2026 (its taxonomy tables now live in `app`'s `public` schema; the `skiller` repo is decommissioned); and `skillpath` was likewise merged into `app` ("skillpath-in-app", M502→M507) and decommissioned — its skill-path session state now lives in `app`'s `public.skill_path_sessions`, so it is no longer in `repos.yml` and no longer has its own migration/schema. Their repos still exist on GitHub but `make init` no longer clones them. `customerio-sync` is built directly from its GitHub URL by docker-compose and is also not cloned locally. See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
+> **Note**: the clone set has shrunk repeatedly as services were folded into `app`. Removed from `repos.yml`: `intelligence` (`fdfa189`) and `chronos` (`045857c`); `skiller` (`21429b7` — merged into `app` in July 2026, its taxonomy tables now in `app`'s `public` schema); `skillpath` (`a4db680` — "skillpath-in-app", M502→M507, session state now in `public.skill_path_sessions`); `graphql-wundergraph` (`360efd4`); `cms`, `jobsimulation` and `roadrunner` (`d11a403`); and `storage` + `messenger` (`838d907`). **None of those repos were deleted from GitHub** — `make init` simply no longer clones them, and none of them owns a local schema; clone one by hand if you need to read the pre-merge source. `customerio-sync` was never a `repos.yml` entry (it built straight from a GitHub URL) and **is no longer a compose service either** — `838d907` deleted that container too, so it cannot be started locally at all. `ant-academy` is likewise not a `repos.yml` entry (by design) and has no compose service — clone it by hand and run it natively (see the Ant Academy section below). See [Service Taxonomy](../architecture/service_taxonomy.md) for current orchestration details.
 
-### Initialize CMS Studio Submodule
+### Acquire the Studio runtime — REQUIRED before `make up`, or the `backend` build fails
 
-Since **cms-in-app**, the Studio-Room Python project rides in the **`app`** image and CI pulls it
-in (`additional_repo`, app v1.360.1) — there is no `make init-studio` step for a local stack any
-more. To run the pipeline by hand, clone `anthropos-studio-room` yourself and run it directly.
+> **⚠️ This step is NOT optional, and this section said it was until M257x iter-264.** It read *"To run
+> the pipeline by hand, clone `anthropos-studio-room` yourself"* — true, and it framed the clone as a
+> convenience for someone who wanted the generation pipeline. **`make up` cannot build the `backend`
+> image without it.** A reader following this guide top-to-bottom hit:
+>
+> ```
+> #50 [backend stage-1 5/6] COPY --from=build /build/studio ./studio
+> #50 ERROR: failed to calculate checksum of ref …: "/build/studio": not found
+> make: *** [up] Error 1
+> ```
+>
+> Measured on a cold `stack-dev/` at platform `0c91421` / app `3eaadae68` (M257x iter-262).
 
-*(Historical: this used to be `cd ../cms && make init-studio`, which cloned the project into
-`cms/studio/` for the cms image build.)*
+Since **cms-in-app**, the Studio-Room Python runtime rides inside the **`app`** image, and `app`'s
+Dockerfile **hard-COPYs** it:
+
+```
+app/Dockerfile:45   COPY --from=build /build/studio ./studio
+app/Dockerfile:46   RUN pip install --no-cache-dir -r studio/requirements.txt
+```
+
+**Nothing in the documented flow puts that tree on disk.** `app/.gitignore:79` ignores `studio/*`
+(*"pulled at build via additional_repo, like cms"*), so no clone carries it; it is not in `repos.yml`, so
+`make init` does not fetch it; and since app `851cf3fb` (2026-07-29) there is **no `.gitmodules` and no
+gitlink** either — that commit removed both while **keeping** the Dockerfile COPY. `app` has no
+`init-studio` target (that was always a **cms** target). In CI the gap is filled by
+`additional_repo: "anthropos-studio-room:studio"`; locally you must do it yourself:
+
+```bash
+# from the stack workspace root (e.g. stack-dev/), BEFORE `make up`
+git clone git@github.com:anthropos-work/anthropos-studio-room.git app/studio
+```
+
+The path is gitignored, so this does not dirty `app`'s tracked state. **Derive the need rather than
+memorising this list** — any service whose `Dockerfile`/`Dockerfile.dev` contains a `COPY … studio`
+line needs the same tree, which is how the tooling decides
+(`rosetta-extensions/stack-core/lib/studio.sh`, `studio_required`).
+
+> **This manual step is for the MAIN dev stack (`N=0`) only** — the `make init` + `make up` path this
+> guide documents. Since M257x iter-270, **`dev-stack up N` (an additional `dev-N`) acquires the tree
+> itself**, from the same shared lib the demo path uses: it derives the consumer set from the platform's
+> own `repos.yml`, clones `anthropos-studio-room` into each consumer that needs it, and **aborts if it
+> cannot** — rather than letting `docker compose up` die ~20 minutes later on `"/build/studio": not
+> found`. The lib moved out of `demo-stack/lib/` precisely so the dev path could reach it without the
+> dev section depending on the demo section.
+
+*(Historical: this used to be `cd ../cms && make init-studio`, which cloned the same project into
+`cms/studio/` for the cms image build. **The dependency did not go away when cms did — it moved to
+`app`**, and the corpus recorded it only in past tense under the decommissioned service
+([`corpus/services/cms.md`](../services/cms.md) § the studio submodule), which is why a live requirement
+read as dead history. Same class as `platform-alignment.md` §5's "a named-consumer list survives the
+merge that moved the consumer".)*
 
 ### How Local Builds Work
 
@@ -316,7 +389,7 @@ more. To run the pipeline by hand, clone `anthropos-studio-room` yourself and ru
 
 This means:
 - Every service **requires a local clone** to build
-- `make init` handles cloning everything (except CMS studio submodule — see above)
+- `make init` handles cloning everything **except the Studio runtime** — `app/studio` must be cloned by hand before `make up` (see [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails)); it is an **`app`** dependency now, not a cms one
 - Changes to local code are picked up on `make up` (which runs `--build`)
 
 ### Optional Repos
@@ -344,6 +417,37 @@ git clone git@github.com:anthropos-work/experiments.git
 > and where it comes from* — the skill automates the *copying*. See the [Secrets Spec](secrets-spec.md) +
 > [`/stack-secrets`](../../.claude/skills/stack-secrets/SKILL.md).
 
+### Verify secret coverage before you build — the gate `/dev-up` enforces and this guide does not
+
+**Run this after your `.env` files exist and before `make up`.** It is read-only and **values-blind** — it
+reports *which keys are short*, never a value:
+
+```bash
+# from the rosetta-extensions clone (the same wrapper `dev-stack up` and `up-injected.sh` both call)
+./stack-secrets/preflight.sh --stack dev-0
+#   rc 0 = covered · rc 1 = a CRITICAL key is missing (do not build) · rc 2 = could not check
+```
+
+Read the verdict by **class, not by count.** A `⚠ platform 13/29 short` line is *not* the failure — most of
+those are standard keys and the stack comes up degraded without them. The failure is the `✗` line:
+
+```
+✗ secret-coverage: a CRITICAL secret key is missing — the stack would be broken without it.
+```
+
+> **Why this step exists, and why it is not optional advice.** M257x iter-262 built a dev stack by
+> following this guide by hand, skipped this check because the guide did not have it, and lost the
+> bring-up to a missing **`INVITATION_HMAC_SECRET`** — `invitations.NewTokenManager` errors when it is
+> empty and `main` returns, so **`backend` exits with code 0**. A refusal that returns success reads as a
+> graceful shutdown: `docker ps` shows an absence, not a crash, and nothing in the logs says *secret*.
+> `/dev-up` would have refused to build at all and named the key. **The check was not missing from the
+> tooling — it was missing from this document** (`D-M257x-266-1`), which is a sharper defect, because the
+> tooling's own tests assert the gate is wired (`dev-stack/tests/test_dev_stack.py:279-284`) and were green
+> throughout.
+>
+> Fix a critical miss by adding the key to your **secret source** and re-running `/stack-secrets
+> --provision` — not by hand-editing `.env`, which is how the gap survives the next re-provision.
+
 ### The `.env` File
 All services share a **single centralized `.env` file** located in the `platform` directory.
 
@@ -367,7 +471,7 @@ All services share a **single centralized `.env` file** located in the `platform
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.
 
-> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails and `messenger` will send them on any flow that triggers a notification. Blank the key in `platform/.env`:
+> **STAGING SAFETY — outbound email kill switch.** If you intend to restore a prod DB dump into this stack (see [staging_from_dump.md](staging_from_dump.md)), `BREVO_KEY` **must be blank** before `make up`. The dump contains real customer emails, and the messenger subsystem will send them on any flow that triggers a notification. Since `838d907` there is **no `messenger` container to stop** — messenger runs in-process inside `backend`, switched on by `MESSENGER_ENABLED` (unset means off while `ENVIRONMENT=development`), so blanking the key is the one kill switch that survives someone flipping that variable. Blank it in `platform/.env`:
 >
 > ```bash
 > sed -i.bak 's/^BREVO_KEY=.*/BREVO_KEY=/' platform/.env
@@ -375,7 +479,25 @@ All services share a **single centralized `.env` file** located in the `platform
 >
 > Apply the same caution to `CUSTOMERIO_*`, `HEYGEN_WEBHOOK_SECRET`, `BUNNY_*`, `LIVEKIT_*`, `ELEVENLABS_*` if you don't intend to exercise those integrations.
 
-**Note**: The docker-compose configuration uses this single `.env` file for all services (backend, cms, jobsimulation, etc.). Studio-Desk and Next.js also read from this `.env` when run via Docker profiles. Individual service repositories do not need their own `.env` files when running via Docker.
+**Note**: `env_file: .env` is declared on exactly **four** of the seven compose services — `sentinel`
+(`docker-compose.yml:15-16`), `backend` (`:44-45`), `studio-desk` (`:125-126`) and `next-web-app` (`:156-157`),
+all @ platform `0c91421df`. `gotenberg` and the always-on floor (`postgresql`, `redis`, both from `common.yml`)
+declare none — they carry inline `environment:` blocks only. All four load the **same** `platform/.env`, so no
+service gets a different subset than any other.
+
+> ⚠️ **`env_file` is RUNTIME-only — it does not reach a build, so "no repo-local `.env` is needed" is false for
+> `next-web-app`.** The build-time values come from compose **build `args:`** (`docker-compose.yml:117-120` for
+> studio-desk's `VITE_*`; `:150-153` for next-web-app's `NEXT_PUBLIC_*`), which compose fills by *variable
+> interpolation* — a different mechanism from `env_file`, reading the shell env and the project-directory `.env`.
+> And `next-web-app/Dockerfile.dev` does `COPY . .` then `pnpm turbo build` (`:11`, `:34` @ `8297c684c`), so
+> Next.js reads **repo-local** env files inside the build context: a gitignored `next-web-app/apps/web/.env.production`
+> is required before `docker compose build` or the build crashes on a statically-evaluated server route. That is the
+> troubleshooting entry *"Next.js (`next-web-app`) build crashes with `STRIPE_SECRET_KEY is not configured`"* in
+> the Troubleshooting section below — it is not an exception to this note, it is what this note gets wrong if read
+> as "the platform `.env` covers everything."
+>
+> Repo-local `.env` files are also what `/stack-secrets --provision` writes (see above): `app/.env`,
+> `studio-desk/.env`, `next-web-app/apps/web/.env`, `ant-academy/code/.env.local`, `sentinel/.env`.
 
 ### Studio-Desk Environment (Only for Native Development)
 
@@ -384,11 +506,17 @@ If running Studio-Desk **outside Docker** (natively), it requires its own `studi
 it needs: `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, the `AI_*` provider keys, `DIRECTUS_TOKEN` (written
 blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
 
-**Note**: When running Studio-Desk via Docker (`make up PROFILE=studio-desk`), the platform `.env` is used automatically.
+**Note**: When Studio-Desk runs via Docker the platform `.env` is used automatically — it declares `env_file: .env`
+like every other configured service (`docker-compose.yml:125-126` @ platform `0c91421df`). **But do not reach for
+`make up PROFILE=studio-desk` to get there: that command exits 1.** `studio-desk` declares `depends_on: backend`
+(`:138-140`) while `backend` is in `profiles: [core, backend, all]` (`:110`), so the `studio-desk` profile does not
+select the service it depends on and compose rejects the project as invalid. Use `make up PROFILE=all`, which
+selects both. (The profile table later in this guide already records the exit-1 behaviour; this note used to hand
+you the failing command anyway.)
 
 ### Ant Academy Environment (Native Only — Not in Docker)
 
-Ant Academy is the internal learning portal and **always** runs natively (no docker-compose profile). The Next.js
+Ant Academy is the AI-academy learning product (a public storefront with an org tier — **not** internal-only) and **always** runs natively (no docker-compose profile). The Next.js
 app reads from `code/.env.local` (Next.js precedence makes `.env.local` win; the live repo ships no `code/.env`),
 **not** the repo root. **Provision it with `/stack-secrets`** — it writes `ant-academy/code/.env.local` (the exact
 pinned target) from your source. The keys it needs:
@@ -434,13 +562,32 @@ The platform uses a **Makefile** as the single entry point for all developer ope
     cd platform
     ```
 
-2.  **Start all backend services** (default `graphql` profile):
+2.  **Start the backend tier** (default `core` profile). ⚠️ **`app/studio` must already exist** or this
+    step fails with `"/build/studio": not found` — see [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails)
+    above; it is one `git clone` and it is not optional:
     ```bash
     make up
     ```
-    This builds from local repos and starts: PostgreSQL, Redis, Sentinel, Backend, CMS, Storage, Jobsimulation, Roadrunner, Gotenberg, and the GraphQL/Cosmo Router. (Skillpath is no longer a separate service — its engine merged into Backend/`app`, "skillpath-in-app".)
+    This builds from local repos and starts **four** containers: PostgreSQL, Redis, Backend, Gotenberg. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)* (cms, jobsimulation, roadrunner, skillpath, skiller, storage, messenger and customerio-sync all run in-process inside Backend/`app` — not one of them is a compose service any more, the last three having been deleted at `838d907`; the GraphQL/Cosmo router was deleted at platform `2adcf71`.)
 
     *Note*: First run may take several minutes as Docker builds images. Ensure your SSH agent is running (`ssh-add -l`).
+
+    > **⚠️ `backend` can "start" and then EXIT 0 — the worst failure shape in this guide.** `app` refuses
+    > to boot when **`INVITATION_HMAC_SECRET`** is unset, and it refuses by **exiting successfully**. There
+    > is no crash, no restart loop, no non-zero code and nothing for a health check to catch: `make ps`
+    > simply shows four containers where you expected five, and `docker ps -a` shows `backend` as
+    > `Exited (0)`. Compare `sentinel`, which fails the honest way — `Restarting (2)` until its schema
+    > exists — and is far easier to diagnose as a result.
+    >
+    > **The variable is not declared in `.env_example`**, so a `.env` built by copying that file is
+    > missing it and nothing warns you. Add it before `make up`:
+    > ```bash
+    > printf 'INVITATION_HMAC_SECRET=%s\n' "$(openssl rand -hex 32)" >> .env
+    > ```
+    > Any high-entropy value works locally — it only has to stay stable, because it signs the invitation
+    > tokens in `app/internal/invitations/token.go`. `/stack-secrets` provisions it for you (it is in the
+    > demo-auto-generated family, `secretdna.DemoGeneratedKeys`), which is why the demo path never hits
+    > this and the hand-built dev path does. Measured at M257x iter-262 on a cold clone of current `main`.
 
 3.  **Verification**:
     ```bash
@@ -483,7 +630,7 @@ After the first startup, apply database schemas:
 ```bash
 make migrate
 ```
-This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: app, cms, jobsimulation — skillpath is decommissioned into `app`, "skillpath-in-app" M502→M507, so its migrations folded into `app`'s `public` schema).
+This automatically runs Atlas migrations for all repos that have `migrations: true` in `repos.yml` (currently: **`app` alone**). `cms`, `jobsimulation`, `roadrunner`, `skillpath`, `skiller` and the rest are not merely `migrations: false` — platform `d11a403` (2026-08-03) **removed their `repos.yml` entries outright**, so they are no longer cloned and own no schema. Every application table lives in `app`'s `public` schema. Fenced by `platform_predicate_guard` G5 against `repos.yml` (corrected M257x iter-77).
 
 *Verification*: Commands should complete without errors.
 
@@ -498,14 +645,14 @@ Start specific service groups instead of the full stack:
 
 | Command | What it starts |
 |---------|---------------|
-| `make up` | All backend + GraphQL router (default) |
-| `make up PROFILE=backend` | Backend (app) only |
-| `make up PROFILE=cms` | CMS only |
-| `make up PROFILE=frontend` | Next.js in Docker |
-| `make up PROFILE=studio-desk` | Studio-Desk in Docker |
+| `make up` | the `core` profile (`PROFILE ?= core`): postgresql, redis, backend, gotenberg — **four** |
+| `make up PROFILE=backend` | the same five — `backend` and `core` select identically |
+| `make up PROFILE=frontend` | **exits 1** — `next-web-app` declares `depends_on: backend` (`docker-compose.yml:143-145`), which the `frontend` profile does not select, so compose rejects the project as invalid. *(re-resolved M258 iter-18 from lines 165-167, past the end of a 164-line file at `766df6c`.)* |
+| `make up PROFILE=studio-desk` | **exits 1**, same `depends_on: backend` reason (`docker-compose.yml:138-140`) |
+| *(the retired `cms` / `graphql` / `storage` / `storage-legacy` / `messenger` / `customerio-sync` tokens)* | **exit 0 and start nothing but the floor** — not profiles any more; the last three were removed at `838d907` with the containers themselves. Deliberately not spelled runnably |
 | `make up-all` | Everything |
 
-Base services (PostgreSQL, Redis, Sentinel) always start regardless of profile.
+Base services (PostgreSQL, Redis) always start regardless of profile — **two**, and since `766df6c` they live in the included `common.yml`, not in `docker-compose.yml`. *(`sentinel` was in this list until M258 iter-18; platform `766df6c` folded it into `app` and deleted its service, so the floor is **two**.)*
 
 ### Ongoing Operations
 
@@ -525,8 +672,10 @@ instead of the manual hand-copy. The keys it needs: `CLERK_SECRET_KEY`, `NEXT_PU
 `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, and the Azure-OpenAI pair (see [`secrets-spec.md`](secrets-spec.md) for the
 full per-repo gene list).
 
-*Note*: The GraphQL and Backend URLs already default to `localhost:5050` and `localhost:8082`, which are correct
-for local development.
+*Note*: The Backend URL already defaults to `localhost:8082`, which is correct for local development. **The
+GraphQL URL must be `http://localhost:8082/graphql/query`, not the old `localhost:5050`** — platform `2adcf71`
+(2026-07-31) deleted the Cosmo/WunderGraph router from compose and `backend` serves GraphQL itself. A stale
+`:5050` value produces a frontend whose every query fails against a port with no listener.
 
 *Verification*: `ls apps/web/.env` should show the file exists.
 
@@ -590,8 +739,12 @@ Studio-Room is the AI generation pipeline. It runs **on-demand** for specific ge
     ```
 3.  Run a test generation:
     ```bash
-    python3 gen.py --media simulation --template default
+    python3 gen.py --media simulation
     ```
+
+    > **⚠️ There is no `--template` flag** — and a stray one is **silently swallowed**, not rejected, so
+    > `--template default` succeeds and generates something unrelated. See
+    > [`../services/studio-room.md`](../services/studio-room.md#command-line-interface) for the nine real arguments.
 
 ---
 
@@ -694,13 +847,33 @@ sudo mkdir -p platform/data/postgresql && sudo chown -R 1001:1001 platform/data/
 docker compose up -d postgresql
 ```
 
-### CMS image build fails on `COPY studio/` / `pip install studio/requirements.txt`
-The `studio/` submodule has been removed from `cms/main` but `cms/Dockerfile.dev` still references it. Edit `cms/Dockerfile.dev` and remove these two lines:
+### Image build fails on `COPY … studio` / `pip install … studio/requirements.txt`
+**On a current stack this is the `backend` (`app`) build, and the fix is to ACQUIRE the tree, never to delete
+the lines** — go to [Acquire the Studio runtime](#acquire-the-studio-runtime--required-before-make-up-or-the-backend-build-fails).
+`app/Dockerfile:45-46` declares the dependency and `make up` cannot complete without it:
 ```dockerfile
-COPY studio/ ./studio/
+COPY --from=build /build/studio ./studio
 RUN pip install --no-cache-dir -r studio/requirements.txt
 ```
-The Go binary runs without the Python studio runner.
+
+> **⚠️ This entry said the opposite until M257x iter-265, and it is the entry a stuck operator lands on** —
+> it is titled by the *symptom*, and the symptom (`COPY … studio` failing) is now produced by a **different
+> repo** than the one it named. It read *"the `studio/` submodule has been removed from `cms/main` … Edit
+> `cms/Dockerfile.dev` and remove these two lines … the Go binary runs without the Python studio runner."*
+> Every clause of that is wrong for a stack built today: the failing image is **`app`**, not `cms`; deleting
+> the lines would be a **platform-repo edit** (forbidden — v2.8 ships `demopatch` or rext-owned files only);
+> and the Go binary does **not** run without the Python runtime, because `app/internal/cms/` hosts the
+> embedded studio-room generation pipeline that `cms` used to own.
+>
+> `RUN pip install --no-cache-dir -r studio/requirements.txt` is **byte-identical** in the old remedy and in
+> live `app/Dockerfile:46` — so an operator grepping their build error found a page telling them to delete
+> the very line the build requires. **The requirement migrated when cms folded into `app`; three copies of
+> its troubleshooting entry did not** (`D-M257x-265-1`).
+>
+> *Historical, and true only of the frozen `cms` repo:* `cms/Dockerfile.dev` also referenced a `studio/`
+> submodule that was removed from `cms/main`, and there the removal was the right fix. `cms` is
+> decommissioned — no container, no `repos.yml` entry, ECS destroyed — so that remedy applies to nothing a
+> current setup builds. See [`corpus/services/cms.md`](../services/cms.md) § the studio submodule.
 
 ### `studio-desk` fails to bind host port 9100
 Conflicts with `node_exporter` (Prometheus monitoring) if you have any observability stack running on the box. Edit `platform/docker-compose.yml`:
@@ -723,9 +896,25 @@ The backend GraphQL endpoint is `/graphql/query`. The `/graphql` path returns th
 You restored a prod DB dump and the engineer-to-Clerk rebind is incomplete. See [staging_from_dump.md](staging_from_dump.md) — typically you need to (a) apply the colony patch, (b) sync `sentinel.casbin_rules.g2` from `public.memberships`, and (c) restart sentinel.
 
 ### Blank page on first sign-in / "Clerk: infinite redirect loop" in next-web-app logs
-Clerk's Next.js middleware reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from `process.env` at runtime even though the same value is baked into the client bundle at build time. If only `VITE_CLERK_PUBLISHABLE_KEY` is in the runtime env (which is what compose's `env_file: .env` provides for Studio-Desk), the server-side Clerk init fails and trips the "infinite redirect loop" detector — pages render blank until the cookie cache rescues them.
+Clerk's Next.js middleware reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from `process.env` at runtime even though the same value is baked into the client bundle at build time. When that variable resolves **empty or absent** in the container, the server-side Clerk init fails and trips the "infinite redirect loop" detector — pages render blank until the cookie cache rescues them.
 
-Fix: add the Clerk vars to `next-web-app`'s runtime `environment:` block in `platform/docker-compose.yml`:
+> ⚠️ **Diagnose the VALUE, not the wiring — `env_file` is not the cause.** This entry used to say the runtime env
+> carries "only `VITE_CLERK_PUBLISHABLE_KEY`, which is what `env_file: .env` provides for Studio-Desk". That is
+> false: `next-web-app` declares the **same** `env_file: .env` as studio-desk (`docker-compose.yml:156-157` vs
+> `:125-126` @ platform `0c91421df`), so its container env already carries every key `platform/.env` holds —
+> including all five `NEXT_PUBLIC_CLERK_*` names, which `.env_example` ships (`:95`, `:100-103` @ the same ref).
+> `env_file` does not differentiate the two services and never withheld these keys. The realistic cause is a
+> **blank or missing value** in your `platform/.env` (`.env_example` ships `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=`
+> empty), so **check the value first**: `docker compose exec next-web-app printenv NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
+> If it prints empty, fill it in `platform/.env` (or run `/stack-secrets --provision`) and restart — that is the fix.
+
+The `environment:`-block edit below is still worth knowing, but for a **narrower** reason than "env_file misses these":
+an `environment:` entry **overrides** `env_file`, and `${VAR}` there is resolved by compose *interpolation* (shell env
+first, then the project-directory `.env`) — so it lets a shell-exported value win over a blank line in
+`platform/.env`, and its `:-` defaults supply the four URL vars that `env_file` cannot default. It cannot turn a
+blank `platform/.env` value into a real one when nothing else exports it.
+
+Optional: add the Clerk vars to `next-web-app`'s runtime `environment:` block in `platform/docker-compose.yml`:
 
 ```yaml
 next-web-app:
@@ -738,7 +927,7 @@ next-web-app:
     - NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:-/onboarding}
 ```
 
-Then `docker compose up -d next-web-app` to restart with the new env (no rebuild needed — these are runtime-only vars, the bundle was already correct). After the fix you should see all five `NEXT_PUBLIC_CLERK_*` keys in `docker compose exec next-web-app env`.
+Then `docker compose up -d next-web-app` to restart with the new env (no rebuild needed — these are runtime-only vars, the bundle was already correct). Note that all five `NEXT_PUBLIC_CLERK_*` **keys** appear in `docker compose exec next-web-app env` **before** this edit too (`env_file` puts them there) — so key-presence is not the signal. The signal is whether `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` has a non-empty **value**.
 
 If you still see blank pages in your browser after the fix, clear cookies for the staging origin (`ithacastaging`, `calypsostaging`, or your equivalent) — stale dev-browser cookies bound to a prior origin can keep the redirect loop alive client-side.
 

@@ -1,0 +1,303 @@
+---
+milestone_shape: iterative
+milestone: M257
+title: "first-light build"
+status: archived
+release: v2.8 "fast build"
+exit_gate: "A cold-images `demo-down --purge` + `demo-up` reaches `autoverify green:true / 0 warnings` in p50 <= 360 s across 3 consecutive cycles on **the local Mac mini** (`macmini` — the M4 Pro host D-v28-15 moved ALL dev/test to; profile `stack-core/hostprofiles/macmini.json`) — the host changed at D-v28-14 and AGAIN at D-v28-15, and this line named **odysseus** until M257 iter-05 re-pointed it: odysseus is RETIRED from this project and billion is demo-only, so a gate naming either could not be graded at all. **The baseline must be RE-MEASURED here (n >= 3) and `macmini.json`'s `gated_baseline` filled BEFORE any lever is priced** — the profile itself landed at iter-04 and deliberately ships WITHOUT that field. billion's 666.29 s does not transfer, and iter-04 measured how far it does not: the identical hiring image compiles in 30.4 s here vs 42.6 s there, and pays 56.6 s export + 19.3 s unpack here vs 99.0 + 37.6 there - materially cheaper, but NOT free (see the retraction in this file's HOST CLASS section). This release's own rule is *state the environment with every number*. This host is a PERMANENTLY CONTENDED workstation (observed load1 ~2.9-13), so every baseline figure must be LABELLED contended and carry its load1; that labelling waives NOTHING - the HEADROOM clause below still FAILS the gate when tripped. 360 s stands as the release THESIS (time-to-ready is what v2.8 is for); if this host's measured baseline puts that cut structurally out of reach, that is a re-scope signal, not a target to grind against, 0 platform-repo edits, all 7 demopatch guards (G1-G7) passing, AND two FALSIFIABLE asserts that FAIL the gate when tripped (D-v28-6, D-v28-11): HEADROOM — peak load1 <= cores-2 AND peak summed heap commitment <= 80% of the host budget AND free disk >= floor + projected image bytes, read from the sampler (NOT 'sampled, not asserted') — where `cores` means the logical-core count OF THE MACHINE THE LOAD1 SAMPLE IS TAKEN ON, which on a docker-desktop-vm host is the HOST's count and NOT the VM allocation (`FIX-M257-load1-units-vm`); ISOLATION — no built image contains another stack's baked publishable key or offset origin, asserted by post-build image inspect (L1/L3 change exactly the layers that carry them). Stretch: <= 300 s."
+iteration_protocol_ref: corpus/ops/demo/build-budget.md
+re_scope_trigger: "If after L1 + L2 + L3 the p50 is still > 400 s, escalate rather than grind. **RE-DERIVED at M257 iter-08 against `macmini.json`'s now-filled `gated_baseline` (p50 449.51 s, n=3, contended-and-labelled), exactly as the previous text demanded the moment that field was filled.** The derivation, stated so it can be re-done: the gate needs 449.51 - 360 = **89.51 s** here, a **19.9 %** cut where billion needed 46 %; the measured UI-tier block is 246.23 s = **54.8 %** of the cycle (`ui_next_web` 120.79 + `ui_hiring` 117.45 + `ui_studio_desk` 7.99, n=3 p50s), and L1 is priced on this host at ~136-152 s - so **L1 alone should clear the gate with ~47-63 s to spare**. A p50 above 400 s therefore means the three big levers delivered under ~50 s combined, barely a third of L1's LOW estimate on its own: the residual is structural (host I/O, the containerd snapshotter) or a lever did not land, and the small levers were never priced to cover that. The trigger's SEMANTICS are unchanged from the billion form; only its arithmetic is re-hosted. **The superseded reading, kept because the milestone's opening lesson is in it:** this line read *> 420 s* and every number under it was scaled from BILLION's 666.29 s, and it also warned **do NOT substitute iter-04's ~420-455 s estimate for a baseline** - a scaling of billion's phase table by ONE measured image here. That estimate turns out to have been good (449.51 s measured, inside its range), and it was still not a measurement. RE-DERIVED at the M255 harden against the real arithmetic: the gate needs 666.29 - 360 = 306.29 s, and once M255 re-priced L2 from ~200 s to <=45 s the three big levers are worth 200-250 (L1) + <=45 (L2) + ~55 (L3) = 300-350 s -- so at L1's conservative end they miss the gate BY THEMSELVES. A p50 above 420 s means the three delivered under ~250 s, i.e. at least 50 s short of even their low estimate, and the remaining small levers (L4/L5/L7/L8/L10, ~93-158 s combined) are then being asked to cover a shortfall they were never priced for: the residual is structural (host I/O, the containerd snapshotter) or a lever did not land. The ORIGINAL trigger was 480 s, set when L2 looked like ~200 s and the three looked like ~505 s against a 306 s need -- against the measured prices it would only have fired if the levers returned under 186 s, barely half, so a 60 s gate miss could never have tripped it."
+depends_on: [M256]
+parallel_with: []
+complexity: very-large
+created: 2026-07-27
+last_updated: 2026-08-12
+---
+
+# M257 — first-light build  (`iterative`)
+
+**Status:** `archived` (completed 2026-08-12) · **Shape:** `iterative` · **Complexity:** very-large · **Release:** v2.8 "fast build"
+**Depends on:** M256 (sharpen the detector before changing what it detects)
+
+> **Revised 2026-07-27** after the adversarial plan review: the gate's headroom clause became **falsifiable**
+> (it read "sampled, not asserted" — i.e. it measured and changed nothing, the exact defect this release
+> retracts), an **image-isolation assert** was added, the **§8.5 corpus retraction moved here** from M255, L6
+> moved **out** to M255, and the dev-path rationale was corrected. See [`roadmap.md`](../../../roadmap.md)
+> § "Design decisions from the adversarial plan review" (D-v28-6, D-v28-10, D-v28-11).
+
+## Goal
+
+Collapse the cold demo bring-up so going live is a coffee, not a lunch — **spending the machine deliberately,
+never exhausting it**, and without weakening a single safety guard.
+
+## Baseline (`billion` 8 vCPU / 7.3 GiB / x86_64, cold-images + warm layer cache)
+
+**The gate measures against the M255 `n=3` campaign, not the `n=1` annotation.** Both are listed because the
+annotation is where the lever ranking comes from; the campaign is what the exit gate is a percentage of.
+
+| on `billion` | **n=3 p50 — THE BASELINE** | n=1 annotation |
+|---|---|---|
+| Total cycle | **666.29 s (11 m 06 s)** | 672.4 s (11 m 12 s) |
+| Bring-up | 633.15 s (95.0 %) | 650.7 s (96.8 %) |
+| **UI-tier image builds (3)** | **436.1 s — 65.5 %** | 446.4 s — 66.4 % |
+| **Image export/unpack alone** | **307.5 s — 46.2 %** | 288.4 s — 42.9 % |
+| peak load1 | **4.06 / 4.56 / 4.22 of 8** | 4.90 of 8 · avg 2.26 · peak RAM 74 % |
+
+The two agree to **0.9 %**. Campaign artefacts: `billion:/home/devops/panorama/m255/campaign/`; the protocol,
+the reclaim caveat and the per-sub-phase table are in
+[`corpus/ops/demo/build-budget.md`](../../../../../corpus/ops/demo/build-budget.md).
+
+> **Two M255 findings this milestone must carry.** (1) **`turbo --env-mode=loose` is mandatory** — Turbo 2
+> defaults to `strict` and filters `NEXT_PRIVATE_STANDALONE` out before `next build` sees it, so the flag
+> silently no-ops and the build stays green with the old 4.84 GB image. (2) **L2 is re-priced down to ≲45 s and
+> sequenced AFTER L1** (L1 deletes the two export legs L2 existed to overlap), and **the hiring recruiter
+> Playthrough must be re-verified after union-apply is flipped on** — D-v28-7's "inert outlier" premise was
+> false; hiring's behaviour does change.
+
+**This is not a CPU problem.** It is serialised I/O (writing 9.4 GB of Next.js image to disk) plus a
+**deliberate serialisation**: `build_frontends()` has exactly one conditional (`NO_UI`); the RAM pre-flight it
+cites is **cosmetic** (`preflight_vm_ram()` declares its vars `local`, assigns no global, returns no verdict);
+and the Go builds it was meant to avoid overlapping **finish 1.1 s before the UI tier starts**. Meanwhile the
+UI tier runs at `:1877` and `compose up` at `:1924`, so postgres boot, **4 atlas migrations**, snapshot replay
+and the seed **idle for ~7.5 minutes**.
+
+## Levers, ranked by measured seconds recoverable
+
+| | Lever | Est. saving | Shape |
+|---|---|---|---|
+| **L1** | Multi-stage the two Next images — ship `.next/standalone` + static instead of the full build tree with dev deps. 4.77 GB → a few hundred MB collapses the 141.9 s + 136.7 s export **and** the 85.7 s unconditional unpack leg (L9) | **~200–250 s** | rext-owned Dockerfile. **No config edit and no demopatch needed**: `ENV NEXT_PRIVATE_STANDALONE=1` flips Next 16's frozen `defaultConfig` (`output: !!process.env.NEXT_PRIVATE_STANDALONE ? \'standalone\' : undefined`) because **no app `next.config` sets `output`** (verified ×4). Private Next API; fallback = a `next.config.mjs` demopatch per app |
+| **L2** | Build `next-web` ∥ `hiring` **and** reorder the UI tier to overlap `compose up`. **Sequenced AFTER L1**, which deletes the two ~140 s export legs L2 existed to overlap | **≲45 s** — re-priced DOWN from ~200 s by M255 spike (d), **measured, not estimated** | rext `up-injected.sh` under M255's **union-apply rule** (D-v28-7): apply the union of both manifest sets once, build both in parallel from the one clone, revert once — with the `urls.ts` chain reverted **pubweb-before-studio** (D-M255-4: *neither* build reverts in strict LIFO and the two orders differ, so "revert LIFO" was never the invariant; `union_apply_guard.py` asserts the real one). **Only the export legs can overlap** — the headroom assert derives `max_parallel_ui_lanes = 1`, so the two *compile* legs cannot run concurrently on `billion` at all |
+| **L3** | Manifests-first `COPY` so the `pnpm install` layer survives a source-only change (every demopatch is one). The layer has **never once been reused** — 16 entries × 4.029 GB = **61 % of the whole build cache**, every one `Usage count: 1` | **~55 s** + an ~8 GB/cycle leak | demopatch / rext Dockerfile. Must copy root `package.json` + `pnpm-lock.yaml` + `pnpm-workspace.yaml` **plus all 16 workspace `package.json`s** — a naive `COPY package*.json ./` breaks `--frozen-lockfile` |
+| **L4** | Drop `--concurrency=1` from `pnpm turbo build` — the value comes **from the checked-in host profile**, not a hardcoded 8-core assumption (D-v28-6) | ~20–35 s | build-arg or demopatch |
+| **L5** | Speed the taxonomy replay (78.0 s / 330,261 rows + 2 pgvector reindexes): index-after-COPY in one pass, `UNLOGGED`-then-`SET LOGGED`, or a pre-built PG data dir. **The chief win on the `/dev-up` path** (`dev-setdress.sh:299`/`:357` run the same `stacksnap replay`) | ~30–50 s | rext `stack-snapshot` |
+| **L7** | Multi-stage `studio-desk` — 1.71 GB shipping a full dev toolchain (32,568 JS/CSS files, 266 MB) to serve a Vite bundle | ~8 s | demopatch / rext Dockerfile |
+| **L8** | Cache the Directus bootstrap + restart — 15.6 s of pure container-boot latency, the most compressible slice of set-dress | ~15 s | rext |
+| **L10** | Serial fat: ~12 serial `git fetch`es · 23 serial `demopatch revert` shells · Go tooling compiled 4–5×/bring-up (`stacksecrets` into a throwaway `mktemp -d`, `stackseed` **twice**) · 4 independent `atlas migrate apply` targets run serially · the entire tailscale-serve plan re-emitted to add one port | ~20–50 s | rext |
+
+*(**L6** — scheduled BuildKit prune — **moved to M255** as campaign hygiene: M255's own bench campaign is the
+first thing that would exhaust the ~4–5 cycle disk runway. **L9** — the 85.7 s unconditional unpack leg — is
+folded into L1; it is not a build flag.)*
+
+> **L1 + L2 + L3 buy ~300–350 s against the 306.29 s the gate needs — and that margin is THIN.** They attack
+> the same 436 s block from three angles (smaller images to export, exported concurrently, with dependency
+> layers that actually survive), taking the cycle from 11 m 06 s to roughly **5–6 m**. But do the arithmetic
+> before trusting the headline: **666.29 → 360 needs 306.29 s**, and after M255 re-priced L2 from ~200 s to
+> **≲45 s** the big three are worth **200–250 (L1) + ≲45 (L2) + ~55 (L3)** — i.e. **300 s at L1's
+> conservative end, which MISSES the gate on its own.** The first draft of this section was written when L2
+> looked like ~200 s and the three therefore looked like ~505 s, a 200 s cushion. There is no cushion.
+> **L4 / L5 / L7 / L8 / L10 (~93–158 s combined) are load-bearing, not garnish** — plan to land some of them,
+> and treat "L1+L2+L3 and we are done" as the optimistic branch rather than the plan.
+
+## Also relevant (operational, not a lever)
+
+**`--purge` defeats every image cache, including 5 hidden ones.** `rosetta-demo:336-341` removes the three UI
+images **and** 5 that `compose up` then rebuilds inline (postgresql, graphql, sentinel, storage, roadrunner) —
+15.3 s warm here, 120–300 s if truly cold — with **no per-service log file to attribute them to**. So the three
+cache-reuse checks (`:562`, `:849`, `:1077`) can **never** hit on a purge cycle. Plain `rosetta-demo down N`
+(no `--purge`) keeps the images and makes a re-up cost seconds — the fast-cycle option whenever a wiped DB is
+not required. **Document it; do not make it the default** (a wiped DB is usually the point).
+
+## Also in scope — the §8.5 corpus retraction (D-v28-10, moved here from M255)
+
+Landing **once**, with the *achieved* numbers, so `frontend-tier.md` is rewritten a single time.
+**Enumerated** mirror set — **RE-ANCHORED 2026-07-31, and every line below was re-verified by grepping the
+claim string.** The first draft's `:231 / :249 / :262 / :271` were **pre-M255 line numbers**: M255's own doc
+commit shifted them **+24** and this list was never re-anchored. The live set is
+`corpus/ops/demo/frontend-tier.md` **×4 sites** — **`:255`** (*"one ~3-minute, ~3.7 GB cached build per
+frontend"*), **`:273`** (*"a ~3.7 GB next-web compile"*), **`:274`** (*"pure memory starvation, not a slow
+build"* — a live claim this section previously named in prose with **no** line cite), **`:286`** (*"the ~3.7 GB
+next-web build spike"*) — plus `corpus/ops/demo/README.md:139` and `CLAUDE.md:318` (both **re-verified
+correct**). **Old `:271` is dropped from the work list: it is a NO-OP** — *"the ~3.7 GB build cache"* was
+**already retracted by M255** at `frontend-tier.md:299-306`, which now carries the measured 105.4 GB and the
+25 GiB floor.
+**Gated by a grep assertion** for the retracted strings: the first draft cited
+`stack-core/demo_knob_guard.py` as the machine fence, but that guard matches `${DEMO_*:-default}` knobs and
+`case` arms and **structurally cannot see prose numbers**. `demo-up-defaults.md` carries none of these claims
+and is **not** in the set. The claims:
+*"the ~3.7 GB build cache"* → **105.4 GB** (~28× off; **already retracted**, see above) · *"~3 min per
+frontend"* → right for the two Next apps, **~7× wrong** for studio-desk, and `frontend-tier.md` mentions
+**"hiring" only 4 times in 676 lines** (`:24`, `:32`, `:294`, `:666` — the stale figure was *"zero times in 623
+lines"*; the substantive point stands, hiring is barely documented as a first-class frontend) ·
+*"~3.7 GB first build"* → **two** sites in `up-injected.sh`, **`:816` and `:1251`** (the stale cite was a single
+`:794`) → measured **4.77 / 4.67 GB** — and note `up-injected.sh:300` already hedges *"4.67-4.84 GB"*, the
+conflict `build-budget.md` resolves to the profile's **4.84 GB** · studio *"pure memory starvation, not a slow
+build"* → refuted (export/unpack is 288.4 s on `billion`; the box never exceeded load 4.90/8).
+
+> **Every retraction written here must NAME ITS HOST** (`D120`): the numbers being retracted are `billion`
+> measurements, M257's achieved numbers will be **`macmini`** measurements (this line said `odysseus` until
+> iter-05 re-pointed the gate), and the two must not be mixed in one sentence without saying which is which.
+> `D120` earned its keep twice over — the fence it produced flagged this milestone's own un-hosted gate line,
+> and the very claim that paused the milestone (*"the Mac pays no unpack leg"*) was a **host-less
+> generalisation from a third machine**. Naming the host is not bookkeeping here; it is the control.
+
+## Dev path
+
+`/dev-up` shares **L5 / L10** (set-dress + tooling, not the UI tier). **Measured and reported at each iter;
+not separately gated** — **because the UI tier has no dev counterpart**: the main dev stack runs next-web
+**natively** (`dev-up` SKILL.md:69-76) and `dev-N` defaults to the frontend-free `graphql` profile, so the
+446 s / 66.4 % block simply does not exist there. *(The first draft justified this with "the demo path is
+where 96.8 % of the wall-clock is" — a misuse: 96.8 % is bring-up as a share of the **demo** cycle, which says
+nothing about demo-vs-dev.)*
+
+## Shape (why iterative)
+
+L1's cost depends on M255 spike (a) · L2's real win depends on spike (d) · L3's value is bounded by the
+measured 61 %-of-cache figure. The path is measurement-driven by construction: measure → attribute → one lever
+→ re-measure at n ≥ 3.
+
+## Inherited from the M255 close (Fate 3, 2026-07-28)
+
+M255's harden pass was halted early by a user stop and routed five items to "M255 harden resume" — which
+is **not a named milestone**, so it could not survive M255's close. Re-fated at that close: one landed
+(the plan-number mirror fence, now `stack-core/tests/test_baseline_mirror_fence.py`), and these four
+attach **here**, because M257 is the milestone that actually exercises each of them — it runs the
+campaigns, edits the knobs, and flips union-apply on.
+
+- **`run_campaign` rep-body coverage.** `buildbench.py`'s largest uncovered region (~763-850). Drive it
+  with a faked `Popen`/`Sampler`/docker-probe set so the staleness, dead-sampler and phase-table paths
+  are proven end-to-end, not only unit-wise. **M257 runs this code on every gate cycle** — it should not
+  be the least-tested part of the harness measuring the gate.
+- **`demo_knob_guard` anchor-fence mutants.** The third M255 guard has no entry in the 10-mutant
+  battery. Add mutants for the anchor comparison and the `--fix` regenerator. Relevant here because
+  M257's levers add/rename `DEMO_*` knobs, which is exactly when that guard must not silently pass.
+- **`_manifest_lists` body extraction.** `text.find("\n}\n")` truncates a build function at the first
+  column-0 `}`; currently masked by the pinned 11/5/6 count test, but the truncation would be **silent**.
+  **M257 is the first milestone to depend on that parse being right** — the union-apply rule (D-v28-7)
+  reads those manifest lists to decide what to apply to which image.
+- **The `laptop` profile's `projected_image_gib`.** The one non-measured number in either host profile,
+  declared only in prose. Make it a machine-declared `provisional_fields` list the loader surfaces, so
+  a provisional number cannot be quoted as measured.
+
+## Inherited from the M256 close (Fate 3, 2026-07-30)
+
+Two items, and **both are gate-relevant rather than parked here for convenience** — each can make this
+milestone's own gate (*"reaches `autoverify green:true / 0 warnings`"*) report the wrong thing.
+
+- **`FIX-M256-demo2-service-self-termination` — a green gate on a half-dead stack.** After an un-clean
+  Postgres restart, `demo-2-jobsimulation-1` and `demo-2-cms-1` **self-terminate cleanly (`Exited 0`)** on
+  their DB-health monitors (*"DB too many ping failures, shutting down"*) and **nothing restarts them**.
+  `docker ps` then shows **14 of 16** containers "Up", the application surfaces **no error at all**, and every
+  jobsimulation surface renders **20 content-free table rows** — which a `rows > 0` assertion passes. It cost
+  M256 iter-15 an hour of Playthrough diagnosis spent disbelieving a correct assertion. Disk was fine (227 GiB
+  free), so this is **NOT** the M239-F1 ENOSPC trap; recovery is a non-destructive `docker start`. **Fix
+  shape:** a container-liveness cheap-win in `stack-verify`'s `autoverify` set — one line naming the dead
+  service. Until it exists, this gate cannot distinguish a healthy stack from this one.
+- **`FIX-M256-autoverify-fapi-libressl` — a warning this gate counts, on a working stack.** `autoverify.sh`
+  check (d) probes the fake-FAPI with LibreSSL `curl`, which cannot handshake the mkcert leaf on macOS → it
+  warns *"NOBODY CAN LOG IN"* about a stack where everyone can (M256 iter-01 D5). Give it a probe independent
+  of the host TLS stack. **Deliberately not landed at the M256 close:** a TLS-probe fix that cannot be verified
+  against a real bring-up is a fix on trust, and this milestone brings stacks up repeatedly. Carried **31 iters
+  with its target never advancing** — one of the audit's named chronics, so it gets a real owner here.
+
+## Hard constraints
+
+- **Zero platform-repo edits.** L1/L3/L4/L7 all touch Dockerfiles in canonical repos → each lands as a
+  sha-pinned `demopatch` or an **rext-owned Dockerfile** in the shape `hiring.Dockerfile` already sanctions.
+- **All 7 demopatch guards (G1–G7) still pass** after every lever.
+- **Per-stack image isolation** — cache **layers**, never **images**. A reused image would carry another
+  stack's baked publishable key and offset origin. **Now a falsifiable gate clause** (D-v28-11): asserted by
+  post-build image inspect, because L1/L3 change exactly the layers that carry them.
+- **The M255 headroom assert is a gate clause, not an observation** (D-v28-6) — peak load1, peak summed heap
+  commitment and free disk are read from the sampler and **FAIL** the gate when breached.
+- **`ENV NODE_OPTIONS` is not a usable seam** for a per-lane V8 ceiling: `apps/web/package.json:98` and
+  `apps/hiring/package.json:92` re-assign `--max_old_space_size=8192` **inline** for the `next build` child.
+- `git push --tags` is part of shipping a tool (rung zero).
+
+## KB dependencies
+
+`corpus/ops/demo/build-budget.md` (M255) · `corpus/ops/demo/frontend-tier.md` ·
+`corpus/ops/demo/demopatch-spec.md` · `corpus/ops/demo/demo-up-defaults.md` · `corpus/ops/rosetta_demo.md` ·
+`corpus/ops/idempotency.md` · `corpus/ops/safety.md` · `corpus/ops/snapshot-spec.md` (L5)
+
+**Delivers → `corpus/ops/demo/frontend-tier.md`** (rewritten **once**, with achieved numbers: real image
+anatomy, the multi-stage shape, hiring's existence — plus the enumerated §8.5 retraction + its grep gate)
+**Delivers → `corpus/ops/demo/build-budget.md`** (the achieved numbers, per host)
+
+## ⚠️ ~~HOST CLASS PROBLEM~~ — **RETRACTED 2026-08-11 (iter-05, `DOC-M257-hostclass-retraction`)**
+
+> **The claim below is FALSE on the machine it was written about, and it is the premise this milestone was
+> paused on for eleven days.** It read: *"Dev moved to a Mac (arm64/**overlay2**); … the Mac **pays no
+> image-unpack leg**. L1, this milestone's biggest lever at ~200–250 s, targets exactly that leg, so its
+> headroom on a Mac is near zero … This gate is **un-measurable on the sanctioned hosts as written**."*
+>
+> **Measured on the actual host (iter-04, 2026-08-11): this Mac mini runs the CONTAINERD image store and
+> pays a size-proportional unpack leg.**
+>
+> | probe | export | **unpack** |
+> |---|---|---|
+> | controlled 256 MB layer | 3.5 s | **0.8 s** |
+> | controlled 1024 MB layer | 14.3 s | **3.0 s** |
+> | the real `hiring.Dockerfile` image (4.12 GB) | 56.6 s | **19.3 s** |
+>
+> **The evidence that settles it is the probe, NOT `docker info`.** `docker info` reports `Storage Driver:
+> overlayfs` here, which reads at a glance exactly like the laptop's classic `overlay2` graphdriver — the
+> trap `spec-notes.md` F1 writes down in so many words. A config string is not a hardware measurement, and
+> grading a hardware question on one is how the wrong claim got made in the first place. The two-size probe
+> is evidence of a different kind: the leg **exists** and **scales with bytes**, so it cannot be a naming
+> coincidence.
+>
+> **Where the false generalisation came from:** the **retired M1 Pro laptop** (`laptop.json`, classic
+> overlay2, `unpack_s_observed: null`). *"A Mac"* was treated as a host CLASS when the fact that mattered is
+> a **per-machine setting** — the containerd image store, a toggle in Docker Desktop. Name the machine, not
+> the class.
+>
+> **Consequence for this milestone, which is the opposite of the pause's:** L1 keeps a substantial price
+> here (~136–152 s by iter-04's arithmetic), the gate is **measurable on the host that exists**, and the
+> ≤ 360 s cut looks *more* reachable than the pause assumed, not less. The gate was re-pointed at this host
+> at iter-05.
+>
+> **Same retraction landed at:** `knowledge/plan/state.md` § Hosts · `knowledge/plan/roadmap.md` `D-v28-15`.
+
+What survives from the original note, because it is still true and still binding: **billion is
+x86_64/containerd and this host is arm64/containerd**, the image sizes differ (**4.84 GB** vs **4.12 GB** for
+the identical Dockerfile — a ~15 % gap, *not* the ~40 % the laptop comparison suggested), and **seconds
+measured here still do not transfer to billion**. *State the environment with every number* is unaffected.
+
+## ⏸️ ~~PAUSED 2026-07-31~~ — **UNPAUSED** by M257x's close; resumed at iter-04, gate re-pointed at iter-05
+
+**Paused after iter-03, at 3 closed iters, on the user's call.** Not a failure: iter-03's own exit blocker
+(`DECIDE-M257-jobsim-schema-ownership`) turned out to be the visible edge of a platform-wide migration whose
+status nobody on our side knew. **M257x now owns that question**, and this milestone resumes when the platform
+is aligned.
+
+**Why it cannot proceed as-is:** the gate measures a cold `--purge` + `demo-up`. Against a platform whose
+schema ownership has moved out from under the tooling, that measures either a pinned-stale build or a broken
+one. Neither is the number v2.8 wants.
+
+**What is already banked and must NOT be redone:**
+- The Phase 0b RED cleared; `TOK-01` authored (*instrument before baseline, baseline before levers*).
+- ~~**odysseus provisioned** as a working bench~~ — rc=0 bring-up, 16/16 containers, remote HTTPS, Go present
+  (`go1.26.5`, off PATH — the "no Go" reading was a login-shell false negative). **MOOT since `D-v28-15`
+  retired that host**; kept as history so a future reader does not re-provision it. The finding that
+  *survives* is the login-shell false negative, which is a host-independent lesson.
+- **Both gate-honesty instruments landed** with mutation-proven negative controls — the autoverify check could
+  previously pass on a half-dead stack AND fail on a working one.
+- **B1 + B2 fixed** (dropped `local_*` mirrors → 34 sites/20 files; the unobtainable studio).
+- The baseline mirror fence **parameterised by host** (4 → 28 tests); on its first run it flagged 12 un-hosted
+  baseline claims, one of them this milestone's own gate line.
+
+**Still owed** (updated at iter-05; the odysseus half of the original list is moot):
+
+- **The baseline itself** — `BASELINE-M257-macmini-n3`. The profile landed at iter-04
+  (`PROFILE-M257-odysseus-json` → satisfied as `macmini.json`, deliberately without a `gated_baseline`;
+  `lane_heap_measured_peak_mib` was **measured** at 3116 MiB, never guessed, because clause 2 consumes it).
+  What is owed is the `n ≥ 3` cold campaign that fills `gated_baseline` — and it will be taken on a
+  **permanently contended** box and labelled as such, because waiting for a quiet workstation is waiting
+  forever.
+- **`FIX-M257-load1-units-vm`** — the *live* form of what `INVESTIGATE-M257-load1-48` was chasing.
+  `buildbench.py` clause 1 grades **host** `os.getloadavg()` against `profile["cores"]`, which for a
+  `docker-desktop-vm` profile is the **VM allocation**. On this host that is **12-core load vs an 8-core
+  limit** → a limit of **6** where the correct one is **10**, so clause 1 currently **fails CLOSED** and
+  would refuse cycles this host is fine to run. Note the same file already draws this exact distinction
+  correctly in `engine_facts()` and `profile_describes_host()` — the instrument knows the difference in two
+  places and forgets it in a third.
+- ~~**`INVESTIGATE-M257-load1-48`**~~ — peak `load1` **48.7** against clause 1's limit of **6** on
+  **odysseus**. **Now un-reproducible: that host is retired.** Narrowed at iter-04 — the units mismatch above
+  is *not* its cause (odysseus was `native-linux`, where host and engine core counts are the same number),
+  so the standing hypothesis remains the one already written at `buildbench.py:349-350`: Linux load average
+  counts tasks in uninterruptible sleep, so an I/O-heavy build can show a huge `load1` with the CPU nowhere
+  near oversubscribed. Re-aim it at `macmini` as part of the baseline campaign, or close it as moot. The
+  companion suspicion is host-independent and still live: the gate's own insistence on *"read from the
+  sampler (NOT 'sampled, not asserted')"* raises the possibility that clause 1 was never actually asserted
+  on billion either.
+

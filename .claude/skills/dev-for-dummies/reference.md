@@ -30,26 +30,43 @@ N=0 is the main dev stack (base ports). `demo-N` / `dev-N` add `N×10000`.
 | **next-web-app** (frontend) | **3000** (hiring 3001) | **13000** | **browser** ← smooth target |
 | **studio-desk** | **9000** | **19000** | **browser** ← smooth target |
 | **ant-academy** (native) | **3077** | **13077** | **browser** ← smooth target |
-| cosmo / graphql router | 5050 | 15050 | browser + subgraph fan-out |
-| **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | router, other services |
-| cms | 8090 (RPC 8091) | 18090 | router, other services |
-| jobsimulation | 8400 (RPC 8401) | 18400 | router, other services |
-| skillpath | 8100 (RPC 8101) | 18100 | router, other services |
-| sentinel | 8087 | 18087 | services (authz) |
+| **backend (`app`)** REST | **8082** (RPC 8081/8083) | **18082** | browser + the frontend containers |
+| sentinel | 8087 | 18087 | `backend` (authz) — the one cross-process hop left |
 | presenter cockpit | 7700 | 17700 | browser (plain HTTP — see caveat) |
-| directus (only `--local-content`) | 8055 | 18055 | cms |
+| directus (only `--local-content`) | 8055 | 18055 | `backend`'s cms domain |
 | fake-FAPI (Clerkenstein) | 5400 | 15400 | browser (own TLS) |
 
-> **Frontend/UI targets are the smooth path** — only the *browser* talks to them, so a native process on the
-> host serves them directly. **Backend targets** (app/cms/jobsimulation/skillpath) are consumed by *other
-> containers* (the router) by Docker service name, which a host-native process can't provide — see § *Backend
-> targets* for the two caveats (infra endpoints + router federation).
+> **Ports that no longer exist on a stack — do not target them.** The Cosmo/graphql router (`5050`) was
+> deleted from compose by platform `2adcf71`; GraphQL is `backend`'s own `:8082/graphql/query`. `cms`
+> (`8090/8091`), `jobsimulation` (`8400/8401`) and `roadrunner` went at `d11a403`, `skillpath` at M507, and
+> `storage` (`8300/8301`), `messenger` (`8200/8201`) + `customerio-sync` (`8080`) at `838d907` (merged
+> `0c91421`, 2026-08-05). All of those domains are served **in-process by `backend`**, on no port of their
+> own. Nothing listens on the retired numbers, so a curl against one fails against an empty port rather
+> than erroring usefully.
 
-**Valid TARGET repos** (must exist as `stack-demo/<repo>`):
-`app cms jobsimulation skillpath next-web-app studio-desk ant-academy messenger storage sentinel roadrunner
-graphql-wundergraph`. **`hiring` is NOT a repo** — it's `apps/hiring` inside `next-web-app` (run `pnpm
-dev:hiring` on `3001+OFF`). Always `test -d stack-demo/<repo>` first; if it fails, reject with this list
-(FATAL for that target).
+> **Frontend/UI targets are the smooth path** — only the *browser* talks to them, so a native process on the
+> host serves them directly. **`backend` is the one backend target left**, and it is consumed by *another
+> container* (`next-web-app`) by Docker service name, which a host-native process can't provide — see
+> § *Backend targets* for the caveats (infra endpoints + service-name resolution).
+
+**Valid TARGET repos** — the **five** a demo actually builds and runs, re-derived from `repos.yml` +
+`docker-compose.yml` at platform `0c91421`:
+
+`app` · `sentinel` · `next-web-app` · `studio-desk` (the four `repos.yml` clones) · `ant-academy`
+(not in `repos.yml` by design — `ensure-clones.sh` clones it explicitly at phase d2, native-only on `3077+OFF`).
+
+**`hiring` is NOT a repo** — it's `apps/hiring` inside `next-web-app` (run `pnpm dev:hiring` on `3001+OFF`).
+
+> **⚠️ `test -d stack-demo/<repo>` is NOT a sufficient gate — it PASSES for repos that are dead.**
+> `stack-demo/` still holds stale clones of `cms`, `jobsimulation`, `roadrunner`, `messenger`, `storage`
+> and `graphql-wundergraph` from before the merges. `make init` stopped cloning them, but nothing ever
+> removed the directories, so the existence check succeeds and the failure surfaces much later — as a
+> worktree on a frozen repo whose service has **no compose entry, no port, and no consumer**. A whole
+> session can be spent editing code that nothing runs.
+>
+> **Validate against the five-name list above, not against the filesystem.** If the user names one of the
+> dead six, reject it (FATAL for that target) and say why: it was merged into `app`, so the live code is
+> in `stack-demo/app` under `internal/<domain>/` — target `app` instead. `skillpath` isn't even cloned.
 
 ---
 
@@ -111,14 +128,15 @@ $DC stop next-web-app
 tailscale serve --https=$((3000+OFF)) off
 
 # 3. Assemble $WT/apps/web/.env.local. NEXT_PUBLIC_* -> the TAILNET HTTPS host:offset (router/backend are F12'd +
-#    tailscale-served on :$((5050+OFF))/$((8082+OFF))). Mirror the container's server-side Clerk keys. Point
+#    tailscale-served on :$((8082+OFF)) — the :5050 router is GONE since platform 2adcf71, backend serves
+#    GraphQL itself at /graphql/query). Mirror the container's server-side Clerk keys. Point
 #    CLERK_API_URL at the fake-bapi's REACHABLE IP — the host /etc/hosts `api.clerk.com` alias goes STALE on
 #    re-bring-up (new docker IP) => the #1 login failure (`resolve handshake: fetch failed ECONNREFUSED`).
 PK=$(grep -E '^NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=' "$STACK/.env.demo-$N" | cut -d= -f2-)
 BIP=$(docker inspect demo-$N-fake-bapi-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 { echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PK"
   echo "NEXT_PUBLIC_HOSTING_URL=https://$HOST:$((3000+OFF))"
-  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((5050+OFF))/graphql"
+  echo "NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT=https://$HOST:$((8082+OFF))/graphql/query"   # NOT :5050/graphql — router deleted at platform 2adcf71
   echo "NEXT_PUBLIC_BACKEND_API_URL=https://$HOST:$((8082+OFF))"
   echo "DIRECTUS_PUBLIC_BASE_ADDR=https://content.anthropos.work"
   grep -E '^CLERK_SECRET_KEY=|^CLERK_JWT_KEY=|^CLERK_PUBLISHABLE_KEY=|^CLERK_WEBHOOK_SECRET=' /tmp/cenv.txt  # values-blind
@@ -147,20 +165,35 @@ Clerk — serve HTTPS with the tailscale cert on the offset port, never `tailsca
 
 ---
 
-## Run a target live — **backend Go targets** (app / cms / jobsimulation / skillpath) — TWO caveats
+## Run a target live — **backend Go targets** (`app` / `sentinel`) — the caveat
 
-This is the **harder, more caveated path** — be honest with the user. Two separate problems:
+There are exactly **two** Go targets left: `app` (the monolith — it serves the **seven** cms, jobsimulation,
+skiller, skillpath, storage, messenger and customerio-sync domains in-process; `roadrunner` was listed here
+as an eighth until M257x iter-137 and was *deleted*, not merged). ⚠️ **`sentinel` was named here as a
+second Go target until M258 iter-18 and is no longer one** — platform `766df6c` folded it into `app`
+(v11.0) and removed it from `repos.yml`, so `make init` does not even clone it. Everything
+else that used to be on this list is a domain inside `app`, not a target.
 
-1. **Infra endpoints are NOT in `.env`.** `platform/.env` has no `DB_CONNECTION`/`REDIS_ADDR`/`*_RPC_ADDR` — those
-   are injected per-service in `docker-compose.yml` and point at **Docker service names** (`postgresql:5432`,
-   `redis:6379`) a host process can't resolve. A native `go run .` therefore reaches **nothing** unless you
-   **rewrite** them to the demo's offset host ports.
-2. **Router federation.** The cosmo router (a container) fans out to subgraphs by service name
-   (`http://backend:8082/...`). A host-native process can't answer that. Reaching a host process needs
-   `extra_hosts: ["host.docker.internal:host-gateway"]` on the router — **a demo-tooling change we do NOT
-   improvise** (SKILL Phase 7). So: **direct-to-service dev works** (hit the native service's own REST/RPC on its
-   offset port); **full browser→router→native-subgraph federation** needs that wiring — **flag it as a tooling
-   gap to raise, don't hack the stack.**
+This is the **harder, more caveated path** — be honest with the user. One real problem:
+
+1. **Infra endpoints are NOT in `.env`.** `platform/.env` has no `DB_CONNECTION`/`REDIS_ADDR`/
+   `SENTINEL_DB_CONNECTION` — those are injected per-service in `docker-compose.yml` and point at **Docker
+   service names** (`postgresql:5432`, `redis:6379`) a host process can't resolve. ⚠️ **This bullet named
+   `AUTHORIZATION_ADDRESS` and `sentinel:8087` until M258 iter-18**; platform `766df6c` folded the PDP into
+   `app`, so that variable is set nowhere and read by nothing. **The variable that replaced it is
+   `SENTINEL_DB_CONNECTION` — and it is FATAL, not optional**: `app/main.go:305` opens the in-process PDP
+   with it and `log.Fatalf`s on failure, so a native `go run .` without it does not degrade, it **refuses
+   to boot**. A native
+   `go run .` therefore reaches **nothing** unless you **rewrite** them to the demo's offset host ports.
+
+> **There is no second caveat any more — and the one that used to be here would send you hunting a ghost.**
+> This section previously warned about *"router federation"*: the Cosmo router fanning out to subgraphs by
+> service name, needing `extra_hosts: host-gateway` wiring before a host-native process could serve a
+> subgraph. **The router was deleted from compose at platform `2adcf71`.** There is no gateway, no
+> federation, and no subgraph fan-out — `next-web-app` talks straight to `backend` at
+> `:8082/graphql/query`. So a native `app` **does** serve the browser's GraphQL directly once the frontend
+> container's `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` points at the host port. Do **not** raise the old
+> "tooling gap" — there is nothing to wire.
 
 ```bash
 git -C stack-demo/app worktree add -b feat/<name> ../.worktrees/app-feat-<name>   # drop -b to resume
@@ -176,14 +209,28 @@ ENVF="$(pwd)/.agentspace/dev-for-dummies/env-app-$N.sh"; mkdir -p "$(dirname "$E
   echo ". $(pwd)/$STACK/.env.demo-$N 2>/dev/null || true"
   echo "DB_CONNECTION='postgresql://postgres@localhost:$((5432+OFF))/postgres?sslmode=disable&search_path=public'"
   echo "REDIS_ADDR='localhost:$((6379+OFF))'"
-  echo "SKILLER_RPC_ADDR='http://localhost:$((8083+OFF))'; CMS_RPC_ADDR='http://localhost:$((8091+OFF))'"
+  echo "SENTINEL_DB_CONNECTION='postgresql://postgres@localhost:$((5432+OFF))/postgres?search_path=sentinel&sslmode=disable'"   # MANDATORY since v11.0 — app IS the PDP; missing => log.Fatalf at boot
+  echo "GOTENBERG_URL='http://localhost:$((3200+OFF))'"           # a SECOND container app reaches, over plain HTTP
   echo "PORT=$((8082+OFF))"
   echo "set +a"; } > "$ENVF"
-#   (Confirm the exact var NAMES + search_path against the service's docker-compose.yml `environment:` block — they
-#    vary per service: backend→search_path=public, sentinel→sentinel. cms → ../cms, jobsimulation → ../jobsimulation,
-#    skillpath → ../skillpath.)
+#   (Confirm the exact var NAMES + search_path against docker-compose.yml's `environment:` block: backend
+#    reaches BOTH schemas — DB_CONNECTION search_path=public and SENTINEL_DB_CONNECTION search_path=sentinel.
+#    There is no separate sentinel service to configure.
+#
+#    Two separate facts, do not merge them:
+#     - ZERO `*_RPC_ADDR` variables exist in any compose file at 0c91421 (verified: 0 hits). Do NOT set
+#       SKILLER_RPC_ADDR / CMS_RPC_ADDR / JOBSIMULATION_RPC_ADDR / STORAGE_RPC_ADDR — their last consumer was
+#       the `messenger` container, deleted at 838d907, and app resolves those domains in-process. Nothing
+#       reads them, and the ports they used to name have no listener.
+#     - There is NO Connect-RPC service address left at all since 766df6c (v11.0): AUTHORIZATION_ADDRESS
+#       occurs 0 times in docker-compose.yml / common.yml / repos.yml, and app deleted its own RPC
+#       listener (app/main.go:1310). Do NOT set it. The service addresses the backend block still sets are
+#       GOTENBERG_URL (docker-compose.yml:34 — gotenberg is on the default `core` profile), JUDGE0_BASE_URL
+#       (:36), REDIS_ADDR (:43) and the DSNs SUPABASE_DB_CONN / COPILOT_DB_CONN (:70-71) +
+#       SENTINEL_DB_CONNECTION (:25). Miss GOTENBERG_URL and a native app boots fine but every
+#       Office-doc -> PDF conversion fails; miss SENTINEL_DB_CONNECTION and it does not boot.)
 tmux new-session -d -s dfd-app-$N -c "$(pwd)/$WT" \
-  "bash -lc '. $ENVF; make setup && make gen && go run .'"   # cms/jobsimulation/skillpath: skip make setup && make gen
+  "bash -lc '. $ENVF; make setup && make gen && go run .'"   # app is the only Go target since 766df6c
 ```
 
 ---

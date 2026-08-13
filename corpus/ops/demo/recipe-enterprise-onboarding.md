@@ -18,7 +18,7 @@ org looks like in Anthropos" demo.
 
 2. **Set-dress the stack** — replay the real public library so the catalog is real:
    ```bash
-   /stack-snapshot replay 1            # taxonomy → the real 60K-skill catalog (+ directus content on a --local-content stack)
+   /stack-snapshot demo-1 replay       # taxonomy → the real public catalog, ≥42,790 skills (+ directus content on a --local-content stack)
    ```
    This stamps the real **public** taxonomy into the stack (almost always a cache-hit → zero prod read). The
    **Directus content** surface replays too **on a `--local-content` stack** (demo default-on; dev opt-in) —
@@ -30,7 +30,7 @@ org looks like in Anthropos" demo.
 
 3. **Seed the org** with a curated preset:
    ```bash
-   /stack-seed 1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
+   /stack-seed demo-1 --preset mid-500     # Globex Corp, 500 members, 6 months activity (the default)
    # or --preset large-1k for a 1,000-member scale demo
    ```
    The seeder backfills, in dependency order: the org → 500 users → memberships (with the role mix) → the real
@@ -64,11 +64,11 @@ org looks like in Anthropos" demo.
   realistic pass/fail mix, so growth charts and timelines have shape.
 - **A real admin identity** — `user_clerkenstein` is a *seeded* member (not a phantom token), so org-gated
   pages resolve to real data.
-- **The real product library (set-dressing, step 2)** — the catalog shows the real 60K-skill taxonomy and the
+- **The real product library (set-dressing, step 2)** — the catalog shows the real public taxonomy (**≥42,790 skills / ≥22,470 job roles**; [not "60K/18K"](../../architecture/shared_libraries.md#taxonomy-figures)) and the
   seeded sessions/assignments link to real public simulation / skill-path templates, so the "browse the catalog"
   and "assigned content" surfaces aren't empty or placeholder.
 
 ## Tuning the org
 Copy a preset and edit it (it's a `stack.seed.yaml`): `org.name`, `size`, `role_mix`/`tier_mix`,
-`activity.months` / `activity.pass_rate`. Re-seed with `/stack-seed 1 --seed my.seed.yaml` (run `--reset` first
+`activity.months` / `activity.pass_rate`. Re-seed with `/stack-seed demo-1 --seed my.seed.yaml` (run `--reset` first
 to clear the prior data). Schema reference: [`../seeding-spec.md`](../seeding-spec.md).

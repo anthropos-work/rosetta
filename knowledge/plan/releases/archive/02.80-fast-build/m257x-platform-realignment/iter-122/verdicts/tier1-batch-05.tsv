@@ -1,0 +1,44 @@
+B05-001	UNRESOLVABLE	Pinned @ app 9d00a313 (and :614 @ b948604); tree is at ad9f3c49 where the jobsimwiring.Wire log.Fatalf is :723 and :670 is an unrelated SKILLER_AZURE endpoint assignment.
+B05-002	SUPPORTS	flow.go:74-103 carries exactly 22 pubsub.EventHandler lines on the "backend" subscriber, of which one (OrgJobSimulationAssignmentPastDueHandler, :83) is commented "not implemented" -> 21 active, at the named ref fa47850.
+B05-003	PARTIAL	messenger/cmd/root.go:118-142 shows five clients reading four distinct *_RPC_ADDR env vars but carries NO address value; "all http://backend:8083" and "to backend" are not in the cited lines.
+B05-004	SUPPORTS	messenger/terraform/main.tf:19 at the clone's ref fa47850d reads service_desired_count = 1 and :29 is container_definitions, exactly as the unit says (census resolved this to app/terraform/main.tf - wrong repo).
+B05-005	UNRESOLVABLE	Pin is @ messenger e9421c6 (origin/main); the only tree here is the frozen clone at fa47850d where :29 is container_definitions, which the unit itself states.
+B05-006	SUPPORTS	app is at the named ref ad9f3c49 and main.go:15 is the msgflow "internal/messenger/flow" import (:62 msgadapters, :63 msgsender confirm the sibling anchors).
+B05-007	UNRESOLVABLE	The repos.yml:21-23 assertion is explicitly scoped "At 0dab54d"; the platform tree is 0c91421d where :21-23 is a blank line plus the next-web-app entry.
+B05-008	SUPPORTS	env_guards.go:61 at the named ref ad9f3c49 declares envMessengerEnabled = "MESSENGER_ENABLED", and the doc comment attached to that const block (:46-59) states the off-unless-named default (logic at :92-105).
+B05-009	SUPPORTS	messenger/cmd/root.go:63 is cmp.Or(os.Getenv("PORT"), "8080") and :64 is cmp.Or(os.Getenv("RPC_PORT"), "8081") (census resolved to cms/cmd/root.go - wrong repo).
+B05-010	SUPPORTS	messenger/cmd/root.go:147 opens os.Getenv("READONLY_DB_CONNECTION") and :146 comments it "Copilot read-only DB connection", backing both the name and the "formerly COPILOT_" note (census resolved to cms/cmd/root.go).
+B05-011	SUPPORTS	messenger/internal/rpcsrv/rpcsrv.go:28-30 is Schedule returning connect.CodeUnimplemented, inside the cited :25-30 span (census resolved to jobsimulation/internal/rpcsrv).
+B05-012	SUPPORTS	Same file :25-27 is CancelScheduledMessage returning connect.CodeUnimplemented, inside the cited span (its error string mis-names Send, but the code is Unimplemented as claimed).
+B05-013	UNRESOLVABLE	Pinned @ app 9d00a313 v1.367.0; at the tree's ad9f3c49 the CMS_STREAM publisher is :1149 and :1095 is the cmsWorkerIndex REDIS_WORKER_INDEX read.
+B05-014	SUPPORTS	jobsimulations.go:142-145 is the ">2h since ended" skip and :148-151 the "no end time and started >12h ago" skip, verbatim within the cited :140-151.
+B05-015	PARTIAL	messenger/cmd/root.go:118-142 constructs FIVE Connect-RPC clients (cms, users, organizations, skiller, jobsimulation) over four distinct addresses; the unit's "four Connect-RPC clients" undercounts what the cited lines show.
+B05-016	SUPPORTS	flow.go:74-78 are exactly the five OrgSkillPath* handlers registered on the "backend" subscriber, as claimed.
+B05-017	SUPPORTS	docker-compose.yml:84-92 is the backend-block comment stating app gates on MESSENGER_ENABLED/CUSTOMERIO_SYNC_ENABLED and that pinning a value here would override .env.
+B05-018	SUPPORTS	At the named ref ad9f3c49, main.go:295 is the (messengerEnabled||customerIOSyncEnabled)&&BREVO_KEY=="" condition, :296 the log.Fatalf, and :292-293 says the console fallback was deliberately not ported.
+B05-019	SUPPORTS	messenger/cmd/root.go:107 reads REDIS_STREAMS_INDEX, and a repo-wide grep finds REDIS_WORKER_INDEX nowhere in messenger, backing "not read by the code".
+B05-020	UNRESOLVABLE	Pinned @ app b948604 v1.366.0; at the tree's ad9f3c49 the "Additive + DORMANT" comment is :1317 and :1205-1211 is the M805 cms-worker comment.
+B05-021	SUPPORTS	assignments.go:827-830 is getSkillPath calling h.cms.GetSkillPath, exactly the "skill-path data is read via the CMS client" claim.
+B05-022	SUPPORTS	messenger/cmd/root.go:63 is cmp.Or(os.Getenv("PORT"), "8080") (census resolved to cms/cmd/root.go).
+B05-023	SUPPORTS	messenger/cmd/root.go:64 is cmp.Or(os.Getenv("RPC_PORT"), "8081") (census resolved to cms/cmd/root.go).
+B05-024	SUPPORTS	messenger/cmd/root.go:107 is cmp.Or(os.Getenv("REDIS_STREAMS_INDEX"), "2") (census resolved to cms/cmd/root.go).
+B05-025	SUPPORTS	up-injected.sh:1075-1085 declares build_frontend_hiring building apps/hiring from the demo's own unmodified next-web-app clone via rext's frontend/hiring.Dockerfile, image demo-$N-hiring, port 3001 (offset publish at :1310).
+B05-026	SUPPORTS	docker-compose.yml:151 is the NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT build arg baking http://${PUBLIC_HOST:-localhost}:8082/graphql/query, as claimed.
+B05-027	SUPPORTS	next-web-app/CLAUDE.md:55 at ref 8297c684 reads "Clerk middleware lives in src/proxy.ts (Next 16 renamed the middleware.ts convention -> proxy.ts)" (census resolved to the rosetta CLAUDE.md - wrong repo).
+B05-028	SUPPORTS	docker-compose.yml:165-167 is next-web-app's depends_on: backend / condition: service_started, and :168 profiles [frontend, all] confirms frontend does not select backend.
+B05-029	SUPPORTS	route.ts:79 mints the one-time Clerk sign-in token inside exactly that dev login-as route; the /dev/accept redirect it names is :85-88 of the same file and the header comment :1-13 states the flow.
+B05-030	SUPPORTS	devLogin.ts:28 is verbatim `export const DEV_LOGIN_ENABLED = process.env.NODE_ENV !== 'production';`.
+B05-031	SUPPORTS	proxy.ts:56 conditionally adds '/api/dev/login-as(.*)' and '/dev/accept(.*)' to the public route matcher on DEV_LOGIN_ENABLED, as claimed.
+B05-032	SUPPORTS	auth.setup.ts:72 mints the ticket via clerkClient.signInTokens.createSignInToken, and a grep of the file finds no NODE_ENV, backing "no NODE_ENV gate".
+B05-033	SUPPORTS	auth.setup.ts:57-58 carries the 2FA/needs_second_factor wording and :62 the "Clerk treats it as fully authenticated and skips both factors" wording, both verbatim inside the cited span.
+B05-034	SUPPORTS	next-web-app/CLAUDE.md:15 at ref 8297c684 reads "Turborepo - pnpm - Next.js 16 App Router - TypeScript strict." (census resolved to the rosetta CLAUDE.md - wrong repo).
+B05-035	SUPPORTS	roadrunner/terraform/main.tf:19 at the clone's HEAD 87d8d443 reads service_desired_count = 1, exactly the value the unit asserts (the 84a4b4f blame provenance is a git claim, not readable from the file).
+B05-036	UNRESOLVABLE	The unit scopes this "at that ref" = 2adcf71; the platform tree is 0c91421d where repos.yml is 29 lines and :29 is blank.
+B05-037	SUPPORTS	jobsimulation/knowledge/operational.md:68 is the table row "| ROADRUNNER_RPC_ADDR | Roadrunner service address |", exactly the non-Go occurrence the unit cites it for.
+B05-038	SUPPORTS	RE-PORT-CHECKLIST.md:10 names roadrunnerv1connect.RoadRunnerServiceClient, a non-Go occurrence of RoadRunnerService as the unit claims.
+B05-039	UNRESOLVABLE	The jobsimulation repos.yml:17-19 claim is scoped "at that ref" = 2adcf71; at 0c91421d :17-19 is app's schema line plus the sentinel entry.
+B05-040	UNRESOLVABLE	The jobsimulation docker-compose.yml:83 claim is scoped to the same ref 2adcf71; at 0c91421d :83 is STORAGE_S3_PUBLIC_BUCKET on the backend block.
+B05-041	SUPPORTS	roadrunner/cmd/root.go:110 is cmp.Or(os.Getenv("PORT"), "8080") and :84 is cmp.Or(os.Getenv("RPC_PORT"), "8081") (census resolved to cms/cmd/root.go - wrong repo).
+B05-042	SUPPORTS	At the named ref 462343b0, runner.go:3 is the only roadrunner mention in jobsimulation Go source (grep: 1 Go hit; 14 lines across 8 files repo-wide, matching the unit's own figures).
+B05-043	SUPPORTS	stream_handlers.go:30-34 carries the removed-upstream note plus HandleCodeSubmissionResultTask on CodeRunQueue and "NOT stream handlers" verbatim.
+B05-044	SUPPORTS	docker-compose.yml:48 is the file's ONLY AUTHORIZATION_ADDRESS and sits in backend's block (:28), and the five service declarations :5/:28/:112/:143/:170 match the same paragraph.

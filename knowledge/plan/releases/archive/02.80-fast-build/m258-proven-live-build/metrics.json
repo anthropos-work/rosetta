@@ -1,0 +1,138 @@
+{
+  "milestone": "M258",
+  "title": "proven-live build (the closer)",
+  "release": "v2.8 fast build",
+  "shape": "iterative",
+  "closed": "2026-08-12",
+  "close_status": "closed-incomplete",
+  "close_authority": "ACHIEVED BY USER RULING, NOT ON GATE. The user ruled the goal achieved on clauses 1, 2, 4 and 5 plus a ~402 s clean PROJECTION, having concluded the CPU contention on this box is not removable. This is the shape of M257x's TOK-09, and it is deliberately NOT the shape of M257, whose gate fired on its own terms. Do not read this record as a gate-met close.",
+
+  "gate": {
+    "target": "One cold command brings the stack up AND drives the full Playthrough batch to completion with ZERO standing red, at total p50 <= 480 s across 3 consecutive cold reset-to-seed cycles, reproducible, 0 platform-repo edits, AND the stack left in a presenter-usable world.",
+    "status": "NOT MET — 4 of 5 clauses proven; the TIMING clause was never measured clean",
+    "clauses": {
+      "1_batch_drives_to_completion": "PROVEN — and re-proven on the final stack in its own bring-up (215 specs, 30/31 passing, the 1 a declared will-not-build TODO)",
+      "2_red_set_empty": "PROVEN — `red_set: []`, `runner_exit: 0` cold on demo-4; re-proven on 3 consecutive cold cycles at iter-08",
+      "3_composed_p50_under_480s": "NOT MET, AND MUST NEVER BE RECORDED AS MET",
+      "4_zero_platform_repo_edits": "PROVEN — measured across all six peer clones",
+      "5_presenter_usable_world": "PROVEN — 12 of 12 cockpit seats resolve in the 35-identity roster; held across 3 consecutive cold cycles and again on the final stack"
+    },
+    "clause_3_detail": {
+      "measured_p50_s": 840.01,
+      "measured_range_s": [811.06, 859.06],
+      "spread": "1.06x",
+      "instrument_verdict": "REJECTED — 3/3 reps headroom=FAIL (peak load1 40.09 / 74.77 / 51.80 against a limit of 10). buildbench itself calls these 'not usable measurements', so the p50 above is the p50 of reps the instrument refuses. It is recorded, never quoted as an achievement.",
+      "clean_projection_s": 401.60,
+      "projection_status": "A PROJECTION, never measured as one cycle. Composed from separately-measured halves, not from a single cold run.",
+      "warm_cache_cycle_s": 290,
+      "warm_cache_status": "DELIBERATELY NOT BANKED. iter-19's ~290 s cycle was warm-cache (`#7 CACHED`, no image-export leg — the phase build-budget.md prices at 46.2 % of a cold cycle) on the quietest box of the milestone (load1 2.3-2.5). Refusing to bank a flattering number is the honest reading and is preserved as such.",
+      "root_cause": "The host is a permanently contended workstation. A different user project's parallel campaign saturated it; load1 minimum over ~30 min of polling was 11.93, trending to 62.88. External, measured, and not ours to stop.",
+      "re_scope_trigger": "NOT FIRED, and the grading is deliberate. The declared trigger reads a composed p50 exceeding 600 s AFTER 3 TIKS. 840 > 600, but the reps are instrument-rejected, and the remedy the trigger prescribes (split the suite into a smoke lane + a full lane) misses the diagnosis entirely: batch_gate's own p50 is 179.37 s, inside M256's 200 s budget, WHILE CONTENDED."
+    },
+    "host": "macmini (M4 Pro Mac mini, arm64, containerd image store, PERMANENTLY CONTENDED workstation)",
+    "environment_note": "State the environment with every number. None of these seconds transfer to `billion` (x86_64, containerd), whose post-L1 cycle is unmeasured."
+  },
+
+  "end_state": {
+    "id": "END-M258-one-stack",
+    "status": "MET",
+    "detail": "demo-4 is the ONLY stack up, built by the FIXED tooling at fast-build-m258-iter-18 from the newest platform mains (platform 766df6c, app c52dbc51e), and it PROVED ITSELF IN THE SAME COMMAND: red_set [], runner_exit 0, 30/31 passing, autoverify green:true / warnings:0, 12 of 12 cockpit seats. Cockpit http://localhost:47700, orchestrator-verified HTTP 200.",
+    "order_was_mandatory": "Build-and-verify the new stack FIRST, tear the others down LAST — enforced in code (teardown-others.sh refuses unless the survivor is up, and re-checks between every step), never by discipline. demo-3 was retired only AFTER its successor's verdict.",
+    "ownership": "demo-4 is the USER'S stack. Do not tear down, re-seed, restart or reset it."
+  },
+
+  "iters": {
+    "total": 20,
+    "tiks": 18,
+    "toks": 2,
+    "tok_ids": ["TOK-01 (bootstrap, iter-01)", "TOK-02 (bootstrap flavor, USER-DIRECTED, iter-12)"],
+    "closed_fixed": 15,
+    "closed_fixed_partial": 5,
+    "orphan_iters": 0,
+    "orphan_commits": 0,
+    "user_reshapes_mid_flight": 2
+  },
+
+  "hardening": {
+    "passes": 5,
+    "mode": "final (cumulative — the milestone ran 20 iters and was never hardened, so the ledger opens at the final pass)",
+    "stop_condition": "STABILIZED",
+    "defects_found": 4,
+    "mutants_proven_rejected": 18,
+    "false_red_controls": 2
+  },
+
+  "tests": {
+    "note": "rosetta-extensions has no single suite; counts are per-section, taken from junit XML where the runner emits it. The full stack-core sweep does NOT complete on this host (documented across two milestones), so stack-core is measured by scoped module and reported as such — never as 'swept clean'.",
+    "demo_stack": {"tests": 1150, "passed": 1140, "failed": 9, "skipped": 1, "delta_passed": "+31"},
+    "dev_stack": {"tests": 180, "passed": 180, "failed": 0, "delta_passed": "+14"},
+    "stack_verify": {"tests": 281, "passed": 281, "failed": 0, "delta_passed": "+6"},
+    "stack_injection": {"tests": 343, "passed": 335, "skipped": 8, "failed": 0, "delta_passed": "+1"},
+    "stack_core_scoped": {"buildbench": 159, "buildbench_setdress": 13, "isolation": 53, "platform_predicate": 272, "service_doc_status": 4},
+    "go_sections_all_green": ["playthroughs 4/4", "stack-snapshot 13/13", "alignment 7/7", "clerkenstein 14/14", "stack-secrets 4/4", "stack-seeding 16/16"],
+    "known_failures": {
+      "demo_stack_live_clone": 9,
+      "rext_census": 11,
+      "attribution": "RE-DERIVED at this close against a pristine `git archive HEAD` extract RE-SITED at the same depth as the real clone (the first siting SKIPPED 5 tests rather than running them, and said so — the same trap the harden pass hit). Pristine 12 failures, current 11, ZERO introduced by name. The one difference is an artifact of the extract carrying no `.git`.",
+      "one_introduced_and_fixed_inline": "A prose comment added by this close contained a phrase test_frontend_build.py counts, taking a fence 3 -> 4. Fixed by rewording. A comment can break a fence that counts a phrase — the sibling of this milestone's own 'a fence can be satisfied by its own comment'."
+    }
+  },
+
+  "flake_count": 0,
+  "flake_gate": "PASSED — 5 consecutive sequential passes over every suite this close touched, identical counts each time.",
+
+  "fences": {
+    "corpus_fence_set": "18/18 rc=0 against stack-demo/platform @ 766df6c",
+    "invocation_warning": "NEVER quote a fence count without its invocation and its platform ref. The guards have five different invocation contracts and three fail CLOSED with rc=2 on a missing platform reference — excellent design, and indistinguishable from RED to any caller grading rc==0. A naive sweep reads 5 green / 10 red on a healthy corpus. This close proved it again on itself: two of its first three 'reds' were the runner using the wrong contract.",
+    "new_fences_this_close": 14,
+    "all_red_proven": true,
+    "red_proof_note": "Every new fence was run against a FAITHFUL pre-fix mutant. A first, partial mutant left two reader fences GREEN — because the try/except (one of three layers) still caught it — so the mutant was rebuilt as the true pre-fix code before the RED was accepted. A fence proven by an insufficient mutant is not proven."
+  },
+
+  "ratchets": {
+    "docstring_literal_ceiling": {"ceiling": 240, "pristine": 248, "head": 249, "this_close_added": 0},
+    "note": "The breach is PRE-EXISTING by 8 and is inherited debt, not this milestone's. The harden session added exactly one literal, entirely in the instrument's own sanctioned `dated` class; this close added NONE. No ceiling was raised at any point."
+  },
+
+  "space": {
+    "goal_origin": "USER-ADDED MID-FLIGHT via TOK-02 — a NEW GOAL, not a refinement of the existing one.",
+    "binding_constraint": "Space must never be bought with time. No `-af`; `--filter until=24h` only; every cache policy argued on both axes with measurements.",
+    "reclaimed_gb": 11.54,
+    "reclaimed_basis": "REAL SSD — Docker.raw 53.84 -> 42.30 GB, images 25.71 -> 14.02, free 170 -> 182 GiB. Validated by D59 (the host file fell 11.54 GB against an in-VM 11.69 GB, so in-VM reclaim really does return SSD).",
+    "build_time_cost_s": 0,
+    "build_cache_reclaimable_gb": 21.03,
+    "build_cache_touched": false,
+    "studio_desk_image_gb": {"before": 1.7, "after": 1.35, "saved_mb_per_stack": 350, "pct": 20.6},
+    "studio_desk_time_axis": "WITHDRAWN, NOT CLAIMED (D75). The 7-10 s estimate applied billion's x86_64/containerd s/GB to an arm64/overlayfs host — the exact cross-host error build-budget.md's opening rule exists to prevent — and the one cold attempt was a BuildKit cache hit. Only the space win is measured.",
+    "volume_leak": "Stopped AT ITS PRODUCER on BOTH the demo and dev paths (178 dangling volumes / 5.297 GB over five days). This close closed the third path: the label sweep's `docker rm` lacked `-v`, so the leak survived on exactly the branch the sweep exists for."
+  },
+
+  "corpus": {
+    "structural_classes_corrected": 6,
+    "files_swept_iter18": 26,
+    "files_swept_at_close": 16,
+    "classes": ["compose floor 3 -> 2", "core profile 5 -> 4 containers", "repos.yml 4 -> 3", "cross-process Connect-RPC edges 1 -> 0", "Go services of ours 2 -> 1", "folded domains 7 -> 8"],
+    "production_grading": "mid-fold, NOT merged-into-app — the first fold of the eight where the tables did NOT move to `public`.",
+    "close_added": "The batch gate reached the docs that describe a bring-up: verification.md (lead + hook anchor + the precondition skips + the post-condition + the 4th fail-closed rule), rosetta_demo.md (which did not know the gate existed), idempotency.md (a bring-up is now destructive-then-restorative), playthroughs.md, demo-up-defaults.md, frontend-tier.md (studio-desk build shape 1 -> 3, and `down -v`), build-budget.md (the studio-desk size change, and the citation returned), plus four stale 'the bring-up ends in a non-fatal pass' leads."
+  },
+
+  "deferrals": {
+    "audit": "deferrals-audit.md",
+    "verdict": "YELLOW",
+    "escape_hatch_count": 0,
+    "landed_at_close": 9,
+    "repeat_deferrals": 4,
+    "repeats_landed": 2,
+    "block_fate": "The open set routes to /developer-kit:close-release as ONE conscious block fate, named item by item — M258 is the release's final milestone, so there is no later in-release milestone to annotate, and close-release runs its own release-scope audit with extra scrutiny. Precedent: M257x."
+  },
+
+  "platform_repo_edits": 0,
+
+  "notes": [
+    "THE PARTITION IS THE PROOF. The 15-red escalation was CLOSED, not carried: 15 failing journeys all org-scoped, 15 passing all user-scoped. Platform 766df6c folded sentinel into `app` (the 8th merge) while three of our post-seed reload sites still drove the deleted container's RPC and logged the miss as 'non-fatal' — which was false. A stale casbin enforcer refuses every org-scoped read and write with `forbidden` at HTTP 200.",
+    "batch_seconds 629 -> 129 once fixed. THE SUITE WAS SLOW BECAUSE IT WAS BROKEN.",
+    "The harden found four defects in the milestone's own youngest code, including a fence SATISFIED BY ITS OWN COMMENT (corrupting the executed channel while leaving the comment intact kept it GREEN) and two of three reload sites unfenced — one the restore leg, whose miss costs a USER a stack rather than a test batch.",
+    "The close found eight more, two of them fail-opens to GREEN.",
+    "`make bootstrap-dev` is BROKEN in the platform — reported, 0 platform edits, owned by platform-defect-register.md."
+  ]
+}

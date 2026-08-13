@@ -22,7 +22,7 @@ without a recording.
 
 Two facets, two very different shapes.
 
-### 1.1 The recorded call → a Bunny.net CDN reference (NOT an S3 blob)
+### 1.1 The recorded call → a Bunny.net CDN reference (NOT a blob the demo copies)
 
 A recorded session's media is **not** stored as a blob the demo copies. It is a **reference**:
 
@@ -30,9 +30,20 @@ A recorded session's media is **not** stored as a blob the demo copies. It is a 
   is playable"; `'not_available'` means "no recording" (the faithful default for every non-recorded session).
 - **`ChimeRecording`** ent (`jobsimulation`) — one row per recorded session, carrying **`bunny_video_id`** (plus
   `recording_id`, `session_id`, `attendee_id`, `meeting_id`, `media_pipeline_id`). The `bunny_video_id` resolves to
-  an MP4 in a **Bunny.net Stream CDN** pull-zone (`vz-…​.b-cdn.net`). **The bytes live on Bunny's CDN, never in the
-  platform DB and never in prod S3** — which is why S3 read access (the old `DEF-M10-01`) is neither necessary nor
-  sufficient to exhibit a recording.
+  an MP4 in a **Bunny.net Stream CDN** pull-zone (`vz-…​.b-cdn.net`) — **the only place the demo ever fetches a byte
+  from**. **The bytes are never in the platform DB** (`ChimeRecording` carries ids only, no blob column) — **but they
+  ARE in prod S3.** This bullet said *"never in prod S3"* until M257x, and that was **false**: Chime writes the
+  composited MP4 into the recording bucket (`jobsimulation/internal/recording/chime.go:166-167` capture sink,
+  `:240-247` concatenation sink → `<bucket-arn>/concatenated`), the SNS S3-event handler (`:381-426`) flips
+  `chime_status` to `completed`, and `SaveRecording` then **reads that object back out of S3**
+  (`chime.go:289-331` → `s3Client.GetObject`, key `concatenated/composited-video/<media_pipeline_id>.mp4`) in order
+  to upload it to Bunny (`internal/simulator/manager/manager.go:3272-3291`). **Nothing deletes the S3 copy** — there
+  is no `DeleteObject` anywhere in `chime.go` (the only `Delete*` is `DeleteMeeting`, `:279`) and no lifecycle
+  expiration rule in `terraform/chime.tf`. **S3 is the origin; Bunny is the delivery copy** — which is what
+  [`ai_architecture.md` § *Recording Architecture*](../../architecture/ai_architecture.md) has said all along.
+  **The consequence is unchanged; only its reason is.** S3 read access (the old `DEF-M10-01`) is still **neither
+  necessary** — this demo renders by Bunny reference and never touches S3 — **nor sufficient**: S3 bytes yield no
+  `bunny_video_id` and no `chime_status`, and the render gate reads both.
 
 **The recorded pool is almost entirely HIRING interview VIDEO of real candidates** (a face + a voice). Assessment /
 training / interview-sim *voice* sessions carry **no** recording. This is decisive for content-story sourcing (§5).
@@ -73,7 +84,8 @@ moment a human presses play. The demo holds only a **reference** (`bunny_video_i
 
 To exhibit a recording the `ContentStorySeeder` writes, into the **per-stack demo Postgres only**:
 
-1. `jobsimulation.sessions.chime_status = 'completed'` on the re-tenanted content-story session, and
+1. `public.job_simulation_sessions.chime_status = 'completed'` on the re-tenanted content-story session
+   (read `jobsimulation.sessions.…` until M257x iter-129; a demo stack never creates that schema), and
 2. a `ChimeRecording` row for that session carrying the **real `bunny_video_id`** captured (read-only) from the
    pinned source session.
 
@@ -90,7 +102,7 @@ constrained so the two align.
 
 ---
 
-## 4. Provisioning the Bunny recording keys into a demo (values-blind, the M239 pattern)
+## 4. The Bunny recording keys — what a demo would need, and why **no path exists to supply it**
 
 Exhibiting a recording requires the demo's next-web-app to hold **`BUNNY_RECORDING_CDN_TOKEN_KEY`** +
 **`BUNNY_RECORDING_PULL_ZONE_HOST`** (the recording pull-zone; the non-recording `BUNNY_CDN_TOKEN_KEY` /
@@ -98,10 +110,32 @@ Exhibiting a recording requires the demo's next-web-app to hold **`BUNNY_RECORDI
 CDN-token keys** — they grant the demo server the ability to *sign a fetch* of an existing recording, never to
 write, replace, or delete one.
 
-They are provisioned into the demo the same way M239 provisioned the AWS Bedrock creds ([`../safety.md` §2.10](../safety.md)):
-**values-blind** — the secret-coverage DNA / the demo env bridge carries the *key names* and copies the *bytes*
-source→target; **no verb ever reads, echoes, logs, or commits a value**. A key never enters git, a fixture, or an
-agent's context.
+> ### ⚠️ RETRACTED M257x iter-130 — this section claimed a provisioning path that **does not exist**
+>
+> It said these keys *"are provisioned into the demo the same way M239 provisioned the AWS Bedrock
+> creds — the secret-coverage DNA / the demo env bridge carries the key names."* **Both named
+> mechanisms are measurably absent at rext `415240f`:**
+>
+> | the claim | measured |
+> |---|---|
+> | the secret-coverage DNA carries the key names | `grep -n BUNNY stack-secrets/secretdna/secret-dna.json` → **2 genes, neither of them a recording key**: `BUNNY_STREAM_API_KEY` (`:425`) and `BUNNY_CDN_TOKEN_KEY` (`:779`). **`BUNNY_RECORDING_*` = 0 occurrences in all of rext.** `provision.go:120` writes only DNA-declared genes, so a gene that does not exist is a key that is never written |
+> | the demo env bridge carries them | `bridge_bedrock_creds` (`demo-stack/up-injected.sh:1389`) iterates a **fixed five-key list** at `:1393` — `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_SESSION_TOKEN`, `CLAUDE_CODE_USE_BEDROCK`. No Bunny key, and the function is Bedrock-specific by name and by body |
+>
+> **Widened once (§5 rule 57):** `grep -rniE bunny` over rext moved the count **0 → 39** — so the
+> narrow regex was not the reason. None of the 39 is a recording-key provisioning site; the hits are
+> `BUNNY_API_KEY` in tests plus the two waived-optional genes above.
+>
+> **So the exhibit is blocked on TWO things, not one** — the key *values*, and a *path* to carry them.
+> The earlier text disclosed only the first, which made a missing mechanism read like a missing
+> secret. `DEF-M240-01` (player-presence-only) is unaffected in outcome and better explained by this.
+
+**What a real path would have to add** (unbuilt, stated so nobody re-derives it): a
+`BUNNY_RECORDING_CDN_TOKEN_KEY` + `BUNNY_RECORDING_PULL_ZONE_HOST` gene pair in the secret-coverage DNA,
+targeted at next-web-app, **or** an explicit bridge entry. It would be **values-blind** like every other
+gene — the DNA carries *key names* and `provision` copies *bytes* source→target; **no verb ever reads,
+echoes, logs, or commits a value**, and a key never enters git, a fixture, or an agent's context. That
+discipline is the standing contract; what is retracted above is only the claim that it had already been
+applied to these two keys.
 
 ---
 
@@ -119,7 +153,10 @@ also remain **public-anchored** (the M231 contract: its `sim_id` resolves in the
 ## 6. Current status (M240, honest) — Bunny-key-blocked, faithful `not_available`
 
 The render path is live and the seed-side exhibit is specified, but exhibiting a recording depends on the **Bunny
-recording signing keys** being provisioned into the demo — and those key **values are absent from this authoring
+recording signing keys** reaching the demo — and **two independent things are missing, not one** (corrected
+M257x iter-130; §4 carries the retraction and the measurements). **(a) There is no provisioning PATH**: no
+`BUNNY_RECORDING_*` gene in the secret-coverage DNA (0 occurrences in rext @ `415240f`) and no entry in the
+demo env bridge, whose key list is Bedrock-only. **(b)** The key **values are absent from this authoring
 box's entire dev-stack** as of 2026-07-21:
 
 - no populated value in any real `.env` under `stack-dev/` (platform, next-web-app, studio-desk, app),

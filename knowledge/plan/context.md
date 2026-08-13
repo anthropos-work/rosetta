@@ -4,7 +4,44 @@ This directory holds the **active** planning artifacts for **Project Rosetta**. 
 on 2026-06-02 to put rosetta on the developer-kit planning lifecycle. **`state.md` is the live source of
 truth** — this file is the stable orientation/conventions doc; when the two disagree, `state.md` wins.
 
-**Status (2026-07-20):** **v2.5 "the playbill" FEATURE-COMPLETE, IN RELEASE CLOSE** — the **content-vantage
+**Status (2026-07-27):** **v2.8 "fast build" IN DEVELOPMENT** — the **time-to-ready release** (branch
+`release/02.80-fast-build`, designed 2026-07-27 via `/developer-kit:design-roadmap`, then **adversarially
+plan-reviewed and revised the same day**; **4 milestones M255 (HARD barrier) → M256 → M257 → M258**, strictly
+serial; tag will be `v2.8`). *From nothing, to live, to provably live, fast.* Measure the machine and spend it
+deliberately — a **build bench** (`buildbench`, `n ≥ 3` campaigns with a machine-readable phase ledger) plus
+**two measured, checked-in host profiles** (`billion`, `laptop`) and **one hard-failing headroom assert**
+against them — then sharpen the Playthrough suite (faster · effective · covered), collapse the demo/dev
+bring-up (**666 s → ≤ 360 s p50**), and bake the Playthroughs into the bring-up so a stack comes up **and
+proves itself**.
+
+> **The plan review CUT the auto-planner.** The first draft proposed *a host-capacity profiler that computes a
+> build plan from real cores/RAM/disk under a headroom reserve contract*; **D-v28-6 replaced it** with the two
+> measured profiles + the single assert above — measurement over inference. This paragraph described the cut
+> deliverable for the whole of M255 and was corrected at that milestone's harden; **read
+> [`roadmap.md`](roadmap.md) and [`state.md`](state.md) first when they disagree with this file.**
+
+Designed from
+[`releases/archive/02.80-fast-build/evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md)
+(a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above
+load 4.90/8 — **superseded as the BASELINE by M255's `n=3 p50 666.29 s` on `billion`**, within 0.9 % of it) +
+[`releases/archive/02.80-fast-build/evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)
+(18/18 green, **1 of 18 proves a WRITE**, 12 curated use cases with no milestone home), joined at M255 by
+[`releases/archive/02.80-fast-build/evidence/m255-spikes.md`](releases/archive/02.80-fast-build/evidence/m255-spikes.md).
+**These were moved into the release directory precisely because `.agentspace/` is git-ignored**
+(`.gitignore:138`) — an evidence link that points there is a dangling link for every other reader and for
+`close-release`'s archive. Binding decisions **D-v28-1 … D-v28-11** are recorded in
+[`roadmap.md`](roadmap.md) § Active — v2.8 and mirrored in [`state.md`](state.md); **D-v28-6 … D-v28-11 were
+added by the adversarial plan review**, so any citation of the range that stops at D-v28-5 predates it.
+Tooling + docs only — **zero platform-repo edits**.
+
+> ⚠️ **Operational freeze (2026-07-27 → ~2026-07-29): `billion` is OFF LIMITS by user instruction** — no ssh,
+> no demo bring-up/teardown, no `buildbench` campaign, no reads, and roadmap work is halted for the duration.
+> Noted here only because it changes what "IN DEVELOPMENT" means above; **[`state.md`](state.md) § Process
+> flags OWNS it** — the scope, the per-milestone gate impact and the leftover on the box are recorded there,
+> and this file must not restate status it does not own. M255's `n=3` baseline was measured and committed
+> *before* the freeze, so v2.8's measurement floor does not depend on lifting it.
+
+_Prior status (2026-07-20):_ **v2.5 "the playbill" FEATURE-COMPLETE, IN RELEASE CLOSE** — the **content-vantage
 release** (branch `release/02.50-the-playbill`, designed 2026-07-19 via `/developer-kit:design-roadmap`; **8 milestones
 M229 → M230 → M231 (HARD go/no-go) → M232 → M233 → M234 → M235 → M236**, spike-first; tag will be `v2.5`). All 8 are
 **closed and MERGED**; `/developer-kit:close-release` is running (the `release → main` merge + tag are its Phase 11,
@@ -73,6 +110,97 @@ were split out to [`roadmap-archive-v2.0-v2.4.md`](roadmap-archive-v2.0-v2.4.md)
 - Milestone **shapes** can be mixed within a version: `section` (fixed checklist) or `iterative` (measurable exit gate, uncertain path). v1.0 has both — **M0/M1b/M2/M2b are section; M1 and M2c are iterative** (alignment-score gates).
 - Date format throughout: ISO `YYYY-MM-DD`
 - **Stack workspaces & extension tooling (v1.2):** each gitignored `stack-*/` dir spans one full local stack — its platform service repos **plus** its own clone of rosetta-extensions. The scratchpad rename convention: `anthropos-dev/` → `stack-dev/` (dev), `anthropos-demo/` → `stack-demo/` (demo), `anthropos-dev-2/` → `stack-dev-2/` (secondary dev), with future `stack-stage/` and `stack-tests/`. rosetta-extensions has **two clone roles**: (a) an **authoring** copy at `.agentspace/rosetta-extensions/` — spawned on demand to read/build/**test** tooling, then committed + **tagged**; and (b) **per-stack consumption** copies `stack-<role>/rosetta-extensions @ <tag>` — each stack consumes the tooling at a pinned tag. **Policy:** v1.2 extension code is built+tested in the authoring copy, tagged, then consumed per-stack — never scattered in the rosetta corpus, never authored ad-hoc inside a stack dir. rosetta = read-only doc corpus + dev-env skills; rosetta-extensions = the executable stack tooling.
+
+## state.md contract
+
+**Eleven developer-kit skills cite `knowledge/plan/context.md § state.md contract` as the authority for how
+`state.md` is written and capped. Until 2026-08-06 that section did not exist** — the 15 KB cap was enforced
+by five separate skills against a contract with no text, which is why the file spent several closes sitting
+one trim away from breaching it. This is that section.
+
+**`state.md` is an INDEX, not a narrative sink.** It answers *what are we working on, and where do I read
+the detail* — nothing else. Every fact in it is either (a) orientation that is true across many runs, or
+(b) a pointer. When a fact needs a paragraph to be true, the paragraph belongs in the authoritative
+document and `state.md` gets the pointer.
+
+### Where narrative actually belongs
+
+| Content | Home | Never |
+|---|---|---|
+| Per-iter findings, measurements, adjudications | `releases/{VV.VV}-{codename}/m{N}-{slug}/iter-NN/` | `state.md` |
+| Live milestone status + cross-iter narrative | that milestone's `progress.md` | `state.md` |
+| Closed-milestone write-ups | `roadmap.md` | `state.md` |
+| Decisions + their rationale | milestone-root `decisions.md` (`D-N` / `TOK-NN`) | `state.md` |
+| Hardening passes | `hardening-ledger.md` | `state.md` |
+| Standing rules that outlive the milestone | `state.md` § Standing rules, or this file | the `phase:` field |
+
+### Per-field budgets (the mechanism — this is what makes the cap hold)
+
+The 15 KB total is a **consequence**, not a control. Trimming to satisfy it buys exactly one run, because
+the next close re-inflates whichever field was absorbing narrative. The control is a **per-field budget**,
+because a field that cannot grow cannot become a sink:
+
+| Field | Budget (bytes) | What it is |
+|---|---|---|
+| `active_release` | ≤ 400 | version, codename, branch, one-line thesis. NOT the milestone list |
+| `active_branch` | ≤ 120 | the branch, and nothing else |
+| `active_milestone` | ≤ 400 | ID, title, shape, status, iter/pass counts, one-line scope |
+| `last_closed` | ≤ 120 | ID + date |
+| `phase` | ≤ 900 | the CURRENT blocker/gate state + **a pointer to `progress.md`** |
+| `last_updated` | ≤ 40 | ISO date |
+| **frontmatter total** | **≤ 1,860** | ⚠️ was 2,600 until M257x iter-129 — see the box below |
+| **body total** | **≤ 13,500** | ⚠️ was 12,000 until M257x iter-129 — **raised against a measurement, once** |
+| **file total** | **≤ 15,360** | unchanged; blocking at every close, and **the only one of the three that binds** |
+
+> ### The body budget was raised at M257x iter-129, and here is the whole derivation
+>
+> **The old triple was arithmetically incoherent.** `12,000 + 2,600 = 14,600 ≠ 15,360` — 760 bytes belonged
+> to no budget at all, so "every field in budget" and "the file in budget" could both be true while 760 bytes
+> sat unaccounted. The new pair **sums exactly to the file cap**, which is the property a partition needs.
+>
+> **12,000 was set without measuring what the body uniquely owns**, and iter-128 found it was unmeetable by
+> this contract's own method (*"move it to its owner"*) — the body sat at 13,163 and three probes found
+> `state.md` was the sole owner of the content. **iter-129 re-ran those probes and two of the three had
+> targets after all:**
+>
+> | iter-128's probe | iter-129's re-measurement |
+> |---|---|
+> | § Standing backlog — *"7 of 14 items appear nowhere else"* | **3, not 7.** `PERF-M256-parallel-lane`, `PT-M257-self-evaluation` and `PT-M257-talk-to-data` are each in `roadmap.md`; `platform-defect-register` is its own file. The probe searched `roadmap-vision.md` and concluded *nowhere else* |
+> | M255 provenance — *"`roadmap.md` has the numbers, not the provenance"* | **true of `roadmap.md`, and it asked the wrong file.** The owner this table already names for per-milestone measurements is **that milestone's `progress.md`** — which is where it now lives |
+> | § Process flags | **genuinely sole-owned**, and rule 4 sanctions it as a body section. No target, correctly |
+>
+> **That is rule 57 (`corpus/ops/platform-alignment.md` § 5) pointed at a plan probe: a "no owner exists"
+> verdict is only as wide as the search that produced it.** A mirror-search finds only content that is
+> *already* duplicated — which is exactly the content that does not need moving. The question is not *who
+> else already owns this?* but ***who does this table say should own it?***
+>
+> **The measured floor after both moves: 13,069 bytes across the 11 pre-existing sections, every one of them
+> content this contract assigns to `state.md`** (13,281 once iter-129's own budget-disclosure line is
+> counted — stated, because quoting the pre-edit number as the post-edit state is the exact defect class
+> this milestone exists to catch). 13,500 is that floor plus ~1.7 %.
+>
+> **The re-raise guard, because "raise the budget" is the obvious way to make this control meaningless.**
+> A future breach is **not** licence to raise it again. It re-runs the ownership probe **against every file
+> under `knowledge/plan/`, not two of them**, and raises only if the floor moved for a reason it can name.
+> The per-field budgets — `phase:` above all — remain the real control, because a field that cannot grow
+> cannot become a sink.
+
+**`phase:` is the field that breaks first, every time.** It is written by the run that just finished, while
+that run's findings feel load-bearing — so it accretes the whole reading rather than its verdict. In
+2026-08-06's measurement it was **4,068 bytes, 27 % of the file**, and *every probe phrase in it was already
+present in the milestone's `progress.md`*. It was duplication, not information. Budget it, and the
+duplication has nowhere to land.
+
+### Rules
+
+1. **REPLACE, never append.** Every skill that writes `state.md` says this; it is the contract's core.
+2. **A field over budget is a defect in that field, not a reason to trim another one.** Fix the field.
+3. **Before adding a paragraph, check it is not already in `progress.md`.** If it is, write the pointer.
+4. **Standing rules are body sections, not frontmatter.** A rule that survives the milestone (search
+   discipline, host policy, re-scope-trigger status) goes in a `##` body section where it can be read
+   without parsing YAML — and where it stops inflating `phase:` on every close.
+5. **The cap is checked at every close** (`/developer-kit:close-milestone` Phase 10,
+   `/developer-kit:close-release` Phase 8) and flagged by the `work-*` wrappers in their final report.
 
 ## Workflow
 
