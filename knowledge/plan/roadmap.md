@@ -137,7 +137,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.7** | **july jitter** | The **re-ground + fidelity + field-hardening release** — realign the demo + corpus to the platform's TRUE current state (skillpath fully decommissioned into `app` → **3 subgraphs**; jobsim mid-merge; net-new `app` domains; the rext seeder about to break on `skillpath.*`) and fix six field defects (content-stories manager link · cross-app Back-to-Cockpit · studio prod-eject · AI-readiness fidelity · studio builder keys · studio blank-page). Barrier → 7-lane worktree fan-out → prove-on-billion | M246 → { M247 ∥ M248 ∥ M249→M253 ∥ M250 ∥ M251 ∥ M252 } → M254 | ✅ **SHIPPED 2026-07-25 (tag `v2.7`)** (branch `release/02.70-july-jitter` merged to `main` + deleted, designed 2026-07-23; 9 milestones M246→M254 — M246 barrier [`section`, HARD go/no-go] · M247 corpus-reground · M248 content-mgr-link · M249 cross-app-nav · M250 ai-readiness [`iterative`] · M251 test-health · M252 studio-builder-enable · M253 studio-first-paint [`iterative`] · M254 prove-on-billion [`iterative` closer, a–h live on `billion`]; tooling + docs only, **0 platform-repo edits**; close-release landed all 5 terminal follow-ups → **zero carry-forward**) |
 
-| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → M257 → M258 | 🚧 **IN DEVELOPMENT** (branch `release/02.80-fast-build`, designed 2026-07-27; adversarially plan-reviewed + revised same day → D-v28-6 … D-v28-11) |
+| **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → **M257x** → M257 → M258 | ✅ **SHIPPED 2026-08-13 (tag `v2.8`)** (branch `release/02.80-fast-build` merged to `main` + deleted, designed 2026-07-27; **5** milestones — M257x «platform re-alignment» was an **unplanned mid-release insertion**, the corpus having drifted from the platform; measuring against a stale description measures nothing. Tooling + docs only, **0 platform-repo edits** and **0 net-new deps**, both verified. **Achieved: 450 s → 286.99 s on `macmini`** — beating the 360 s gate and its 300 s stretch. ⚠️ **The `666 → 360` framing above is retired:** 666.29 s was measured on `billion` (x86_64/containerd) and **does not transfer** to the arm64 development host; M257 re-pointed its gate to the host that exists and met it there against that host's own 449.51 s — a **36.2 %** cut, not 46 %. Both numbers are true; only their combination would mislead, and this release's own rule — *state the environment with every number* — forbids it. **M257x and M258 closed `closed-incomplete` by user ruling, not on gate**; M258's clause 3 was never measured clean. Carry-forward named item-by-item in `roadmap-vision.md` § v2.8.) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -153,13 +153,13 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## Active — v2.8 "fast build" (IN DEVELOPMENT, branch `release/02.80-fast-build`)
+## Done — v2.8 "fast build" (✅ SHIPPED 2026-08-13, tag `v2.8`, branch merged to `main` + deleted)
 
 **Theme.** *From nothing, to live, to provably live — fast.* A **time-to-ready** release on the mature
 demo/dev bring-up + Playthrough machinery. Two standing problems, one spine:
 
 1. **A `/demo-down --purge` + `/demo-up` cycle takes 11 m 12 s** — measured, instrumented, on `billion`
-   ([`evidence/build-annotation.md`](releases/02.80-fast-build/evidence/build-annotation.md)). **UI-tier image
+   ([`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md)). **UI-tier image
    builds are 66.4 % of it and image export/unpack ALONE is 42.9 %** — and the box **never exceeded load 4.90
    of 8 cores** with RAM at 74 %. This is **not** a CPU problem. It is serialised I/O (writing 9.4 GB of
    Next.js image to disk) plus a **deliberate serialisation whose stated reason no longer applies**:
@@ -174,7 +174,7 @@ demo/dev bring-up + Playthrough machinery. Two standing problems, one spine:
    **outcome `blocked`: 0, outcome `error`: 0** — nothing proves the platform correctly says *no*. Whole
    surfaces sit at zero: **ant-academy 0, onboarding 0, org-admin 0, talk-to-data 0**. Of the M201 curated 28
    use cases, **16 are uncovered and 12 have no milestone home anywhere**. Full map:
-   [`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md).
+   [`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md).
 
 **The machine question, answered as a deliverable — but small.** The release does not hand-tune constants and
 does not build an auto-planner either: it ships **two checked-in, measured host profiles** plus **one hard
@@ -512,8 +512,8 @@ which is not a named milestone and could not survive the close) · 0 dropped · 
 
 **Tests:** Python **1505 pass / 2 skip / 0 fail** (stack-core alone 226 → 272); Go **2023** test funcs (+4),
 **0 of 6** modules failing; flake **0**. **0 platform-repo edits, 0 net-new deps.**
-Retro: [`retro.md`](releases/02.80-fast-build/m255-build-bench-host-headroom/retro.md) ·
-Metrics: [`metrics.json`](releases/02.80-fast-build/m255-build-bench-host-headroom/metrics.json)
+Retro: [`retro.md`](releases/archive/02.80-fast-build/m255-build-bench-host-headroom/retro.md) ·
+Metrics: [`metrics.json`](releases/archive/02.80-fast-build/m255-build-bench-host-headroom/metrics.json)
 
 ### M256: Playthrough sharpening
 
@@ -528,7 +528,7 @@ proving function rather than presence, and covering the journeys that are silent
 > landed in the closing iters. Clause 2: controls **28 of 30** (`D103` carve-out) · mutating **12** of ≥5 ·
 > `blocked` **1** of ≥1. Clause 3: org-admin **4/4** · onboarding **4 landed + 1 written verdict** of the
 > CURATED 5 (`D104`) · verdicts **31/31, 0 `unimplementable`**. Plus **`D-v28-5` FIXED and proven live** at
-> iter-25. Full ledger: [`m256…/progress.md`](releases/02.80-fast-build/m256-playthrough-sharpening/progress.md)
+> iter-25. Full ledger: [`m256…/progress.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/progress.md)
 > § Gate Outcome Ledger.
 >
 > **What shipped.** **18 → 30 live Playthroughs** (+1 verdicted TODO), mutating **1 → 12**, negative controls
@@ -571,7 +571,7 @@ proving function rather than presence, and covering the journeys that are silent
 > concluded from that silence that a predicate the file exercises by name was dead code**; one recommended
 > deleting it. Every *"nothing references this, so it is dead"* conclusion in this project rests on grep
 > reporting honestly, and it fails in the direction that looks clean. Fenced, and written into
-> [`retro.md`](releases/02.80-fast-build/m256-playthrough-sharpening/retro.md).
+> [`retro.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/retro.md).
 >
 > **Two refusals that are deliverables.** iter-18 declined to ship an onboarding journey whose green depends on
 > **scraping a real person's public profile** (flaky by construction, and its RED would misreport as an
@@ -667,7 +667,7 @@ that the lane consumes instead of an assumed 17. `storageState` reuse alone buys
 M203/M204 coverage-iteration protocol, with the **4-state reporting map**.
 
 **Bootstrap tok (iter-01) — already seeded.**
-[`evidence/playthrough-map.md`](releases/02.80-fast-build/evidence/playthrough-map.md), compiled 2026-07-27 and
+[`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md), compiled 2026-07-27 and
 reviewed by the user. iter-01 extends it into a ranked triage + the first strategy, and must answer: **how is a
 negative control produced** without a platform edit and without mutating the shared world, and **what does the
 parallel-lane enabler cost**.
@@ -741,7 +741,7 @@ host** (one interpreter cause, eight symptoms) — that is the finding, not a ga
 tag**, so no stack can obtain them yet — *tagging is not publishing*.
 
 **Carry-forward → M258:** 11 items in 5 root-cause clusters + 1 block fate over the carried-token tail. See
-[`carry-forward.md`](releases/02.80-fast-build/m257x-platform-realignment/carry-forward.md). **Not routed to
+[`carry-forward.md`](releases/archive/02.80-fast-build/m257x-platform-realignment/carry-forward.md). **Not routed to
 M257** — at the time of writing, its own `exit_gate` still named `odysseus`, retired by `D-v28-15`. *(That
 reason expired at **M257 iter-05**, which re-pointed the gate at `macmini`. The routing itself is unchanged —
 M258 remains the owner — but it can no longer be justified by an ungradeable M257 gate.)*
@@ -753,7 +753,7 @@ passes stale**. A Fate-1 item that decays three times is a standing-maintenance 
 `deferrals-audit.md` §11.*
 
 **Shape:** `iterative`
-**Dir:** [`releases/02.80-fast-build/m257x-platform-realignment/`](releases/02.80-fast-build/m257x-platform-realignment/overview.md)
+**Dir:** [`releases/archive/02.80-fast-build/m257x-platform-realignment/`](releases/archive/02.80-fast-build/m257x-platform-realignment/overview.md)
 **Goal:** Establish where the "migrate the microservices back into `app`" consolidation actually stands, write it
 down where it cannot rot, and make **both** rosetta (corpus) and rosetta-extensions (tooling) work against the
 platform as it is now.
@@ -844,7 +844,7 @@ platform ships coordinated multi-repo changes — `repos.yml` moved **39 minutes
 > is invisible.* Three iters closed an accurate "metric delta 0" and none could say "and no delta is
 > achievable", because the gate's **subject** (`odysseus`) was retired one day after `TOK-01` named it.
 > **Check a gate for GRADEABILITY before checking it for satisfaction.** Full record:
-> [`m257…/retro.md`](releases/02.80-fast-build/m257-first-light-build/retro.md) · `metrics.json` ·
+> [`m257…/retro.md`](releases/archive/02.80-fast-build/m257-first-light-build/retro.md) · `metrics.json` ·
 > `progress.md` § Gate Outcome Ledger.
 
 > ▶️ **RESUMED (history).** It was paused behind M257x after 3 closed iters; M257x's close unpaused it, and iter-04's
@@ -1000,10 +1000,10 @@ eight more, two of them fail-opens to GREEN** (a crash in the red-set reader pri
 was graded as "red set empty"; and a hook that re-decided the opt-out wrote no verdict, letting the previous
 run's file be read as this one's).
 
-**Closure artifacts:** [`carry-forward.md`](releases/02.80-fast-build/m258-proven-live-build/carry-forward.md)
-· [`deferrals-audit.md`](releases/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) (YELLOW, **0
-escape-hatch**) · [`metrics.json`](releases/02.80-fast-build/m258-proven-live-build/metrics.json) ·
-[`retro.md`](releases/02.80-fast-build/m258-proven-live-build/retro.md). rext ships at
+**Closure artifacts:** [`carry-forward.md`](releases/archive/02.80-fast-build/m258-proven-live-build/carry-forward.md)
+· [`deferrals-audit.md`](releases/archive/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) (YELLOW, **0
+escape-hatch**) · [`metrics.json`](releases/archive/02.80-fast-build/m258-proven-live-build/metrics.json) ·
+[`retro.md`](releases/archive/02.80-fast-build/m258-proven-live-build/retro.md). rext ships at
 **`fast-build-m258-close`**, verified on origin. 0 platform-repo edits.
 
 **Original plan follows.**

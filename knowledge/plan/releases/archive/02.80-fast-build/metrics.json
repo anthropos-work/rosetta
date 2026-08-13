@@ -238,7 +238,7 @@
   },
   "supply_chain": {
     "verdict": "YELLOW",
-    "lockfile": "knowledge/plan/releases/02.80-fast-build/dependencies.lock",
+    "lockfile": "knowledge/plan/releases/archive/02.80-fast-build/dependencies.lock",
     "net_new_third_party_deps": 0,
     "scope": "The `rosetta` corpus repo carries ZERO tracked dependency manifests (git ls-files -> empty for go.mod/package.json/requirements/pyproject/Cargo.toml). The entire third-party surface is rosetta-extensions: 6 Go modules, 2 npm packages, and an unmanifested Python surface.",
     "prod_vs_all": "There is no prod tier. Every artifact is developer/operator tooling run on a workstation against a local stack; nothing is deployed or distributed. prod-only and all-deps audits are therefore identical, and both were run.",
