@@ -618,7 +618,7 @@ config change would arm it, not because it is live):
 3. setting `ANTHROPIC_API_KEY`, which flips **Course Builder** off Bedrock onto Anthropic's
    first-party API (`coursebuilder/bedrock.go:106-113`) and supplies **Studio-Room** the credential
    its `anthropic` `TARGET SERVICE` needs — *Studio-Room was never on Bedrock*, so nothing is flipped
-   off it there (`:567` above — the **Anthropic Direct** row; `:543` is the *"When backend services add new
+   off it there (`:574` above — the **Anthropic Direct** row; `:543` is the *"When backend services add new
    GraphQL types"* heading, this doc's own in-file anchor left behind when M257x iter-96 moved the construct
    543 → 567 and re-pointed only the three CROSS-FILE citations; 0 hits for `bedrock|boto3` under
    `app/studio/`; corrected M257x iter-48, re-anchored iter-98).

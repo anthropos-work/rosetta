@@ -1174,7 +1174,7 @@ video facet, by the VPN scope alone.
 > MEASURABLE gene targeting this file"* (`stack-secrets/provision/provision.go:120`) — so
 > `/stack-secrets --provision` cannot deliver a key it has no gene for. And the **M239 bridge is a fixed
 > five-key list** — `AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
-> CLAUDE_CODE_USE_BEDROCK` (`demo-stack/up-injected.sh:1375`) — with no Bunny key in it and no extension seam.
+> CLAUDE_CODE_USE_BEDROCK` (`demo-stack/up-injected.sh:1496`) — with no Bunny key in it and no extension seam.
 > Provisioning these keys is therefore **net-new work** (a DNA gene + a `next-web-app` target-file route), not
 > an existing path waiting on a value. The status note below is right that the feature is blocked; it is blocked
 > on **two** things, the values *and* the path.

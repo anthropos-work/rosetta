@@ -372,7 +372,7 @@ make-or-break proof that the M213/M214 remote-auth foundation works on a real Li
 > "unreachable" rather than "reachable over plain HTTP"), and `tailscaled` binds the v6 address even in the
 > wildcard case, so the v4/v6 behaviours differ. **Not changed here** — it is scoped to **M258**, whose
 > *"one cold command on billion"* gate depends on it. Evidence:
-> `knowledge/plan/releases/02.80-fast-build/evidence/m255-spikes.md` § spike (e).
+> `knowledge/plan/releases/archive/02.80-fast-build/evidence/m255-spikes.md` § spike (e).
 
 **The cockpit login (the interactive proof).** Open the presenter cockpit at **`https://$HOST:17700`**
 (`7700+off`) — on a `--public-host` demo it is fronted by `tailscale serve` behind the **same trusted MagicDNS
@@ -529,11 +529,11 @@ localhost) so no site can drift:
 
 | Surface | localhost demo | `--public-host` demo | Where |
 |---|---|---|---|
-| **Backend CORS** (`CORS_EXTRA_ORIGINS`) | `http://localhost:{3000,3001,9000}+off` | + `https://$HOST:{3000,3001,9000}+off` (the localhost trio is **kept** for on-host use) | `gen_injected_override.py` (`browser_scheme`); `app/internal/cors/cors.go` honors it in non-production |
+| **Backend CORS** (`CORS_EXTRA_ORIGINS`) | `http://localhost:{3000,3001,9000}+off` | + `https://$HOST:{3000,3001,9000}+off`, **plus one https trio per extra browser host** (`STACK_EXTRA_BROWSER_HOSTS` — this box's MagicDNS name, resolved at bring-up; v2.8 M258). The localhost trio is **kept** for on-host use | `gen_injected_override.py` (`browser_scheme`, `_extra_browser_hosts`); `app/internal/cors/cors.go` honors it in non-production |
 | **studio-desk redirects** (`CLERK_SIGN_IN_URL` / `WEB_APP_URL`) | `http://localhost:3000+off` | `https://$HOST:3000+off` | `gen_injected_override.py` (runtime env) |
 | **Baked browser URLs** (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `_BACKEND_API_URL`, `_HOSTING_URL`, `_STUDIO_URL`, `_ACADEMY_URL`, `_PUBLIC_WEBSITE_URL`, `VITE_GRAPHQL_ENDPOINT`, `VITE_WEB_APP_URL`) | `http://localhost:…` | `https://$HOST:…` | `up-injected.sh` (`$SCHEME`) — the image cache-validators embed `$SCHEME` too, so an http-baked image is rebuilt under an https host |
 | **studio-desk SPA sign-in** (`VITE_CLERK_SIGN_IN_URL`) | *(was the un-offset `localhost:3000/login` default)* → now `http://localhost:3000+off/login` | `https://$HOST:3000+off/login` | `up-injected.sh` — baked via a gitignored `.env.production.local` overlay (no Dockerfile ARG; see §"The patch tail") |
-| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **loopback bind** (an explicit `-H` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`; the literal is `-H localhost` since v2.8 M257x iter-10 — same loopback property, and the only loopback literal next@16 does not re-normalize out from under its own origin check), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, MagicDNS host admitted | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
+| **ant-academy** (`NEXT_PUBLIC_STUDIO_URL`, `next dev` bind, `allowedDevOrigins`) | `http://localhost:…`, **loopback bind** (an explicit `-H` on the localhost path since v2.3 M221 F-M220-5 — was `*:13077`, because `next dev`'s own default is `0.0.0.0`; the literal is `-H localhost` since v2.8 M257x iter-10 — same loopback property, and the only loopback literal next@16 does not re-normalize out from under its own origin check), hardcoded origins | `https://$HOST:…`, `-H 0.0.0.0`, **the public host + this box's MagicDNS name + its tailnet IPs** admitted (a LIST since v2.8 M258 — see the warning below) | `ant-academy.sh` + the `ant-academy-dev-origins` patch |
 | **FAPI cert** | `mkcert`/openssl (local trust) | `tailscale cert` (tailnet-wide trust) | `up-injected.sh` (M213) |
 | **Cockpit bind** | `127.0.0.1` (loopback, `cockpit.py --host` default) | `0.0.0.0` | `up-injected.sh` (M212) |
 | **ant-academy bind** | **loopback** (`-H localhost` — explicit loopback landed v2.3 M221 F-M220-5, was `*:13077` from `next dev`'s own `0.0.0.0` default; literal corrected `127.0.0.1` → `localhost` at v2.8 M257x iter-10, which fixed a 30 s 500 on `/`) | `0.0.0.0` (`-H 0.0.0.0`) | `ant-academy.sh` (M212; loopback default M221) |
@@ -610,10 +610,31 @@ applied to the demo's **ephemeral clone** — **never a checked-in platform clon
    `code/next.config.js` `allowedDevOrigins` — which hardcodes a *different* tailnet host. The
    **`ant-academy-dev-origins`** demo-patch rewrites that array to also read an env var
    (`ANT_ACADEMY_ALLOWED_DEV_ORIGIN`), keeping the original entries (behavior-identical when unset, upstream-safe
-   — the same shape as the `next-web-studio-url` demopatch). The host is supplied at `next dev` launch via the
+   — the same shape as the `next-web-studio-url` demopatch). The hosts are supplied at `next dev` launch via the
    env; `ant-academy.sh` applies the patch before launch (gated on the public host) and reverts it on `--stop`.
    Manifest: `rosetta-extensions/demo-stack/patches/ant-academy-dev-origins/`; helper:
    `stack-injection/apply-ant-academy-dev-origins.sh` (apply|revert).
+
+   > **⚠️ "required" is literal, and this patch failing is NOT a cosmetic residual** (corrected v2.8 M258;
+   > this page previously called a refused patch a *"documented residual — a remote cross-origin dev request
+   > may be blocked"*, and that wording is what let it ship). **A blocked origin means the academy does not
+   > hydrate at all.** The page SSRs perfectly — real chapter, real modules, real styling — and React never
+   > takes over, so every `<button onClick>` is inert (the module cards, the user avatar, every menu) while
+   > every `<a href>` still navigates. It presents as *"clicking a module does nothing"*, never as an outage,
+   > and **no check that asks the server for HTML can see it**: curl, an HTTP status and a text-content sweep
+   > all pass against a completely dead academy. Only clicking a client-side control and watching the
+   > application state change distinguishes the two — which is what `pt-academy-chapter-module` now does.
+   >
+   > It shipped exactly this way: ant-academy bumped, `next.config.js` drifted by bytes unrelated to the
+   > patched line, and the patch **drift-refused non-fatally** while the bring-up reported success. Two fixes
+   > followed — the shared ladder **self-heals** (`stack-injection/live_patch_ladder.py`: the *anchor* is the
+   > contract, the whole-file sha only a baseline), and a refusal on a public-host demo now logs as a **loud
+   > failure**, not a shrug.
+   >
+   > **It admits a LIST, not one host** (v2.8 M258). `ANT_ACADEMY_ALLOWED_DEV_ORIGIN` is comma-separated and
+   > `ant-academy.sh` fills it with the public host **plus this box's MagicDNS name and tailnet IPs**. A demo
+   > is browsed through more than the operator's URL — a teammate uses one name, the Playwright suite another
+   > — and admitting only `STACK_PUBLIC_HOST` left every other origin dead on arrival in the silent way above.
 
 2. **studio-desk `VITE_CLERK_SIGN_IN_URL` (the SPA sign-in bake).** studio-desk's Dockerfile declares no ARG for
    it, so the SPA sign-in redirect falls back to the un-offset `http://localhost:3000/login`. Declaring the ARG is

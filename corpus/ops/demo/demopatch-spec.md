@@ -159,13 +159,29 @@ count ≠ 1 · `4` replacement was a no-op · `5` patched sha ≠ post · `6` po
 **The chain runs on BOTH frontend builds (M224).** The `urls.ts` pair is applied by `build_frontend_next_web`
 **and** `build_frontend_hiring` — the Studio nav link is in the **shared `packages/ui` NavBar** (`key: STUDIO_URL`),
 so the hiring image ejects to `studio.anthropos.work` unless the same pair bakes into it. Each build carries its
-own patch-set fingerprint (§5-bis): next-web's over **9** manifests (`up-injected.sh:600-603`), hiring's over
-**7** (`up-injected.sh:1141-1143` — the 2 `apps/hiring` patches + the shared `urls.ts` pair + the shared
-interview flag-gate pair + the shared Back-to-Cockpit item), and studio-desk's over its own **5**
-(`up-injected.sh:922`). Line refs at rext `8956e69`, the commit that last touched the file; the
-`:1071-1075` this cited until M257x is now studio-desk's `--label` line. Each anchor names the
-`next_web_patchset_fp` **call**, not the `local …_manifest=` declarations above it — the call is where the
-count is legible. A test fences the hiring-side chain apply-order and the fingerprint union.
+own patch-set fingerprint (§5-bis): **next-web's is now derived from a `patches/next-web-*/*.yaml` GLOB** (v2.8
+M258 — see the warning below), while hiring's is still over an explicit **7** and studio-desk's over its own
+**5**. A test fences the hiring-side chain apply-order and the fingerprint union.
+
+> **⚠️ This paragraph used to state next-web's count as "9 manifests", and a COUNT was the wrong shape to
+> record — because the list producing it was hand-maintained, and it rotted exactly as this count did.**
+> The fingerprint decides whether a cached image is reused. When the PostHog-bootstrap patches were added,
+> nobody added them to that argument list, so the fingerprint did not move, the bring-up logged *"image
+> already built … reusing (no rebuild)"*, and the new patches never reached the bundle. The fix was written,
+> tagged and deployed **three times** while the browser served the same stale image — reading each time as
+> *"the patch does not work"* rather than *"the patch never ran"*, which sent the debugging into the patch
+> (and twice into the wrong call site of a three-call-site flag) instead of into the cache.
+>
+> next-web's fingerprint is therefore no longer a list to keep in sync: **a `next-web-*` patch dir that
+> exists is an input.** Over-hashing costs a needless rebuild — slow, not wrong — which is the correct side
+> to err on for a cache key. `stack-core/patchset_fingerprint_guard.py` (guard family) holds the invariant
+> for **every** frontend build: the manifests a build APPLIES must be a subset of the manifests its
+> fingerprint HASHES.
+>
+> **And validate the manifest itself.** Both bootstrap manifests also shipped with `post_marker` set to the
+> patch ID rather than to text from the replacement, so `demopatch` refused them outright — **non-fatally**,
+> the same silent-no-op shape. `stack-core/tests/test_all_demopatch_manifests_load.py` now loads every
+> manifest on disk in the test suite, where a failure is loud and cheap.
 
 > **⚠️ Corrected at v2.8 M255** (pre-milestone KB-fidelity audit). This paragraph previously said hiring's
 > fingerprint was over a **"4-manifest union"** — a C1 mirrored-count that drifted at **M232** (the interview
@@ -444,6 +460,32 @@ by a gate.
 ### The gate (decided M217 — the self-healing gate)
 
 **The anchor is the contract; the sha is a baseline.**
+
+> **⚠️ Until v2.8 M258 this section described ONE of the three apply vehicles, and read as if it described
+> all of them.** The gate below landed in the canonical `demopatch`/`apply_patch.py` tool at M217. The
+> **five shell helpers** in `stack-injection/` (`apply-ant-academy-dev-origins.sh`, the three
+> `apply-academy-fs-published*.sh`, `apply-ant-academy-back-to-cockpit.sh`) each carried a **hand-copied
+> ladder that hard-refused on any whole-file drift** — the exact behaviour the box below explains why we do
+> *not* keep. One guard, two vehicles, opposite semantics, and nothing compared them.
+>
+> It came due on 2026-08-14: ant-academy bumped, `next.config.js` drifted by unrelated bytes,
+> `ant-academy-dev-origins` refused **non-fatally**, and the demo academy shipped **unable to hydrate**
+> (see [`tailscale-serve.md`](tailscale-serve.md) § the ant-academy `allowedDevOrigins` patch). The helpers
+> now share **one** ladder — `stack-injection/live_patch_ladder.py` — implementing this same gate, with
+> `stack-core/tests/test_live_patch_ladder.py` pinning it.
+>
+> **Two things the shared ladder does that the canonical tool's `_classify` does not, and both were paid
+> for in production:**
+> - **The marker is never the "am I applied?" probe** — `academy-fs-published-fallback` and
+>   `academy-fs-published-public` patch the **same file** and share the `post_marker`
+>   `ACADEMY_DEMO_FS_PUBLISHED`, so a marker-first classifier reads the second as corrupt once the first
+>   applies and refuses a patch the demo depends on. The **anchor** decides; the marker is only a
+>   post-condition on the output.
+> - **`patched` is decided by removing the replacement** and asking whether a pristine hunk remains, not by
+>   counting the anchor — because for a *prepend-shaped* patch the anchor is a **substring of its own
+>   replacement**, and a naive count calls every applied prepend-patch corrupt.
+>
+> If you add a sixth live-clone helper, **use the shared ladder**; do not copy a ladder again.
 
 - A **freshness preflight** runs **before** the inject loop. For each patch it resolves the tag *this box will
   actually build*, hashes the target, and compares.

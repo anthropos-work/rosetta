@@ -673,6 +673,16 @@ returned **HTTP 404 "Not Found"** now returns **HTTP 200** with the real chapter
 coverage sweep now also fences the **chapter body** + the **`?lang=it` re-render** (`ANT_ACADEMY_CHAPTER_SECTION`,
 [`coverage-protocol.md`](coverage-protocol.md)), not just the home grid. (#M238-D1)
 
+> **⚠️ All five native-run academy patches are applied by SHELL HELPERS, and until v2.8 M258 those helpers
+> hard-refused on any whole-file drift** — so an ant-academy version bump silently disarmed them while the
+> bring-up reported success. That is how a demo shipped an academy that rendered perfectly and could not
+> hydrate (`ant-academy-dev-origins`), and it is one bump away from an empty grid (`academy-fs-published-*`).
+> They now share one **self-healing** ladder, `stack-injection/live_patch_ladder.py`: the *anchor* is the
+> contract, the whole-file sha only a baseline. Read
+> [`demopatch-spec.md`](demopatch-spec.md) § "The gate" before adding a sixth helper — and do not copy a
+> ladder again. Live-proven on `billion`: all five apply in chain order, each re-applies as a no-op, all
+> revert in reverse, and the clone comes back byte-identical.
+
 > **Known limitation — the five native-run academy patches share one clone (concurrent-demo teardown).** All five
 > `ant-academy` patches (`ant-academy-dev-origins`, `academy-fs-published-fallback`, `academy-fs-published-public`,
 > `academy-fs-published-chapter-body`, `ant-academy-back-to-cockpit`)

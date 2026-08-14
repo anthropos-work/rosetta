@@ -226,9 +226,10 @@ See [`recipe-snapshot-world.md`](recipe-snapshot-world.md) for the full capture�
   half, M252 the 2 studio-desk builder GENERATE journeys, and **M256 the `org-admin` product (4 of 4) + the
   `onboarding` product (4 of its 5 CURATED use cases landed, the 5th carrying a machine-checked
   `will-not-build` verdict) plus `workforce-org-feedback`, `skillpath-bookmark` and the suite's first
-  `outcome: blocked`** — the corpus now stands at **30 live Playthroughs, 1 verdicted TODO** (31 manifest use
-  cases), the count `playthroughs.md` owns). Section
-  `rext playthroughs/`. (v2.0 M202–M204 · v2.3 M219 · v2.4 M225 · v2.6 M243 · v2.7 M252 · v2.8 M256)
+  `outcome: blocked`**, and **M258 the net-new `academy` product + the assign-content NAV use case** — the
+  corpus now stands at **32 live Playthroughs, 1 verdicted TODO** (33 manifest use cases, 11 products), the
+  count `playthroughs.md` owns). Section
+  `rext playthroughs/`. (v2.0 M202–M204 · v2.3 M219 · v2.4 M225 · v2.6 M243 · v2.7 M252 · v2.8 M256/M258)
 - [`content-stories-routes.md`](content-stories-routes.md) — the **content-stories feasibility spike + result-route
   map** (v2.5 "the playbill" M231, HARD go/no-go — the barrier before the Thread-B build chain). For each content
   product × {player, manager} it enumerates the exact result route and **classifies it by prove-by-render**

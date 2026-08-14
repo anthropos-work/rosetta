@@ -12,7 +12,7 @@ engineering, Claude Code, agent frameworks and related topics.
 > (`code/src/lib/pricing.js`, `TopBar.jsx:77-88` @ `22df69dd`), carries **no domain predicate anywhere in
 > `code/`**, and shares its Clerk instance with the customer-facing platform. **What is true:** there is
 > an **enterprise/org tier**, and the org-membership gate applies to *those* surfaces. Run 81 swept the
-> predicate across **13 sites in 9 files** — see [`iter-128/progress.md`](../../knowledge/plan/releases/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md).
+> predicate across **13 sites in 9 files** — see [`iter-128/progress.md`](../../knowledge/plan/releases/archive/02.80-fast-build/m257x-platform-realignment/iter-128/progress.md).
 
 Think of it as **a training product with a company tier**:
 - A web portal where employees take short, structured chapters

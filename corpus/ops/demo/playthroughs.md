@@ -13,7 +13,7 @@ are actually built, in the rext **`playthroughs` section** (v2.0 "opening night"
 **the iteration protocol the coverage milestones followed** (M203 employee-vantage ∥ M204 manager-vantage — the
 `iterative` milestones that grew the real journey coverage against this foundation to 10 live Playthroughs, and
 then M219 `ai-readiness` → M225 `hiring` → M243 the assign-WRITE → M252 `studio` → M256 `org-admin` +
-`onboarding` took it to the **30 live Playthroughs, 1 verdicted TODO** (31 manifest use cases across 10
+`onboarding` took it to **30 live Playthroughs, 1 verdicted TODO** (31 manifest use cases across 10
 products) the corpus stands at today; see § "The iteration protocol" below). It is the *function*
 sibling of [`coverage-protocol.md`](coverage-protocol.md)'s *presence* sweep. **The `spec.md` v0.3 draft it
 graduates is FROZEN at 2026-06-28** (pre-M219): where the two disagree — notably §5.7's serial-concurrency
@@ -132,9 +132,21 @@ is not on page 1 even after a **successful** create), and **landed the onboardin
 variant") **and its fifth LIVE use case — the 5th of the 6 it declares in the manifest** (`pt-onboarding-individual`
 at iter-32 — **the ORG-LESS user**, the LAST un-homed
 use case in the M201 curated corpus and the one this milestone's own pre-flight audit had priced as
-impossible; see § "The org-less seat" below). The corpus stands at **30 live Playthroughs, 1 verdicted TODO**
-(31 MANIFEST use cases, 10 products), all proven live-GREEN on a local `demo-2`, 0 flake over 3 consecutive cold reset-to-seed
-runs.
+impossible; see § "The org-less seat" below). The corpus stands at **32 live Playthroughs, 1 verdicted TODO**
+(33 MANIFEST use cases, 11 products). The 30/31/10 figures that stood here were proven live-GREEN on a local
+`demo-2`, 0 flake over 3 consecutive cold reset-to-seed runs; **v2.8 M258 added the two below**, each proven
+RED-then-GREEN against the live `demo-1` on `billion` rather than in a cold suite run:
+
+- **`academy` (a NET-NEW product, `academy.read-a-chapter.UC1` → `pt-academy-chapter-module`).** ant-academy is
+  a first-class demo surface — its own port, its own cockpit link, its own four demo-patches — and it had
+  **zero** Playthroughs, which is exactly why it broke invisibly and stayed broken across several rounds of
+  hand-checking. It asserts **liveness, not presence**: a click on a module CARD (a `<button onClick>` with no
+  href fallback) must advance the reader. See [`tailscale-serve.md`](tailscale-serve.md) for the failure it
+  covers — a page that SSRs perfectly and never hydrates, invisible to every HTML-level check.
+- **`assignment-monitoring.nav-v2.UC1` → `pt-assignments-nav-v2`.** Click the *assign content* nav entry and
+  assert it opens `/enterprise/assignments-list`. Its own story on purpose: the assign Playthroughs navigate
+  **by URL**, so they pass while the menu points somewhere else entirely. `flag_enable_assignments_v2` has
+  **three** call sites and was patched twice at the two nobody clicks.
 
 **Onboarding's one remaining CURATED use case is a WRITTEN VERDICT, and that is a result rather than a shortfall.**
 `enterprise-workforce-standard.UC1` (the self-import journey) is `disposition: will-not-build`: its only

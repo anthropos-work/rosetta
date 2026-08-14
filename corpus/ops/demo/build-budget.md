@@ -263,7 +263,7 @@ the gated number**; the `n=3` campaign below is, and it lands within 0.9 % of th
 **One sentence: two Next.js images that together weigh 9.4 GB dominate the cycle, and most of their cost is
 not compilation — it is writing the image to disk.**
 
-Full anatomy, including the ranked lever table: `releases/02.80-fast-build/evidence/build-annotation.md`
+Full anatomy, including the ranked lever table: `releases/archive/02.80-fast-build/evidence/build-annotation.md`
 in the plan tree.
 
 ### The n ≥ 3 campaign on `billion` — **that host's gated baseline**
@@ -929,7 +929,7 @@ part of shipping the harness. See
 
 ## See also
 
-- [`../../../knowledge/plan/releases/02.80-fast-build/evidence/build-annotation.md`](../../../knowledge/plan/releases/02.80-fast-build/evidence/build-annotation.md)
+- [`../../../knowledge/plan/releases/archive/02.80-fast-build/evidence/build-annotation.md`](../../../knowledge/plan/releases/archive/02.80-fast-build/evidence/build-annotation.md)
   — the instrumented n=1 anatomy + the ranked lever table L1–L10 this release is designed from
 - [`latency-budget.md`](latency-budget.md) — the *other* budget: click→ACCESS, and the doc this one is modelled on
 - [`frontend-tier.md`](frontend-tier.md) — what the UI tier is and why it exists
