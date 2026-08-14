@@ -138,7 +138,7 @@ For most local-development tasks you do not need any of this.
 Runs inside the `backend` ECS task, gated by the same `CUSTOMERIO_SYNC_ENABLED` switch — where unset
 is **fatal** rather than off, so a deployed environment must state its intent. The mechanism is
 `app/env_guards.go:98-104` (`resolveSubsystemSwitch`'s `case "":` returns an error when `deployed`) via
-`mustSubsystemSwitch`'s `log.Fatalf` at `:87`. (`app/main.go:284` is only the **comment** pointing at it,
+`mustSubsystemSwitch`'s `log.Fatalf` at `:87`. (`app/env_guards.go:62` is only the **comment** pointing at it,
 not the mechanism — anchor corrected M257x iter-102.)
 **Scope note:** whether its own ECS task / image / terraform module have been torn down was **not
 measured** in this pass — the fold and the container deletion are local-compose and `app`-source

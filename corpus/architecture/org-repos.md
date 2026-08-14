@@ -311,7 +311,7 @@ speech-to-speech `openai.realtime.RealtimeModel`; chain is a classic **STT → L
 (`src/agent.py:607-621`: `inference.LLM("google/gemini-2.5-flash")`,
 `inference.TTS("elevenlabs/eleven_multilingual_v2")`). It is selected **by CMS content, not a flag** —
 `voiceEngine == SimulationVoiceEngineLivekitchain`, enum `"livekitchain"` at
-`app/internal/cms/directus/collections/jobsimulation.go:1085`. It is the actively developed one.
+`app/internal/cms/directus/collections/jobsimulation.go:1069`. It is the actively developed one.
 
 > ⚠️ **The cross-repo coupling is an unfenced string contract.** The platform holds **no** reference to
 > any agent repo — no URL, no `CA_*` id, no `livekit.toml`. The whole seam is the agent-name literal plus

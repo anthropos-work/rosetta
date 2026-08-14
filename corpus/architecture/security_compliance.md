@@ -212,7 +212,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 
 | Echo group | declared | middleware stack |
 |---|---|---|
-| `/api/invitations` | `internal/invitations/handlers.go:31` (mounted `web.go:148`) | **`cors` is the only middleware — and that is NOT the same as no authentication.** ⚠️ **Corrected at run 82 — see the box below this table.** The credential is the path segment: a 256-bit `base64url(HMAC-SHA256(email\|org_id\|invited_at, INVITATION_HMAC_SECRET))` (`internal/invitations/token.go:29-34`), **checked before any data is returned** — `invite.go:159` / `:194` filter on the stored `token` column and a miss returns `404 not_found` |
+| `/api/invitations` | `internal/invitations/handlers.go:31` (mounted `web.go:151`) | **`cors` is the only middleware — and that is NOT the same as no authentication.** ⚠️ **Corrected at run 82 — see the box below this table.** The credential is the path segment: a 256-bit `base64url(HMAC-SHA256(email\|org_id\|invited_at, INVITATION_HMAC_SECRET))` (`internal/invitations/token.go:29-34`), **checked before any data is returned** — `invite.go:159` / `:194` filter on the stored `token` column and a miss returns `404 not_found` |
 | `/content/admin` | `internal/web/backend/content_admin.go:35` (mounted `backend.go:294`) | **no Clerk `authn`** — a bearer shared secret (`ACADEMY_CONTENT_API_TOKEN`) is the entire gate |
 | `/v1/labs` | `internal/web/backend/labs_admin.go:31` (mounted `backend.go:306`) | **no Clerk `authn`** — a group-level org **API key + `labs:write` scope** check |
 | `/academy/embeddings` | `internal/web/backend/academy_embeddings_admin.go:41` (mounted `backend.go:300`) | `cors` + `authn` |
@@ -259,11 +259,11 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 > |---|---|---|
 > | `/graphql/query` | `backend.go:317` | **no Echo middleware** — authn/authz happen inside the GraphQL chain (the *"fail-open"* viewer gate above) |
 > | `/api/webhook/directus` | `backend.go:324` | handler self-authenticates via the shared secret; mounted only when the Directus edge is configured |
-> | `/ai-readiness/unsubscribe/:token` | `internal/aireadiness/notifications/handlers.go:41` (mounted `web.go:153`) | `cors` + **the HMAC signature is verified in-handler**, `401` on mismatch (`handlers.go:71-81`, verifier at `:156`) — the invitations group's sibling, and the contrast is instructive: **this one re-derives the signature, `/api/invitations` matches a stored token** |
-> | `/api/schema.json` | `backend.go:117` | **none** — serves the OpenAPI document; registered on the root before the `/api` group, so it inherits none of that group's stack |
+> | `/ai-readiness/unsubscribe/:token` | `internal/aireadiness/notifications/handlers.go:41` (mounted `web.go:157`) | `cors` + **the HMAC signature is verified in-handler**, `401` on mismatch (`handlers.go:71-81`, verifier at `:156`) — the invitations group's sibling, and the contrast is instructive: **this one re-derives the signature, `/api/invitations` matches a stored token** |
+> | `/api/schema.json` | `backend.go:118` | **none** — serves the OpenAPI document; registered on the root before the `/api` group, so it inherits none of that group's stack |
 > | `/content/catalog.json` | `internal/web/backend/content.go:23` | **none, by design** — `content_admin.go:32` says so: it *"stays open by design"* |
-> | `/graphql` (Apollo Sandbox) | `backend.go:320` | **`colony.Development` only** |
-> | `/api/*` (API docs) | `backend.go:314` | **`colony.Development` only** |
+> | `/graphql` (Apollo Sandbox) | `backend.go:333` | **`colony.Development` only** |
+> | `/api/*` (API docs) | `backend.go:321` | **`colony.Development` only** |
 > | **`/v1/labs/:slug/workspace.tar.gz`** | `internal/web/backend/labs_admin.go:40` (wired unconditionally at `backend.go:306`) | **OPTIONAL auth, deliberately** — it is mounted on the root `e`, *outside* the `/v1/labs` write group and therefore outside that group's `apiKeyAuthMiddleware(…, "labs:write")`. The file says so in its own words: *"Serve is OUTSIDE the write group — it has OPTIONAL auth (a public Lab's workspace is served to anyone; a tenant-private Lab requires a key with access)"* (`:36-39`). It serves a **workspace tarball**, and it is the URL the control-plane fetches at boot (`CP_WORKSPACE_BASE_URL`) |
 >
 > **Rule 57 applied to rule 57's own repair — twice now.** Run 81 widened the search from one file to
@@ -292,7 +292,7 @@ authorization is opt-in **per group or per handler**, never applied to the surfa
 
 > ⚠️ **CORRECTED at iter-121, in the OTHER direction.** iter-120's own repair of this paragraph said
 > *"every Echo group … and nothing else"*, and cited `:230-231` / `:274-275` — **each one line short of
-> the third middleware**. `cbGate := courseBuilderAccessGate(authorizationManager)` (`backend.go:227`,
+> the third middleware**. `cbGate := courseBuilderAccessGate(authorizationManager)` (`backend.go:238`,
 > defined `internal/web/backend/gate.go:27-49`) **is** a Sentinel-backed group middleware: it requires a
 > user, a non-nil active org, and `OrgCheckFeaturePermission(OrgFeatureMembersEdit, orgID)`, returning
 > 401/403 before the handler. Two of the eleven groups carry it. The conclusion — no blanket, authorization
