@@ -139,6 +139,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → **M257x** → M257 → M258 | ✅ **SHIPPED 2026-08-13 (tag `v2.8`)** (branch `release/02.80-fast-build` merged to `main` + deleted, designed 2026-07-27; **5** milestones — M257x «platform re-alignment» was an **unplanned mid-release insertion**, the corpus having drifted from the platform; measuring against a stale description measures nothing. Tooling + docs only, **0 platform-repo edits** and **0 net-new deps**, both verified. **Achieved: 450 s → 286.99 s on `macmini`** — beating the 360 s gate and its 300 s stretch. ⚠️ **The `666 → 360` framing above is retired:** 666.29 s was measured on `billion` (x86_64/containerd) and **does not transfer** to the arm64 development host; M257 re-pointed its gate to the host that exists and met it there against that host's own 449.51 s — a **36.2 %** cut, not 46 %. Both numbers are true; only their combination would mislead, and this release's own rule — *state the environment with every number* — forbids it. **M257x and M258 closed `closed-incomplete` by user ruling, not on gate**; M258's clause 3 was never measured clean. Carry-forward named item-by-item in `roadmap-vision.md` § v2.8.) |
 
+| **v2.9** | **new alphabet** | The **taxonomy-realignment release** — the platform's vocabulary was rewritten under us. `feat/taxonomyv2` landed in `app` (+99 commits → v2.3.2) and `next-web-app` (+27 → v2.144.1): a governed **canon** that **retires 61,216 entries, 21,871 of them roles** (`next-web-app` `e883efd37`), leaving ~4k skills against the 42,790 this corpus measured on 2026-06-29. Node-ids **moved but are redirectable**; retired ids **404**. Rosetta's own `MinRows: 40000` capture floor (`stack-snapshot/taxonomy/taxonomy.go:104`) **aborts capture** on the new canon, so nothing downstream runs until it is re-derived. Also ships the net-new `/taxonomy` browser as a proven demo surface, and corrects `taxonomy`-folded-into-`app` (`app` now has **zero** first-party modules) | M259 (HARD barrier) → M260 → M261 → { M262 ∥ M263 ∥ M264 } → M265 | 🚧 **IN DEVELOPMENT** (branch `release/02.90-new-alphabet`, designed 2026-08-14) |
+
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
 
@@ -150,6 +152,179 @@ driven without a platform edit *escalates*, it does not edit), and all stack-ope
 **`rosetta-extensions`** (built + tested in the `.agentspace/rosetta-extensions/` authoring copy, tagged, then
 consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation + the seeding machinery — they are
 the **functional** sibling of M42's **presence**-only coverage sweep.
+
+---
+
+## In development — v2.9 "new alphabet" (branch `release/02.90-new-alphabet`, designed 2026-08-14)
+
+**Thesis:** the platform's vocabulary was rewritten. Realign the corpus, the stack tooling, and the demo's
+seeded world to the new canon — and prove both a demo and a dev stack come up on it.
+
+**This release is triggered by a landed platform change, not by a defect** — the v2.1 «quick change» /
+v2.7 «july jitter» lineage. Measured 2026-08-14 against `origin/main` of each repo:
+
+| Fact | Evidence |
+|---|---|
+| The canon retires **61,216 entries, 21,871 of them roles** | `next-web-app` `e883efd37`, quoted by the `/taxonomy/{skill,role}/[slug]` pages |
+| ~**4k** skills remain, vs the **42,790** public skills this corpus measured 2026-06-29 | derivation above ÷ [`shared_libraries.md`](../../corpus/architecture/shared_libraries.md#taxonomy-figures) |
+| Node-ids **moved**, and there is a **redirect map** | `app` `0b5cef2d2` *"the node_ids written into the code, remapped through the redirects"*; a retired-id guard at `34b5b9635` |
+| Retired ids **404** — every saved URL, cached response and export | the two `page.tsx` comments in `e883efd37` |
+| **`taxonomy` folded into `app`** — *"app has no first-party module left"* | `app` `e72f18199`. The corpus states five org modules in `app/go.mod`; it is now zero |
+| A net-new **`/taxonomy` browser** shipped (index · category · specialization · role · skill + `MovedNotice`) | `next-web-app` `origin/main`, `apps/web/…/(verified)/taxonomy/` |
+| It is **NOT PostHog-gated** (`restricted: ''`) and sits in the Library nav | `packages/ui/src/NavBar/useNavbarSections.tsx:282`, `TAXONOMY_URL` |
+| **Rosetta's own hard break:** a ~4k canon fails capture | `stack-snapshot/taxonomy/taxonomy.go:104` `MinRows: 40000`; enforced `capture/capture.go:392` |
+
+> **⚠️ "10k+ → 4k" and "42,790 → 4k" are different statements and both are in play.** The `skills-and-job-roles`
+> repo (ESCO-derived, last commit **2024-04-08**) holds **12,201 skills / 1,893 roles** — that is the "10k+".
+> Production held **42,790 public skills**. They were never the same number, and the corpus has never documented
+> how the source dataset relates to the production rows. **M259 owns closing that gap**; until it does, no
+> milestone here may quote a before-figure without saying which lineage it belongs to.
+
+**Constraints carried over, unchanged:** **zero platform-repo edits** (the platform is read-only; "update the
+platform repos" in this release means *pull them fresh*, never commit to them), all stack tooling in
+`rosetta-extensions` at a pinned tag, secrets values-blind.
+
+### Execution graph
+
+```
+M259 ──→ M260 ──→ M261 ──┬──→ M262 ──┬──→ M265
+(barrier)                ├──→ M263 ──┤   (prove live)
+                         └──→ M264 ──┘
+```
+
+M262 ∥ M263 ∥ M264 touch disjoint trees (`stack-seeding` · `playthroughs`+`stack-verify` · `corpus/`); the
+merge surface is index/link-level only.
+
+### M259: Canon ground truth
+
+**Status:** `planned` · **Shape:** `section` · **HARD go/no-go barrier**
+**Goal:** establish what the new taxonomy actually IS, from the repos and a prod read, before any downstream
+milestone is sized against a guess.
+**Scope:**
+  - In: pull every platform repo fresh into **both** clone sets (`stack-dev/`, `stack-demo/`); read the canon,
+    the **redirect map**, and the retired-id guard in `app`; measure the real new counts (skills, roles,
+    specializations, categories) and the embeddings-pruning effect; establish whether the redirect map is
+    complete enough to remap a seeded ref, and what it does for an id with no successor; reconcile the
+    ESCO-source (12,201) ↔ prod (42,790) ↔ canon (~4k) lineages.
+  - Out: changing any rext code (that is M260+); editing any platform repo, ever.
+**Depends on:** nothing
+**Estimated complexity:** medium
+**Open questions:** is the redirect map total or partial? does a retired skill with no successor exist, and
+what should a seeded ref pointing at one become?
+**KB dependencies:** [`shared_libraries.md`](../../corpus/architecture/shared_libraries.md#taxonomy-figures) ·
+[`snapshot-spec.md`](../../corpus/ops/snapshot-spec.md) · [`org-repos.md`](../../corpus/architecture/org-repos.md)
+**Delivers → `corpus/architecture/taxonomy-canon.md`:** the corpus has **no doc anchor for the taxonomy's source
+pipeline at all** — a Phase-0b blind area. `org-repos.md` lists all four candidate repos as *"dormant ≥18 months,
+DECIDE"*, which the revamp contradicts.
+
+### M260: The floor comes down
+
+**Status:** `planned` · **Shape:** `section`
+**Goal:** no Rosetta tool asserts a taxonomy SIZE it did not measure this run.
+**Scope:**
+  - In: `MinRows` **derived from the capture** rather than pinned at 40000, with the under-capture protection
+    preserved (the floor exists for a real reason — an empty/mis-filtered capture must still abort); re-ground
+    every taxonomy-size assumption across `stack-snapshot`, `stack-seeding`, `stack-verify`; a fence that fails
+    when a bare taxonomy count is re-pinned into source.
+  - Out: re-capturing (M261); the seed's own refs (M262).
+**Depends on:** M259
+**Estimated complexity:** medium
+**KB dependencies:** [`snapshot-spec.md`](../../corpus/ops/snapshot-spec.md) ·
+[`verification.md`](../../corpus/ops/verification.md)
+
+### M261: Load the new canon
+
+**Status:** `planned` · **Shape:** `section`
+**Goal:** a stack replays the new canon, cold, from a fresh capture.
+**Scope:**
+  - In: re-capture from a safe prod source; **purge** rather than refresh the snapshot cache (node-ids moved,
+    so a stale artifact is not merely old, it is wrong); replay proven on a cold stack; the cold-start runbook
+    updated; confirm the batch-prompt cache invalidates on the new capture version (it is keyed on it — expected
+    to work, must be observed).
+  - Out: seeded data (M262).
+**Depends on:** M260
+**Estimated complexity:** medium
+**Open questions:** does the capture-source policy still hold for the new canon's tables, or did taxonomy v2 add
+columns/tables the firewall has never seen?
+**KB dependencies:** [`snapshot-cold-start.md`](../../corpus/ops/snapshot-cold-start.md) ·
+[`cache-spec.md`](../../corpus/ops/demo/cache-spec.md) · [`safety.md`](../../corpus/ops/safety.md)
+
+### M262: The seed speaks the new canon
+
+**Status:** `planned` · **Shape:** `section`
+**Goal:** every seeded hero's skill chain resolves in the new canon, and a partial failure is loud.
+**Scope:**
+  - In: remap seeded refs **through the redirect map**; re-resolve the **8 literal job-role names** the presets
+    pin (`Account Executive`, `Backend Developer`, `Engineering Manager`, `Sales Manager`, `Data Analyst`,
+    `DevOps Engineer`, `Business Operations Analyst`, `Talent Acquisition Specialist`); add a **per-hero
+    richness floor** to the closure gene; **price the AI-profile regeneration before spending it** and re-run
+    `gen-batch` under an explicit `--max-cost`.
+  - Out: the taxonomy browser (M263); corpus counts (M264).
+**Depends on:** M261
+**Parallel with:** M263, M264
+**Estimated complexity:** large
+**Open questions:** how much of the 7-table verified-skill fan-out survives a remap vs needs re-seeding?
+**KB dependencies:** [`stories-spec.md`](../../corpus/ops/demo/stories-spec.md) ·
+[`seeding-spec.md`](../../corpus/ops/seeding-spec.md) · [`ai-generation-spec.md`](../../corpus/ops/demo/ai-generation-spec.md)
+
+> **Why the richness floor is a deliverable and not a nicety.** `TaxonomyRefs` returns an **empty pool** when a
+> role does not resolve, and `PersonaSeeder` then **skips enrichment rather than fabricating** — correct, and
+> silent. The closure gene gained a population witness at M256, so a **total** wipe-out now fails; **partial**
+> degradation still passes (`dangling == 0`, `referenced > 0`). Three of seven heroes going empty is exactly the
+> shape this release is most likely to produce, and nothing currently catches it.
+
+> **💰 The one line item that spends money.** `gen-batch` runs through the platform's `ai` module (gpt-4o-mini
+> via Azure/OpenAI keys) — **real API credits, not a subscription quota**. User ceiling: **$200**, and anything
+> approaching it is reviewed before it is spent. M262 therefore **prices the regeneration first** and reports the
+> number; it does not spend up to the ceiling on the milestone's own judgement.
+
+### M263: The taxonomy page is reachable
+
+**Status:** `planned` · **Shape:** `section`
+**Goal:** a hero can navigate and review the taxonomy on a demo, and it is covered so it cannot rot unseen.
+**Scope:**
+  - In: prove Library → Taxonomy renders and walks **index → category → specialization → role → skill** on the
+    replayed canon; prove a retired id renders `MovedNotice` rather than a bare 404; a **Playthrough** asserting
+    the navigation (state change on click, not presence); confirm the hiring-org exclusion is intentional.
+  - Out: the `internal/tools` Taxonomy tab (admin surface, out of demo scope this release).
+**Depends on:** M261
+**Parallel with:** M262, M264
+**Estimated complexity:** medium
+**KB dependencies:** [`playthroughs.md`](../../corpus/ops/demo/playthroughs.md) ·
+[`frontend-tier.md`](../../corpus/ops/demo/frontend-tier.md)
+
+> **The gate is "navigable and real", not "reachable"** (user decision, 2026-08-14). v2.8 M258 shipped an
+> academy that rendered perfectly and could not hydrate, precisely because nothing clicked anything on it.
+
+### M264: The corpus tells the truth
+
+**Status:** `planned` · **Shape:** `section`
+**Goal:** no corpus page states a taxonomy figure or module fact that the new canon has falsified.
+**Scope:**
+  - In: the ~17 count-claims across `shared_libraries.md` (the canonical figures section **and** the AKB
+    contradiction table), `ai_architecture.md` (×5, incl. the embeddings row counts), `architecture_overview.md`,
+    `service_taxonomy.md`, `toolchain_overview.md`, `org-repos.md`, `CLAUDE.md`; the **`taxonomy`-folded-into-`app`**
+    correction (`app/go.mod` five org modules → zero first-party); the four taxonomy repos' "dormant, DECIDE"
+    verdicts re-graded.
+  - Out: authoring the source-pipeline doc (that is M259's `Delivers →`).
+**Depends on:** M259 (numbers), M261 (observed replay counts)
+**Parallel with:** M262, M263
+**Estimated complexity:** medium
+**KB dependencies:** every file listed above
+
+### M265: Prove it live
+
+**Status:** `planned` · **Shape:** `iterative`
+**Goal:** a demo **and** a dev stack come up cold on the new canon and prove themselves.
+**Exit gate:** on a cold bring-up, **all** of: (1) `/demo-up` green end-to-end on the new canon; (2) `/dev-up`
+green on the new canon; (3) the full Playthrough suite passing, including the net-new taxonomy Playthrough;
+(4) seed closure green **with** the per-hero richness floor satisfied; (5) `/taxonomy` navigable live.
+**Iteration protocol:** `corpus/ops/verification.md` (the M258 batch-gate lineage)
+**Why iterative:** the failure set of a canon swap is not enumerable up front — it is whatever the first cold
+run surfaces, and v2.1/v2.6/v2.8 all showed that set is discovered, not predicted.
+**Depends on:** M262, M263, M264
+**Re-scope trigger:** if 5 consecutive toks fail to produce a viable strategy, escalate.
+**Estimated complexity:** large
 
 ---
 
