@@ -493,7 +493,35 @@ initials.
 
 ---
 
-## PD-v28-A — `next-web-app`: the enterprise landing redirect still points at the RETIRED assignments page
+## PD-v28-A — ❌ RETRACTED 2026-08-14 — NOT a platform defect, a demo flag gate
+
+**This entry was wrong and is withdrawn.** It called `EnterpriseWrapper.tsx:56` a *"stale redirect left
+behind by the migration"*. It is nothing of the kind: it is the **gate itself**, and it is correct code.
+
+    const v2Flag    = useFeatureFlagEnabled('flag_enable_assignments_v2');
+    const v2Enabled = isDev || v2Flag === true;
+    if (v2Resolved && !v2Enabled && V2_ONLY_PATHS.some(...)) router.replace('/enterprise/assignments');
+
+`flag_enable_assignments_v2` is a **PostHog rollout flag**. A demo bakes no PostHog, so it resolves
+`undefined` **forever**, `v2Enabled` is false on every demo, and the redirect correctly protects the
+operator from the new (empty-until-backfilled) list. The five "already migrated" consumers I cited as
+evidence use the v2 path because they live **inside** the gated surface — they were never the contrast
+I read them as.
+
+**The user identified this** (*"flag_enable_assignments_v2 should be on by default on all stacks type"*)
+after I had filed it here. **Fixed where it belongs — in the demo tooling**, as two demo-patches shipped
+in `v2.8.3-rext`, mirroring the M219 aireadiness and M232 interview flag patches that solve the identical
+"no PostHog ⇒ no rollout gate" problem for their own flags.
+
+**The lesson worth keeping:** a redirect to an older path is not evidence of staleness. I inferred a
+migration defect from a *code shape* without reading what guarded it — and filed it against the platform,
+where nobody could have acted on it, because the defect was ours.
+
+**Superseded by** `next-web-assignments-v2-flag-{wrapper,home}` in `rosetta-extensions`.
+
+<details><summary>Original (withdrawn) entry</summary>
+
+## ~~PD-v28-A — `next-web-app`: the enterprise landing redirect still points at the RETIRED assignments page~~
 
 **Reported** 2026-08-13 by the user against the rebuilt `demo1` (platform `766df6c` / `app` v2.0.1 /
 `next-web-app` v2.141.0): *"the menu item on the left that says assign content brings me to the old page
@@ -514,6 +542,8 @@ section opens**, which is why the user reaches the old interface without ever ch
 **Not a demo defect and NOT demo-patched.** Verified no demopatch manifest mentions `assignments-list`;
 the stale redirect is platform source, and it hits production the same way. A demo-patch would hide the
 symptom on the only surface where it does not matter. **The fix is one line in the platform repo.**
+
+</details>
 
 ## PD-v28-B — `ant-academy`: clicking a module in the course-page list does not navigate
 
