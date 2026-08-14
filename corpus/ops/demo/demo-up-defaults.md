@@ -62,7 +62,7 @@ necessary.
 |---|---|---|---|
 | `DEMO_NO_UI` | `0` | **full UI tier is ON** — next-web + studio-desk (containers) + ant-academy (native) | `up-injected.sh:227` |
 | `DEMO_NO_ACADEMY_FILL` | `0` | **the academy grid is FILLED** — applies the `academy-fs-published-fallback` demo-patch to the demo's own ant-academy clone before launch, so the home grid renders the committed FS catalog as **published** (production-faithful, **no "Draft" chip**). Default-on for EVERY demo (localhost + public-host); idempotent + drift-refuse + **NON-FATAL** — a refused patch just leaves the grid empty. **This is the knob that gates Thread A**: set it to `1` and the demo academy renders 0 cards. Both halves are required (the patched code reads `ACADEMY_DEMO_FS_PUBLISHED`, which is added to the launch env *only* when the patch actually applied) | `ant-academy.sh:159` |
-| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:2658` |
+| `DEMO_NO_COCKPIT` | `0` | **presenter cockpit is SERVED** (only when `DEMO_STORIES=1`) on `7700 + N·10000`. ⚠️ **A password-free "become any seeded hero" launcher** — see [`../safety.md`](../safety.md) **§3.2** | `up-injected.sh:2750` |
 
 ### Demo-patches (platform-source fixes applied to the demo's own ephemeral clone)
 

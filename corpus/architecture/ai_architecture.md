@@ -291,7 +291,7 @@ in any of the three places a default is applied** — measured at `app` HEAD:
 
 | Where the default fires | Vendor | Model | Source |
 |:------------------------|:-------|:------|:-------|
-| **Content side** — the CMS `ai_model` / `ai_vendor` field is left unset on a sequence | `openai` | **`gpt-5.1`** | `app/internal/cms/directus/collections/jobsimulation.go:1297` (model), `:1302` (vendor) |
+| **Content side** — the CMS `ai_model` / `ai_vendor` field is left unset on a sequence | `openai` | **`gpt-5.1`** | `app/internal/cms/directus/collections/jobsimulation.go:1154` (model, `Gpt5_1`), `:1136` (vendor, `Openai`) |
 | **Runtime routing** — `GetAIVendorAndModel` gets a model string it does not recognise | as selected | **`gpt-4.1`** | `app/internal/jobsimulation/simulator/ai/ai.go:65-66` (OpenAI arm), `:82-83` (Azure arm), `:126-127` (unmatched-vendor arm) |
 | **Scoring / validation** — not configurable at all, hardcoded | **Azure** | **`gpt-4.1`** (summarize: `gpt-4.1-mini`) | `simulator/ai/ai.go:20-26`, `GetValidationAIVendorAndModel` |
 

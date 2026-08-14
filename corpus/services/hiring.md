@@ -217,8 +217,8 @@ schema, read directly by the resolver.
 | 3 | `app/.../resolver_queries.go:1034,1080` | resolver `InsightsJobSimulationByMemberships` (decl `:1034`) → `IntelligenceManager.InsightsJobSimulationByMemberships` (`:1080`) |
 | 4 | `app/internal/organization/intelligence.go:1700` | reads `m.ent.JobSimulationSession` (the canonical entity; was `LocalJobsimulationSession` before the mirror drop) |
 | 5 | `intelligence.go:1733` → `:2158-2160` | best-attempt: the call site (`:1733`) invokes `usersBestOrFirstJobSimulationSession` (declared `:2124`), whose window is `ROW_NUMBER() OVER (PARTITION BY sim_id, owner_id ORDER BY score DESC …)` at `:2158-2160`; the `RowNumber == 1` reduction back in the caller is `:1739-1744`. (This cited the caller's own lines until M257x iter-102 — that range holds the `onlyAssignments` branch and the call, not the `row_number()`.) |
-| 6 | `intelligence.go:1820` | `Score` ← the session's own `score` column — **not a mirror's** (see row 7) |
-| 7 | `app/internal/data/ent/schema/job_simulation_session.go:45` | Ent table `public.job_simulation_sessions`, `field.Float32("score").Default(0).Min(0).Max(100)` — **the score column, read at `intelligence.go:1820` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer exists** |
+| 6 | `intelligence.go:1788` | `Score` ← the session's own `score` column — **not a mirror's** (see row 7) |
+| 7 | `app/internal/data/ent/schema/job_simulation_session.go:45` | Ent table `public.job_simulation_sessions`, `field.Float32("score").Default(0).Min(0).Max(100)` — **the score column, read at `intelligence.go:1788` and assigned at `:1846`. Not a mirror: `local_jobsimulation_session.go` no longer exists** |
 
 **The best-attempt sort + the cohort** (`intelligence.go:1738-1764`): rows are grouped per `user_id`, reduced to
 **ONE best-attempt row per candidate** (the highest `score`), then sorted `score DESC, completition_status ASC,

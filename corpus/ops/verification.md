@@ -78,7 +78,7 @@ an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `d
 Everything above this line proves the stack is **reachable and healthy**. It cannot tell you whether a
 seeded hero can actually *play her journey* — a stack can pass every probe and still be functionally
 broken. So the bring-up now ends in a second, higher gate:
-`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2903` immediately after the `UP.` line
+`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:3000` immediately after the `UP.` line
 (`:2867`). After it, **"UP" means "UP, and every journey verified"**.
 
 > ⚠️ **This cited `up-injected.sh:2839` until the M258 close, and that line is neither the hook nor even

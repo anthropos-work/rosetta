@@ -2,12 +2,13 @@
 milestone: M259
 title: "Canon ground truth"
 milestone_shape: section
-status: planned
+status: complete
 release: "02.90-new-alphabet"
 depends_on: "none"
 parallel_with: "none"
 complexity: medium
 last_updated: "2026-08-14"
+verdict: "GO"
 ---
 
 # M259: Canon ground truth

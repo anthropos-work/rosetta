@@ -1,9 +1,9 @@
 ---
 active_release: "v2.9 «new alphabet» — the TAXONOMY-REALIGNMENT release (branch release/02.90-new-alphabet, designed 2026-08-14). The platform's vocabulary was rewritten: `feat/taxonomyv2` retires 61,216 entries (21,871 roles), leaving ~4k skills where this corpus measured 42,790. 7 milestones M259 → M265. Detail: roadmap.md § v2.9."
 active_branch: "release/02.90-new-alphabet"
-active_milestone: "M259 «canon ground truth» (section, HARD go/no-go barrier) — NOT STARTED. Establish what the new canon IS (counts, redirect map, retired-id semantics, the ESCO↔prod↔canon lineages) before any downstream milestone is sized against a guess."
-last_closed: "v2.8 — 2026-08-13 (release)"
-phase: "Release designed 2026-08-14, no milestone started. THE FIRST THING THAT BREAKS IS OURS: `stack-snapshot/taxonomy/taxonomy.go:104` pins `MinRows: 40000` on public.skills and `capture/capture.go:392` aborts below it — a ~4k canon CANNOT BE CAPTURED, so no set-dress, no demo, no dev-N until M260 re-derives it. Second risk is silent: the seed presets pin 8 literal job-role names, and an unresolved role makes PersonaSeeder SKIP enrichment rather than fabricate — the closure gene catches a total wipe-out (M256 population witness) but NOT a partial one. Next: M259. Detail: roadmap.md § v2.9."
+active_milestone: "M259 «canon ground truth» ✅ COMPLETE 2026-08-14, VERDICT GO. Next: M260 «the floor comes down». M259 delivered corpus/architecture/taxonomy-canon.md and resized two downstream milestones (D-M259-2, D-M259-3)."
+last_closed: "M259 — 2026-08-14 (GO)"
+phase: "M259 CLOSED with verdict GO. Canon measured from app/taxonomy-canon/ (checked in — no prod read needed): 3,562 skills / 706 roles, consolidated from 43,584 / 22,511. TWO RESIZINGS: (1) the redirect map covers only ~33% of retirements — 26,518 skills have NO successor — so M262 needs a resolve-or-drop path, not a remap; (2) FIVE net-new tables sit outside the capture surface (skill_redirect, job_role_redirect, category_translation, specialization_translation, taxonomy_canon_state) — net-new scope for M260/M261. Also: taxonomyguard closed the taxonomy to runtime minting, so get-or-create no longer mints. Next: M260. Detail: releases/02.90-new-alphabet/m259-canon-ground-truth/."
 last_updated: "2026-08-14"
 ---
 
