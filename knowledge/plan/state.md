@@ -1,9 +1,9 @@
 ---
 active_release: "v2.9 «new alphabet» — the TAXONOMY-REALIGNMENT release (branch release/02.90-new-alphabet, designed 2026-08-14). The platform's vocabulary was rewritten: `feat/taxonomyv2` retires 61,216 entries (21,871 roles), leaving ~4k skills where this corpus measured 42,790. 7 milestones M259 → M265. Detail: roadmap.md § v2.9."
 active_branch: "release/02.90-new-alphabet"
-active_milestone: "M259 «canon ground truth» ✅ COMPLETE 2026-08-14, VERDICT GO. Next: M260 «the floor comes down». M259 delivered corpus/architecture/taxonomy-canon.md and resized two downstream milestones (D-M259-2, D-M259-3)."
-last_closed: "M259 — 2026-08-14 (GO)"
-phase: "M259 CLOSED with verdict GO. Canon measured from app/taxonomy-canon/ (checked in — no prod read needed): 3,562 skills / 706 roles, consolidated from 43,584 / 22,511. TWO RESIZINGS: (1) the redirect map covers only ~33% of retirements — 26,518 skills have NO successor — so M262 needs a resolve-or-drop path, not a remap; (2) FIVE net-new tables sit outside the capture surface (skill_redirect, job_role_redirect, category_translation, specialization_translation, taxonomy_canon_state) — net-new scope for M260/M261. Also: taxonomyguard closed the taxonomy to runtime minting, so get-or-create no longer mints. Next: M260. Detail: releases/02.90-new-alphabet/m259-canon-ground-truth/."
+active_milestone: "M260 «the floor comes down» ✅ COMPLETE 2026-08-14. Next: M261 «load the new canon», which now also carries the five net-new capture tables (D-M260-4) with M260's scoping measurements attached."
+last_closed: "M260 — 2026-08-14"
+phase: "M260 CLOSED. The pinned `MinRows: 40000` is gone: one constant became TWO RUNGS — an unconditional NON-EMPTY check, and a SHRINK check measured against this surface's own newest prior capture, acknowledgeable once via Options.AcceptShrink with a written reason that lands in the manifest. Strictly stronger than the constant: 42,790->42,000 passed MinRows silently and does not pass a comparison. A first-ever capture has no baseline, so the manifest SAYS the shrink rung did not run. New fence taxonomy_pin_guard (guard family) is GREEN over 313 files — that is also the evidence for the re-grounding item. Next: M261. Detail: releases/02.90-new-alphabet/m260-capture-floor/."
 last_updated: "2026-08-14"
 ---
 
