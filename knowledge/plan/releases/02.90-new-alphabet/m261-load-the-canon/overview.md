@@ -21,6 +21,16 @@ last_updated: "2026-08-14"
   - PURGE rather than refresh the snapshot cache — node-ids moved, so a stale artifact is not merely old, it is WRONG
   - replay proven on a cold stack; the cold-start runbook updated
   - confirm the batch-prompt cache invalidates on the new capture version (it is keyed on it — expected to work, must be OBSERVED)
+  - **[from D-M259-3, measured for you by M260]** add the net-new taxonomy tables to the capture
+    surface and prove they replay. M260 measured their scoping so this milestone does not re-derive it:
+    **`skill_redirect`** (`id`, `created_at`, `old_node_id`, `skill_id`, `source`, `score`, `review`) and
+    **`job_role_redirect`** (same shape, `job_role_id`) carry **ZERO org-scoping** — they are canon-level
+    `PureReference` tables. **`category_translation`** and **`specialization_translation`** exist and are
+    parent-scoped like the two translation tables already captured. **`taxonomy_canon_state` was NOT found
+    in `app/internal/data/ent/schema/`** at `4bccda085` despite appearing in the taxonomy-v2 commit range —
+    confirm what it is before declaring it, rather than declaring it blind.
+    M260 deliberately did NOT declare these: a column list that no capture has ever validated is a
+    confident guess, and validating it is this milestone's whole job.
 
 **Out:**
   - seeded data (M262)
