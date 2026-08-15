@@ -51,3 +51,43 @@ The package is now cleared before the twin is written, with a post-condition ass
 build rather than at the point of the mistake.
 
 Shipped as `v2.9.2-rext` and `v2.9.3-rext`.
+
+## The page is LIVE on our stack — and one hop of the walk is blocked
+
+Verified in a browser against `demo-5` (presenter world, `dan-manager`):
+
+- **`/taxonomy` renders** — title *"Anthropos | Skills taxonomy"*.
+- **The nav entry is there**, between *AI Academy* and *Organization*, exactly where `taxonomyMenuItem`
+  sits in the Library section. It is **not** flag-gated (`restricted: ''`), so no PostHog bootstrap was
+  needed — unlike the assign-content item beside it.
+- **HOP 1 works**: clicking a category lands on `/taxonomy/category/agriculture` with the heading
+  *"Agriculture"* — a real canon route with real canon content.
+
+**HOP 2 does not.** The category page renders `SPECIALIZATIONS | 0` for every category, so there is
+no specialization to click and the walk stops one hop in.
+
+### It is not a data gap — measured
+
+```
+categories                 25      specializations per category   14
+job_role_categories        32      skills under Agriculture      118
+specializations with slug 283
+```
+
+The hierarchy is intact in the database. **But the page's own header says `CATEGORIES 32`, and 32 is
+`job_role_categories` — not the 25 `categories` the specializations hang off.** The sidebar likewise
+lists 32 category links. So the surface appears to be enumerating the **job-role** category set while
+specializations belong to the **skill** category set, which is exactly why every one of them shows
+zero.
+
+### Disposition
+
+**This is a platform-side question, not a tooling one**, so it is investigated and reported, never
+patched (the zero-platform-edit line). What is NOT yet established: whether `taxonomyCategories`
+deliberately returns the job-role categories and the specializations are meant to be reached another
+way, or whether this is a genuine defect. That is the next thing to settle, and it decides whether
+M263's gate ("navigable and real") is met by a different route or is genuinely blocked.
+
+`pt-taxonomy-browse` is written and correct, but it cannot pass until this is resolved — it asserts
+the specialization hop deliberately, because a test that stopped at the category page would have
+called this surface healthy.
