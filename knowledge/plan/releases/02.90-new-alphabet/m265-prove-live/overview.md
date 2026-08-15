@@ -35,6 +35,21 @@ The failure set of a canon swap is not enumerable up front — it is whatever th
 
 M262, M263, M264
 
+## Routed in from M262 (2026-08-15) — and the gate cannot be met without it
+
+**An AI key.** Two things need one and neither is a code gap:
+
+1. **The canon has no embeddings.** `taxonomy-load` ended with *"vectors not computed: the canon is
+   loaded but does not take part in matching until this is re-run"* — no embedding manager was
+   configured. Browsing, listing and joining all work; **AI skill-matching does not.**
+2. **The generated member profiles were not regenerated**, so they still name the old taxonomy's
+   skills. `D-v29-3` set a $200 ceiling and price-before-spend; there is nothing to price until a key
+   exists.
+
+**Clause 4 of this gate — seed closure green WITH the per-hero richness floor — is what makes this
+blocking rather than cosmetic.** A stack whose heroes hold no verified-skill chain is not a proven
+stack, and M262's new floor will now say so out loud instead of passing.
+
 ## Re-scope trigger
 
 If 5 consecutive toks fail to produce a viable strategy, escalate to user-strategic-replan.
