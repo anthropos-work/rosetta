@@ -52,7 +52,7 @@ build rather than at the point of the mistake.
 
 Shipped as `v2.9.2-rext` and `v2.9.3-rext`.
 
-## The page is LIVE on our stack — and one hop of the walk is blocked
+## The page is LIVE on our stack, and the full walk runs
 
 Verified in a browser against `demo-5` (presenter world, `dan-manager`):
 
@@ -63,31 +63,58 @@ Verified in a browser against `demo-5` (presenter world, `dan-manager`):
 - **HOP 1 works**: clicking a category lands on `/taxonomy/category/agriculture` with the heading
   *"Agriculture"* — a real canon route with real canon content.
 
-**HOP 2 does not.** The category page renders `SPECIALIZATIONS | 0` for every category, so there is
-no specialization to click and the walk stops one hop in.
+**⚠️ The section that stood here — filing the empty specialization hop as a platform question —
+is RETRACTED. It was our bug.** Kept in outline because the misdiagnosis is the lesson.
 
-### It is not a data gap — measured
+### What I got wrong, and why it looked convincing
+
+Every category page rendered `SPECIALIZATIONS | 0`, and the header said `CATEGORIES 32` while the
+database held 25. I read the mismatch as the surface enumerating the wrong table and filed it
+platform-side. Reading the resolver settles it: `taxonomyapi.Manager.Categories` deliberately appends
+`categorieDiSoliRuoli` — *"the domains that exist in the role tree and not in the skill one: food
+service, personal care, research, manufacturing, the armed forces"*. **32 is correct product
+behaviour**, and role-only categories correctly have no specializations.
+
+The real cause was one query away and I did not run it: **not one row in the replayed taxonomy had a
+slug.** The resolver filters `category.SlugNEQ("")`, so all 25 real categories were excluded and the
+only ones left to render were the role-only ones — which is exactly the symptom. My earlier
+"specializations with a slug: 283" was itself wrong: it counted `slug IS NOT NULL`, and `''` is not
+NULL.
+
+### The actual defect: the capture was dropping 26 columns
+
+The surface's column lists came from the PRE-taxonomy-v2 schema. M261 added four new TABLES and never
+re-derived the existing tables' COLUMNS. Diffed against the live schema:
+
+| table | dropped |
+|---|---|
+| `categories` | page, provenance, credibility, **slug** |
+| `specializations` | page, provenance, credibility, **slug** |
+| `skills` | kind, implements_node_id, page, provenance, credibility, **slug** |
+| `job_roles` | family, esco_uri, esco_code, isco, onet_code, model_fill, page, provenance, credibility, **slug**, esco_title, source_job_role_uuid |
+| `skill_translations` · `job_role_translations` | page |
+
+That is the whole taxonomy-v2 "governed entity" model plus the canon's structural fields. **A row
+count could never have caught it** — 3,562 skills replayed either way. It is the hand-maintained-list
+rot M260 fenced against, walked into one milestone later.
+
+### Two ordering defects fell out, both only reachable once the parents moved to DELETE
+
+- **DELETEs must run child-first.** A surface declares parent-first because that is LOAD order;
+  clearing is the mirror image. Deleting `categories` while `specializations` held rows violated the
+  FK outright.
+- **TRUNCATE must run BEFORE the deletes.** The truncatable tables are the leaves and they reference
+  the DELETE-cleared parents. The old delete-first order was written for the directus case, where
+  nothing inside the surface pointed at the DELETE table — free, not correct.
+
+### Proven live
+
+25 / 283 / 3,562 slugs and 3,562 pages replayed into `demo-5`, and the walk runs end to end:
 
 ```
-categories                 25      specializations per category   14
-job_role_categories        32      skills under Agriculture      118
-specializations with slug 283
+/taxonomy/category/ai-skills  →  15 specializations
+/taxonomy/specialization/ai-augmented-work  →  7 skills
+/taxonomy/skill/ai-adoption-change-management   ("AI Adoption & Change Management")
 ```
 
-The hierarchy is intact in the database. **But the page's own header says `CATEGORIES 32`, and 32 is
-`job_role_categories` — not the 25 `categories` the specializations hang off.** The sidebar likewise
-lists 32 category links. So the surface appears to be enumerating the **job-role** category set while
-specializations belong to the **skill** category set, which is exactly why every one of them shows
-zero.
-
-### Disposition
-
-**This is a platform-side question, not a tooling one**, so it is investigated and reported, never
-patched (the zero-platform-edit line). What is NOT yet established: whether `taxonomyCategories`
-deliberately returns the job-role categories and the specializations are meant to be reached another
-way, or whether this is a genuine defect. That is the next thing to settle, and it decides whether
-M263's gate ("navigable and real") is met by a different route or is genuinely blocked.
-
-`pt-taxonomy-browse` is written and correct, but it cannot pass until this is resolved — it asserts
-the specialization hop deliberately, because a test that stopped at the category page would have
-called this surface healthy.
+**M263's gate — navigable and real — is met.** Shipped `v2.9.6-rext`.
