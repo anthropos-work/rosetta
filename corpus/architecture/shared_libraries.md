@@ -1,5 +1,25 @@
 # Shared Libraries
 
+> ## ⚠️⚠️ `app` NOW REQUIRES **ZERO** ORG-PRIVATE MODULES — measured v2.9 M263, 2026-08-15
+>
+> At `app` **`4bccda085`** (v2.3.2), `grep anthropos-work/ app/go.mod` returns **one line: the
+> `module` declaration itself.** Not five, not one — **none.** The taxonomy-v2 program finished the
+> fold that `ai` started: `e72f18199` — *"chore(deps): fold taxonomy in — app has no first-party
+> module left"* — and `colony` went with it. `colony/authn` now lives **in-tree at
+> `app/internal/authn`**, provider at `internal/authn/provider/clerk/`.
+>
+> **This was not a documentation detail.** Clerkenstein's demo disarm worked by cloning colony at the
+> pinned version, swapping its clerk provider, and adding a `go.mod` replace. With no colony require
+> there was nothing to clone, and a demo bring-up failed FATAL — correctly, since without the disarm
+> every demo login 401s. The fix (rext `v2.9.2`) swaps the in-tree package instead.
+>
+> **Everything below this box describes the module era and is kept as history.** The five-library
+> grouping still names real repos with real owners; what changed is that `app` no longer *imports*
+> any of them. Re-measure before citing any require line here — the block was seven at `b948604f`,
+> five at `3eaadae6`, and zero at `4bccda085`, which is three different answers inside one release
+> cycle.
+
+
 > ## ⚠️ This document's subject set is NOT `app`'s require set — corrected M257x iter-123
 >
 > The "five shared libraries" is a **historical grouping**, and every count below is taken over it.
@@ -282,7 +302,7 @@ GraphQL servers.
 > | Long-quoted figure | Verdict | What was actually measured |
 > |:-------------------|:--------|:---------------------------|
 > | **"18K roles"** | **REFUTED** | **22,470** public job roles. Public ⊆ total, so prod holds **≥ 22,470** — 18K is below the floor. The 18K almost certainly came from `job_role_embeddings` (**18,919** rows), a different table, mis-transcribed onto the role count |
-> | **"60K skills"** | **UNVERIFIED** (not refuted) | **42,790** public skills. A public-only capture cannot see org-scoped *private* skills, so the total could be higher — possibly much higher. Nothing measured supports 60K, and nothing measured rules it out |
+> | **"60K skills"** | **REFUTED** — upgraded from UNVERIFIED at v2.9 M259/M264 | **42,790** public skills measured here, and the platform's own pre-consolidation **total** is **43,584** (`app/internal/taxonomyredirect/redirect.go`: *"collapses 43,584 skills onto 3,590 and 22,511 job roles onto 740"*). 60K is not merely unsupported now; it is contradicted by the platform counting its own catalogue before removing anything |
 >
 > **Provenance.** Read-only production capture of the **public subset only**
 > (`organization_id IS NULL`): `.agentspace/snapshots/taxonomy/<digest>/manifest.json`,
@@ -293,6 +313,34 @@ GraphQL servers.
 > **So how should this be written?** Say *"≥22,470 job roles and ≥42,790 skills (the public
 > subset, measured 2026-06-29; totals including org-private content are unmeasured)"*. Do
 > **not** write "42,790 skills" as though it were the total — it is a floor, not a count.
+>
+> ### ✅ THE FLOOR LANGUAGE WAS RIGHT, AND THE PLATFORM SUPPLIED THE NUMBER IT COULD NOT SEE
+>
+> This section spent three milestones insisting the public figure was a **floor, never a total**,
+> because a public-only capture cannot see org-private rows. The taxonomy v2 consolidation published
+> the totals: **43,584 skills / 22,511 job roles**. Against the measured floors that is a private
+> remainder of **794 skills / 41 job roles** — exactly the shape the floor language predicted, and
+> the reason it was worth being pedantic about.
+>
+> ### ⚠️ AND THERE IS NOW A SECOND, SMALLER SET OF FIGURES — DO NOT MERGE THEM
+>
+> The **canon** (taxonomy v2) holds **3,562 skills / 706 job roles / 283 specializations /
+> 25 categories**, measured 2026-08-15 from `app/taxonomy-canon/` and confirmed by loading it. It is
+> a **different subject** from the production figures above, and conflating the two is the single
+> easiest mistake to make here:
+>
+> | | figure | what it describes |
+> |---|---|---|
+> | **production, 2026-06-29** | ≥42,790 skills · ≥22,470 roles | what the live catalogue held when this corpus last measured it |
+> | **pre-consolidation total** | 43,584 · 22,511 | what the platform says it had before retiring anything |
+> | **the canon** | 3,562 · 706 | what the governed catalogue holds *as an artifact in the repo* |
+>
+> **We could NOT verify whether production has adopted the canon.** The platform's migration plan
+> states it had not as of 2026-08-14 (*"nothing in production yet"*), but that is a document, not a
+> measurement, and neither `db-query` path was available to check: no `postgres` MCP configured, no
+> `psql`/`~/.pgpass`, and the production GraphQL returns `unknown viewer: Forbidden` for taxonomy.
+> **State which of the three you mean, and say when it was measured.** Full picture:
+> [`taxonomy-canon.md`](taxonomy-canon.md).
 >
 > ### ⚠️ A SECOND CORPUS ASSERTS THE REFUTED FIGURE, AND IT IS CUSTOMER-FACING (M257x iter-125)
 >
