@@ -2,7 +2,7 @@
 milestone: M264
 title: "The corpus tells the truth"
 milestone_shape: section
-status: planned
+status: complete
 release: "02.90-new-alphabet"
 depends_on: "M259 (numbers), M261 (observed replay counts)"
 parallel_with: "M262, M263"
