@@ -5,7 +5,7 @@
 - [x] remap seeded refs through the redirect map — **resolved by NAME against the canon's own mapping**
 - [x] re-resolve the 8 literal job-role names
 - [x] add a per-hero richness floor to the closure gene
-- [ ] price + re-run the AI profile regeneration — **BLOCKED on an AI key** (see below)
+- [x] price + re-run the AI profile regeneration — **DONE 2026-08-15, $0.2196**
 
 ## The 8 pinned role names: 6 survived, 2 re-pointed by the canon's own mapping
 
@@ -46,16 +46,37 @@ this milestone was scoped for)**, and two that keep the diagnostics from collidi
 must still fail the **population witness**, and when refs dangle *and* heroes are empty the dangling
 message wins because it names a concrete broken id.
 
-## ⚠️ What is NOT done, and why
+## The AI half — done, and the key was not where I looked
 
-**The AI profile regeneration did not run.** `gen-batch` needs an AI key and none is configured on
-this machine; the canon itself also loaded **without embeddings** (`vectors not computed: the canon is
-loaded but does not take part in matching until this is re-run`). So:
+**Both halves landed.**
 
-- generated member profiles still reference the OLD taxonomy's skill names;
-- **AI skill-matching against the canon does not work at all** until the load is re-run with an
-  embedding manager.
+**Embeddings.** `taxonomy-load` re-run with a key: **4,268 vectors** (3,562 skills + 706 roles), all
+non-null, captured and replayed into `demo-5`. The canon is no longer inert for AI matching — that was
+M265's clause-4 blocker. Cost: about a cent.
 
-Neither is a code gap — both need a key. `D-v29-3` set a $200 ceiling and said price-before-spend;
-there is nothing to price until a key exists. **Routed to M265**, which cannot pass its gate without
-it: a stack whose heroes have no verified-skill chain is not a proven stack.
+**Profiles.** `gen-batch` regenerated all **364** members against the new canon:
+
+```
+calls=934  cache-hits=0  tokens=959,766
+cost=$0.2196  ceiling=$5.0000  (4.4%)
+valid-JSON rate (pre-re-roll): 100.0%
+```
+
+Priced at $0.15–0.25 before spending, per `D-v29-3`; actual **$0.2196**. The cache showed `0/364
+already cached`, which is the capture-version key working exactly as designed — a new taxonomy
+invalidates every generated member.
+
+### ⚠️ The key was in `studio-desk/.env`, not `app/.env` — and I stopped one file too early
+
+I reported this blocked after testing only `app/.env`, where `OPENAI_KEY` returns
+`429 insufficient_quota` and the Azure endpoint has **no chat deployment** (`404
+DeploymentNotFound` — it has an *embeddings* deployment, which is why the same key computed the
+vectors and failed here). Enumerating **every** secret file found four more AI key sets, and
+`studio-desk/.env`'s **`AI_OPENAI_API_KEY` answers `gpt-4o-mini` with HTTP 200**.
+
+**The lesson is the search, not the key:** "the AI key" was treated as one thing when the workspace
+holds several, under different names, with different entitlements. `app/.env` and `studio-desk/.env`
+both look authoritative; only one works for chat.
+
+
+_(Resolved — see the section above. The routing to M265 is withdrawn: the dependency is closed.)_
