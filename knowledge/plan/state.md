@@ -1,9 +1,9 @@
 ---
 active_release: "v2.9 «new alphabet» — the TAXONOMY-REALIGNMENT release (branch release/02.90-new-alphabet, designed 2026-08-14). The platform's vocabulary was rewritten: `feat/taxonomyv2` retires 61,216 entries (21,871 roles), leaving ~4k skills where this corpus measured 42,790. 7 milestones M259 → M265. Detail: roadmap.md § v2.9."
 active_branch: "release/02.90-new-alphabet"
-active_milestone: "M260 «the floor comes down» ✅ COMPLETE 2026-08-14. Next: M261 «load the new canon», which now also carries the five net-new capture tables (D-M260-4) with M260's scoping measurements attached."
-last_closed: "M260 — 2026-08-14"
-phase: "M260 CLOSED. The pinned `MinRows: 40000` is gone: one constant became TWO RUNGS — an unconditional NON-EMPTY check, and a SHRINK check measured against this surface's own newest prior capture, acknowledgeable once via Options.AcceptShrink with a written reason that lands in the manifest. Strictly stronger than the constant: 42,790->42,000 passed MinRows silently and does not pass a comparison. A first-ever capture has no baseline, so the manifest SAYS the shrink rung did not run. New fence taxonomy_pin_guard (guard family) is GREEN over 313 files — that is also the evidence for the re-grounding item. Next: M261. Detail: releases/02.90-new-alphabet/m260-capture-floor/."
+active_milestone: "M261 «load the new canon» ✅ COMPLETE 2026-08-15. The canon is LOADED (3,562 skills / 706 roles) and CAPTURED into the store as a new ref. Next: M262 (seed) ∥ M263 (taxonomy page) ∥ M264 (corpus)."
+last_closed: "M261 — 2026-08-15"
+phase: "M261 CLOSED — and its scope was wrong in two ways, both corrected by measurement. (1) It said RE-CAPTURE FROM PROD; the canon is a CHECKED-IN artifact in app/taxonomy-canon and cmd/taxonomy-load takes only a DSN, so it was loaded directly from the source production itself loads from — no prod access needed. (2) It said PURGE THE CACHE; the store keys refs by (surface, schemaVersion), so the canon captured as a NEW ref and both old snapshots survive. Purging would have destroyed a working artifact to solve a collision the store prevents by design. M260 proved itself live: the shrink rung refused a real 42,790->3,562 collapse and captured once acknowledged. ⚠️ EMBEDDINGS NOT COMPUTED (no AI key) — the canon is inert for AI matching until re-run; a real gate on M262. Next: M262 ∥ M263 ∥ M264."
 last_updated: "2026-08-14"
 ---
 
