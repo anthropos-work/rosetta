@@ -35,9 +35,9 @@ The failure set of a canon swap is not enumerable up front — it is whatever th
 
 M262, M263, M264
 
-## Routed in from M262 (2026-08-15) — and the gate cannot be met without it
+## ~~Routed in from M262~~ — CLOSED 2026-08-15, before this milestone started
 
-**An AI key.** Two things need one and neither is a code gap:
+**An AI key. RESOLVED** — found in `.agentspace/secrets/studio-desk/.env` (`AI_OPENAI_API_KEY`), not `app/.env`. Both items below are DONE; kept for the record because the search, not the key, is the reusable lesson.
 
 1. **The canon has no embeddings.** `taxonomy-load` ended with *"vectors not computed: the canon is
    loaded but does not take part in matching until this is re-run"* — no embedding manager was
