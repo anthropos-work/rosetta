@@ -2,7 +2,7 @@
 milestone: M262
 title: "The seed speaks the new canon"
 milestone_shape: section
-status: planned
+status: complete
 release: "02.90-new-alphabet"
 depends_on: "M261"
 parallel_with: "M263, M264"
