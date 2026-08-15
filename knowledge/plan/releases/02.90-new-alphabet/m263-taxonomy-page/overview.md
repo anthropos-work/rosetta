@@ -2,7 +2,7 @@
 milestone: M263
 title: "The taxonomy page is reachable"
 milestone_shape: section
-status: planned
+status: complete
 release: "02.90-new-alphabet"
 depends_on: "M261"
 parallel_with: "M262, M264"

@@ -2,7 +2,7 @@
 milestone: M261
 title: "Load the new canon"
 milestone_shape: section
-status: planned
+status: complete
 release: "02.90-new-alphabet"
 depends_on: "M260"
 parallel_with: "none"
