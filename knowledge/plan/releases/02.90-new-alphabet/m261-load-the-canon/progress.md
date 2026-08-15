@@ -1,6 +1,6 @@
 # M261 — Progress
 
-**Status: the canon is LOADED and verified in a real database.** 2026-08-15.
+**Status: COMPLETE.** The canon is loaded, captured, and in the snapshot store. 2026-08-15.
 
 ## What was done
 
@@ -82,3 +82,53 @@ read off a plan document, not measured, and it is withdrawn.** What is actually 
 
 **It does not block this milestone** — the canon came from the checked-in bundle, which is the source
 production itself loads from.
+
+
+## The capture surface — 10 tables → 14, measured not guessed
+
+Every column was read from a database with all 180 migrations applied and the canon loaded:
+
+| table | scope |
+|---|---|
+| `skill_redirects` | parent-scoped via `skills` (the DESTINATION; `old_node_id` is a bare historical string with no FK, by the platform's design) |
+| `job_role_redirects` | parent-scoped via `job_roles` |
+| `category_translations` | parent-scoped via `categories` |
+| `specialization_translations` | parent-scoped via `specializations` |
+
+`ts_search` is excluded on both translation tables for the same reason it already was on the two
+existing ones: it is a generated tsvector. Four pinning tests were updated deliberately (surface set,
+parent scopes, `VersionTables` digest, and the stacksnap registry) — they were doing their job.
+
+## Captured, and M260 proved itself live
+
+`stacksnap capture --surface taxonomy` against the loaded database, into the REAL store:
+
+```
+capture: public.skills captured 3562 public rows against 42790 in the newest prior capture
+(8% — below the 50% shrink floor). This is EITHER a broken source OR a real consolidation, and
+the capture cannot tell them apart; only you can.
+```
+
+That is M260's shrink rung firing on a genuine 42,790 → 3,562 collapse, against real history, and
+**refusing to guess**. Re-run with `--accept-shrink "<reason>"` (the flag this milestone wired to the
+CLI — the Options field existed but nothing exposed it), it captured **14 tables / 50,848 rows /
+public-only=true**, and the manifest records:
+
+> `SHRINK ACCEPTED (taxonomy v2 canon — 43,584 skills consolidated to 3,562 …): public.skills 42790->3562`
+
+## ⚠️ The cache PURGE was wrong, and is cancelled
+
+M261's scope said *"PURGE rather than refresh the snapshot cache — node-ids moved, so a stale
+artifact is not merely old, it is wrong."* **Measured, that is false, and the purge must not run.**
+The store keys refs by `(surface, schemaVersion)`, so the canon captured as a NEW ref and the old
+snapshots are untouched:
+
+```
+5afc0bccf1df   tables=10   skills=42790     (old, public schema)
+c75ce94d6a80   tables=10   skills=42790     (old, skiller schema)
+8b19b5b0a8ad   tables=14   skills=3562      (the canon)   ← new
+```
+
+A stack built from the old `app` resolves the old schema version and still gets a valid taxonomy; a
+stack from the new `app` resolves the new one and gets the canon. **Purging would have destroyed a
+working artifact to solve a collision that the store's own design prevents.**
