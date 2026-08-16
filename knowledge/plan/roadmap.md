@@ -314,7 +314,9 @@ columns/tables the firewall has never seen?
 
 ### M265: Prove it live
 
-**Status:** `planned` · **Shape:** `iterative`
+**Status:** `done` (2026-08-16, `closed-on-gate`) · **Shape:** `iterative`
+
+**Closed:** gate MET on all 5 clauses, each measured cold — `/demo-up` (0 failed surfaces, `public.skills = 3562`, 10/10 containers), `/dev-up` (dev-3: 3,562 skills / 706 roles / 12,835 redirects), the Playthrough suite (**222 passed / 0 failed**), seed closure (247/247 node-ids, 590/591 memberships), and `/taxonomy` live. 1 iter, 0 toks. It caught the release's central defect: replayed Directus content still pinned **187 of 302** taxonomy node-ids that the canon swap retired, and one non-null resolver field turned that into a simulation library rendering **zero cards** while every probe stayed green — repaired by the net-new `stack-snapshot/realign` (515 refs → 0). Shipped as rext `v2.9.10-rext` → `v2.9.17-rext`; **0 platform-repo edits**. Three routes carried forward to `/developer-kit:close-release` (the claim-census ratchet, four guard REDs, the archived-scratchpad sweep).
 **Goal:** a demo **and** a dev stack come up cold on the new canon and prove themselves.
 **Exit gate:** on a cold bring-up, **all** of: (1) `/demo-up` green end-to-end on the new canon; (2) `/dev-up`
 green on the new canon; (3) the full Playthrough suite passing, including the net-new taxonomy Playthrough;

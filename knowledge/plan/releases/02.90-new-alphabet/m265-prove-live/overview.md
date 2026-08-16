@@ -2,14 +2,14 @@
 milestone: M265
 title: "Prove it live"
 milestone_shape: iterative
-status: planned
+status: archived
 release: "02.90-new-alphabet"
 exit_gate: "On a cold bring-up, ALL of: (1) `/demo-up` green end-to-end on the new canon; (2) `/dev-up` green on the new canon; (3) the full Playthrough suite passing, INCLUDING the net-new taxonomy Playthrough; (4) seed closure green WITH the per-hero richness floor satisfied; (5) `/taxonomy` navigable live."
 iteration_protocol_ref: "corpus/ops/verification.md"
 depends_on: "M262, M263, M264"
 parallel_with: "none"
 complexity: large
-last_updated: "2026-08-14"
+last_updated: "2026-08-16"
 ---
 
 # M265: Prove it live
