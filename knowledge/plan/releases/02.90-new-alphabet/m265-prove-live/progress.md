@@ -121,3 +121,69 @@ surface" conclusion was written.
   it is **routed to `/developer-kit:close-release`** rather than done here.
 - Four other guard-family REDs (`clone_drift`, `decommissioned_instruction`, `demo_knob`,
   `unreadable_repo_claim`) are pre-existing and flag files M265 did not touch.
+
+---
+
+## Phase 9-iter — Gate Outcome Ledger
+
+**Close status: `closed-on-gate`.**
+
+### Gate
+
+| | |
+|---|---|
+| **Target** | On a cold bring-up, ALL of: (1) `/demo-up` green on the new canon; (2) `/dev-up` green on the new canon; (3) the full Playthrough suite passing, incl. the net-new taxonomy Playthrough; (4) seed closure green WITH the per-hero richness floor; (5) `/taxonomy` navigable live |
+| **Achieved** | **5 / 5 clauses MET**, each measured on a cold bring-up |
+| **Distance** | 0 |
+| **Status** | **MET** |
+
+No carry-forward artifact (`carry-forward.md`) is required — that is the `closed-incomplete` deliverable.
+
+### Iter ledger summary
+
+| | |
+|---|---|
+| Iters | 1 (`iter-01`, tik, `closed-fixed`) |
+| Toks | 0 — Before-You-Start case (b): `iter-01/` pre-existed as an empty scaffold, so the bootstrap-tok rule could not fire |
+| Orphan iters | 0 |
+| Orphan commits | 0 — every commit maps to `iter(M265/01)`, `harden-iters(M265)`, or `close(M265)` |
+
+### Routes carried forward
+
+All **Fate 3 → `/developer-kit:close-release`**. None is an escape-hatch: every one is release-level
+work inside **this** release, not a cross-release deferral, and M265 is its last milestone — so the
+routing target is the next action, not a distant one.
+
+1. **The claim-census ratchet, broken across six corpus files.** `dependency_map` 29→36,
+   `external_services` 102→120, `backend` 30→32, `messenger` 13→16, `storage` 18→24, and
+   `taxonomy-canon.md` at 43 (never in the baseline — the file was created at M259). Re-baselining a
+   ratchet is a **target change**, which is the user's call; doing it quietly at the tail of the last
+   milestone is how a ratchet stops meaning anything (D-M265-6).
+2. **Four guard-family REDs** — `clone_drift`, `decommissioned_instruction`, `demo_knob`,
+   `unreadable_repo_claim` — each flagging files M265 did not touch.
+3. **Three archived-milestone scratchpads** (`work-m257`, `work-m257x`, `work-m258`) are sweep
+   candidates under the wrapper's archived sweep. `work-m257x` alone holds hundreds of evidence
+   artifacts, so the destructive sweep was **not** performed unilaterally.
+
+### ⚠️ Known test failures carried into the close — flagged, not elided
+
+`stack-core` runs **2,438 tests with 90 failures + 9 errors**. They are **not** a regression from
+M265, and the claim is measured rather than asserted:
+
+- The failures concentrate in the **M257x fence suite** (`test_frozen_expectation_census_m257x` 16,
+  `test_repair_postcondition` 9, `test_harden_origin_route_visibility_m257x` 6, …), which **v2.8
+  closed `closed-incomplete` BY USER RULING**. They are the carried state that ruling created.
+- **Of the six files breaking the claim-census ratchet, M265 touched exactly one**
+  (`taxonomy-canon.md`, 37 → 43 unevidenced assertions via the new §6.4/§6.5), and that file was
+  **never in the baseline** — so no re-baseline is avoidable by reverting M265's prose.
+- A pre-M265 baseline was attempted with a detached `v2.9.9-rext` worktree and is **reported as
+  inconclusive rather than quoted**: a rext worktree in `/tmp` cannot see the rosetta corpus, so the
+  corpus-reading guards "pass" there vacuously. Rather than present a vacuous green as a baseline,
+  M265's contribution was bounded directly, per the measurement above.
+
+The Go suites (`stack-snapshot`, `stack-seeding`), the `dev-stack` suite (114 tests) and every
+milestone-touched suite are **green with a 5/5 flake gate and 0 flakes**.
+
+**This carry needs the user's eyes at `/developer-kit:close-release`, which is the right owner:**
+its Phase 1b runs `audit-deferrals --scope=release` and its Phase 3b does release-level KB
+consolidation.
