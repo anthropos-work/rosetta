@@ -2,6 +2,56 @@
 
 All notable user-facing changes to Project Rosetta. Format: [Keep a Changelog](https://keepachangelog.com/), semver-aware.
 
+## [v2.9] "new alphabet" — 2026-08-16
+
+**The taxonomy-realignment release.** *The platform's vocabulary was rewritten under us.* `feat/taxonomyv2`
+consolidated the skill/job-role catalogue from **43,584 skills / 22,511 roles** to **3,562 / 706**, and this
+release taught the corpus, the stack tooling and the demo to speak it — then proved it live on a cold demo
+**and** a cold dev stack.
+
+### Added
+- **`/taxonomy`** is reachable and navigable on a demo, with a Playthrough covering it (M263).
+- **`corpus/architecture/taxonomy-canon.md`** — the corpus's first anchor for the canon: where it lives,
+  what it holds, how retirements resolve, and what consuming it costs (M259).
+- **`stack-snapshot/realign`** — repairs taxonomy node-ids embedded in replayed content on every replay,
+  discovering its own columns from the catalog (M265).
+- **`seed_role_guard`** — asserts every job role a seed pins by NAME still resolves in the canon; the
+  redirect tables key on node-id and structurally cannot cover name-pins (M265).
+- **A per-hero richness floor** in the seed-closure DNA: a hero with no verified-skill chain now fails
+  loudly instead of seeding hollow (M262).
+
+### Changed
+- The snapshot capture surface grew from **10 to 14 taxonomy tables** — redirects and the category /
+  specialization translation levels, without which a replayed stack loses two levels of the language axis
+  and cannot explain its own history (M260/M261).
+- The seed, the content-story fixtures and the Playthrough world all speak the new canon: **20 retired
+  node-ids and 3 retired role names remapped** from the canon's own redirect files, never chosen by eye.
+- `migrate-dev.sh` now takes a positional `N`, so an additional `dev-N` stack can actually be migrated.
+
+### Fixed
+- **A demo whose AI-simulations library rendered zero cards.** Replayed content still pinned **187 of 302**
+  retired node-ids; one non-null resolver field nulls the whole list. Every liveness probe passed
+  throughout. **515 refs repaired → 0 dangling** (M265).
+- **The dev path could not migrate an additional stack** — a silently-ignored positional argument, a `::1`
+  DSN, and an inverted clone-set assumption, each hiding the next (M265).
+- **The AI-readiness "completed" hero** mapped her skills before the cycle opened, so she rendered
+  NOT-STARTED with three completed steps in the database (M265).
+- **The claim census could not see `.csv` evidence** — it reported unevidenced-assertion debt in **18
+  corpus files** that had cited their figures to checked-in bundle CSVs all along.
+- **`blocking_state_guard` treated the documented "between milestones" state as a parse failure.**
+
+### Known limitations
+- **Six of seven milestones (M259–M264) shipped without the close-milestone lifecycle** — no retro, no
+  metrics, no completeness ledger, no deferral re-audit. Recorded rather than back-filled; see
+  `release-retro.md`.
+- `stack-core` carries ~89 pre-existing failures of 2,438 tests, from the M257x fence suite that v2.8
+  closed `closed-incomplete` by user ruling.
+- The triple-clean gate ran **locally**, not in CI; CI wiring is carried forward.
+
+### Supply chain
+- **No dependency changed.** Neither the corpus nor the tooling repo altered a `go.mod`, `go.sum` or
+  `package.json` in this release. Snapshot: `dependencies.lock`.
+
 ## [v2.8] "fast build" — 2026-08-13
 
 **The time-to-ready release.** *From nothing, to live, to provably live, fast.* Measure the machine and spend

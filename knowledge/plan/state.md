@@ -1,9 +1,9 @@
 ---
-active_release: "v2.9 «new alphabet» — the TAXONOMY-REALIGNMENT release (branch release/02.90-new-alphabet, designed 2026-08-14). The platform's vocabulary was rewritten: `feat/taxonomyv2` retires 61,216 entries (21,871 roles), leaving ~4k skills where this corpus measured 42,790. 7 milestones M259 → M265. Detail: roadmap.md § v2.9."
-active_branch: "release/02.90-new-alphabet"
-active_milestone: "(between milestones — v2.9 is feature-complete; next action is /developer-kit:close-release)"
+active_release: "(none — v2.9 «new alphabet» SHIPPED 2026-08-16, tag `v2.9`. Awaiting /developer-kit:design-roadmap for the next release.)"
+active_branch: "main"
+active_milestone: "(between releases)"
 last_closed: "M265 — 2026-08-16"
-phase: "v2.9 «new alphabet» is FEATURE-COMPLETE — all 7 milestones closed (M259 → M265). M265 closed `closed-on-gate` 2026-08-16: 5/5 clauses measured cold, Playthrough suite 222/0. It caught what the prior five milestones could not — replayed content still pinned 187 of 302 retired node-ids, so the demo library rendered ZERO cards while every probe was green; fixed by the net-new stack-snapshot/realign. ⚠️ Carried to close-release: the claim-census ratchet is broken across 6 corpus files (M265 touched 1, never baselined), 4 guard-family REDs, and 3 archived scratchpads. Next: /developer-kit:close-release."
+phase: "between releases — awaiting /developer-kit:design-roadmap. v2.9 shipped 2026-08-16 (tag `v2.9`): the taxonomy went 43,584/22,511 -> 3,562/706 and the corpus, tooling and demo learned it, proven cold on a demo AND a dev stack with the Playthrough suite at 222/0. It caught a demo whose simulation library rendered ZERO cards while every probe was green (187 of 302 replayed content node-ids retired). ⚠️ SIX of seven milestones shipped WITHOUT the close-milestone lifecycle — recorded, not back-filled (release-retro.md)."
 last_updated: "2026-08-16"
 ---
 
@@ -117,6 +117,11 @@ scope: [`roadmap.md`](roadmap.md) § v2.9.
 _(none this release — v2.8's entries moved to [`roadmap.md`](roadmap.md) at its close.)_
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
+- **v2.9 "new alphabet"** — 2026-08-16 (tag `v2.9`) — taxonomy realignment; M259→M265;
+  **43,584/22,511 → 3,562/706** skills/roles; Playthrough suite **222/0** cold; content realignment
+  repaired **515 refs → 0**; 0 platform edits, 0 dependency changes.
+  ⚠️ **6 of 7 milestones shipped WITHOUT the close-milestone lifecycle** — recorded, not back-filled
+  (`releases/archive/02.90-new-alphabet/release-retro.md`).
 - **v2.8 "fast build" — 2026-08-13** (tag `v2.8`) — time-to-ready; M255→M256→M257x→M257→M258;
   **450 s → 286.99 s** cold bring-up on `macmini` (gate 360 s, stretch 300 s); the journey suite now runs
   **inside** every bring-up; 11.54 GB reclaimed at zero build-time cost; 0 platform edits, 0 net-new deps.
@@ -124,7 +129,6 @@ _(none this release — v2.8's entries moved to [`roadmap.md`](roadmap.md) at it
   carry-forward → `roadmap-vision.md` § v2.8.
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;
   prove-on-billion a–h live; **zero carry-forward**; 0 platform edits.
-- **v2.6** 2026-07-23 (`v2.6`) · **v2.5** 2026-07-20 (`v2.5`).
 
 ## Standing backlog (fated destinations — this is an INDEX; each row's owner is the link)
 

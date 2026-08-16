@@ -155,7 +155,7 @@ the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
 
-## In development — v2.9 "new alphabet" (branch `release/02.90-new-alphabet`, designed 2026-08-14)
+## Done — v2.9 "new alphabet" (✅ SHIPPED 2026-08-16, tag `v2.9`, branch merged to `main` + deleted)
 
 **Thesis:** the platform's vocabulary was rewritten. Realign the corpus, the stack tooling, and the demo's
 seeded world to the new canon — and prove both a demo and a dev stack come up on it.
