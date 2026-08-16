@@ -69,7 +69,7 @@ found". The assertion under test is unchanged and passes: the nav lands on the v
 
 | # | Clause | State |
 |---|--------|-------|
-| 1 | `/demo-up` green cold on the new canon | ✅ green (`public.skills = 3562`, all demo-patches applied, 10/10 containers, all probes) |
+| 1 | `/demo-up` green cold on the new canon | 🟡 **every real gate green** (`public.skills = 3562`, all demo-patches applied, 10/10 containers, all probes) — but the last cold run carried one ⚠, `set-dress INCOMPLETE: taxonomy`, caused by MY anti-vacuity bug (v2.9.13) and not by the replay, which had just loaded 55,116 rows. Fixed at v2.9.14/16 and **proven on the dev path** (`content realign: SKIPPED — the content schema is not provisioned yet`); **not yet re-measured on a cold demo cycle**, so this is not recorded as clean |
 | 2 | `/dev-up` green on the new canon | ✅ **met, after fixing three dev-path defects** — `dev-3` carries the canon (skills **3,562** / roles **706** / redirects **12,835**), 4 containers, backend up, `taxonomy rows=3562 ok` |
 | 3 | full Playthrough suite, incl. the taxonomy Playthrough | 🟡 **219 passed / 3 failed**, two since fixed and re-run green → **1 red left** (`pt-assignment-assign`, characterised below, not taxonomy-caused) |
 | 4 | seed closure + per-hero richness floor | ✅ `all 247 seeded verified-skill node-id(s) resolve; 590 of 591 membership(s) populated` |
