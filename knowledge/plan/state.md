@@ -1,10 +1,10 @@
 ---
 active_release: "v2.9 «new alphabet» — the TAXONOMY-REALIGNMENT release (branch release/02.90-new-alphabet, designed 2026-08-14). The platform's vocabulary was rewritten: `feat/taxonomyv2` retires 61,216 entries (21,871 roles), leaving ~4k skills where this corpus measured 42,790. 7 milestones M259 → M265. Detail: roadmap.md § v2.9."
 active_branch: "release/02.90-new-alphabet"
-active_milestone: "M261 «load the new canon» ✅ COMPLETE 2026-08-15. The canon is LOADED (3,562 skills / 706 roles) and CAPTURED into the store as a new ref. Next: M262 (seed) ∥ M263 (taxonomy page) ∥ M264 (corpus)."
-last_closed: "M261 — 2026-08-15"
-phase: "M261 CLOSED — and its scope was wrong in two ways, both corrected by measurement. (1) It said RE-CAPTURE FROM PROD; the canon is a CHECKED-IN artifact in app/taxonomy-canon and cmd/taxonomy-load takes only a DSN, so it was loaded directly from the source production itself loads from — no prod access needed. (2) It said PURGE THE CACHE; the store keys refs by (surface, schemaVersion), so the canon captured as a NEW ref and both old snapshots survive. Purging would have destroyed a working artifact to solve a collision the store prevents by design. M260 proved itself live: the shrink rung refused a real 42,790->3,562 collapse and captured once acknowledged. ⚠️ EMBEDDINGS NOT COMPUTED (no AI key) — the canon is inert for AI matching until re-run; a real gate on M262. Next: M262 ∥ M263 ∥ M264."
-last_updated: "2026-08-14"
+active_milestone: "(between milestones — v2.9 is feature-complete; next action is /developer-kit:close-release)"
+last_closed: "M265 — 2026-08-16"
+phase: "v2.9 «new alphabet» is FEATURE-COMPLETE — all 7 milestones closed (M259 → M265). M265 closed `closed-on-gate` 2026-08-16: 5/5 clauses measured cold, Playthrough suite 222/0. It caught what the prior five milestones could not — replayed content still pinned 187 of 302 retired node-ids, so the demo library rendered ZERO cards while every probe was green; fixed by the net-new stack-snapshot/realign. ⚠️ Carried to close-release: the claim-census ratchet is broken across 6 corpus files (M265 touched 1, never baselined), 4 guard-family REDs, and 3 archived scratchpads. Next: /developer-kit:close-release."
+last_updated: "2026-08-16"
 ---
 
 # State
