@@ -28,9 +28,9 @@ Supporting code, all net-new in the `feat/taxonomyv2` program:
 
 | Package | Role |
 |---|---|
-| `app/cmd/taxonomy-load` | the loader |
-| `app/internal/taxonomyredirect` | resolves a retired `node_id` → what it became |
-| `app/internal/taxonomyguard` | **closes the taxonomy to runtime minting** (§5) |
+| `app/cmd/taxonomy-load/main.go` | the loader |
+| `app/internal/taxonomyredirect/redirect.go` | resolves a retired `node_id` → what it became |
+| `app/internal/taxonomyguard/chokepoint_test.go` | **closes the taxonomy to runtime minting** (§5) |
 | `app/internal/taxonomyapi`, `taxonomyload`, `skilltaxonomy` | API / load / domain surfaces |
 | `app/knowledge/taxonomy-canon-migration.md`, `…-release-checklist.md` | the platform's own migration plan |
 

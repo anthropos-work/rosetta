@@ -197,7 +197,9 @@ merge surface is index/link-level only.
 
 ### M259: Canon ground truth
 
-**Status:** `planned` · **Shape:** `section` · **HARD go/no-go barrier**
+**Status:** `done` (merged 2026-08-14, ⚠️ not closed via close-milestone) · **Shape:** `section` · **HARD go/no-go barrier**
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-14 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** establish what the new taxonomy actually IS, from the repos and a prod read, before any downstream
 milestone is sized against a guess.
 **Scope:**
@@ -219,7 +221,9 @@ DECIDE"*, which the revamp contradicts.
 
 ### M260: The floor comes down
 
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (merged 2026-08-14, ⚠️ not closed via close-milestone) · **Shape:** `section`
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-14 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** no Rosetta tool asserts a taxonomy SIZE it did not measure this run.
 **Scope:**
   - In: `MinRows` **derived from the capture** rather than pinned at 40000, with the under-capture protection
@@ -234,7 +238,9 @@ DECIDE"*, which the revamp contradicts.
 
 ### M261: Load the new canon
 
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (merged 2026-08-15, ⚠️ not closed via close-milestone) · **Shape:** `section`
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-15 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** a stack replays the new canon, cold, from a fresh capture.
 **Scope:**
   - In: re-capture from a safe prod source; **purge** rather than refresh the snapshot cache (node-ids moved,
@@ -251,7 +257,9 @@ columns/tables the firewall has never seen?
 
 ### M262: The seed speaks the new canon
 
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (merged 2026-08-15, ⚠️ not closed via close-milestone) · **Shape:** `section`
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-15 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** every seeded hero's skill chain resolves in the new canon, and a partial failure is loud.
 **Scope:**
   - In: remap seeded refs **through the redirect map**; re-resolve the **8 literal job-role names** the presets
@@ -280,7 +288,9 @@ columns/tables the firewall has never seen?
 
 ### M263: The taxonomy page is reachable
 
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (merged 2026-08-15, ⚠️ not closed via close-milestone) · **Shape:** `section`
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-15 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** a hero can navigate and review the taxonomy on a demo, and it is covered so it cannot rot unseen.
 **Scope:**
   - In: prove Library → Taxonomy renders and walks **index → category → specialization → role → skill** on the
@@ -298,7 +308,9 @@ columns/tables the firewall has never seen?
 
 ### M264: The corpus tells the truth
 
-**Status:** `planned` · **Shape:** `section`
+**Status:** `done` (merged 2026-08-15, ⚠️ not closed via close-milestone) · **Shape:** `section`
+
+> ⚠️ **Shipped WITHOUT the close-milestone lifecycle.** Merged on 2026-08-15 and its work is in the release, but `/developer-kit:close-milestone` never ran for it: there is **no `retro.md`, no `metrics.json`, and no Completeness/Gate ledger**, and the deferral re-audit + adversarial review that close provides never happened. The status above is grounded in the **merge date from git**, not in a closure review. Recorded at v2.9's release close (option B: state the gap rather than back-fill an audit trail for a review that did not occur).
 **Goal:** no corpus page states a taxonomy figure or module fact that the new canon has falsified.
 **Scope:**
   - In: the ~17 count-claims across `shared_libraries.md` (the canonical figures section **and** the AKB

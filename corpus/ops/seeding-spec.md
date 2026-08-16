@@ -494,7 +494,7 @@ since M219 **BOTH a `closed` AND an `active` cycle** — + `ai_readiness_skills`
 node-ids** + `ai_readiness_sims` + `ai_readiness_steps`), **`AIReadinessFunnelSeeder`** (199 frozen
 `ai_readiness_snapshots` at 78.4% all-3-complete + `ai_readiness_user_step_progresses`), and — net-new at
 **M219** — the **interview-aggregated-report seeder** (`public.interview_aggregated_reports` — read
-`jobsimulation.…` until M257x iter-129; the seeder writes `public` at `ai_readiness_funnel.go:999` and
+`jobsimulation.…` until M257x iter-129; the seeder writes `public` at `ai_readiness_funnel.go:1022` and
 `resetTables` names `public.interview_aggregated_reports` at `cmd/stackseed/main.go:62`, flushed by
 the funnel seeder), **without which the manager's four interview-findings blocks render headings with no content**
 (no seeder had ever written that table). DAG-ordered `config → funnel`.
