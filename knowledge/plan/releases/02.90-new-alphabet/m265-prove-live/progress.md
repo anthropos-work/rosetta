@@ -71,9 +71,43 @@ found". The assertion under test is unchanged and passes: the nav lands on the v
 |---|--------|-------|
 | 1 | `/demo-up` green cold on the new canon | ✅ green (`public.skills = 3562`, all demo-patches applied, 10/10 containers, all probes) |
 | 2 | `/dev-up` green on the new canon | ⬜ not yet measured |
-| 3 | full Playthrough suite, incl. the taxonomy Playthrough | 🟡 in progress — the content defect above is fixed; residual reds under triage |
+| 3 | full Playthrough suite, incl. the taxonomy Playthrough | 🟡 **219 passed / 3 failed**, two since fixed and re-run green → **1 red left** (`pt-assignment-assign`, characterised below, not taxonomy-caused) |
 | 4 | seed closure + per-hero richness floor | ✅ `all 247 seeded verified-skill node-id(s) resolve; 590 of 591 membership(s) populated` |
 | 5 | `/taxonomy` navigable live | ✅ walked category → skill (`/taxonomy/skill/ai-adoption-change-management`); `Taxonomy` is in the primary nav |
+
+#### The suite, run to run
+
+| run | result | what moved |
+|---|---|---|
+| 1 | seed FAILED outright | `pt-world` pinned 3 retired role names |
+| 2 | 6 red | the content defect (`realign`) — library rendering zero cards |
+| 3–5 | 5 → 2 red | realignment landed; nav locator + expand race repaired |
+| **6** | **219 passed / 3 failed** | AI-readiness cycle clamp landed |
+| after | **1 red** | `seed-facts-fence` and `pt-onboarding-org-prepared` fixed and re-run green individually |
+
+#### The one remaining red — `pt-assignment-assign`, characterised
+
+**Not taxonomy-caused, and not a flake.** After the realignment the resolver is fully clean
+(`skill not found` = **0** in the backend log), and the assign surface itself renders.
+
+What is measured:
+
+- All **76** seeded `organization_assignments` carry a `plan_id` — the **v2, plan-based** shape.
+- The primary nav has moved to the v2 surface (`/enterprise/assignments-list`, "Programs"), which
+  is what `pt-assignments-nav-v2` now proves.
+- The Playthrough drives the **legacy** surface by URL (`/enterprise/assignments/skill-paths`),
+  which rendered **"No data"** on a fresh `pt-world`.
+
+So the Playthrough targets a surface the product has superseded and whose shape the seeder no
+longer writes — the same class as the nav defect the user reported, one level down. Porting the
+assign-WRITE flow to the v2 "Programs" surface needs a new page object and a new interaction path;
+that is scoped work, not a tail-end edit on the last milestone, so it is **routed forward** rather
+than rushed or papered over.
+
+Two fixes it did get, both real and both verified: the precondition now waits 30 s for the members
+table (the heading renders from the route, the table from a later query — a probe waiting 8 s found
+16 assign affordances on a page the 15 s assertion had just called empty), and the surface it lands
+on is no longer masked by the resolver defect.
 
 #### Carried out of this iter, not silently
 
