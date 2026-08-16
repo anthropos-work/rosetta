@@ -70,7 +70,7 @@ found". The assertion under test is unchanged and passes: the nav lands on the v
 | # | Clause | State |
 |---|--------|-------|
 | 1 | `/demo-up` green cold on the new canon | ✅ green (`public.skills = 3562`, all demo-patches applied, 10/10 containers, all probes) |
-| 2 | `/dev-up` green on the new canon | ⬜ not yet measured |
+| 2 | `/dev-up` green on the new canon | ✅ **met, after fixing three dev-path defects** — `dev-3` carries the canon (skills **3,562** / roles **706** / redirects **12,835**), 4 containers, backend up, `taxonomy rows=3562 ok` |
 | 3 | full Playthrough suite, incl. the taxonomy Playthrough | 🟡 **219 passed / 3 failed**, two since fixed and re-run green → **1 red left** (`pt-assignment-assign`, characterised below, not taxonomy-caused) |
 | 4 | seed closure + per-hero richness floor | ✅ `all 247 seeded verified-skill node-id(s) resolve; 590 of 591 membership(s) populated` |
 | 5 | `/taxonomy` navigable live | ✅ walked category → skill (`/taxonomy/skill/ai-adoption-change-management`); `Taxonomy` is in the primary nav |
