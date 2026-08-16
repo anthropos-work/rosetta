@@ -1,5 +1,5 @@
 **Type:** tik (no TOK chain — Before-You-Start case (b); see `overview.md` § Type selection)
-**Protocol:** [`corpus/ops/verification.md`](../../../../../corpus/ops/verification.md)
+**Protocol:** [`corpus/ops/verification.md`](../../../../../../corpus/ops/verification.md)
 
 # M265 iter-01 — progress
 
