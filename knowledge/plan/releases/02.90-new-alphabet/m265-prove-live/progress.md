@@ -71,7 +71,7 @@ found". The assertion under test is unchanged and passes: the nav lands on the v
 |---|--------|-------|
 | 1 | `/demo-up` green cold on the new canon | ✅ **clean at v2.9.17** — 0 failed surfaces, no `set-dress INCOMPLETE`. `✓ taxonomy replayed: public.skills = 3562` · `✓ demo-patches: all applied` · `✓ verify live: all probes passed` · `✓ container liveness: 10/10`. The realignment behaved correctly in BOTH orderings on the same run: `SKIPPED — the content schema is not provisioned yet` on the taxonomy surface, then `26 json column(s) scanned; 515 dangling ref(s) before, 0 after; 515 repaired` on the directus surface |
 | 2 | `/dev-up` green on the new canon | ✅ **met, after fixing three dev-path defects** — `dev-3` carries the canon (skills **3,562** / roles **706** / redirects **12,835**), 4 containers, backend up, `taxonomy rows=3562 ok` |
-| 3 | full Playthrough suite, incl. the taxonomy Playthrough | 🟡 **219 passed / 3 failed**, two since fixed and re-run green → **1 red left** (`pt-assignment-assign`, characterised below, not taxonomy-caused) |
+| 3 | full Playthrough suite, incl. the taxonomy Playthrough | ✅ **222 passed / 0 failed**, cold reset-to-seed on demo-5 at v2.9.17 |
 | 4 | seed closure + per-hero richness floor | ✅ `all 247 seeded verified-skill node-id(s) resolve; 590 of 591 membership(s) populated` |
 | 5 | `/taxonomy` navigable live | ✅ walked category → skill (`/taxonomy/skill/ai-adoption-change-management`); `Taxonomy` is in the primary nav |
 
@@ -85,29 +85,30 @@ found". The assertion under test is unchanged and passes: the nav lands on the v
 | **6** | **219 passed / 3 failed** | AI-readiness cycle clamp landed |
 | after | **1 red** | `seed-facts-fence` and `pt-onboarding-org-prepared` fixed and re-run green individually |
 
-#### The one remaining red — `pt-assignment-assign`, characterised
+#### ⚠ RETRACTED — "the one remaining red", and why the reading was wrong
 
-**Not taxonomy-caused, and not a flake.** After the realignment the resolver is fully clean
-(`skill not found` = **0** in the backend log), and the assign surface itself renders.
+An earlier entry here characterised `pt-assignment-assign` as **not taxonomy-caused**: the argument
+was that all 76 seeded assignments carry a `plan_id` (the v2 shape), the nav has moved to the v2
+surface, and the Playthrough drives the legacy one by URL, which rendered "No data". It was routed
+forward as scoped work.
 
-What is measured:
+**That is retracted. It was the taxonomy defect, one hop further out than I had traced it.**
 
-- All **76** seeded `organization_assignments` carry a `plan_id` — the **v2, plan-based** shape.
-- The primary nav has moved to the v2 surface (`/enterprise/assignments-list`, "Programs"), which
-  is what `pt-assignments-nav-v2` now proves.
-- The Playthrough drives the **legacy** surface by URL (`/enterprise/assignments/skill-paths`),
-  which rendered **"No data"** on a fresh `pt-world`.
+The assign builder's skill-path picker reads `publicSkillPaths`. That query was still being NULLED
+by a single unresolvable node-id — `K-DIGB2B-2416`, the one the scan's own pattern could not see
+(`[A-Z]{4,8}` does not match a digit in the stem). So the picker had **0 options**, the submit
+stayed disabled, and on a later reset the surface read "No data". Every observation was real; the
+inference from them was not.
 
-So the Playthrough targets a surface the product has superseded and whose shape the seeder no
-longer writes — the same class as the nav defect the user reported, one level down. Porting the
-assign-WRITE flow to the v2 "Programs" surface needs a new page object and a new interaction path;
-that is scoped work, not a tail-end edit on the last milestone, so it is **routed forward** rather
-than rushed or papered over.
+With the pattern widened and the 515th ref repaired, `pt-assignment-assign` **passes**. Nothing is
+routed forward.
 
-Two fixes it did get, both real and both verified: the precondition now waits 30 s for the members
-table (the heading renders from the route, the table from a later query — a probe waiting 8 s found
-16 assign affordances on a page the 15 s assertion had just called empty), and the surface it lands
-on is no longer masked by the resolver defect.
+**What this cost, and the rule it earns.** The wrong reading was reached by measuring the DATABASE
+(assignments carry plan_id — true) and the NAV (moved to v2 — true) and composing them into a
+story, while the actual cause was one layer up in a resolver whose failure mode is *silence*. Two
+true facts and a plausible join are not a diagnosis. The check that would have caught it is the one
+that did: `skill not found` in the backend log, which was **not** zero at the time the "superseded
+surface" conclusion was written.
 
 #### Carried out of this iter, not silently
 
