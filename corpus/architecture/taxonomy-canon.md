@@ -201,6 +201,85 @@ A seeded skill ref pointing at a retired id has a **~33 %** chance of being redi
 a **~67 %** chance of having no successor at all. The drop set was chosen by *production* reference-counts, and
 a demo seeds from the full replayed public taxonomy — so demo refs are **not** protected by that reasoning.
 
+### 6.4 The refs the redirect map structurally cannot help: pins by **NAME**
+
+§6.3 measures the exposure of refs held **by node-id**. There is a second, smaller population the redirect map
+cannot reach *in principle*: refs held **by name**.
+
+Both redirect tables key on `old_node_id`. A seed preset that pins `role: Business Operations Analyst` carries no
+node-id at all, so no lookup — automated or manual — can follow it. It does not 404 the way §6.4's retired-id
+contract promises; the resolver simply returns nothing, and what happens next depends entirely on the consumer:
+
+| Consumer | Behaviour when the name stops resolving |
+|---|---|
+| `PersonaSeeder` enrichment | **silent** — the hero seeds, minus their skill chain |
+| the users seeder | **loud** — `hero role(s) [...] do not resolve`, the whole run fails |
+
+The loud one is the lucky case. The silent one produces a stack that comes up green and is *hollow* — the exact
+failure the row-count floor in §6.2 also cannot see, for the same underlying reason: **a count proves rows exist,
+never that they resolve.**
+
+Measured at v2.9 M265: **10** name-pins across the seed presets, of which **6** were retired by the
+consolidation — a far higher hit rate than §6.3's 33 %/67 % node-id split, because named roles skew to the
+common, heavily-consolidated end of the taxonomy. All six were repaired from the canon's own
+`role_redirects.csv` (`old_title` → `new_role`), which *does* carry the old title and is therefore the right
+lookup for this class even though the redirect *tables* are not.
+
+Fenced by `rosetta-extensions/stack-core/seed_role_guard.py`, which walks every seed YAML in the repo rather
+than the directory a defect was last found in — the M262→M265 lesson: **two fixes for this class were applied
+where the bug surfaced, and the second surfaced only because a different section had never been scanned.**
+
+### 6.5 The one that actually broke a demo: node-ids embedded in replayed CONTENT
+
+§6.3 and §6.4 are about the *seed*. The largest exposure is somewhere neither of them looks: the
+**Directus content**, which pins skills by node-id inside JSON documents.
+
+Taxonomy and content are two **separate** snapshot surfaces. Replaying the taxonomy swaps
+`public.skills` wholesale; the content is replayed unchanged, still carrying the ids it was captured
+with. Measured on a cold demo-5 at v2.9 M265: **302 distinct skill node-ids** referenced by simulation
+sequences, **187 of them retired** — plus more in two columns nested a level down.
+
+What makes this severe rather than cosmetic is the resolver's non-null contract:
+
+```
+ERROR graphql resolver error error="input:38:7: publicJobSimulations[5].skills[1].name
+                                    ent: skill not found"
+```
+
+`skills[].name` is non-null, so **one** unresolvable id nulls the **entire list**. The observed
+result was an AI-simulations library rendering **zero cards** and every sim detail page returning an
+empty HTTP 200 — while `/api/health` was 200, every container was up, and `public.skills = 3562`
+was green. **A row count cannot catch a hollow row, and a liveness probe cannot catch an empty
+list.** This is the [M236 iter-05 shape](../ops/demo/content-stories-spec.md) — the whole query nulls
+while the header still renders — with a taxonomy cause.
+
+**The repair** is `rosetta-extensions/stack-snapshot/realign`, which runs on **every** replay (the
+two surfaces are replayed by separate invocations in either order, so running it unconditionally is
+what makes the outcome order-independent). It rewrites dead ids to their successors via
+`public.skill_redirects`, and it is **discovery-driven, not list-driven** — for a reason worth
+keeping:
+
+> Its first cut carried a hand-maintained list of four columns. It repaired all four, verified
+> clean, exited 0 — and the next page load still failed, because ids also live in
+> `sequences.validation_evaluation_criteria` and `skill_paths.chapter_list`, **nested below the top
+> level**. A hand-maintained list of the places a value can hide is wrong the moment content changes
+> shape.
+
+So it enumerates every json column in the content schema and substitutes by **exact token**, which
+is what makes nesting irrelevant — it never has to know a document's shape to repair it. Live proof:
+**26 columns scanned, 257 dangling before, 0 after, 257 repaired**, and `skill not found` in the
+backend log went **258 → 0**.
+
+An id with **no** successor cannot be repaired and **fails the bring-up loudly**, naming the columns
+— a half-realigned content set looks repaired and still nulls the resolver, so it must never exit 0.
+At M265 there were none: **187 of 187 were redirectable**. That is far above §6.3's ~33 %, and the
+reason generalises — *content references the skills people actually use, and those are the ones a
+consolidation gives a successor*. Do not quote the 100 % as a property of the map.
+
+**Operational note:** the cms domain caches Directus content. Realigning an already-warm stack leaves
+the stale payload served until the cache turns over; a bring-up is unaffected (the cache is cold at
+that point), but a manual re-realign wants a `backend` restart.
+
 ---
 
 ## 7. Verdict — **GO**
