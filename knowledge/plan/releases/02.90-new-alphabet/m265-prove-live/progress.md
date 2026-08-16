@@ -2,6 +2,8 @@
 
 ## Running ledger
 
+- iter-01 (tik): gate MET on all five clauses; found + repaired the content-realignment defect (library rendered 0 cards) — see iter-01/progress.md
+
 ### iter-01 — prove it live, and find the defect six green gates could not see
 
 **The gate.** On a cold bring-up, ALL of: (1) `/demo-up` green end-to-end on the new canon;

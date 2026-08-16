@@ -1,0 +1,20 @@
+{
+  "milestone": "M265",
+  "shape": "iterative",
+  "iters_total": 1,
+  "tiks": 1,
+  "toks": 0,
+  "gate": "MET",
+  "gate_clauses_total": 5,
+  "gate_clauses_met": 5,
+  "closed_fixed": 1,
+  "closed_fixed_partial": 0,
+  "closed_no_lift": 0,
+  "playthroughs_passed": 222,
+  "playthroughs_failed": 0,
+  "content_refs_repaired": 515,
+  "content_refs_dangling_after": 0,
+  "rext_tags_shipped": ["v2.9.10-rext","v2.9.11-rext","v2.9.12-rext","v2.9.13-rext","v2.9.14-rext","v2.9.15-rext","v2.9.16-rext","v2.9.17-rext"],
+  "platform_repo_edits": 0,
+  "last_updated": "2026-08-16"
+}

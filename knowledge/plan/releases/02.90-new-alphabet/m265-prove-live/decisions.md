@@ -69,3 +69,13 @@ routes it to `/developer-kit:close-release` rather than running `--update-baseli
 not a milestone one. More importantly, moving a ratchet baseline is a **target change**, which is the
 user's call — repairing a stale reference is not. Doing it quietly at the end of the last milestone
 is exactly how a ratchet stops meaning anything.
+
+## No TOK chain — Before-You-Start case (b)
+
+This milestone has **no `TOK-*` entries** and never had one. `iter-01/` existed as an empty scaffold
+before the first iter ran, so `/developer-kit:build-mstone-iters` Phase 0 rule 1 (iter-01 = bootstrap
+tok) could not fire — the bootstrap-less shape the skill calls case (b).
+
+iter-01 therefore ran as a **tik planning from `overview.md` + the protocol doc directly**. Any future
+iter of this milestone should name "no TOK chain (case (b))" as its active-strategy reference rather
+than hunting for a TOK entry that does not exist.
