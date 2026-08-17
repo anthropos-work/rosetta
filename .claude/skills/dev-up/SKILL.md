@@ -55,16 +55,18 @@ before/after each step, request confirmation before installs or destructive ops,
    cloned → the **3** `repos.yml` repos via `make init` (`app`, `next-web-app`, `studio-desk`)
    → `platform/.env` configured (use `/stack-secrets`) → services up (`make up` — **re-derive the container
    count from `make ps`**; expect **4** on the default `core` profile, and the long-quoted "11" is three
-   merge waves stale) → **cold DB-init**
-
-   > **⚠️ This step said "the **4** repos … (`app`, **`sentinel`**, …)" and "expect **5**" until now, and it
-   > contradicted its own step 4 twelve lines below, which has said **4** since the sentinel fold.**
-   > `repos.yml` declares **three** repos (`repos.yml:3,8,11` @ platform `766df6c`) — `sentinel` was folded
-   > into `app` at v11.0 and its entry deleted, so `make init` does not clone it and `cd sentinel` fails. (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   merge waves stale) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
    → health.
+
+   > **⚠️ This step said "the **4** repos … (`app`, **`sentinel`**, …)" and "expect **5**" until now, and it
+   > contradicted its own step 4 twelve lines below, which has said **4** since the sentinel fold.**
+   > `repos.yml` declares **three** repos (`repos.yml:3,8,11` @ platform `766df6c`) — `sentinel` was folded
+   > into `app` at v11.0 and its entry deleted, so `make init` does not clone it and `cd sentinel` fails.
+   > *(`sentinel/init_policy.sql` above is the repo DIRECTORY on disk, which survives; the policy load
+   > still needs it, which is why the file is named rather than the container.)*
 
    > **Two steps that used to be here are DEAD — do not run them.**
    > **(a) `ant-academy` is NOT cloned by `make init`.** It is deliberately absent from `repos.yml`
@@ -157,6 +159,53 @@ every `NEXT_PUBLIC_*` **inlined at build time**. Two ways to run it, and they ar
   **production** content with a write-capable token and the skill-path BFF calls Directus **at boot**.
 - **Sign in without fighting Google/2FA:** `http://localhost:<port>/api/dev/login-as?email=you@anthropos.work`
   mints a real Clerk session for a real user. Set `DEV_LOGIN_DEFAULT_EMAIL` to make the bare URL work.
+
+> **⚠️ THE BACKEND BLOCKS THE STUDIO'S GRAPHQL CALLS UNTIL YOU ADD ONE LINE.** `app/internal/cors/cors.go`
+> hard-codes `http://localhost:9000` and `http://localhost:9100` — the **pre-migration** Vite/Express
+> studio origins. The Next studio serves on **:9200**, which is not in that list, so the browser's
+> preflight returns **no `Access-Control-Allow-Origin`** and every data call is blocked.
+>
+> It does not look like CORS. The studio loads, the shell renders, you are signed in, and every data
+> surface says *"We couldn't load your workspace"* / *"Failed to load categories"* — while the backend
+> logs look **healthy**, because it answers the `OPTIONS` preflight `204` and the `POST` never arrives.
+> Fix in `platform/.env` (config, not a platform-repo edit — the var is hard-guarded off in prod), then
+> restart `backend`:
+>
+> ```
+> CORS_EXTRA_ORIGINS=http://localhost:9200
+> ```
+>
+> `studio-desk-dev.sh` issues the real preflight on start and prints exactly this when the origin is
+> refused, so you do not have to remember it.
+
+### Giving the stack real content — Directus + the taxonomy
+
+A freshly-migrated dev stack has an **empty** catalog and an empty skills tree. Both are replays from
+the snapshot cache, and the main dev stack (`N=0`) needs them driven by hand, because `dev-stack up`
+guards `N=0` and `--local-content` is a `dev-N` flag:
+
+```bash
+S=.agentspace/rosetta-extensions/stack-snapshot
+go build -o /tmp/stacksnap $S/cmd/stacksnap && go build -o /tmp/provision-plan $S/cmd/provision-plan
+
+# 1. the taxonomy -> public.skills / job_roles (the /skills page reads these)
+/tmp/stacksnap replay --surface taxonomy --stack dev-0 --dsn postgres://postgres@localhost:5432/postgres
+
+# 2. Directus: the recipe prints its own four steps, with the exact commands
+/tmp/provision-plan --stack dev-0 --base-port 5432
+#    bootstrap the system schema, then:
+/tmp/stacksnap replay --surface directus --stack dev-0 --dsn postgres://postgres@localhost:5432/postgres
+#    then boot the container and cut `backend` over to it (DIRECTUS_BASE_ADDR=http://directus:8055)
+```
+
+Measured on this box: taxonomy **55,116 rows / 14 tables in 5.7 s** (3,562 skills · 706 job roles — the
+v2.9 canon), Directus **11,986 rows** (307 simulations · 1,683 resources) with 515 dangling refs
+repaired by the realign pass. `/skills` then renders real category names and node ids.
+
+> **⚠️ `/home` and `/catalog` will still be empty, and that is NOT a migration defect.** Those queries
+> are **org-scoped**, and a fresh stack has `0 organizations / 0 users / 0 memberships` — so the
+> backend cannot resolve a tenant and answers **401**. Seeding is the separate step (`/stack-seed`),
+> and note it **refuses `N=0` without `--force`** by design: the main dev stack is the developer's own.
 
 > **⚠️ THE FAILURE MODE TO KNOW, because no probe will tell you.** `/api/health-check` is **public by
 > design** (a healthcheck has no session), so an **empty `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`** (baked at
