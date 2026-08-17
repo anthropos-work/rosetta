@@ -327,7 +327,7 @@ fenced twice over:
   both are now forced to `""`: `PreflightEnv` blanks **both** on every target
   (`isolation/audit.go:153-154`) — that is the **seeder's** environment — and the demo's injected compose
   override strips both on every emitted service (`stack-injection/gen_injected_override.py:771-772`, emitted
-  by `demo-stack/up-injected.sh:1982`) — that is the **running container's**. The seeder pointer alone was
+  by `demo-stack/up-injected.sh:2171`) — that is the **running container's**. The seeder pointer alone was
   never enough, and the incident proved it: the `s3:PutObject` came from `backend`, which reads its own
   compose env and never sees the seeder's. (Snapshot media is carried as **refs only** today — the byte
   payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)

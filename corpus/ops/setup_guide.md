@@ -508,8 +508,13 @@ service gets a different subset than any other.
 
 If running Studio-Desk **outside Docker** (natively), it requires its own `studio-desk/.env`. **Provision it with
 `/stack-secrets`** (`--provision` writes `studio-desk/.env` from your source) rather than hand-copying. The keys
-it needs: `CLERK_SECRET_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, the `AI_*` provider keys, `DIRECTUS_TOKEN` (written
-blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
+it needs: `CLERK_SECRET_KEY`, **`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`**, the `AI_*` provider keys, `DIRECTUS_TOKEN`
+(written blank on a non-prod stack — see [`secrets-spec.md`](secrets-spec.md)).
+
+> **⚠️ `VITE_CLERK_PUBLISHABLE_KEY` IS DEAD — this list named it until 2026-08-17.** The Next migration
+> retired every `VITE_*` name; `.env.example` contains **zero** `VITE_` assignments and nothing reads one.
+> Note also that `NEXT_PUBLIC_*` values are **inlined at BUILD time**, so for the *container* they must be
+> passed as `--build-arg`s — putting them in a `.env` the running container reads does nothing.
 
 **Note**: When Studio-Desk runs via Docker the platform `.env` is used automatically — it declares `env_file: .env`
 like every other configured service (`docker-compose.yml:125-126` @ platform `0c91421df`). **But do not reach for
@@ -708,25 +713,47 @@ GraphQL URL must be `http://localhost:8082/graphql/query`, not the old `localhos
 
 Studio-Desk is the simulation design tool - a required part of the full platform for content creation workflows.
 
+> **⚠️ ONE PROCESS, ONE PORT — and `npm run dev` no longer exists.** This section ran
+> `npm run dev` for "frontend 9100 + backend 9000" until 2026-08-17. The Next migration deleted the Vite
+> frontend and the Express API; `dev`, `start`, `build` and `test` are all gone from `package.json`
+> (`npm error Missing script: "dev"`). One Next process, one port.
+
+**Preferred — the Rosetta tooling.** It wires this stack's offset ports, injects secrets from
+`platform/.env` without copying them to disk, and disarms production writes:
+
+```bash
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0          # N=0 = the main dev stack -> :9200
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --print  # show the wiring, run nothing
+```
+
+**By hand:**
+
 1.  Navigate to studio-desk:
     ```bash
     cd ../studio-desk
     ```
 
-2.  Install dependencies:
+2.  Install dependencies (Node **≥ 24** required):
     ```bash
-    npm install
+    npm ci
     ```
 
 3.  Start the development server:
     ```bash
-    npm run dev
+    npm run dev:next
     ```
-    This starts both the frontend (port 9100) and backend (port 9000). Ports are configurable via `.env`.
+    Next (Turbopack) on **port 9200** — ready in ~223 ms, hot-reloads on save. The script hardcodes
+    `--port 9200` and ignores `PORT`; use `npx next dev --port <P>` to move it.
 
-4.  Access at `http://localhost:9100`
+4.  Access at `http://localhost:9200`
 
-    *Verification*: You should see the Studio-Desk login page (uses Clerk authentication).
+    *Verification*: a **307** redirect to the Clerk sign-in URL — **not a 500**. Sign in without the
+    Google/2FA UI via `http://localhost:9200/api/dev/login-as?email=you@anthropos.work`.
+
+> **⚠️ A 500 on every page with `/api/health-check` still returning 200 means a Clerk key is missing.**
+> That route is public by design, so neither it nor the container healthcheck can see the fault: an empty
+> **build-time** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` or a missing **runtime** `CLERK_SECRET_KEY` produces
+> exactly this. Run `/stack-secrets`.
 
 ---
 
@@ -881,12 +908,13 @@ RUN pip install --no-cache-dir -r studio/requirements.txt
 > current setup builds. See [`corpus/services/cms.md`](../services/cms.md) § the studio submodule.
 
 ### `studio-desk` fails to bind host port 9100
-Conflicts with `node_exporter` (Prometheus monitoring) if you have any observability stack running on the box. Edit `platform/docker-compose.yml`:
-```yaml
-studio-desk:
-  ports:
-    - "9101:9100"   # was 9100:9100
-```
+> **⚠️ HISTORICAL — `9100` is no longer published to anything that listens.** It was the **Vite dev
+> server** port, which only ever existed under the old `npm run dev` and never inside the container. The
+> platform compose still publishes `9100:9100`, so the *bind conflict* with `node_exporter` is still
+> reachable — but the fix is to stop publishing a dead port, not to remap it. A dev stack brought up with
+> `--studio-src` drops the publish outright, because a published port with no listener BLOCKS the next
+> bring-up's bind once `tailscale serve` fronts it. The live port is **`9000 + N*OFFSET`** (compose sets
+> `PORT=9000`, which Next's standalone server reads), or **`9200`** natively.
 
 ### Next.js (`next-web-app`) build crashes with `STRIPE_SECRET_KEY is not configured`
 Next.js statically evaluates server routes (e.g. `/api/create-subscription`) at build time and reads from `process.env`. Compose's `env_file` is runtime-only — the build step doesn't see it. Drop a gitignored `next-web-app/apps/web/.env.production` containing the keys those routes touch (`STRIPE_SECRET_KEY`, `OPENAI_API_KEY`, `AZURE_OPENAI_*`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`, `NEXT_PUBLIC_BACKEND_API_URL`, `NEXT_PUBLIC_HOSTING_URL`) before `docker compose build`.

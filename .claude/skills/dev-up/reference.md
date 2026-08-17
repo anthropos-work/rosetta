@@ -75,7 +75,17 @@ make ps                   # expect 5 — the old "11" is three merge waves stale
 
 Not in this profile (don't expect running): `next-web-app` (`frontend`/`all`) and `studio-desk`
 (`studio-desk`/`all`) — the only two profile-gated services left; `ant-academy` (native-only on port
-3077, never in docker-compose). **No local container at all** (merged into `app`): `cms`,
+3077, never in docker-compose).
+
+> **Studio-Desk: one port, not two, and nothing starts it by default.** Since the Next migration it is a
+> single Next 16 standalone process — `CMD ["node","server.js"]`, `EXPOSE 80` — and the container is
+> reachable on **`9000 + N*OFFSET`** only, because compose sets `PORT=9000` and Next's standalone server
+> reads `process.env.PORT`. **`9100` is dead and always was**: it was the Vite dev-server port, which
+> only ever existed under the old `npm run dev`, never in the container. `--studio-src` drops that
+> publish, because a published port with no listener BLOCKS the next bring-up's bind once
+> `tailscale serve` fronts it. Run it with `--profile all` (container) or the native runner
+> `dev-stack/studio-desk-dev.sh N` (hot reload, **`9200 + N*OFFSET`**). Never grade it on
+> `/api/health-check` alone — that route is public by design and answers 200 while every page 500s. **No local container at all** (merged into `app`): `cms`,
 `jobsimulation`, `roadrunner`, `storage`, `messenger`, `customerio-sync`, `skiller`, `skillpath` —
 asking for one of their retired profile tokens **exits 0 and starts only the floor**, so the stack
 looks alive with the application absent. Archived: `chronos`, `intelligence`.

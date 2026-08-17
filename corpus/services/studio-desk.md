@@ -12,278 +12,262 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 
 ## Technical Deep Dive (For Engineers)
 
+> **⚠️ THIS DOCUMENT WAS REBUILT (2026-08-17) FOR THE NEXT MIGRATION, AND ALMOST NOTHING TECHNICAL
+> SURVIVED.** studio-desk was a **vanilla-TS Vite MPA in front of an Express API**, two processes on
+> two ports (9100 / 9000). It is now a **single Next.js 16 / React 19 process** with its API as route
+> handlers in the same runtime, `output: 'standalone'`, one port. The migration lives on
+> `release/3.2-full-frame` (**on origin at `411a3c15`**; 803 commits, 2,149 files, +346K/−190K, its
+> own M37 *"THE MIGRATION IS OVER"*), and until it merges, `main` is still the old shape — so **state
+> which ref you mean** whenever the two disagree. Everything below is measured against the migrated
+> tree unless a line says otherwise.
+>
+> The claims this file used to make that are now **false**, listed once so a reader who half-remembers
+> them stops: two ports · `VITE_*` env names · `npm run dev` / `npm start` / `npm run build` ·
+> `dist/index.js` + `dist/public` + `dist/prompts` · `src/` · `vite.config.ts` · per-feature `*.html`
+> entry points · `app/core/main.ts` bootstrap · a browser-side `canAccess()` auth gate ·
+> `MOCK_CLERK` / `VITE_MOCK_CLERK` · Jest · the `/api/youtube` route.
+
 ### Service Overview
 
 | Property | Value |
 |:---------|:------|
 | **Service Type** | Custom Application (Tier 2 - Studio Services) |
-| **Technology Stack** | TypeScript, Vite, Express.js (vanilla TS frontend, no framework) |
-| **Deployment** | Runs natively for dev (`npm run dev`), or containerized via the `studio-desk` docker-compose profile (ports 9000/9100). It `depends_on` **`backend` alone** — `docker-compose.yml:138-140` @ platform `0c91421`, with `profiles: [studio-desk, all]` at `:141` (both re-anchored M257x iter-87; they stood far further down the file at `0dab54d`, before `838d907` deleted three service blocks above them). It *also* listed **`cms`** — a block `2adcf71` still carried — until that container was deleted from compose at `d11a403`; there is no `cms` service to depend on now, and it never depended on `graphql`, which is likewise no longer a compose service. Built with `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query`. **⚠️ Asking for `studio-desk` as the only profile exits 1** — the profile selects `studio-desk` but *not* the `backend` it depends on, so compose rejects the whole project (`service "studio-desk" depends on undefined service "backend": invalid compose project`). Use `PROFILE=all`, which selects both. |
-| **Port(s)** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
-| **Authentication** | Clerk |
-| **Repository** | Local `studio-desk/` (sibling repo cloned by `make init`) |
+| **Technology Stack** | **Next.js 16 (App Router) + React 19 + TypeScript**, Node **≥ 24**. CSS Modules, Zustand (client state), TanStack Query (server state), `graphql-request`, MDX for academy guides. **No Vite, no Express, no second process.** |
+| **Deployment** | **One container, one port.** `output: 'standalone'` (`next.config.ts:39`) → a multi-stage image whose runtime stage is `node:24-alpine` + `CMD ["node","server.js"]`, `EXPOSE 80`. **Measured 119.6 MB** (cold build 50 s on an arm64 Mac) — against **1.35 GB** for the pre-migration image after rext's M258 prune pass, so ~11× smaller. Terraform agrees on port 80 (`terraform/locals.tf:7`). |
+| **Port(s)** | **ONE.** Container `PORT=80` by default, but the platform compose sets `PORT=9000` and Next's standalone server reads `process.env.PORT`, so a stack reaches it on **`9000 + N*OFFSET`**. Native dev server is **`9200`** (`package.json`, `next dev --port 9200`). **`9100` is dead** — it was the Vite dev port and never existed in the container, before or after. |
+| **Authentication** | Clerk via **`@clerk/nextjs`** alone (`@clerk/clerk-js` and `@clerk/express` are gone). The gate is **edge middleware** at `proxy.ts`. |
+| **Repository** | `studio-desk` (sibling repo cloned by `make init`; `repos.yml` `type: node-npm`) |
+
+> **⚠️ `docker-compose.yml` in the platform repo has NOT been updated for this migration, and the
+> failure is silent.** It passes `VITE_CLERK_PUBLISHABLE_KEY` / `VITE_GRAPHQL_ENDPOINT` /
+> `VITE_ENVIRONMENT` as build args (`:96-98`); the migrated Dockerfile declares only `NEXT_PUBLIC_*`
+> (`Dockerfile.dev:26-31`). Docker **accepts an undeclared build-arg without warning**, and a
+> *declared-but-unpassed* ARG bakes **empty**. Measured end to end: the image **builds (rc=0)**,
+> **starts**, reports **healthy**, and returns **HTTP 500 on every page**. The intersection of what
+> compose passes and what the Dockerfile declares is `{VERSION}` — one of six.
+>
+> Rosetta does not edit the platform repo. Both stack paths inject the correct args from an
+> rext-generated override instead — see *Local Development* below.
 
 ### Architecture
 
-Studio-Desk is a **full-stack TypeScript application** with:
+**One application.** `proxy.ts` (repo ROOT — Next 16's rename of `middleware.ts`; a copy under
+`app/` is silently ignored and fails OPEN) gates every request and is **default-deny**. Only
+`/api/health-check` is public, plus — dev-only — `/api/dev/login-as` and `/dev/accept`.
 
-1. **Frontend**: Vite-bundled vanilla TypeScript multi-page app (no React/Vue/Angular)
-   - Hot Module Replacement (HMR) for rapid development
-   - Clerk.js for authentication
-   - GraphQL client for data fetching
-   - Separate per-feature HTML entry points (`home.html`, `simulation-builder.html`, `sim-advanced-builder.html`, `sim-guided-builder.html`, `builder-skill-path.html`, `generation.html`, `catalog.html`, `academy.html`, `skills.html` — the prod set declared in `vite.config.ts` `rollupOptions.input`; `dev-accept.html` is dev-only), each loading `app/core/main.ts` which bootstraps Clerk auth + scaffold (header/sidemenu/footer) + the page module. **The simulation-builder family:** `simulation-builder` is the "Start Composer" (compose intent once; one seed feeds both builders) that fans out to `sim-advanced-builder` (the full designer) and `sim-guided-builder` (the interview flow); each has its own backend prompt dir under `src/prompts/`
+The auth gate **moved from the browser to the edge**, and that is the architectural change with the
+widest blast radius. The old tree booted the page, instantiated Clerk, loaded the app, then asked
+`canAccess()` — so an unauthorized user had already fetched and rendered everything before being
+redirected. Now an unauthorized request never reaches a route. Two consequences worth stating:
 
-2. **Backend**: Express.js API server
-   - Clerk middleware for route protection
-   - ⚠️ **NOT a GraphQL client — corrected M257x iter-115.** At `studio-desk` `41ee3575`,
-     `git grep -in graphql -- 'src/*'` returns exactly **two** lines, both comments saying the opposite
-     (`src/routes/skillpath.ts:374` *"We do NOT route this through the platform's `privateSkillPaths`
-     GraphQL"*, and `:405`); `git grep -n 8082 -- 'src/*'` returns **0**; and `src/index.ts` mounts four
-     API routers — `/api/dev` (`:150`), `/api/ai` (`:158`), `/api/skillpath` (`:161`), `/api/youtube`
-     (`:164`) — none of them GraphQL. **The Express backend's real remote dependency is Directus over
-     REST** (`DIRECTUS_BASE_URL`/`DIRECTUS_TOKEN`, read at `src/routes/skillpath.ts:44-47` and
-     `src/index.ts:303-310`). Every `new GraphQLClient(...)` in the repo is in the **frontend**
-     (`app/services/{userService.ts:20, taxonomyService.ts:43, userPreferencesService.js:13,
-     content/simulationContentService.js:325}`), fed by `app/services/config.ts:6` reading the
-     **`VITE_`-prefixed, browser-baked** `VITE_GRAPHQL_ENDPOINT`. This file states it correctly in four
-     other places — the Directus integration note, the `app/services/graphql/` example, the
-     `VITE_GRAPHQL_ENDPOINT` config line and the env table — so this was a live self-contradiction,
-     not a stale leftover
-   - Multi-provider AI integration (Azure OpenAI / OpenAI / Anthropic) for Studio Copilot
-   - File upload handling
+- studio-desk **no longer calls the clerk-js FAPI** `GET /v1/me/organization_memberships`. It uses the
+  server-side BAPI `getOrganizationMembershipList` (`proxy.ts:81-84`). The Clerkenstein route added
+  for the old client path is no longer on studio-desk's critical path.
+- The **empty-body / `.page-skeleton` first-paint model is gone.** `AppShell.tsx` server-renders the
+  chrome; there is no `PageWrapper`, no three-blocking-`await` boot, and the skeleton CSS was deleted
+  deliberately. The first-paint demo-patches that existed to fix that are moot (see *In a demo*).
 
 ```mermaid
 graph LR
-    User[Content Creator] --> Frontend[Vite multi-page frontend :9100]
-    Frontend --> Backend[Express Backend :9000]
-    Frontend --> GraphQL[GraphQL :8082/graphql/query — backend directly; the router is destroyed in both states]
-    Backend --> DirectusREST[(Directus REST — Bearer DIRECTUS_TOKEN)]
-    Backend --> OpenAI[OpenAI API]
-    Frontend --> Clerk[Clerk Auth]
-    GraphQL -->|in-process cms domain| CMS["cms domain<br/>(inside backend, app/internal/cms)<br/>there is NO cms container"]
+    User[Content Creator] --> Next["Next 16 app — ONE process, ONE port<br/>proxy.ts = default-deny edge gate"]
+    Next -->|client, graphql-request| GraphQL["backend :8082/graphql/query<br/>(no router — deleted at 2adcf71)"]
+    Next -->|server route handlers| DirectusREST[(Directus REST — Bearer DIRECTUS_TOKEN)]
+    Next -->|server route handlers| AI[AI provider chain]
+    Next --> Clerk[Clerk auth]
+    GraphQL -->|in-process cms domain| CMS["cms domain inside backend<br/>(app/internal/cms — no cms container)"]
     CMS --> Directus[(Directus CMS)]
 ```
+
+**GraphQL is 100% client-side** (`app/_lib/graphqlClient.ts` is `'use client'`); there is no
+server-side GraphQL call and no GraphQL proxy. The **skill-path BFF is the opposite** — entirely
+server-side route handlers talking to **Directus over REST**. Do not conflate the two data paths.
 
 ### Project Structure
 
 ```
 studio-desk/
-├── src/                # Backend (Express.js)
-│   ├── index.ts        # Server entry point
-│   ├── routes/         # API routes (ai.ts, skillpath.ts, youtube.ts, dev.ts)
-│   ├── services/       # Backend services (aiService.ts, promptService.ts, textExtractor.ts, ai/)
-│   ├── prompts/        # AI prompt templates (per-builder dirs: start/, sim-advanced-builder/,
-│   │                   #   sim-guided-builder/, builder-skill-path/, documents/ + loose *.md)
-│   ├── lib/            # Backend helpers (devLogin.ts)
-│   └── types/          # Ambient type declarations (*.d.ts)
-├── app/                # Frontend (Vite, vanilla TS) — one *.html entry per feature (MPA)
-│   ├── core/           # Bootstrap (main.ts) + scaffold/ (header, sidemenu, footer) + components/
-│   ├── simulation-builder/     # "Start Composer" — compose intent once, fan out to both builders
-│   ├── sim-advanced-builder/   # The full simulation designer
-│   ├── sim-guided-builder/     # The guided interview flow
-│   ├── builder-skill-path/ # Skill Path Builder
-│   ├── generation/     # Generation workflow UI
-│   ├── listing/        # Catalog/listing UI
-│   ├── academy/        # Academy UI
-│   ├── home/           # Home page
-│   ├── skills/         # Skills management UI
-│   ├── dev-accept/     # Dev-only acceptance harness (dev-accept.html; not in the prod build)
-│   ├── shared/         # Shared frontend utilities
-│   ├── services/       # Frontend services
-│   │   ├── graphql/    # GraphQL queries/mutations
-│   │   ├── content/    # Content services (AntContentService, pathContentService, simulationContentService)
-│   │   └── __generated__/ # graphql-codegen output
-│   ├── public/         # Statically served assets (fontawesome/, l12n/, templates/, avatars, images)
-│   └── assets/         # Bundled assets (favicons, logo)
-├── tests/              # Test suite
-│   ├── frontend/       # Frontend tests
-│   ├── unit/           # Backend unit tests
-│   ├── integration/    # API integration tests
-│   ├── e2e/            # Playwright e2e tests
-│   └── utils/          # test mocks/helpers
-├── dist/               # Build output
-├── vite.config.ts      # Vite configuration
-├── codegen.ts          # GraphQL code generation
-└── package.json
+├── proxy.ts            # the edge auth gate (repo ROOT — not app/, not middleware.ts)
+├── next.config.ts      # output:'standalone' + outputFileTracingIncludes for prompts/
+├── codegen.ts          # reads the COMMITTED SDL; codegen.schema.ts refreshes that SDL
+├── graphql/schema.graphql   # the committed SDL snapshot codegen reads (offline, no router)
+├── prompts/            # 59 AI prompt templates, read at RUNTIME via fs (hence the tracing block)
+├── public/             # served at the root: assets/, fontawesome/, avatars
+├── app/
+│   ├── (authed)/       # 13 page.tsx: home, catalog, skills, generation, academy, academy/[slug],
+│   │                   #   simulation-builder, sim-advanced-builder, sim-guided-builder,
+│   │                   #   builder-skill-path, boot, dev/accept
+│   ├── api/            # 22 route.ts / 27 handlers: health-check, dev/login-as,
+│   │                   #   ai/{completion,transcribe,triage}, skillpath/** (17)
+│   │   ├── _ai/        #   provider chain + promptService
+│   │   └── _lib/       #   text extraction, dev-login gate
+│   ├── _shell/         # AppShell, Header, UserProfile, AppMenu, SearchDialog…
+│   ├── _lib/           # graphqlClient, studioAccess, e2eAuth, serverAuth, externalUrls
+│   ├── _components/ _l12n/ _mdx/ _providers/ _state/ _styles/
+│   ├── services/       # graphql/ documents + __generated__/ (COMMITTED codegen output)
+│   └── public/l12n/    # 7 dictionaries: de en es fr it ja nl
+├── tests/next/         # vitest + RTL + Playwright (tests/next/e2e). ~6,900 tests
+└── tools/              # kb-validate, bite-matrix, test-margin
 ```
+
+⚠️ `prompts/` and `graphql/schema.graphql` are reached by **configuration, not by an import**, so no
+import-graph check can see them and moving either fails only in a container.
 
 ### Key Features
 
-#### 1. Simulation Builder
-- Visual interface for designing job simulations
-- Support for multiple simulation types (interviews, coding, prompt engineering)
-- Document editing with rich text support
-- Attachments management (files, images, documents)
-- Custom criteria definition with AI assistance
+Unchanged in intent — Simulation Builder (Start Composer → advanced / guided), **Skill Path Builder**,
+Studio Copilot, and the generation workflow. What moved is where they live: each is a route segment
+under `app/(authed)/` with its API as route handlers under `app/api/`.
 
-#### 2. Skill Path Builder
+**Skill Path Builder** is still the largest surface and still the one with real write power: 17
+`/api/skillpath/*` handlers backed by **Directus REST** with a static admin token
+(`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`, `app/api/skillpath/_lib/directus.ts:45-49`), plus Bunny CDN
+(`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`). It uses `directus_versions` for publish/unpublish
+snapshot & restore, and **probes that capability at BOOT** — a fact with a safety consequence, below.
 
-A builder for learning skill paths, served at `/builder-skill-path` (`app/builder-skill-path` module). Backed by `/api/skillpath` (the largest backend route, ~61KB) and `/api/youtube`. Integrates directly with Directus (`DIRECTUS_BASE_URL` / `DIRECTUS_TOKEN`) and uses `directus_versions` for publish/unpublish snapshot & restore (capability checked at boot via `pingSnapshotCapability`). The skill-path **writes** (create/publish) go to Directus as a `Bearer ${DIRECTUS_TOKEN}` static token (`src/routes/skillpath.ts`). Curates videos from a Bunny CDN library (`BUNNY_LIBRARY_ID` / `BUNNY_LIBRARY_API_KEY`) and searches YouTube via the YouTube Data API v3 through a `YouTubePicker` — the route reads **`YOUTUBE_API_KEY` only** (`src/routes/youtube.ts:43`; with no key it serves a `_mock: true` fallback list). `GCLOUD_SERVICE_ACCOUNT` is declared in `.env.example:**119**` (@ `studio-desk` `41ee3575`) and injected by `terraform/main.tf:129`, but **no code in `src/` reads it** — treat it as vestigial, not a second YouTube credential. (This cited `.env.example:120` until M257x iter-115. The file is 131 lines, so `:120` is **in range and resolves — to a blank line**, which is the failure mode a range check cannot catch: `:117` is `YOUTUBE_API_KEY=`, `:118` the comment, `:119` the declaration, `:120` empty. The other two thirds of the sentence verified exactly.)
-
-> **Demo/dev set-dressing (v1.5 "prop room", M23):** on a `--local-content` stack (demo default; dev opt-in) studio-desk is pointed at the **per-stack Directus** (`DIRECTUS_BASE_URL=http://directus:8055`, the in-network compose service) with a **locally-minted static admin token** (`DIRECTUS_TOKEN=local-directus-token-<stack>`). The token is stamped on the bootstrapped admin via Directus's `ADMIN_TOKEN` bootstrap env (a Bearer-usable static token — `bootstrap/index.js:81` in the pinned `directus/directus:11.6.1`; #M23-D2), so studio-desk's skill-path **writes target the per-stack instance, never prod**. On a non-`--local-content` stack the prod token is stripped to empty (the prod-write **disarm**) and studio-desk has no local instance to write to. (The cms `PostMultipart` hardcoded-prod-upload-URL is a separate upstream **platform** bug — disarmed by the token strip, owned as a user PR; cannot be fixed without a platform edit.)
-
-#### 3. Studio Copilot (AI Assistant)
-- **Backend AI layer**: multi-provider chain (`AI_PROVIDER_CHAIN`, default `azure-openai,openai`) across Azure OpenAI / OpenAI / Anthropic with circuit-breaker failover (timed-out providers rotate to end of chain). Four model tiers (`thinking_slow`, `thinking_fast`, `fast`, `instant`); default tier configurable via `AI_DEFAULT_TIER` (`.env.example` uses `fast`; in-code fallback is `thinking_fast`). Tier defaults: OpenAI/Azure `gpt-5.2` / `gpt-5-mini` / `gpt-5-nano`; Anthropic `claude-opus-4-5` / `claude-sonnet-4-5` / `claude-haiku-4-5`.
-- **Modes**: 
-  - Ask/Brainstorming mode
-  - Complex edits mode (with patch mechanism)
-- **Features**:
-  - Context-aware suggestions
-  - Formatted replies in markdown
-  - In-place follow-up actions
-  - Multi-language support (7 languages)
-
-#### 4. Generation Workflow
-1. Design blueprint in Studio-Desk
-2. Export blueprint with metadata
-3. Studio-Room processes blueprint via AI pipeline
-4. Generated content returns to CMS/Directus
+> **⚠️ `/api/youtube` WAS DELETED** at the v3.2 close. `YOUTUBE_API_KEY` survives in `.env.example`
+> with **no reader**. `GCLOUD_SERVICE_ACCOUNT` was removed from both `.env.example` and terraform.
 
 ### Data Layer
 
-#### GraphQL Integration
+**GraphQL endpoint**: `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, default **`http://localhost:8082/graphql/query`** —
+`backend` directly. **Note the PATH moved with the host** (`/graphql` → `/graphql/query`), so a
+host-only re-point 404s rather than refuses. *(The migration branch shipped a `:5050` default —
+the deleted Cosmo router — because it forked before `main`'s `8f86d701` (#115); corrected 2026-08-17.)*
 
-Studio-Desk connects to the platform's GraphQL endpoint for data operations — **`backend` directly since platform `2adcf71`; the Cosmo Router is destroyed in production too (iter-124)**:
+**Type generation**: `npm run codegen` reads the **committed** SDL at `graphql/schema.graphql`, so it
+runs **offline and in CI with nothing up**. Output lands in `app/services/__generated__/` and is
+**committed too**. To refresh the SDL from a live backend:
+`GRAPHQL_SCHEMA_FOR_GEN=http://localhost:8082/graphql/query npm run codegen:schema`.
 
-```typescript
-// Example from app/services/graphql/
-// Queries and mutations defined here (queries.ts, mutations.ts)
-// Types auto-generated via graphql-codegen
-```
-
-**GraphQL Endpoint**: Configured via `VITE_GRAPHQL_ENDPOINT` — compose bakes `http://localhost:8082/graphql/query` as a build arg (`docker-compose.yml:119`) and again in the runtime environment (`:135`), re-anchored at platform `0c91421` (that anchor stood far further down the file at `0dab54d`); was `http://localhost:5050/graphql` when the router existed locally
-
-**Type Generation**:
-```bash
-npm run codegen  # Generates TypeScript types from GraphQL schema
-```
-
-Generated types are stored in `app/services/__generated__/` and provide type-safe GraphQL operations. GraphQL documents live in `app/services/graphql/` (`queries.ts`, `mutations.ts`).
-
-#### Studio Entities
-
-Studio-Desk works with these primary entities (stored via CMS → Directus):
-
-- **StudioDocument**: Simulation blueprints and designs
-- **StudioTask**: Generation tasks and statuses
-- **Attachments**: Files, images, documents
-- **Skills**: Associated skills and competencies
+**No local datastore** — unchanged and still true. No DB driver, no `DATABASE_URL`. Persistence is
+remote over HTTP: skill-path content → Directus; user studio preferences → the platform GraphQL API.
 
 ### Development Setup
 
 #### Prerequisites
-- Node.js v24+ (per `package.json` engines and `node:24-alpine` Docker base)
-- npm v7+
-- Clerk account (for authentication)
-- Access to the platform GraphQL endpoint (`backend` on `:8082`; the router no longer runs locally)
-- Access to the **cms domain** — served by that same `backend`, not a separate service
+- **Node ≥ 24** (`engines`, `.nvmrc`, `node:24-alpine`, CI `setup-node 24`)
+- A running `backend` on `8082 + N*OFFSET` for GraphQL (there is no router)
+- Clerk keys — see the warning below
 
 #### Environment Configuration
 
-Create `.env` file:
+`.env.example` is the source of truth and contains **zero** `VITE_*` assignments. The split that
+matters:
+
+**BUILD-time** (inlined into the client bundle by `next build`; setting these on a running container
+does **nothing**, and they are the Dockerfile's `ARG`s):
 
 ```bash
-# Server (in-code fallback for PORT is 9100; set PORT=9000 to avoid a frontend/backend collision — .env required)
-PORT=9000
-FRONTEND_PORT=9100
-NODE_ENV=development
-CLERK_SECRET_KEY=sk_test_xxxxx
-CLERK_SIGN_IN_URL=http://localhost:3000/login
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=http://localhost:3000/login
+NEXT_PUBLIC_WEB_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ENVIRONMENT=development
+# optional, both default to their production host (app/_lib/externalUrls.ts):
+#   NEXT_PUBLIC_HIRING_APP_URL, NEXT_PUBLIC_DIRECTUS_ADMIN_URL
+```
 
-# Frontend
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query
-VITE_WEB_APP_URL=http://localhost:3000
+**RUNTIME** (read by node at request time):
 
-# AI (for Copilot) — multi-provider chain
+```bash
+CLERK_SECRET_KEY=sk_test_xxxxx     # REQUIRED — absent = 500 on every gated route
+PORT=9200                          # container default 80; compose sets 9000
+DEV_LOGIN_DEFAULT_EMAIL=           # dev-only sign-in helper
 AI_PROVIDER_CHAIN=azure-openai,openai
 AI_DEFAULT_TIER=fast
-AI_OPENAI_API_KEY=sk-xxxxx   # or legacy OPENAI_KEY
-AI_AZURE_ENDPOINT=...
-AI_AZURE_KEY=...
-AI_ANTHROPIC_API_KEY=sk-ant-...
-
-# Skill Path Builder
-DIRECTUS_BASE_URL=http://localhost:8055
-DIRECTUS_TOKEN=...
-BUNNY_LIBRARY_ID=...
-BUNNY_LIBRARY_API_KEY=...
-FORCE_READ_ONLY=0
-YOUTUBE_API_KEY=...
-GCLOUD_SERVICE_ACCOUNT=...   # declared in .env.example + terraform, but read by no code in src/
+AI_OPENAI_API_KEY= / AI_AZURE_KEY= / AI_ANTHROPIC_API_KEY=
+DIRECTUS_BASE_URL= / DIRECTUS_TOKEN= / FORCE_READ_ONLY=false
+BUNNY_LIBRARY_ID= / BUNNY_LIBRARY_API_KEY=
 ```
+
+> **⚠️ THE SILENT-FAILURE TRAP — read before debugging anything about this service.**
+> `/api/health-check` is **public by design** (it is in `proxy.ts`'s `isPublicRoute`, because a
+> healthcheck has no session and would otherwise redirect to sign-in and fail forever). That means it
+> **cannot witness** either of the two ways this service is normally broken. Measured, both directions:
+>
+> | Fault | Symptom on every page | `/api/health-check` | Docker `HEALTHCHECK` |
+> |---|---|---|---|
+> | `CLERK_SECRET_KEY` absent at **runtime** | 500 `Missing secretKey` | **200** | **healthy** |
+> | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` empty/invalid at **build** | 500 `Publishable key not valid` | **200** | **healthy** |
+>
+> **Never grade studio-desk on the health route alone.** Assert on a gated route: unauthenticated it
+> must **307 to the sign-in URL**, not 500.
 
 #### Local Development
 
-1. **Install dependencies**:
 ```bash
-cd studio-desk
-npm install
+cd stack-dev/studio-desk        # or a feature worktree
+cp .env.example .env
+npm ci
+npm run dev:next                # next dev (Turbopack) on :9200 — ready in ~223 ms, hot reload
 ```
 
-2. **Generate GraphQL types** (when schema changes):
+**On a Rosetta dev stack, use the tooling instead** — it wires the stack's own offset ports, injects
+secrets from `platform/.env` without copying them to disk, and disarms production writes:
+
 ```bash
-npm run codegen
+# NATIVE + hot reload (the authoring loop). N=0 is the main dev stack.
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 2 --src <worktree>   # run a BRANCH on dev-2
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --print            # resolve wiring, run nothing
+
+# CONTAINERISED (parity; a stack you can hand to someone else)
+dev-stack up N --profile all --studio-src <tree>
 ```
 
-3. **Start development servers**:
-```bash
-npm run dev
-```
+> **⚠️ NO DEV PATH STARTS STUDIO-DESK BY DEFAULT.** It lives in `profiles: [studio-desk, all]`, and
+> both `make up` (`PROFILE ?= core`) and `dev-stack up N` (derived → `core`) exclude it.
+> **`make up PROFILE=studio-desk` exits 1** — the profile selects `studio-desk` but not the `backend`
+> it `depends_on`. Use `PROFILE=all`.
 
-This starts:
-- Frontend: `http://localhost:9100` (Vite dev server, configurable via `FRONTEND_PORT`)
-- Backend: `http://localhost:9000` (Express API, configurable via `PORT`)
+> **⚠️ THE PROD-WRITE HAZARD, and the disarm.** The skill-path BFF calls Directus with a **static
+> admin token at BOOT** — starting the dev server against a stale `.env` immediately logs
+> `[skillpath] Snapshot capability MISSING`, i.e. it has already called out. On a stack without
+> `--local-content`, `platform/.env`'s `DIRECTUS_BASE_ADDR` is **`content.anthropos.work`** and
+> `DIRECTUS_TOKEN` is a real write-capable token, so a dev studio can create, publish and archive
+> **production** content. `studio-desk-dev.sh` strips the token and forces `FORCE_READ_ONLY=true`
+> whenever no per-stack Directus is listening. If you wire this by hand, do the same.
 
-4. **Access the application**:
-   - Development: `http://localhost:9100` (direct frontend access)
-   - Backend API: `http://localhost:9000` (API server with `/api` routes)
+**Signing in without fighting Google/2FA** (dev only, `NODE_ENV !== 'production'`):
+`http://localhost:<port>/api/dev/login-as?email=you@anthropos.work` mints a Clerk sign-in token and
+exchanges it for a **real session as that real user**. Set `DEV_LOGIN_DEFAULT_EMAIL` for the bare URL.
+*(`MOCK_CLERK` / `VITE_MOCK_CLERK` are gone — nothing reads either name. The e2e path is the
+`e2e_persona` cookie + `NEXT_PUBLIC_E2E_AUTH`, `app/_lib/e2eAuth.ts`.)*
+
+**Studio access** is unchanged in policy: `STUDIO_ACCESS_ROLES = ['admin', 'org:admin',
+'content_creator', 'org:content_creator']` (`app/_lib/studioAccess.ts`) — content creators, not only
+org admins; both bare and `org:`-prefixed forms accepted. A signed-in user without a Studio role is
+redirected to `NEXT_PUBLIC_WEB_APP_URL`.
 
 #### Testing
 
 ```bash
-# Run all tests (Jest runs two projects: backend + frontend)
-npm test
-
-# End-to-end (Playwright)
-npm run test:e2e
-npm run test:e2e:headed
-
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
-
-# Type-check + lint combined
-npm run check
+npm run test:next          # vitest — ~6,900 tests across ~320 files
+npm run test:e2e:next      # Playwright (playwright.next.config.ts) — persona-cookie auth
+npm run check              # type-check + type-check:tests + lint:ci  (what CI gates on)
+npm run docs               # kb-validate over knowledge/ — BLOCKS in CI
 ```
+
+*(There is no Jest, no `npm test`, no `npm run test:e2e`. All three were deleted with the legacy tree.)*
 
 ### Production Build
 
 ```bash
-# Build both frontend and backend
-npm run build
-
-# Start production server
-npm start
+npm run build:next     # next build -> .next/standalone
+npm run start:next     # next start   (the CONTAINER runs `node server.js` instead)
 ```
 
-Serves the app from `http://localhost:9000` (backend serves frontend static files, or configured via `PORT`).
+The image copies three things into the runner: `.next/standalone`, `.next/static`, and `public/`.
+**The last two are not optional** — `output: 'standalone'` does not emit them, nothing *imports* a
+public asset so tracing cannot find them, and an image missing `public/` renders every FontAwesome
+glyph as a 0 px blank while the container reports healthy. `Dockerfile` and `Dockerfile.dev` are
+deliberately identical but for an npm cache mount, pinned by `tests/next/tools/standaloneOutput.test.ts`.
 
 ### Deployment
 
-Studio-Desk uses **conventional commits** and automated releases via [Cocogitto](https://github.com/cocogitto/cocogitto):
-
-```bash
-# Create new version
-cog bump --auto
-
-# Push to trigger Docker build
-git push && git push --tags
-```
-
-Docker images are built automatically on tag push. Deployment managed via infrastructure repository.
+Conventional commits + Cocogitto (`cog bump --auto`), image built on tag push, deployed via the
+infrastructure repo. CI passes `NEXT_PUBLIC_*` build args (`.github/workflows/build-production.yml:79-83`),
+which is the consumer that **was** re-pointed at the new names — unlike the platform compose.
 
 ### Integration Points
 
@@ -314,15 +298,56 @@ docker compose up -d backend   # NOT `graphql` — that service no longer exists
                               # studio-desk talks to backend at :8082/graphql/query
 ```
 
-**Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match.
+**Every page returns HTTP 500 but the container is "healthy"**: this is the single most likely fault,
+and it has exactly two causes — a missing **runtime** `CLERK_SECRET_KEY`, or an empty/invalid
+**build-time** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. See the trap table in *Environment Configuration*.
+The second one **cannot be fixed on a running container** (Next inlines it); rebuild with the arg.
+Check the container's logs for `Missing secretKey` vs `Publishable key not valid` — they name which.
 
-**Local dev without real Clerk**: Set `MOCK_CLERK=true` (backend) and `VITE_MOCK_CLERK=true` (frontend) in `.env` to bypass Clerk auth — do not use in production. With real auth, all `/api/ai`, `/api/skillpath` and `/api/youtube` routes (and the builder/catalog/skills pages) require the Clerk user to belong to an organization AND hold a **Studio-eligible role**. The gate (`checkEnterpriseAndAdmin`, `src/index.ts`) reads `STUDIO_ACCESS_ROLES = ['admin', 'org:admin', 'content_creator', 'org:content_creator']` — so **content creators, not only org admins**, pass; both the bare and `org:`-prefixed key forms are accepted. Non-eligible or non-org users are redirected to `WEB_APP_URL`.
+**Clerk authentication issues**: Verify Clerk keys in `.env` and ensure sign-in URLs match. On a
+Rosetta stack, `platform/.env` is the single source — provision it with **`/stack-secrets`**.
+
+**Local dev without real Clerk**: use the dev-login helper
+(`/api/dev/login-as?email=…`), which mints a real Clerk session — **not** `MOCK_CLERK`.
+
+> **⚠️ `MOCK_CLERK` / `VITE_MOCK_CLERK` NO LONGER EXIST — nothing reads either name**, and the suites
+> that set them were deleted with the Express server. The automated-test path is the `e2e_persona`
+> cookie plus `NEXT_PUBLIC_E2E_AUTH=1` (`app/_lib/e2eAuth.ts`), which is double-gated on
+> `NODE_ENV !== 'production'` so it cannot arm in a production build.
+
+Authorization itself is unchanged in policy but has **moved to the edge**: the gate is `proxy.ts`, not
+`checkEnterpriseAndAdmin` in `src/index.ts` (that file is deleted). It is **default-deny** — every
+route except `/api/health-check` (and, in dev, `/api/dev/login-as` + `/dev/accept`) requires an
+authenticated caller holding a Studio role. `STUDIO_ACCESS_ROLES = ['admin', 'org:admin',
+'content_creator', 'org:content_creator']` (`app/_lib/studioAccess.ts`), so **content creators, not
+only org admins**, pass; both bare and `org:`-prefixed forms are accepted. A signed-in user without a
+Studio role is redirected to `NEXT_PUBLIC_WEB_APP_URL`; a signed-out one to
+`NEXT_PUBLIC_CLERK_SIGN_IN_URL`.
 
 **Copilot not working**: Check that `AI_PROVIDER_CHAIN` is set and the corresponding provider key(s) exist (`AI_OPENAI_API_KEY`/`OPENAI_KEY`, `AI_AZURE_KEY`, or `AI_ANTHROPIC_API_KEY`).
 
 ### In a demo — the prod-eject fix + the "Back to Cockpit" item (v2.7 "july jitter" M249)
 
-> _Authored here in M249; the studio spec docs are reconciled in the M247-tail._
+> **⚠️ ALL FIVE studio-desk DEMO-PATCHES ARE DEAD AGAINST THE MIGRATED TREE, AND THE PROD-EJECT THEY
+> FIXED CAME BACK.** They are sha-pinned to `app/core/main.ts`, `app/core/scaffold/userProfile.js` and
+> `app/core/scaffold/pageWrapper.js` — `app/core/` **does not exist** after the migration. They do not
+> "drift": `demopatch` classifies the target as *absent* and **refuses at G2** (non-fatal), so the
+> image bakes unpatched and the log records a REFUSED line. The three URL literals reappeared verbatim
+> in React (`_shell/UserProfile.tsx`, `_shell/Header.tsx`, `home/QuickActions.tsx`,
+> `_components/SimCard/onAction.ts`), and `import.meta.env` — which every one of these patches read —
+> resolves nowhere in a Next build.
+>
+> **The fix was re-landed IN SOURCE rather than re-pinned as patches** (2026-08-17): `app/_lib/externalUrls.ts`
+> owns every off-Studio origin as `NEXT_PUBLIC_* || <prod host>`. Off a stack the value is byte-identical
+> to the literal it replaced, so nothing changes in production or in CI; on a `dev-N`/`demo-N` the
+> operator stays inside the stack. This is **strictly better than the patch approach**, because the
+> patches only ever ran on a *demo* — a `dev-N` stack ejected to production either way.
+>
+> Still outstanding: the **"Back to Cockpit"** item was *additive UI*, not a URL swap, so it has no
+> source equivalent yet. `NEXT_PUBLIC_COCKPIT_URL` would be the shape.
+>
+> _Authored here in M249; the studio spec docs are reconciled in the M247-tail. Kept below because the
+> mechanism is still the reference example of additive-UI injection._
 
 Studio-Desk's scaffold hardcoded the production app host `https://app.anthropos.work` in **three** places —
 the header **logo** link (`app/core/scaffold/pageWrapper.js`), the user-menu **"Back"** control and the
@@ -391,6 +416,19 @@ studio-desk **container** actually carries a provider key — lives in the live-
 (`stack-verify/live/autoverify.sh`), mirroring its existing directus `DB_CONNECTION_STRING` container check.
 
 ### The MPA / empty-body boot model — and the demo first-paint reorder (v2.7 "july jitter" M253)
+
+> **⚠️ SUPERSEDED BY THE MIGRATION — the model this section describes no longer exists.** There is no
+> empty `<body>`, no `core/main.ts`, no `PageWrapper`, and no three-blocking-`await` boot:
+> `AppShell.tsx` **server-renders** the chrome, so the shell is in the first HTML response. The
+> `.page-skeleton` / `.skeleton-header` / `.skeleton-sidemenu` CSS was **deleted deliberately**, which
+> means `studio-desk-shell-first-paint` has nothing to inject and the `run-studio-fcp.sh` gate can
+> never observe a skeleton — it would assert `reachedShell === true` against a page that never has one.
+> The `canAccess` FAPI leg is gone too: the gate is server-side in `proxy.ts` and uses the **BAPI**.
+>
+> The measured numbers below (skeleton-visible p95 4669 ms → 817 ms) are **historical**: they describe
+> the pre-migration SPA. A fresh first-paint budget has not been measured against the Next tree.
+> Retained because the *reasoning* — paint ordering vs render speed, and "code-splitting does not fix a
+> runtime-await cost" — is the transferable part.
 
 studio-desk is **not** an SSR React app. It is an **empty-body multi-page app** (one HTML entry per feature —
 `home.html`, the builders, `catalog.html`, …), and **every page's `<body>` starts empty**. `core/main.ts`

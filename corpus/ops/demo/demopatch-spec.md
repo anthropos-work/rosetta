@@ -242,10 +242,10 @@ M258 — see the warning below), while hiring's is still over an explicit **7** 
 
 The `next-web` patches are reverted by a `RETURN` trap so the persistent clone is left git-clean — **but not
 in LIFO order**, and this sentence used to say it was. The next-web trap
-(`demo-stack/up-injected.sh:749` @ rext `415240f`) reverts *pubweb · studio · pagination · ssr-origin ·
+(`demo-stack/up-injected.sh:811` @ rext `62392d2`) reverts *pubweb · studio · pagination · ssr-origin ·
 aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
 *studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
-back-to-cockpit* (`:771`, `:776`, `:795`, `:807`, `:819`, `:831`, `:845`, `:856`, `:869`): **only two adjacent
+back-to-cockpit* (`:827`, `:832`, `:851`, `:863`, `:875`, `:887`, `:901`, `:936`, `:949`): **only two adjacent
 pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
 reverted in apply order.** That is the same
 finding the §4 correction box above records — see its table for the hiring lane, whose revert

@@ -13,7 +13,7 @@ Once running, access these URLs in your browser:
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Frontend (Web App)** | http://localhost:3000 | Main user-facing application |
-| **Studio-Desk** | http://localhost:9100 | Simulation design tool |
+| **Studio-Desk** | http://localhost:9200 (native) / :9000 (container) | Simulation design tool. **ONE port since the Next migration** — `9100` was the Vite dev server and is dead |
 | **Ant Academy** | http://localhost:3077 | The AI-academy product (**not** `@anthropos.work`-only — public storefront + org tier) |
 | **GraphQL Playground** | http://localhost:8082/graphql | Served by `backend` itself — the Cosmo Router was deleted from compose at platform `2adcf71`. The **endpoint** is `/graphql/query`; `/graphql` is the Apollo Sandbox UI |
 | **Backend API** | http://localhost:8082 | Backend service (Connect RPC) |
@@ -203,27 +203,48 @@ make up PROFILE=studio-desk
 
 **NB: `make up PROFILE=studio-desk` exits 1** — `studio-desk` declares `depends_on: backend`, which its own profile does not select, so compose rejects the project. Combine it with the default: `docker compose --profile core --profile studio-desk up --build -d`.
 
-### Option B: Run Natively
+### Option B: Run Natively — **the recommended way to develop Studio**
 
-For development with hot-reloading:
+`next dev` (Turbopack) is ready in ~223 ms and hot-reloads on save. The container, by contrast, has to
+be **rebuilt** for any client-visible change, because Next inlines every `NEXT_PUBLIC_*` at build time.
 
 ```bash
+# Preferred — wires this stack's offset ports, injects secrets, disarms prod writes:
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0            # N=0 = the main dev stack
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --src <worktree>   # run a BRANCH
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --print    # show the wiring, run nothing
+
+# By hand (you own the wiring):
 cd stack-dev/studio-desk
-npm install
-npm run dev
+cp .env.example .env
+npm ci
+npm run dev:next
 ```
 
-*Note*: Requires its own `.env` file when running natively. See [Setup Guide](setup_guide.md#studio-desk-environment-only-for-native-development).
+> **⚠️ `npm run dev` DOES NOT EXIST** — nor `npm start`, `npm run build`, or `npm test`. The migration
+> replaced them with `dev:next` / `start:next` / `build:next` / `test:next`. Running the old name gives
+> `npm error Missing script: "dev"`.
 
-*Expected*:
-- Frontend: http://localhost:9100
-- Backend: http://localhost:9000
+*Note*: Requires its own `.env` when running by hand. See [Setup Guide](setup_guide.md#studio-desk-environment-only-for-native-development).
+
+*Expected*: **one** origin — http://localhost:9200 (`9200 + N*OFFSET` on a `dev-N`). There is no second
+port: `9100` was the Vite dev server and `9000` the Express API, and both are gone.
 
 ### Verify Studio-Desk
 
-Open http://localhost:9100 in your browser.
+Open http://localhost:9200 (native) or http://localhost:9000 (container) in your browser.
 
-*Expected*: Studio-Desk login page (uses Clerk authentication).
+*Expected*: a redirect to the Clerk sign-in URL — **307**, not 500. Signed in as a user with a Studio
+role (`admin` / `org:admin` / `content_creator` / `org:content_creator`), you land on `/home`.
+
+Skip the Google/2FA UI with the dev-login helper:
+`http://localhost:9200/api/dev/login-as?email=you@anthropos.work`.
+
+> **⚠️ Do NOT verify this service with `/api/health-check`.** That route is **public by design** (a
+> healthcheck has no session), so it answers **200 while every page returns 500** — which is exactly
+> what an empty build-time `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` or a missing runtime `CLERK_SECRET_KEY`
+> produces, with the container reporting **healthy** throughout. Measured, both directions. Assert on a
+> gated route instead, and provision keys with `/stack-secrets`.
 
 ---
 
@@ -408,7 +429,7 @@ tmux list-sessions        # tmux sessions (should be empty)
    ```bash
    tmux new-session -d -s anthropos-web -c "$(pwd)/stack-dev/next-web-app" 'pnpm dev:web'
    ```
-4. (Optional) Start Studio-Desk in Docker: `make up PROFILE=studio-desk`
+4. (Optional) Start Studio-Desk: `make up PROFILE=all` (in Docker — **NOT** `PROFILE=studio-desk`, which exits 1), or natively with hot reload via `.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0`
 
 > **Note**: PostgreSQL schemas (extensions, sentinel) persist across restarts. You do NOT need to re-create them unless you run `make reset-db`.
 

@@ -1,7 +1,7 @@
 ---
 name: dev-up
 description: Bring up a local DEV stack — build-or-resume the environment, start it, and (for an additional dev-N) set-dress it with a cache-first snapshot replay + a light dev-min seed, plus (opt-in via --local-content) an EXECUTED per-stack Directus so the stack's content is self-contained (otherwise it reads content live from prod). Consolidates the former setup-platform + start-platform. Use to set up, start, or restart a dev stack locally.
-argument-hint: [N | 'main'] [--local-content] [--no-setdress] [--no-snapshot] [--profile P] [--inject] [--public-host <host>|auto] [scenario|step]
+argument-hint: [N | 'main'] [--local-content] [--no-setdress] [--no-snapshot] [--profile P] [--inject] [--studio-src <path>] [--public-host <host>|auto] [scenario|step]
 ---
 
 # Dev Up — build, start, and set-dress a local dev stack
@@ -52,10 +52,15 @@ before/after each step, request confirmation before installs or destructive ops,
 
 3. **Track progress** via TodoWrite (build phases): prerequisites verified (Git, Docker, Go, **Node v24+**,
    pnpm, Python, Atlas, **tmux**) → GitHub SSH (`/setup-github`) → workspace `stack-dev/` → platform repo
-   cloned → the **4** `repos.yml` repos via `make init` (`app`, `sentinel`, `next-web-app`, `studio-desk`)
+   cloned → the **3** `repos.yml` repos via `make init` (`app`, `next-web-app`, `studio-desk`)
    → `platform/.env` configured (use `/stack-secrets`) → services up (`make up` — **re-derive the container
-   count from `make ps`**; expect **5** on the default `core` profile, and the long-quoted "11" is three
-   merge waves stale) → **cold DB-init** (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
+   count from `make ps`**; expect **4** on the default `core` profile, and the long-quoted "11" is three
+   merge waves stale) → **cold DB-init**
+
+   > **⚠️ This step said "the **4** repos … (`app`, **`sentinel`**, …)" and "expect **5**" until now, and it
+   > contradicted its own step 4 twelve lines below, which has said **4** since the sentinel fold.**
+   > `repos.yml` declares **three** repos (`repos.yml:3,8,11` @ platform `766df6c`) — `sentinel` was folded
+   > into `app` at v11.0 and its entry deleted, so `make init` does not clone it and `cd sentinel` fails. (`extensions`/`sentinel` schemas + `vector`/`pg_trgm`/`pgcrypto`
    extensions **before** migrate + the **Sentinel policy load** `sentinel/init_policy.sql` → seeds
    `sentinel.casbin_rules`; sentinel auto-creates the table EMPTY on startup but does NOT seed the policy —
    without this load every authorized route 403s) → migrations (`make migrate`) → frontend + Studio-Desk deps
@@ -108,9 +113,56 @@ before/after each step, request confirmation before installs or destructive ops,
    # ant-academy (optional — only when explicitly requested)
    tmux has-session -t anthropos-academy 2>/dev/null || \
      tmux new-session -d -s anthropos-academy -c "$(pwd)/stack-dev/ant-academy/code" 'npm run dev'
+
+   # studio-desk (optional — only when working on Studio; see the section below)
+   tmux has-session -t anthropos-studio 2>/dev/null || \
+     tmux new-session -d -s anthropos-studio -c "$(pwd)" \
+       '.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0'
    ```
    Verify with `tmux list-sessions`. Attach with `tmux attach -t <session>` (Ctrl+B D to detach).
    Ask before stopping/restarting, killing port-conflict processes, or `make reset-db`.
+
+### Studio-Desk on a dev stack — the part that was missing
+
+> **⚠️ NO DEV PATH STARTS STUDIO-DESK, and nothing here said so until now.** It lives in
+> `profiles: [studio-desk, all]` (`docker-compose.yml:119`), and **both** dev paths exclude it: `make up`
+> defaults to `PROFILE ?= core` (`Makefile:10`), and `dev-stack up N`'s profile is *derived* — which
+> resolves to `core` too. So a by-the-book dev stack has the studio-desk **source on disk and no studio
+> process, container or port**. Step 3 above installs its deps and nothing ever ran it.
+> **`make up PROFILE=studio-desk` does not fix it — it exits 1**, because the profile selects
+> `studio-desk` but not the `backend` it `depends_on`. `PROFILE=all` is the working container form.
+
+Since the **Next migration** studio-desk is a single Next 16 process, not Vite + Express — one port, and
+every `NEXT_PUBLIC_*` **inlined at build time**. Two ways to run it, and they are complements:
+
+```bash
+# A) NATIVE + HOT RELOAD — the authoring loop. `next dev` is ready in ~223 ms and reloads on save.
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0            # the main dev stack -> :9200
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 2            # dev-2            -> :29200
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --src <worktree>   # run a BRANCH
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --print    # resolve the wiring, run nothing
+
+# B) CONTAINERISED — parity, and a stack you can hand to someone else.
+"$DEV/dev-stack" up N --profile all --studio-src <path-to-studio-desk-tree>
+```
+
+- **`--src` / `--studio-src` is how you run a branch.** The platform compose hard-codes
+  `context: ../studio-desk` with no env seam (unlike `backend`'s `${APP_BUILD_CONTEXT:-../app}`), so
+  without this a stack can only ever build whatever ref `stack-dev/studio-desk` has checked out. The
+  redirect is emitted into the stack's own generated override — **zero platform-repo edits**.
+- **The native runner wires the stack's OWN offset ports** (backend `8082+N*OFFSET` at
+  `/graphql/query`, next-web `3000+N*OFFSET`), **injects** secrets from `platform/.env` into the process
+  rather than copying them to a second file, and **disarms prod writes**: with no per-stack Directus it
+  strips `DIRECTUS_TOKEN` and forces `FORCE_READ_ONLY=true`, because `platform/.env` points at
+  **production** content with a write-capable token and the skill-path BFF calls Directus **at boot**.
+- **Sign in without fighting Google/2FA:** `http://localhost:<port>/api/dev/login-as?email=you@anthropos.work`
+  mints a real Clerk session for a real user. Set `DEV_LOGIN_DEFAULT_EMAIL` to make the bare URL work.
+
+> **⚠️ THE FAILURE MODE TO KNOW, because no probe will tell you.** `/api/health-check` is **public by
+> design** (a healthcheck has no session), so an **empty `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`** (baked at
+> build) or a **missing `CLERK_SECRET_KEY`** (runtime) gives you **HTTP 500 on every page** while health
+> returns 200 and the container reports **healthy**. Measured, both directions. Run **`/stack-secrets`**
+> first; both paths pre-flight the key's *length* (never its value) and say so.
 
 The main dev stack uses **real Clerk** by default — it is not a snapshot/seed target unless you explicitly
 ask. (Set-dressing the main stack would reset its data; the `dev-min` seed + snapshot are for `dev-N`.)
@@ -134,6 +186,8 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
    "$DEV/dev-stack" up N --no-snapshot   # seed only (skip the snapshot replay)
    "$DEV/dev-stack" up N --no-setdress   # bare bring-up (no snapshot, no seed)
    "$DEV/dev-stack" up N --inject        # optional: Clerkenstein-inject (offline/clean-room dev)
+   "$DEV/dev-stack" up N --profile all --studio-src <tree>   # build studio-desk from a BRANCH worktree
+                                         # (core does not select studio-desk; --profile all does)
    "$DEV/dev-stack" up N --public-host auto          # OPT-IN: reachable from the tailnet (v2.3 M220 S7)
    "$DEV/dev-stack" up N --public-host box.tail.ts.net   # ...or name the MagicDNS host outright
    ```
@@ -173,6 +227,7 @@ surface at all** since M5; the guard is what found it.)
 | `--no-snapshot` | off (snapshot is **on**) | seed `dev-N` but skip the snapshot replay (faster; empty catalog + free content refs) |
 | `--local-content` | **off** (dev reads content live from prod) | EXECUTE a per-stack Directus so content is self-contained (v1.5 M22/M23) |
 | `--inject` | **off** (dev uses **real Clerk**) | Clerkenstein-inject `dev-N` — offline / clean-room dev, no real-Clerk dependency (M5) |
+| `--studio-src <path>` | **off** (studio-desk builds from `stack-dev/studio-desk`, whatever ref is checked out) | build studio-desk from a NAMED tree — a feature worktree. Emits `build.context` **and** the five `NEXT_PUBLIC_*` `build.args` into the override, and drops the dead `9100` publish. **Requires `--profile all`** (`core` does not select studio-desk) and forces `--build`. Env form: `DEV_STUDIO_SRC` |
 | `--public-host <host>\|auto` | **off — nothing is probed** | **OPT-IN remote reach** (v2.3 M220 S7). See below. Env form: `DEV_PUBLIC_HOST` |
 
 Set-dressing applies to **`dev-N` (N ≥ 1)** only; `dev-up main` (N=0) stays real-Clerk + unseeded.

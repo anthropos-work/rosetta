@@ -331,7 +331,7 @@ package). The repos still exist and are still owned; `app` simply no longer impo
 
 **Studio Services & Standalone Apps (Tier 2)**: Content creation tools + standalone apps. **"Internal-only"
 is right for Studio-Desk/Studio-Room and WRONG for Ant Academy** — see its row below
-- Studio-Desk (TypeScript/Vite/Express): Design tool for creating simulation blueprints (repo: `studio-desk`)
+- Studio-Desk (**Next.js 16 + React 19, Node ≥24 — ONE process, ONE port**): Design tool for creating simulation blueprints (repo: `studio-desk`). ⚠️ **This row read *"TypeScript/Vite/Express"* until 2026-08-17.** The migration (branch `release/3.2-full-frame`, on origin at `411a3c15`) deleted `src/`, `vite.config.ts` and every `*.html` entry point; the API is now route handlers in the same Next process, client env is `NEXT_PUBLIC_*` (**inlined at build time**), and the image is `output: 'standalone'` → **119.6 MB** (was 1.35 GB). **Ports: container `9000 + N*OFFSET`, native dev server `9200`** — `9100` was the Vite port and is dead. **`platform/docker-compose.yml` has NOT been updated**: it still passes `VITE_*` build args the new Dockerfile does not declare, which docker discards silently, producing an image that builds, starts, reports **healthy** and 500s every page. Rosetta injects the right args from an rext override instead (`dev-stack up N --profile all --studio-src <tree>`). See [`corpus/services/studio-desk.md`](corpus/services/studio-desk.md)
 - Studio-Room (Python/Asyncio): AI-powered content generation pipeline (repo: `anthropos-studio-room`). **Embedded inside the `app` (backend) container** since cms-in-app — pulled into the image by CI (`additional_repo`, app v1.360.1); never a standalone deployment.
 - Ant Academy (Next.js 16 + Expo): the AI-academy learning product — **a public storefront with an enterprise/org tier, NOT an internal `@anthropos.work`-only portal** (that description was refuted at M257x iter-115 and swept corpus-wide at run 81: it sells a $399/yr subscription to anonymous visitors and its code carries no domain predicate) (repo: `ant-academy`). **Vercel-deployed standalone — not in docker-compose.** **NOT in `repos.yml` (by design — v1.10b M49 #5)** — so `make init` does **not** clone it. For a **demo**, `ensure-clones.sh` clones it **explicitly** (phase d2, non-fatal — `repos.yml` lives in the ephemeral platform clone, so editing it is non-durable + a platform edit); for **dev**, it's a manual `git clone`. Runs natively via `cd ant-academy/code && npm run dev` (port 3077). Auth via Clerk; **since v0.5.1 the course catalog is DB-authoritative** — read from the platform academy subgraph over GraphQL (`NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`), degrading to an **empty grid** when the endpoint is unset or the academy DB is empty (the demo "empty academy" root cause — the v2.5 M229/M230 thread). See `corpus/services/ant-academy.md`.
 
@@ -584,22 +584,38 @@ pnpm test
 
 ### Studio Services
 
-**Studio-Desk** (TypeScript):
+**Studio-Desk** (Next.js 16 — **one process, one port**):
 ```bash
 cd stack-dev/studio-desk   # NOT `cd studio-desk` — the repo is cloned into the stack workspace
-cp .env.example .env   # REQUIRED — see the port note below
-npm install
-npm run dev    # frontend 9100 (vite.config.ts:10), backend 9000 (.env.example:4)
+cp .env.example .env       # REQUIRED
+npm ci
+npm run dev:next           # next dev (Turbopack) on :9200 — ready in ~223 ms, hot reload
 ```
 
-> **⚠️ The `cp .env.example .env` step is load-bearing and this block omitted it** (added M257x iter-238),
-> even though the Environment Configuration section above already says Studio-Desk needs its own `.env`.
-> **9000 is not a code default — it comes from `.env.example:4`.** `src/index.ts:60` reads
-> `process.env.PORT || 9100`, so without the copy the backend binds **9100**, the same port vite is on,
-> and `npm run dev` half-fails in a way that looks like a vite problem. The container is unaffected:
-> compose sets `PORT=9000` / `FRONTEND_PORT=9100` explicitly (`docker-compose.yml`, the `studio-desk`
-> block), which is why the documented pair is right for `make up PROFILE=studio-desk` and was wrong only
-> for the native path.
+> **⚠️ THIS BLOCK RAN `npm run dev` ON PORTS 9100/9000 UNTIL 2026-08-17, AND ALL THREE ARE GONE.**
+> `npm run dev`, `npm start`, `npm run build` and `npm test` **do not exist** in the migrated
+> `package.json` — the entry points are `dev:next` / `start:next` / `build:next` / `test:next`. There
+> is no Vite frontend and no Express backend to collide, so the old `PORT`-vs-`FRONTEND_PORT` note is
+> moot. `.env.example` now sets `PORT=9200`, and **`npm run dev:next` ignores it anyway** — the script
+> hardcodes `--port 9200`. Use `npx next dev --port <P>` to move it.
+
+**On a Rosetta dev stack, prefer the tooling** — it wires the stack's own offset ports, injects
+secrets from `platform/.env` without writing them to a second file, and disarms production writes:
+
+```bash
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0                  # main dev stack -> :9200
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 2 --src <worktree> # a BRANCH on dev-2 -> :29200
+.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh 0 --print          # resolve wiring, run nothing
+```
+
+> **⚠️ NO DEV PATH STARTS STUDIO-DESK BY DEFAULT.** It is in `profiles: [studio-desk, all]`, and both
+> `make up` (`PROFILE ?= core`) and `dev-stack up N` (derived → `core`) exclude it — a by-the-book dev
+> stack has its source on disk and no process. `make up PROFILE=studio-desk` **exits 1** (it does not
+> select the `backend` it `depends_on`); `PROFILE=all` works.
+>
+> **⚠️ And `/api/health-check` cannot tell you it is broken** — the route is public by design, so an
+> empty build-time `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` or a missing runtime `CLERK_SECRET_KEY` gives
+> **500 on every page** with health at 200 and the container **healthy**. Run `/stack-secrets` first.
 
 **Studio-Room** (Python):
 
