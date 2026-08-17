@@ -1,16 +1,17 @@
 ---
-active_release: "(none — v2.8 «fast build» SHIPPED 2026-08-13, tag `v2.8`. Awaiting /developer-kit:design-roadmap for the next release.)"
-active_branch: "release/02.80-fast-build"
+active_release: "(none — v2.9 «new alphabet» SHIPPED 2026-08-16, tag `v2.9`. Awaiting /developer-kit:design-roadmap for the next release.)"
+active_branch: "main"
 active_milestone: "(between releases)"
-last_closed: "v2.8 — 2026-08-13 (release)"
-phase: "between releases — awaiting /developer-kit:design-roadmap. v2.8 shipped 2026-08-13 (tag `v2.8`): 450 s -> 286.99 s cold bring-up on `macmini`, beating the 360 s gate and its 300 s stretch; the journey suite now runs inside every bring-up; 11.54 GB reclaimed at zero build-time cost; 0 platform-repo edits and 0 net-new deps, both verified. M257x + M258 closed `closed-incomplete` BY USER RULING, not on gate — M258 clause 3 (composed p50 over 3 cold cycles) was NEVER measured clean and must never be recorded as met. Carry-forward named item-by-item in roadmap-vision.md § v2.8."
-last_updated: "2026-08-13"
+last_closed: "M265 — 2026-08-16"
+phase: "between releases — awaiting /developer-kit:design-roadmap. v2.9 shipped 2026-08-16 (tag `v2.9`): the taxonomy went 43,584/22,511 -> 3,562/706 and the corpus, tooling and demo learned it, proven cold on a demo AND a dev stack with the Playthrough suite at 222/0. It caught a demo whose simulation library rendered ZERO cards while every probe was green (187 of 302 replayed content node-ids retired). ⚠️ SIX of seven milestones shipped WITHOUT the close-milestone lifecycle — recorded, not back-filled (release-retro.md)."
+last_updated: "2026-08-16"
 ---
 
 # State
 
-**v2.8 "fast build" IN DEVELOPMENT** — designed 2026-07-27, branch `release/02.80-fast-build` cut from `main`.
-**3 of 5 milestones closed.** Full narratives live in [`roadmap.md`](roadmap.md) § M255 / § M256 / § M257x — not here.
+**v2.9 "new alphabet" IN DEVELOPMENT** — designed 2026-08-14, branch `release/02.90-new-alphabet` cut from
+`main`. **0 of 7 milestones closed.** Full narrative + every citation lives in [`roadmap.md`](roadmap.md)
+§ v2.9 — not here.
 
 ## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
@@ -32,43 +33,30 @@ last_updated: "2026-08-13"
 
 ## Next up
 
-**`/developer-kit:close-release` for v2.8 "fast build"** — all five milestones closed, branch
-`release/02.80-fast-build`. It inherits **one conscious block fate** rather than a scatter of silent punts:
-[`m258…/carry-forward.md`](releases/archive/02.80-fast-build/m258-proven-live-build/carry-forward.md) +
-[`deferrals-audit.md`](releases/archive/02.80-fast-build/m258-proven-live-build/deferrals-audit.md) name every item
-with its fate. **0 escape-hatch deferrals** at the milestone close.
-
-**Three items are owed the user's explicit fate there** (they cross a release boundary, which revokes a
-deferral's authority): `F2` (`ptvalidate` unwired, M256→M257→M258) · `PROFILE-M257-provisional-fields`
-(M255→M257→M258) · `RATCHET-M257-literal-ceilings-breached` (**pre-existing breach of 8** — 249 vs a
-ceiling of 240; **never raised by anyone, at any point**).
-
-⚠️ **The one number v2.8 never took is a clean composed p50** — not engineering, a quiet box. The arithmetic
-already fits (247.79 s bring-up + ~129–179 s batch ≈ 377–427 s vs 480), and `LEVER-M257-L5-setdress` is
-**still unspent**, now with a named target (the taxonomy replay, ~88 % of `set_dress`).
+**M259 «canon ground truth»** — the HARD go/no-go barrier. Pull every platform repo fresh into **both** clone
+sets, read the canon + the **redirect map** + the retired-id guard, measure the real new counts, and reconcile
+the three lineages (`skills-and-job-roles` 12,201 · prod 42,790 · canon ~4k). It delivers
+`corpus/architecture/taxonomy-canon.md` — the corpus has **no doc anchor for the taxonomy source pipeline at
+all**, a Phase-0b blind area.
 
 ## Phase
 
-**v2.8 is feature-complete.** M258 closed 2026-08-12 **`closed-incomplete` — ACHIEVED BY USER RULING, NOT
-ON GATE.** Clauses 1/2/4/5 proven (1, 2 and 5 re-proven on the final stack in its own bring-up); **clause 3
-— composed p50 ≤ 480 s over 3 cold cycles — NOT MET, and it must never be recorded as met.** ⚠️ **Read it
-like M257x's `TOK-09`, not like M257**, whose gate fired on its own terms one day earlier. Full narrative:
-[`roadmap.md`](roadmap.md) § M258.
+**Designed, not started.** Every fact below was measured 2026-08-14 against each repo's `origin/main`; the
+citations are in [`roadmap.md`](roadmap.md) § v2.9.
 
-**Every M258 number carries its status or must not be quoted:** **840.01 s** instrument-rejected (3/3
-`headroom=FAIL`) · **401.60 s** a PROJECTION, never one measured cycle · **~290 s** deliberately **not
-banked** (warm-cache, missing the export/unpack leg that is 46.2 % of a cold one) · **179.37 s** is
-`batch_gate`'s own p50, **inside M256's 200 s budget while contended** — the batch half is not what is slow.
+**The break is in OUR tooling, not the platform's.** `stack-snapshot/taxonomy/taxonomy.go:104` pins
+`MinRows: 40000` on `public.skills`; `capture/capture.go:392` aborts *"refusing to persist a broken
+snapshot"*. A ~4k canon cannot be captured → no snapshot → no set-dress → **no demo and no `dev-N`**. M260
+owns it, and must preserve the under-capture protection the floor exists for.
 
-**`END-M258-one-stack` MET, and it is the USER'S stack.** `demo-4` is the only stack up, built by the
-**fixed** tooling from the newest platform mains (`platform` `766df6c` · `app` `c52dbc51e`), and it proved
-itself in the same command. **Cockpit `http://localhost:47700`. Do not tear down, re-seed, restart or
-reset it.**
+**The second risk is silent, which makes it the dangerous one.** The seed presets pin **8 literal job-role
+names**; `TaxonomyRefs` returns an empty pool for one that no longer resolves and `PersonaSeeder` **skips
+enrichment rather than fabricating**. The closure gene gained a population witness at M256, so a **total**
+wipe-out fails loudly — a **partial** one (3 of 7 heroes) still passes. M262 adds the per-hero richness floor.
 
-⚠️ **Open safety item, inherited by the release close and still not closed:** a demo reached the
-**production** S3 bucket and only an **IAM policy on an account we do not control** refused it. Containment
-is proven by a unit test on the emitter and **on no running stack**. Owner: `corpus/ops/safety.md` + M257x
-`carry-forward.md` cluster 1.
+**Two things already handle the swap correctly** and need no work: `autoverify.sh:305` asserts
+`public.skills > 0` (not a floor), and the batch-prompt cache is keyed on the taxonomy capture version, so
+generated members invalidate on re-capture.
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 
@@ -105,36 +93,35 @@ numbered rules in full.
 - **RE-SCOPE TRIGGER: occurrence 3, NOT firing.** It fired at iter-53 and the remedy shipped as TOK-04;
   35+ clean iters since, so *"two CONSECUTIVE invalidated attempts"* is false on its own words.
 
-## v2.8 shape
+## v2.9 shape
 
-**M255** (section, HARD barrier) ✅ *VERDICT GO* → **M256** ✅ `closed-on-gate` → **M257x** ✅
-`closed-incomplete` *(user ruling)* → **M257** ✅ `closed-on-gate` *(449.51 → **286.99 s** p50, gate 360)* →
-**M258** ✅ `closed-incomplete` *(user ruling — clause 3 never measured clean)*. **ALL 5 CLOSED.** Strictly
-serial by the user's order — *sharpen the detector before changing what it detects*. Per-milestone detail:
-[`roadmap.md`](roadmap.md).
+**M259** (section, HARD barrier) → **M260** → **M261** → { **M262** ∥ **M263** ∥ **M264** } → **M265**
+(iterative closer). The three parallel milestones touch disjoint trees — `stack-seeding` ·
+`playthroughs`+`stack-verify` · `corpus/` — so the merge surface is index/link-level only. Per-milestone
+scope: [`roadmap.md`](roadmap.md) § v2.9.
 
-## Binding user decisions (2026-07-27, + later)
+## Binding user decisions (2026-08-14)
 
-**`D-v28-1` … `D-v28-15` are held in full in [`roadmap.md`](roadmap.md)** — including the two that produced
-standing rules: **`D-v28-3`** (batch-gate semantics — **zero standing red** is the invariant) and
-**`D-v28-12`/`D-v28-13`** (***never gate a relative statistic without first measuring its variance***).
-M256's close ratifications (`D103`, `D104`, the iter-31/32 deviation) are in that file's § M256 closure;
-`HARDEN-CAP-ACCEPTED-D105` is in [`m256…/decisions.md`](releases/archive/02.80-fast-build/m256-playthrough-sharpening/decisions.md).
+- **`D-v29-1` — "update the platform repos" means PULL THEM FRESH, never commit to them.** The zero-platform-edit
+  rule is unchanged and binding for this release.
+- **`D-v29-2` — the `/taxonomy` gate is "navigable and real", not "reachable".** A hero walks index → category →
+  specialization → role → skill on the replayed canon, proven by a Playthrough. v2.8 shipped an academy that
+  rendered perfectly and could not hydrate precisely because nothing clicked anything on it.
+- **`D-v29-3` — regeneration ceiling $200, and it is REAL API SPEND.** `gen-batch` runs through the platform's
+  `ai` module (gpt-4o-mini via Azure/OpenAI keys); there is **no subscription-quota path** for it. M262 **prices
+  the regeneration and reports the number before spending it** rather than spending up to the ceiling on its own
+  judgement; anything approaching $200 is reviewed first.
 
 ## Recently closed milestones (max 5)
 
-_The v2.8 milestones shipped with the release; full narratives live in
-`releases/archive/02.80-fast-build/` and `roadmap.md` § M255 / M256 / M257x / M257 / M258._
-
-- **M258 — 2026-08-12** · proven-live build · **`closed-incomplete`, BY USER RULING, NOT on gate** —
-  clause 3 (composed p50 over 3 cold cycles) **NOT MET and never to be recorded as met**; 840.01 s is
-  instrument-rejected and a flattering ~290 s warm-cache cycle was deliberately not banked.
-- **M257 — 2026-08-12** · first-light build · **`closed-on-gate` — the gate FIRED on its own terms**,
-  p50 **286.99 s** vs 360 s, every clause green on all 3 reps including both falsifiable ones.
-- **M257x — 2026-08-11** · platform re-alignment · **`closed-incomplete`, BY USER RULING (`TOK-09`)** —
-  clause 5 out of scope by that ruling, never met, never measured clean.
+_(none this release — v2.8's entries moved to [`roadmap.md`](roadmap.md) at its close.)_
 
 ## Recently shipped releases (older → roadmap.md / roadmap-legacy.md)
+- **v2.9 "new alphabet"** — 2026-08-16 (tag `v2.9`) — taxonomy realignment; M259→M265;
+  **43,584/22,511 → 3,562/706** skills/roles; Playthrough suite **222/0** cold; content realignment
+  repaired **515 refs → 0**; 0 platform edits, 0 dependency changes.
+  ⚠️ **6 of 7 milestones shipped WITHOUT the close-milestone lifecycle** — recorded, not back-filled
+  (`releases/archive/02.90-new-alphabet/release-retro.md`).
 - **v2.8 "fast build" — 2026-08-13** (tag `v2.8`) — time-to-ready; M255→M256→M257x→M257→M258;
   **450 s → 286.99 s** cold bring-up on `macmini` (gate 360 s, stretch 300 s); the journey suite now runs
   **inside** every bring-up; 11.54 GB reclaimed at zero build-time cost; 0 platform edits, 0 net-new deps.
@@ -142,7 +129,6 @@ _The v2.8 milestones shipped with the release; full narratives live in
   carry-forward → `roadmap-vision.md` § v2.8.
 - **v2.7 "july jitter" — 2026-07-25** (tag `v2.7`) — re-ground + fidelity + field-hardening; M246→M254;
   prove-on-billion a–h live; **zero carry-forward**; 0 platform edits.
-- **v2.6** 2026-07-23 (`v2.6`) · **v2.5** 2026-07-20 (`v2.5`).
 
 ## Standing backlog (fated destinations — this is an INDEX; each row's owner is the link)
 

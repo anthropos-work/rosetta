@@ -136,7 +136,7 @@ TRAINING = 1 var + 1–3 skill + 4–5 criterion + 2–3 actors + app-side sessi
 
 - **Sim manager** (`insightsJobSimulationByMemberships`, `app/internal/web/backend/graphql/graph/resolver_queries.go:1033`,
   Casbin-gated `OrgFeatureInsights`) reads **`app.public.job_simulation_sessions.score`**
-  (`app/internal/organization/intelligence.go:1689` → `:1595`/`:1611`; Ent schema
+  (`app/internal/organization/intelligence.go:947` → `:1490`/`:1523`; Ent schema
   `internal/data/ent/schema/job_simulation_session.go`, table created by migration `20260722104506.sql`).
 - **Skill-path manager** (`insightsSkillPathByMemberships`, `resolver_queries.go:922`, same gate) reads
   **`app.public.skill_path_sessions`** (`intelligence.go:1144`; schema `skill_path_session.go`, created by

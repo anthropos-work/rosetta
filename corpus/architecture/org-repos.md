@@ -311,7 +311,7 @@ speech-to-speech `openai.realtime.RealtimeModel`; chain is a classic **STT → L
 (`src/agent.py:607-621`: `inference.LLM("google/gemini-2.5-flash")`,
 `inference.TTS("elevenlabs/eleven_multilingual_v2")`). It is selected **by CMS content, not a flag** —
 `voiceEngine == SimulationVoiceEngineLivekitchain`, enum `"livekitchain"` at
-`app/internal/cms/directus/collections/jobsimulation.go:1085`. It is the actively developed one.
+`app/internal/cms/directus/collections/jobsimulation.go:1069`. It is the actively developed one.
 
 > ⚠️ **The cross-repo coupling is an unfenced string contract.** The platform holds **no** reference to
 > any agent repo — no URL, no `CA_*` id, no `livekit.toml`. The whole seam is the agent-name literal plus
@@ -449,6 +449,25 @@ cites no ISO-27001 programme) · `kb-migration-plan` · `kb-domain-singularity` 
 [`anthropos-labs.md`](../tools/anthropos-labs.md)) · `customer-orbyta` (the corpus describes no
 per-customer repo pattern) · `Analytics-and-Reports` · `bench-analysis-transcripts` · `transcoder`
 (adjacent to `media-substrate-spec.md`'s Bunny path) · `realtime-python` · `studio-tools`.
+
+> ### ✅ The four TAXONOMY repos: re-graded at v2.9 M259/M264 — the grading STANDS, and now it is evidenced
+>
+> `skills-and-job-roles` · `skill-index-data` · `taxonomy-generation-tool` · `blueprint-skill-taxonomy`
+> were listed below as dormant-DECIDE on commit dates alone. A taxonomy revamp landed in August 2026,
+> which looked like it should have woken them. **It did not, and the reason is worth recording:**
+>
+> - **The canon is not in any of them.** It is a checked-in artifact **inside `app`** —
+>   `app/taxonomy-canon/`, 13 files, loaded by `app/cmd/taxonomy-load`.
+>   See [`taxonomy-canon.md`](taxonomy-canon.md).
+> - **`skills-and-job-roles` is a different LINEAGE, not an older version.** Cloned and measured
+>   2026-08-14: **12,201 skills / 1,893 job roles**, ESCO-derived, last commit **2024-04-08**. That is
+>   not an earlier state of the 43,584-row production catalogue; the two were never the same number.
+> - **ESCO survives as PROVENANCE on the canon, not as its source**: `canonical_roles.csv` carries
+>   `esco_uri` + `isco` on **454 of 706** canonical roles and `onet_code` on 495.
+>
+> **So the dormant-DECIDE grading is correct and unchanged.** Anyone reaching for "the old taxonomy
+> repo" while working on taxonomy v2 is reaching two years and one whole lineage sideways — which is
+> exactly the mistake this note exists to prevent.
 
 **Dormant ≥ 18 months, unarchived — DECIDE, and the decision needs `infrastructure` read first:**
 `ant-content-extension` · `helm-charts` · `flux` · `mattermost-sentry` · `k8s-infrastructure` ·

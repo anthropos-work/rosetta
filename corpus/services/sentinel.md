@@ -12,7 +12,7 @@
 > **v0.24.2** (`app/internal/sentinel/doc.go:10`; `f2c46190`, which is this repo's `origin/main` today —
 > the port source and the repo head are the same commit). It is wired **exactly once**, at
 > `app/main.go:305`, under the source's own comment *"The single wiring point for authorization (v11.0).
-> There is no switch and no RPC path: app IS the PDP"*, and `log.Fatalf` on failure. `app/main.go:314`
+> There is no switch and no RPC path: app IS the PDP"*, and `log.Fatalf` on failure. `app/main.go:322`
 > logs `authorization: in-process PDP active`. The caller-side facade is `app/internal/authorization/`
 > (`NewSentinelManager`).
 >

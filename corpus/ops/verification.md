@@ -78,7 +78,7 @@ an abort (#M18-D3). This mirrors the proven default-on + non-fatal pattern of `d
 Everything above this line proves the stack is **reachable and healthy**. It cannot tell you whether a
 seeded hero can actually *play her journey* — a stack can pass every probe and still be functionally
 broken. So the bring-up now ends in a second, higher gate:
-`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:2903` immediately after the `UP.` line
+`playthroughs/e2e/batch-gate.sh`, invoked from `up-injected.sh:3000` immediately after the `UP.` line
 (`:2867`). After it, **"UP" means "UP, and every journey verified"**.
 
 > ⚠️ **This cited `up-injected.sh:2839` until the M258 close, and that line is neither the hook nor even
@@ -858,7 +858,7 @@ What that looks like from the outside is the part worth internalising:
 
 **The gap this names — corrected at M257, because the first reading of it was wrong.** The cheap-win set does
 not fire on this, but **`autoverify` as a whole is not blind to it**: `stack-verify/lib/services.sh:43-44`
-carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2745`), and an
+carries `jobsimulation` and `cms` rows, both inside the demo `--services` scope (`up-injected.sh:2925`), and an
 `Exited (0)` container un-publishes its port → `code=000` → `status=down` (`services.sh:130-133`) → `verify.sh`
 rc≠0 → `autoverify.sh` warns → `green:false`. **A re-run would have gone red.** The stack stayed green through
 the **stale-verdict class** — an `autoverify.json` written once at the bring-up tail and read later as current,
