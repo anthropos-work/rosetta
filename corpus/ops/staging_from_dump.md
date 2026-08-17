@@ -481,6 +481,11 @@ docker compose restart postgresql
 ```
 
 ### studio-desk fails to bind port 9100
+> ⚠️ **NOTHING LISTENS ON 9100 SINCE THE NEXT MIGRATION** — it was the Vite dev-server port, present only
+> under the old `npm run dev` and never inside the container. Compose still publishes it, so the bind
+> conflict with `node_exporter` is still reachable, but the correct fix is to stop publishing a dead port
+> rather than to remap it. The live port is `9000 + N*OFFSET`. Historical remap:
+
 Conflicts with `node_exporter` (Prometheus monitoring) on the host. Edit `platform/docker-compose.yml`:
 ```yaml
 studio-desk:

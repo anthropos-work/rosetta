@@ -466,7 +466,7 @@ All services share a **single centralized `.env` file** located in the `platform
     *   `OPENAI_KEY` (AI services)
     *   `AZURE_OPENAI_KEY` & `AZURE_OPENAI_ENDPOINT_URL` (Optional, Azure OpenAI)
     *   `AZURE_API_KEY` & `AZURE_ENDPOINT` (Optional, Azure Cognitive Services)
-    *   `VITE_CLERK_PUBLISHABLE_KEY` (Only needed for Studio-Desk via Docker)
+    *   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Studio-Desk **and** next-web-app; **inlined at BUILD time**, so for a container it must reach the build as a `--build-arg`, not merely sit in a `.env` the running container reads). *(This said `VITE_CLERK_PUBLISHABLE_KEY`, which the Next migration retired — `platform/.env_example` still declares it and compose still passes it, but the migrated Dockerfile declares no such ARG and docker discards it silently.)*
     *   `CLERK_WEBHOOK_SECRET` (Only needed if using Clerk webhooks)
 
 3.  **Verification**: `ls -la platform/.env` should show the file exists.

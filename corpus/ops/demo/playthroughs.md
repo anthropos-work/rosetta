@@ -509,7 +509,7 @@ Playthroughs prove the two builder GENERATE flows reach their **completion bound
 > `env_file` (see [`../../services/studio-desk.md`](../../services/studio-desk.md) § Demo AI wiring +
 > [`frontend-tier.md`](frontend-tier.md)); and (2) the studio surface is reached by a
 > **Clerkenstein-authenticated** hero — the **org-admin manager** logs in via the cockpit handshake and passes
-> studio-desk's `checkEnterpriseAndAdmin` gate (the studio is **not** auth-disarmed; there is **no** `MOCK_CLERK`).
+> studio-desk's Studio-role gate (the studio is **not** auth-disarmed; there is **no** `MOCK_CLERK`). ⚠️ *The gate is no longer `checkEnterpriseAndAdmin` in `src/index.ts` — that file is deleted. Since the Next migration it is **edge middleware** in `proxy.ts`, default-deny, reading the server-side BAPI; the role set is unchanged.*
 >
 > **Surface base URL.** The studio Playthroughs drive **`env.studioBaseUrl`** — studio-desk's single-port
 > `9000+offset` (`PT_STUDIO_BASE_URL` override; the runner exports it), never `appBaseUrl`. Same pattern as the

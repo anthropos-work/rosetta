@@ -68,7 +68,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 |---|---|---|
 | [`graphql-wundergraph.md`](graphql-wundergraph.md) | GraphQL Gateway | *was* Apollo Federation v2 via Cosmo Router — **ONE** subgraph (`backend`) since `915da06`. **GONE IN BOTH STATES** (corrected iter-124): deleted from local dev at platform `2adcf71` (2026-07-31) and **destroyed in production** (`infrastructure` `services.tf:509-517`); repo ARCHIVED; the frontends hit `backend` at `:8082/graphql/query` |
 | [`next-web-app.md`](next-web-app.md) | Next Web App | The Next.js **16** monorepo on Vercel — Workforce (`apps/web`), Hiring (`apps/hiring`), mobile |
-| [`studio-desk.md`](studio-desk.md) | Studio-Desk | TypeScript/Vite/Express design tool for authoring simulation blueprints |
+| [`studio-desk.md`](studio-desk.md) | Studio-Desk | **Next.js 16** design tool for authoring simulation blueprints (was TypeScript/Vite/Express until the migration) |
 | [`studio-room.md`](studio-room.md) | Studio-Room | Python/asyncio AI content-generation pipeline. **Embedded inside the `app` (backend) container** since cms-in-app |
 | [`ant-academy.md`](ant-academy.md) | Ant Academy | The AI-academy learning product (Next.js 16 + Expo) — a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only. Vercel-deployed, native-only, DB-authoritative catalog |
 

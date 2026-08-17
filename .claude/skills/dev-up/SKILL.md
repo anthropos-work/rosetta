@@ -178,8 +178,21 @@ Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it �
 3. **Bring it up + set-dress** via the dev-stack tooling, consumed from the dev stack's **OWN**
    `stack-dev/rosetta-extensions` clone pinned at a tag (never edited ad-hoc; authored + tested + tagged
    first in `.agentspace/rosetta-extensions/`):
+   > **⚠️ `stack-dev/rosetta-extensions` MAY NOT EXIST, and then every command below fails.** It is the
+   > per-stack consumption clone pinned at a tag — but nothing creates it for the **main** dev stack
+   > (`/demo-up`'s `ensure-clones.sh` creates `stack-demo/rosetta-extensions`; there is no dev equivalent).
+   > Measured absent on this box 2026-08-17, while the docs have pointed at it for releases. Check first:
+   > `ls -d stack-dev/rosetta-extensions`.
+   >
+   > **While validating tooling that is not yet tagged and pushed**, drive it from the **authoring copy**
+   > instead — `DEV=.agentspace/rosetta-extensions/dev-stack`. That is a deliberate, temporary deviation
+   > from the pinned-tag rule and it is the right call for exactly one situation: the tool under test is on
+   > an unmerged branch, so no tag on origin can contain it (*tagging is not publishing* —
+   > `corpus/ops/verification.md` pre-flight rung zero). Go back to the pinned clone once the work is
+   > tagged **and pushed**.
+
    ```bash
-   DEV=stack-dev/rosetta-extensions/dev-stack
+   DEV=stack-dev/rosetta-extensions/dev-stack        # …or .agentspace/rosetta-extensions/dev-stack (see above)
    "$DEV/dev-stack" up N                 # allocate N via the unified registry, bring up dev-N on offset ports,
                                          # then run the default set-dress pass: the per-stack Directus
                                          # recipe + firewall, cache-first snapshot replay, dev-min seed (M13).

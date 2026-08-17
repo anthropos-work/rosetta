@@ -260,7 +260,7 @@ may still exist on disk):
 
 | Service Name | Technology | Responsibility | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Studio-Desk** | TypeScript, Vite, Express | Content design tool for creating simulation blueprints | [→](../services/studio-desk.md) |
+| **Studio-Desk** | **Next.js 16 + React 19**, Node ≥24 — one process, one port | Content design tool for creating simulation blueprints | [→](../services/studio-desk.md) |
 | **Studio-Room** | Python, Asyncio | AI-powered content generation pipeline | [→](../services/studio-room.md) |
 
 #### External Services (Tier 3)

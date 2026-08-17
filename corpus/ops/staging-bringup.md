@@ -444,7 +444,7 @@ This is the integrated form of the 19 quirks Stefano discovered during the Ithac
 
    > **⚠️ Retire the old patch when you meet it.** Every staging brought up before 2026-05-14 carries a hand-edited `internal/cors/cors.go` under `skip-worktree` (it is listed as such in [`staging-sync.md` § Skip-worktree handling](./staging-sync.md#skip-worktree-handling)). That patch is now dead weight *and* a merge hazard: unmark it (`git update-index --no-skip-worktree internal/cors/cors.go`), `git checkout -- internal/cors/cors.go`, move the origin into `CORS_EXTRA_ORIGINS`, restart backend. The var is **ignored in production** by design, so there is no prod blast radius.
 
-6. **Quirk #7 — `studio-desk` host port 9100 collides with `node_exporter`** if you run any observability stack (Prometheus etc.). Remap to `9101:9100` in `platform/docker-compose.yml`:
+6. **Quirk #7 — `studio-desk` host port 9100 collides with `node_exporter`** if you run any observability stack (Prometheus etc.). ⚠️ **Since the Next migration NOTHING LISTENS on 9100 in the container** — it was the Vite dev-server port, which only ever existed under the old `npm run dev`. The bind conflict is still reachable because compose still publishes the port, but the right fix is to stop publishing a dead port rather than remap it (a dev stack brought up with `--studio-src` drops it). The live port is `9000 + N*OFFSET`. Historical remap:
 
    ```yaml
    studio-desk:

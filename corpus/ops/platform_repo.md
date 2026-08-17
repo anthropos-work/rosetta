@@ -141,7 +141,7 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 |---------|--------------|
 | postgresql / redis | 5432 / 6379 |
 | backend (`app`) | **published: 8081, 8082, 8083 — and only 8082 answers.** ⚠️ **Measured live on the compose network of a running stack (M258 iter-18, `demo-3`, platform `766df6c`): `8081` → no listener, `8083` → no listener, `8084` → 404 (alive).** `PORT=8082` (`docker-compose.yml:42`) is the web + GraphQL server and is the only published port with anything behind it. `RPC_PORT=8083` (`:46`) is dead config: `app` deleted its Connect-RPC listener at v11.0 (`app/main.go:1310`, *"NO RPC SERVER"* — the mux that carried `BackendUsers`, `BackendOrganizations`, `SkillerService`, `JobSimulationService`, `CMSService` and `lab.v1.LabSessionService`; the handler objects survive and are called **in-process**). `8081` was that listener's port and binds nothing. **`META_PORT=8084` (`:41`) is the one live extra surface and compose does NOT publish it** — so the meta server is unreachable from the host. This row previously listed all four as if each were a live published surface. *(Still true and unchanged: there is no `SkillPathSessionService` — skillpath-in-app M506 removed the RPC rather than re-hosting it — and no RoadRunner service; `backend` calls Judge0 over plain HTTP.)* |
-| studio-desk | 9000 (backend), 9100 (frontend) |
+| studio-desk | **9000** — ONE port. *(Read "9000 (backend), 9100 (frontend)" until 2026-08-17: the Next migration collapsed the two-tier Vite+Express shape into a single process. Compose still PUBLISHES 9100, but nothing has ever listened there in the container — it was the Vite dev-server port.)* |
 | next-web-app | 3000 |
 | gotenberg | 3200 |
 
