@@ -81,7 +81,7 @@ page** asserts — **per page AND per section/element**:
   studio-desk on `:9000+offset` — is now **FOLLOWED** by the crawl with the logged-in context and asserted to
   land on a **real, non-blank** destination: on the destination `host:port`, **not** a `/login`·`/sign-in`·
   `/undefined` surface, **not** the un-offset `:3000`, HTTP 2xx (no `ERR_TOO_MANY_REDIRECTS`), with a
-  destination DOM marker present (the studio-desk home's WelcomeSection / QuickActions). Previously the BFS only
+  destination DOM marker present (the studio-desk home's WelcomeSection / QuickActions — selected by **`data-testid`** since the Next migration; the old `#welcome-section` / `.home-container` CSS selectors cannot match a React tree using CSS Modules, which hash every class name at build time). Previously the BFS only
   recursed **same-host-AND-port**, so these cross-port destinations were never visited and a blank /
   login-looping studio-desk slipped the gate. A failing follow is a gate **FAIL** (the studio-desk class).
 

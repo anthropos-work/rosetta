@@ -375,6 +375,29 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 | `academy-fs-published-public` | `ant-academy` · `code/src/lib/serverTenant.js` | **(M244, native-run)** the ANONYMOUS-view half — /library, /free/*, and the cross-port academy home (:3077) render REAL cards via the same FS-as-published fallback on `getPublicCatalogView` (`getBackendCatalogView(new Set())` — the public/empty eid set, so no tenant content leaks onto an anon route). **CHAINED** on `serverTenant.js` (its `pre_sha256` **is** `-fallback`'s `post_sha256`): applied AFTER `-fallback`, reverted BEFORE it. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-public.sh` |
 | `academy-fs-published-chapter-body` | `ant-academy` · `code/src/lib/serverChapterBody.js` | **(M238, native-run)** the BODY half — clicking "Start the course" renders the FS chapter body (locale-aware, unlocked, un-chipped) instead of the "You wandered off the trail" 404. Same `ACADEMY_DEMO_FS_PUBLISHED` gate. Applied by `apply-academy-fs-published-body.sh` |
 | `next-web-back-to-cockpit` | `next-web-app` · `packages/ui/src/NavBar/NavbarTop.tsx` | **(M249)** a fail-closed **"Back to Cockpit"** item in the desktop account dropdown (reads `NEXT_PUBLIC_COCKPIT_URL` = 7700+OFFSET — a DIFFERENT port from the web app; renders only when set). **SHARED `packages/ui`, so it bakes into BOTH the web + hiring images.** The **additive-UI injection** pattern (a NEW menu element, not a URL rewrite — see the section below). Targets its own file — no chain |
+> **⚠️ ALL FIVE `studio-desk` PATCHES BELOW ARE RETIRED (2026-08-17) — the Next migration.** They are
+> sha-pinned to `app/core/main.ts`, `app/core/scaffold/userProfile.js` and `app/core/scaffold/pageWrapper.js`;
+> `app/core/` **does not exist** after the migration, and every one of them reads `import.meta.env`, which
+> resolves nowhere in a Next build. They do **not** "drift" — demopatch classifies the target as **absent**
+> and **REFUSES at G2**, so running the ladder cost five guaranteed refusals per bring-up and wrote five
+> misleading `REFUSED` lines. `build_frontend_studio_desk` no longer applies them; it writes `RETIRED` lines
+> instead.
+>
+> **What replaced them.** The three URL patches are now SOURCE behaviour — `app/_lib/externalUrls.ts` reads
+> `NEXT_PUBLIC_* || <prod host>`, fed by the build args the rext-owned Dockerfile declares. That is strictly
+> better than re-pinning: the patches only ever ran on a **demo**, so a `dev-N` stack prod-ejected either way.
+> The two first-paint patches need no successor — `AppShell.tsx` server-renders the chrome, so there is no
+> empty-body blank to reorder and no `.page-skeleton` to inject (that CSS was deleted deliberately).
+>
+> **Their manifests stay in the build's cache fingerprint on purpose.** Retiring a patch and retiring its
+> cache-key entry are two different decisions: drop the paths and the hash changes once, silently, after
+> which any image built before the retirement matches forever and keeps serving the Vite bundle. Only the
+> first decision has been taken.
+>
+> **Still missing, and deliberately not faked:** the **"Back to Cockpit" menu ITEM**. That patch was
+> *additive UI*, not a URL swap, so nothing in source replaces it. `NEXT_PUBLIC_COCKPIT_URL` is passed to the
+> build and is currently read by nothing — the seam is ready for whoever adds the item.
+
 | `studio-desk-back-to-cockpit` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249, the FIRST-EVER studio-desk SOURCE patch)** rewrites the user-menu **"Back"** control to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL`, killing the `app.anthropos.work` prod-eject) **and** ADDS a fail-closed **"Back to Cockpit"** sibling (reads `VITE_COCKPIT_URL`). Image-baked via `build_frontend_studio_desk` (net-new patch ladder). **CHAINED** with `studio-desk-logout-url` (same `userProfile.js`; that patch's `pre_sha256` **is** this one's `post_sha256`) — applied FIRST, reverted LAST |
 | `studio-desk-logout-url` | `studio-desk` · `app/core/scaffold/userProfile.js` | **(M249)** rewrites `handleLogout()`'s hardcoded `app.anthropos.work/logout` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). **CHAINED** on `studio-desk-back-to-cockpit` (same file) — reads DRIFTED against a pristine `userProfile.js` BY DESIGN |
 | `studio-desk-logo-url` | `studio-desk` · `app/core/scaffold/pageWrapper.js` | **(M249)** rewrites the header **logo** link's hardcoded `app.anthropos.work` prod-eject to THIS stack's app (`import.meta.env.VITE_WEB_APP_URL || …`). Standalone file — no chain |

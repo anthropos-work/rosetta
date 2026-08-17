@@ -431,6 +431,16 @@ make L1 look better than it is, and the arithmetic that predicted the win (~132.
 legs) is reported beside the realized 141.63 s rather than merged into it. The images went **4.04 GB → 417 MB**
 (next-web) and **3.94 GB → 380 MB** (hiring); `exporting to image` went **136.4 s → 3.8 s** combined.
 
+> **⚠️ SUPERSEDED FOR studio-desk (2026-08-17) — the Next migration changed the SHAPE, not just the size.**
+> The prune-and-copy analysis below is a correct measurement of the **Vite/Express** image and its conclusion
+> ("the image is dominated by PRODUCTION dependencies, not the toolchain — 838 MB of the 1.04 GB survives
+> `--omit=dev`, because `@clerk/clerk-js` carries a crypto-wallet tree") is exactly why the next step could
+> not be another prune. `output: 'standalone'` sidesteps it entirely: `next build` emits a **traced** subset
+> of `node_modules`, so the wallet tree is never copied rather than copied-then-pruned. **Measured 119.6 MB,
+> cold build 50 s** (arm64 Mac, Docker 29.6.2, containerd image store) — ~11× below the 1.35 GB below, and
+> studio-desk goes from the LARGEST UI image on a demo to the SMALLEST. The `ui_studio_desk` phase timings in
+> the tables above predate this and have not been re-measured.
+
 **studio-desk, the third UI image, followed at v2.8 M258 (`TIK-A`) — and its result refutes L1's premise
 rather than repeating it.** An rext-owned multi-stage `frontend/studio-desk.Dockerfile` (prune-and-copy,
 build shape 3; zero platform-repo edits) took it **1.7 GB → 1.35 GB — 350 MB per stack, 20.6 %**. That is

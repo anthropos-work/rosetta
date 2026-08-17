@@ -44,7 +44,7 @@ graph TB
 > **Read the generation edge in that direction.** Until this pass the diagram drew `Room --> Desk`, which
 > is backwards: Studio-Desk never receives anything from Studio-Room, and Studio-Room never calls
 > Studio-Desk. Generation flows **Desk → Backend → Room** — Desk submits/polls `StudioTask` over GraphQL
-> (`studio-desk/.env.example:44` bakes `VITE_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query` @ `41ee3575` — `:45` is `VITE_ENVIRONMENT=production`; the
+> (`studio-desk/.env.example` bakes `NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8082/graphql/query` on the migration branch — the `VITE_*` spelling this cited @ `41ee3575` is retired, and the file now carries ZERO `VITE_` assignments; the
 > `studioTask` / `studioTasks` / `archiveStudioTask` operations are `app`'s — but ⚠️ **they are not all in
 > one file, and this bullet supplied a single locator for three constructs until M257x iter-115.** At `app`
 > `ad9f3c49`: `studioTask` is `…/graphql/graph/schemas/cms_queries.graphqls:106` and `studioTasks` is `:107`,
@@ -93,7 +93,7 @@ not select, so compose exits 1; stack them on `core`.
 
 | Service | Port(s) | Purpose | Profile | Source |
 |:--------|:--------|:--------|:--------|:-------|
-| **Studio-Desk** | 9000, 9100 | Studio design tool (containerized variant) | studio-desk, all | Local `../studio-desk` |
+| **Studio-Desk** | **9000** *(one port)* | Studio design tool (containerized variant) | studio-desk, all | Local `../studio-desk` |
 | **Next-Web-App** | 3000 | Frontend (containerized variant) | frontend, all | Local `../next-web-app` |
 
 > **Storage (8300-8301), Messenger (8200-8201) and CustomerIO Sync (8080) were the other three rows.**

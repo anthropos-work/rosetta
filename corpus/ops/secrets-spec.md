@@ -115,7 +115,7 @@ The gene id is `<repo>/<KEY>` (e.g. `studio-desk/CLERK_SECRET_KEY`); ids are uni
 | **platform** | `.env` | 32 | `GH_PAT`, the Clerk pair, `OPENAI_KEY`, the Azure variants (incl. the M256 `SKILLER_AZURE_OPENAI_KEY`/`_ENDPOINT_URL` pair), `DIRECTUS_TOKEN`, the LiveKit pair, `INVITATION_HMAC_SECRET`, `ENVIRONMENT`, `PUBLIC_HOST` |
 | **app** | `.env` | 10 | `GH_TOKEN` (alias), `STRIPE_SECRET_KEY`, `OPENAI_API_KEY` (repo-local backend env, 46 keys) + **the M239 Bedrock cred class** (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` + `AWS_REGION`/`AWS_SESSION_TOKEN`/`CLAUDE_CODE_USE_BEDROCK` — Talk to Data, see below) |
 | **~~sentinel~~** | `.env` | 2 | `DB_CONNECTION` (**`waived-config`** — compose-injected, see the waived class), `SENTRY_DSN`; the **only** Go repo that ships a `.env.example`. ⚠️ **Repo not cloned since `766df6c`** — folded into `app`, so this row is a dated reading at `0c91421`, not a live target |
-| **studio-desk** | `.env` | 7 | its own Clerk pair, `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
+| **studio-desk** | `.env` | 7 | its own Clerk pair (**`CLERK_SECRET_KEY` + `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`** — the publishable half was `VITE_CLERK_PUBLISHABLE_KEY` until the Next migration retired every `VITE_*` name), `AI_*`-prefixed AI keys, `DIRECTUS_TOKEN` |
 | **next-web-app** | `apps/web/.env` | 7 | Clerk pair, Azure-OpenAI, `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT` |
 | **ant-academy** | `code/.env.local` | 6 | Clerk pair, `OPENAI_API_KEY` + `ANTHROPIC_API_KEY` (the `/api/ai/chat` route) |
 
@@ -412,6 +412,22 @@ surfaced), **idempotent** (copy-if-absent — a re-run adds nothing), and **non-
 from `eu.anthropic.claude-sonnet-4-6` (`converse` → `pong`, `end_turn`, eu-west-1).
 
 ### The studio-desk AI class (v2.7 "july jitter" M252, the studio builders)
+
+> **⚠️ THE PUBLISHABLE-KEY GENE WAS RENAMED (2026-08-17), AND THE OLD ONE WAS VACUOUSLY GREEN.**
+> `studio-desk/VITE_CLERK_PUBLISHABLE_KEY` — **critical · required** — named a variable the migrated tree
+> does not read: `.env.example` carries **zero** `VITE_` assignments. Worse, that gene was also on the
+> Clerkenstein **minted** list, so coverage reported it **100 % satisfied** while the key the app actually
+> needs (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) was tracked by nothing. A gene that is both **dead and
+> vacuously green** is the worst state available to this DNA: it reports a covered surface that cannot work.
+> The gene is now `studio-desk/NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
+>
+> **The `platform` twin deliberately keeps the `VITE_` name.** `platform/.env_example` still declares it and
+> `platform/docker-compose.yml:96` still passes it as a build arg, and this corpus takes **zero platform
+> edits** — but it no longer reaches the app, because the migrated Dockerfile declares `NEXT_PUBLIC_*` only
+> and docker discards an undeclared build-arg **without a word**. Rosetta injects the right args from its own
+> override. What `platform/.env` must actually carry is `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (it already does,
+> for next-web-app) — and on this box it is **EMPTY**, which bakes an image that 500s every page while
+> `/api/health-check` answers 200 and the container reports healthy.
 
 **A demo's third live-AI-in-demo surface — after Talk to Data.** M239 (above) made **Talk to Data** a demo's
 first present-not-absent live-inference surface. **M252** does the same for **studio-desk's builder GENERATE**:

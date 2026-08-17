@@ -415,6 +415,22 @@ Contract:
 
 ## The studio-desk first-paint budget (v2.7 "july jitter" M253)
 
+> **⚠️ SUPERSEDED BY THE NEXT MIGRATION (2026-08-17) — this whole budget describes a model that no longer
+> exists.** It measures an **empty-body MPA** whose shell was built in JS behind three blocking `await`s, and
+> whose fix was a demo-patch injecting a `.page-skeleton` DOM before those awaits. After the migration
+> `AppShell.tsx` **server-renders** the chrome, so the shell arrives in the first HTML response: there is no
+> blank to reorder, the `.page-skeleton` / `.skeleton-header` / `.skeleton-sidemenu` CSS was **deleted
+> deliberately**, and both patches (`studio-desk-shell-first-paint`, `studio-desk-no-thirdparty`) are retired.
+> The `run-studio-fcp.sh` gate cannot pass as written — it polls for a skeleton that never appears and
+> asserts `reachedShell === true`.
+>
+> The `canAccess` FAPI leg described below is also gone: the access gate is server-side in `proxy.ts` and
+> uses the **BAPI**, so studio-desk no longer calls clerk-js's `/v1/me/organization_memberships` at all.
+>
+> **Every number in this section is HISTORICAL** — it describes the pre-migration SPA. No first-paint budget
+> has been measured against the Next tree. Retained because the *reasoning* transfers: paint ordering is not
+> render speed, and code-splitting does not fix a cost that is runtime awaits.
+
 The login budget above is next-web/hiring **ACCESS**. **studio-desk has its own, separate first-paint budget** —
 authored by **M253** because `run-latency.sh` measures ACCESS on the two React apps and there was **no** studio
 first-paint harness at all.

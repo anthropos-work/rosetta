@@ -5,10 +5,10 @@ This document outlines the architecture of the Anthropos **main customer-facing 
 > For the service-level summary (role, ports, profiles, build/run, env vars) see the [Next Web App service doc](../services/next-web-app.md). This page is the monorepo deep dive.
 
 > **Note**: There are **two other frontend products** that live outside this monorepo and have their own architecture:
-> - **[Studio-Desk](../services/studio-desk.md)** — Vite + Express, simulation design tool
+> - **[Studio-Desk](../services/studio-desk.md)** — **Next.js 16 (App Router), one process on one port**; simulation design tool. *(Read "Vite + Express" until 2026-08-17; that two-tier shape was deleted by the migration.)*
 > - **[Ant Academy](../services/ant-academy.md)** — Next.js 16 + Expo; a **public storefront** with an enterprise/org tier, **not** `@anthropos.work`-only
 >
-> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:141`, `profiles: [studio-desk, all]` — the fact has survived platform `d11a403` **and** `838d907`; only the line number keeps moving — it was 226 before the support containers were deleted). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. At `0c91421` `repos.yml` holds exactly **4** entries — `app`, `sentinel`, `next-web-app`, `studio-desk` (it was 9 at `2adcf71`, before the cms/jobsimulation/roadrunner and storage/messenger drops) — and ant-academy is not one of them. The rest of this document is about `next-web-app` specifically.
+> **Studio-Desk** is in `repos.yml` (so `make init` clones it) and *does* have a `studio-desk` compose profile (`docker-compose.yml:141`, `profiles: [studio-desk, all]` — the fact has survived platform `d11a403` **and** `838d907`; only the line number keeps moving — it was 226 before the support containers were deleted). **Ant Academy is deliberately NOT in `repos.yml`** — `make init` never clones it; a demo gets it from `ensure-clones.sh` phase d2, a dev box by hand. At `766df6c` `repos.yml` holds exactly **3** entries — `app`, `next-web-app`, `studio-desk` — and ant-academy is not one of them. *(This said **4**, including `sentinel`; that entry went when sentinel folded into `app` at v11.0. It was 9 at `2adcf71`, before the cms/jobsimulation/roadrunner and storage/messenger drops.)* The rest of this document is about `next-web-app` specifically.
 
 ## Monorepo Structure
 
