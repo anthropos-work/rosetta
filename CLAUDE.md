@@ -443,6 +443,15 @@ Usage: `make up PROFILE=core`
 ### Running the Platform
 - `corpus/ops/run_guide.md`: Start the platform locally after setup
 - `corpus/ops/webhook_setup.md`: Configure Clerk webhooks for user/org sync
+- `corpus/ops/dev-identity.md`: **Making a real Clerk operator exist to the platform.** A dev
+  bring-up creates the schema and the GLOBAL sentinel policy and **no identity at all** — and the
+  main dev stack is deliberately never set-dressed (`dev-setdress.sh` hard-refuses `N=0`), while the
+  two documented paths miss the ordinary case: the webhook needs a public tunnel, and `app`'s
+  `cmd/bootstrap-user` **mints a new Clerk user** so it cannot adopt an account you already have.
+  The failure is that **authentication succeeds and authorization silently does not** — most sharply
+  as a GraphQL `forbidden` on ONE field while its siblings answer, because Sentinel's `m3` matcher
+  reads the role from a **`g2` grouping row** and **not** from `memberships.role`, and
+  `init_policy.sql` writes `p*` rows and zero `g` rows. Driven by `rext dev-stack/dev-identity.sh`
 - `corpus/ops/directus-local.md`: **The per-stack Directus model** — how a stack gets its own Directus (the `--local-content` cutover, offset port, `cms` re-point) instead of reading content live from prod. The mechanism the demo/dev set-dress flow above depends on; read it before debugging any "content is empty / content is prod's" symptom
 
 ### Staging Environments

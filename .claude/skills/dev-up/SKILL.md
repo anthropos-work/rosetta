@@ -216,6 +216,26 @@ repaired by the realign pass. `/skills` then renders real category names and nod
 The main dev stack uses **real Clerk** by default — it is not a snapshot/seed target unless you explicitly
 ask. (Set-dressing the main stack would reset its data; the `dev-min` seed + snapshot are for `dev-N`.)
 
+> **⚠️ REAL CLERK MEANS REAL SIGN-IN, NOT A PROVISIONED IDENTITY — and on a fresh DB those come apart.**
+> Because the main stack is never set-dressed, nothing in this bring-up creates the
+> `organizations` / `users` / `memberships` rows for the human about to sign in, nor the
+> per-membership Casbin grants. Clerk authenticates you perfectly and the platform then has no idea
+> who you are: authorized surfaces come back empty or 403, and — the tell — a GraphQL field returns
+> `forbidden` while its siblings answer, because Sentinel reads the role from a **`g2` grouping row**
+> and not from `memberships.role`. `init_policy.sql` (loaded by `migrate-dev.sh`) writes the `p*`
+> policy and **zero `g` rows**; those are written per membership, on a path a hand-built stack never
+> runs. Provision it in one step:
+>
+> ```bash
+> DEV=stack-dev/rosetta-extensions/dev-stack   # …or .agentspace/rosetta-extensions/dev-stack
+> "$DEV/dev-identity.sh" --email you@anthropos.work            # the main dev stack (N=0)
+> "$DEV/dev-identity.sh" --email you@anthropos.work --print    # resolve + report, write nothing
+> ```
+>
+> …or read [`corpus/ops/dev-identity.md`](../../../corpus/ops/dev-identity.md) first — it also covers
+> the two paths that do NOT fit (the webhook needs a public tunnel; `cmd/bootstrap-user` mints a NEW
+> Clerk user, so it cannot adopt the account you already sign in with).
+
 ### B) `dev-up N` (N ≥ 1) — an additional isolated dev stack, set-dressed
 
 Spins up `dev-N` alongside the main dev stack and (by default) set-dresses it — the M13 dev-peer flow.

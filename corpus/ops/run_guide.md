@@ -345,8 +345,18 @@ Copy the URL (e.g., `https://gentle-flies-think.loca.lt`) and configure it in Cl
 - Working on user management features
 
 **When can you skip this?**
-- Pure frontend development with existing test accounts
+- Pure frontend development with existing test accounts **whose platform rows already exist in THIS
+  stack's database**
 - Working on features that don't involve user/org sync
+
+> ⚠️ **"existing test accounts" is about CLERK, and it does not mean the database knows them.** This
+> bullet read without the qualifier above until 2026-08-18, and it is the trap on a fresh dev DB: a
+> Clerk account that has existed for months still has **no** `users` / `organizations` /
+> `memberships` rows in a database that was created this morning, and — the half that is easier to
+> miss — no per-membership Casbin grants either. You sign in perfectly and then every authorized
+> surface is empty or 403s, which reads as a broken app rather than a missing row. Skipping the
+> webhook is fine; skipping *identity* is not. If you are not running the tunnel, provision the rows
+> directly — [Dev-Stack Identity](./dev-identity.md), `rext dev-stack/dev-identity.sh --email you@…`.
 
 For detailed setup (including more reliable alternatives like ngrok), see [Webhook Setup Guide](webhook_setup.md).
 
