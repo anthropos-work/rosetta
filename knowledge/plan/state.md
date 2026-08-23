@@ -1,17 +1,26 @@
 ---
-active_release: "(none — v2.9 «new alphabet» SHIPPED 2026-08-16, tag `v2.9`. Awaiting /developer-kit:design-roadmap for the next release.)"
-active_branch: "main"
-active_milestone: "(between releases)"
-last_closed: "M265 — 2026-08-16"
-phase: "between releases — awaiting /developer-kit:design-roadmap. v2.9 shipped 2026-08-16 (tag `v2.9`): the taxonomy went 43,584/22,511 -> 3,562/706 and the corpus, tooling and demo learned it, proven cold on a demo AND a dev stack with the Playthrough suite at 222/0. It caught a demo whose simulation library rendered ZERO cards while every probe was green (187 of 302 replayed content node-ids retired). ⚠️ SIX of seven milestones shipped WITHOUT the close-milestone lifecycle — recorded, not back-filled (release-retro.md)."
-last_updated: "2026-08-16"
+active_release: "v2.10 «content consolidation» — branch `release/02.100-content-consolidation`, designed 2026-08-23 from `.agentspace/annotations.md` (8 field requests). Thesis: the demo SHOWS content honestly and a hero can actually CONSUME it."
+active_branch: "release/02.100-content-consolidation"
+active_milestone: "(none started) — M266 «cockpit legibility» is first; M266 ∥ M267 ∥ M268 ∥ M270 all start cold."
+last_closed: "M265 — 2026-08-16 (v2.9 «new alphabet», tag `v2.9`, merged `2c0a2cec` 2026-08-17)"
+phase: "designed, not started. 6 milestones M266→M271. The release's own risk is M271 «voice go/no-go barrier»: demo voice has NO LiveKit container, the endpoint is hardcoded in the FRONTEND, the agent workers live in five repos no clone set holds, and a voice session writes to SHARED AWS S3 — a `safety.md` §2.3 data-controller decision, not an engineering one. User chose barrier-only (2026-08-23). Per-milestone detail lives in each milestone's `overview.md`, never here."
+last_updated: "2026-08-23"
 ---
 
 # State
 
-**v2.9 "new alphabet" IN DEVELOPMENT** — designed 2026-08-14, branch `release/02.90-new-alphabet` cut from
-`main`. **0 of 7 milestones closed.** Full narrative + every citation lives in [`roadmap.md`](roadmap.md)
-§ v2.9 — not here.
+**v2.10 "content consolidation" DESIGNED 2026-08-23** — branch `release/02.100-content-consolidation` cut from
+`main`. **0 of 6 milestones started.** Full narrative + every citation lives in [`roadmap.md`](roadmap.md)
+§ v2.10 — not here.
+
+> ⚠️ **This block said "v2.9 IN DEVELOPMENT — 0 of 7 milestones closed" until 2026-08-23, four weeks and one
+> shipped release after it stopped being true.** v2.9 shipped 2026-08-16 (tag `v2.9`, merged `2c0a2cec`), and
+> the frontmatter said so while the body did not — the Phase-8 state rotation updated the fields and left the
+> prose. Three sibling artifacts carried the same staleness and are fixed in the same pass: `roadmap.md`'s
+> § Version plan row for v2.9 still read `🚧 IN DEVELOPMENT` sixteen lines above a header saying SHIPPED, this
+> file's footer said *"Last updated 2026-08-12"* against a frontmatter of `2026-08-16`, and § Next up still
+> pointed at M259. **A contradiction inside one file is worse than an out-of-date one**: it gives a reader two
+> answers and no way to choose.
 
 ## Hosts (D-v28-15, 2026-07-31 — supersedes D-v28-14)
 
@@ -33,30 +42,29 @@ last_updated: "2026-08-16"
 
 ## Next up
 
-**M259 «canon ground truth»** — the HARD go/no-go barrier. Pull every platform repo fresh into **both** clone
-sets, read the canon + the **redirect map** + the retired-id guard, measure the real new counts, and reconcile
-the three lineages (`skills-and-job-roles` 12,201 · prod 42,790 · canon ~4k). It delivers
-`corpus/architecture/taxonomy-canon.md` — the corpus has **no doc anchor for the taxonomy source pipeline at
-all**, a Phase-0b blind area.
+**M266 «cockpit legibility»** — and it is one of FOUR that can start cold. M266 (cockpit) ∥ M267 (entitlement)
+∥ M268 (seeded truth) ∥ M270 (skill-paths) share no files and no repo pairs. M269 waits on M267; M271 waits on
+M269.
+
+**Start with M267 if you want the demo usable soonest** — it is the smallest milestone in the release (one
+seeder INSERT) and it unblocks the thing the reviewer actually hit: heroes cannot start a simulation.
 
 ## Phase
 
-**Designed, not started.** Every fact below was measured 2026-08-14 against each repo's `origin/main`; the
-citations are in [`roadmap.md`](roadmap.md) § v2.9.
+**Designed, not started.** Every fact in [`roadmap.md`](roadmap.md) § v2.10 was measured 2026-08-23 against the
+live repos and the running `demo-1` stack.
 
-**The break is in OUR tooling, not the platform's.** `stack-snapshot/taxonomy/taxonomy.go:104` pins
-`MinRows: 40000` on `public.skills`; `capture/capture.go:392` aborts *"refusing to persist a broken
-snapshot"*. A ~4k canon cannot be captured → no snapshot → no set-dress → **no demo and no `dev-N`**. M260
-owns it, and must preserve the under-capture protection the floor exists for.
+**The release's own risk is M271.** Demo voice has no doc anchor anywhere in the corpus — the single Phase-0b
+blind area — and five measured blockers, one of which is not an engineering question at all: a voice session
+writes room-composite recordings to a SHARED AWS bucket, which makes "make voice work" a `safety.md` §2.3
+data-controller decision. The user chose **barrier-only** for this release (2026-08-23): M271 returns a written
+GO or NO-GO, and **a NO-GO reached honestly is the deliverable**, not a failure.
 
-**The second risk is silent, which makes it the dangerous one.** The seed presets pin **8 literal job-role
-names**; `TaxonomyRefs` returns an empty pool for one that no longer resolves and `PersonaSeeder` **skips
-enrichment rather than fabricating**. The closure gene gained a population witness at M256, so a **total**
-wipe-out fails loudly — a **partial** one (3 of 7 heroes) still passes. M262 adds the per-hero richness floor.
-
-**Two things already handle the swap correctly** and need no work: `autoverify.sh:305` asserts
-`public.skills > 0` (not a floor), and the batch-prompt cache is keyed on the taxonomy capture version, so
-generated members invalidate on re-capture.
+**Two long-carried deferrals land in M269, and both were re-measured this release rather than inherited on
+faith:** `FIX-M256-studio-false-green` (the studio Playthrough matches empty scaffolding at +2.1 s — it reported
+PASS on `demo-1` on 2026-08-23 and was cited as evidence the migrated studio works, which is exactly the false
+green it describes) and `BIND_HOST`/`D-M255-7`, deferred three times, which makes the batch gate **skip** on any
+`--public-host` stack — measured live on `demo-1` the same day.
 
 ## Standing rules (outlive the milestone — do NOT move these into `phase:`)
 

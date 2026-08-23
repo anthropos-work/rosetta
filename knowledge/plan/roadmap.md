@@ -139,7 +139,8 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → **M257x** → M257 → M258 | ✅ **SHIPPED 2026-08-13 (tag `v2.8`)** (branch `release/02.80-fast-build` merged to `main` + deleted, designed 2026-07-27; **5** milestones — M257x «platform re-alignment» was an **unplanned mid-release insertion**, the corpus having drifted from the platform; measuring against a stale description measures nothing. Tooling + docs only, **0 platform-repo edits** and **0 net-new deps**, both verified. **Achieved: 450 s → 286.99 s on `macmini`** — beating the 360 s gate and its 300 s stretch. ⚠️ **The `666 → 360` framing above is retired:** 666.29 s was measured on `billion` (x86_64/containerd) and **does not transfer** to the arm64 development host; M257 re-pointed its gate to the host that exists and met it there against that host's own 449.51 s — a **36.2 %** cut, not 46 %. Both numbers are true; only their combination would mislead, and this release's own rule — *state the environment with every number* — forbids it. **M257x and M258 closed `closed-incomplete` by user ruling, not on gate**; M258's clause 3 was never measured clean. Carry-forward named item-by-item in `roadmap-vision.md` § v2.8.) |
 
-| **v2.9** | **new alphabet** | The **taxonomy-realignment release** — the platform's vocabulary was rewritten under us. `feat/taxonomyv2` landed in `app` (+99 commits → v2.3.2) and `next-web-app` (+27 → v2.144.1): a governed **canon** that **retires 61,216 entries, 21,871 of them roles** (`next-web-app` `e883efd37`), leaving ~4k skills against the 42,790 this corpus measured on 2026-06-29. Node-ids **moved but are redirectable**; retired ids **404**. Rosetta's own `MinRows: 40000` capture floor (`stack-snapshot/taxonomy/taxonomy.go:104`) **aborts capture** on the new canon, so nothing downstream runs until it is re-derived. Also ships the net-new `/taxonomy` browser as a proven demo surface, and corrects `taxonomy`-folded-into-`app` (`app` now has **zero** first-party modules) | M259 (HARD barrier) → M260 → M261 → { M262 ∥ M263 ∥ M264 } → M265 | 🚧 **IN DEVELOPMENT** (branch `release/02.90-new-alphabet`, designed 2026-08-14) |
+| **v2.10** | **content consolidation** | The **field-response release** — eight requests from a reviewer driving the live `demo1` stack, and seven of them are smaller than they look. "Heroes cannot start a simulation" is **one missing Casbin `p6` row** (matcher 6 has no `'default'` escape, and the row is normally written by a Clerk licensing path a demo never runs). The seeded score and its pass/fail verdict come from **two different hashes**, so a failed session can show a 95. The cockpit's content cards carry a box-inside-a-card nobody can read. Against that, **voice is the one thing that is bigger**: no LiveKit container, an endpoint hardcoded in the frontend, agent workers in five uncloned repos, and recordings written to a **shared AWS bucket** — a `safety.md` §2.3 decision, so it ships as a go/no-go barrier only | M266 ∥ M267 ∥ M268 ∥ M270, then M267 → M269 → M271 | 🚧 **IN DEVELOPMENT** (branch `release/02.100-content-consolidation`, designed 2026-08-23) |
+| **v2.9** | **new alphabet** | The **taxonomy-realignment release** — the platform's vocabulary was rewritten under us. `feat/taxonomyv2` landed in `app` (+99 commits → v2.3.2) and `next-web-app` (+27 → v2.144.1): a governed **canon** that **retires 61,216 entries, 21,871 of them roles** (`next-web-app` `e883efd37`), leaving ~4k skills against the 42,790 this corpus measured on 2026-06-29. Node-ids **moved but are redirectable**; retired ids **404**. Rosetta's own `MinRows: 40000` capture floor (`stack-snapshot/taxonomy/taxonomy.go:104`) **aborts capture** on the new canon, so nothing downstream runs until it is re-derived. Also ships the net-new `/taxonomy` browser as a proven demo surface, and corrects `taxonomy`-folded-into-`app` (`app` now has **zero** first-party modules) | M259 (HARD barrier) → M260 → M261 → { M262 ∥ M263 ∥ M264 } → M265 | ✅ **SHIPPED** 2026-08-16 (tag `v2.9`, merged `2c0a2cec` 2026-08-17; branch deleted) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
 > in [`roadmap-legacy.md`](roadmap-legacy.md) § Version plan.
@@ -154,6 +155,148 @@ consumed per-stack at a pinned tag). Playthroughs reuse the M42 e2e foundation +
 the **functional** sibling of M42's **presence**-only coverage sweep.
 
 ---
+
+## In Development — v2.10 "content consolidation" (🚧 designed 2026-08-23, branch `release/02.100-content-consolidation`)
+
+> **Designed 2026-08-23** via `/developer-kit:design-roadmap`, from `.agentspace/annotations.md` — **eight field
+> requests** from a reviewer driving the live `demo1.anthropos.work` stack. Its thesis in one line: **the demo
+> SHOWS its content honestly, and a hero can actually CONSUME it.** Every finding below was measured against the
+> live repos and the running `demo-1` stack on 2026-08-23; none is inferred from documentation.
+>
+> **The headline finding is that seven of the eight requests are smaller than they look, and the eighth is much
+> bigger.** The reviewer's "heroes can't start a simulation" is **one missing database row** — Casbin matcher 6
+> has no `'default'` escape, so an org needs an explicit `p6` grant, and the row is normally written by the Clerk
+> licensing path that a demo never runs. `dev-identity.sh` already writes one for dev; the demo seeder never
+> learned to. The "Build a Course is missing" class of defect is the same shape one layer up. But **voice is not
+> a test to write — it is infrastructure that does not exist**, and one of its blockers is a data-controller
+> decision rather than an engineering one.
+>
+> **Slug:** `02.100-content-consolidation`, three digits **deliberately**. Two digits would collide with v2.1's
+> `02.10-quick-change`; v1.x hit this exact collision (`01.10-show-floor` vs `01.10-method-acting`) and tolerated
+> it, disambiguated only by codename. Decided at design time rather than discovered at close.
+>
+> **Numbering:** continues the v2.x `M2xx` scheme at **M266**. The reserved `M205-residual` / `M206` / `M207`
+> band is NOT free and was not taken — see the fates below.
+
+### The fates this run was forced to take
+
+Phase 0a returned **YELLOW**, on governance rather than engineering, and two items could not be deferred again.
+
+**M206 — DISSOLVED.** The AI-sim mirror tier was re-reserved across **six consecutive releases** (v2.1 → v2.8)
+while `roadmap-vision.md:311-322` said in its own words that a sixth *"is not an option this file permits"* —
+and it happened anyway, with M256 re-confirming it by dated verdict rather than landing it. It is not reserved a
+seventh time. Its contents are distributed by whether they serve this release:
+
+| M206 content | Fate |
+|---|---|
+| `ai-simulations.code.UC1`, `ai-simulations.interview.UC1` | **LAND in M269** — they are literally the reviewer's code and chat modalities |
+| `profile.self-evaluation.UC1` | **LAND in M269** — M256 already graded the reservation *WEAK* and needing no mirror |
+| voice (LiveKit) + recording (Chime) + the skill-paths verify terminal | **route to M271**, the go/no-go barrier |
+
+**M207 — DROPPED.** Academy-deployment Playthroughs serve none of the eight requests; M258 already shipped
+`pt-academy-chapter-module`, the one that was reachable; and the blocker is structural rather than scheduling —
+a demo academy serves its committed FS catalog and is not DB-backed, which no milestone here changes. Dropped
+with the reason recorded, not carried a seventh time.
+
+**`DEF-M10-01` — RETIRED.** Carried across **eighteen release directories**, and its premise dissolved at M240:
+`corpus/ops/demo/media-substrate-spec.md:44` records that the S3 read is *"neither necessary … nor sufficient"*
+because the demo streams by reference and S3 bytes carry no `bunny_video_id`. The ID outlived its own rationale
+by two releases because nothing formally retired it.
+
+### Milestones
+
+| # | Milestone | Shape | Serves | Complexity |
+|---|---|---|---|---|
+| **M266** | Cockpit legibility | `section` | A1–A5 | medium |
+| **M267** | The entitlement unlock | `section` | B1 + B2's "cannot start" | **small** |
+| **M268** | Seeded truth | `section` | C1 + C2 | large |
+| **M269** | Modality playthroughs | `section` | B2 (chat · code · document) | large |
+| **M270** | Skill-paths first paint | `section` | B3 | medium |
+| **M271** | Voice go/no-go barrier | `iterative` | B2's voice clause | large |
+
+**M266 «Cockpit legibility».** All five cockpit requests are one file — `demo-stack/cockpit.py`, server-rendered
+Python f-strings with no template engine. A1's manager/non-manager split is already available as
+`hero.get("vantage_label")`; A2 needs **zero Go change and zero re-seed**, because `is_hiring` and `trajectory`
+are already in the manifest (`stack-seeding/seeders/cockpit.go:246,232`) and `_badges()` at `:659-672` simply
+never reads them. **A3 and A5 are one work item** — both rewrite `_content_tuple_row()` at `:1117-1173`, and the
+"box within a card" the reviewer objects to is literally `.ctcol`, the two bordered columns M242 added. A5 needs
+a new per-product `has_verdict` field, which **trips the honesty gate**: the canonical
+`presets/content-manifest.json` must be regenerated and `CanonicalFileMatchesProjection` re-passed in the same
+commit. A4 cannot use FontAwesome (no country flags) or emoji (they do not render on Chrome/Windows) — inline
+SVG keeps the panel stdlib-only.
+
+**M267 «The entitlement unlock».** The smallest milestone in the release and the one that unblocks the
+reviewer's actual complaint. `ERROR_JOB_SIMULATION_LIMIT_REACHED` exists in exactly one place
+(`jobsimulation/simulator/manager/errors.go:7`, returned at `manager.go:386`) and resolves to a Casbin enforce on
+matcher 6 (`sentinel/casbin.go:29,45`). **Unlike `m2`/`m3`/`m5`, `m6` has no `'default'` escape** — the `p6` row
+must name the org id. A demo has the `g3` row and no `p6` row; grepping all of rext for `p6` returns only
+`dev-stack/dev-identity.sh:205-208`, the dev path. The fix is one INSERT per seeded org reusing
+`casbinGrantSQL()`, and it needs **no demopatch and no new plumbing** — the Redis policy-invalidate is already
+published post-seed at `up-injected.sh:2749`.
+
+**M268 «Seeded truth».** C2 is three defects, not one. Score and verdict come from **two different hashes**
+(`jobsim_sessions.go:142-157`), so a failed row can carry a 95 and a passing 57 stays 57. Underneath that, two
+seeders write the **same session id** — `jobsim_sessions.go:136` and `feedback.go:153` are byte-identical for
+`j==0` — under different rules, with `ON CONFLICT DO NOTHING`, and `cmd/stackseed/main.go` registers the
+**inconsistent** writer first, so it wins and the score-consistent one is silently discarded. The correct pattern
+already exists at `hiring_funnel.go:346-350`. The milestone owes a **fence test over every seeded session row**:
+this survived because nothing asserted score-verdict agreement. C1 is smaller than it reads — a plan seeder
+already exists (`assignment_plans.go:56-88`) and writes exactly one `active` plan per org.
+
+**M269 «Modality playthroughs».** The existing coverage stops **exactly one click short** of the failure the
+reviewer hit, and says so in its own header: `aisim-chat-launch.spec.ts` records that the click reaches
+`/sim/<slug>/start` and **0 `jobsimulation.sessions` rows were created**. Moving that is a deliberate change to
+the §5.8 assertion boundary that `playthroughs/manifest/ai-simulations.yaml:7-11` states as policy — the bulk of
+the cost. Two long-carried deferrals land here because both were re-measured as live this release:
+`FIX-M256-studio-false-green` (the studio Playthrough matches empty scaffolding at +2.1 s — **it reported PASS on
+`demo-1` on 2026-08-23 and was cited as evidence the migrated studio works**) and `BIND_HOST`/`D-M255-7`,
+deferred three times, which makes the batch gate **skip** on any `--public-host` stack — measured live the same
+day, when the `demo-1` gate recorded `skipped` and the suite had to be driven from a tailnet peer.
+
+**M270 «Skill-paths first paint».** Both of the reviewer's hypotheses are true and they are separate defects. The
+empty flash is a **disabled TanStack query reading as not-loading**: `page.tsx` never destructures `isLoadingOrg`,
+so while clerk-js hydrates the query is `enabled: false`, which in v5 is `isLoading === false` with no data — and
+`LibrarySkillPathsContainer.tsx:664-666` then renders neither the section nor a spinner. The slowness is a
+separate un-paginated, deeply-nested public query. **The precedent for the fix is in-repo**: `apps/integration`
+is already a server component passing `initialSkillPaths`, a prop the container accepts and `apps/web` never
+uses. Every line is in a **platform repo**, so the vehicle is a sha-pinned demopatch — and that choice must be
+made explicitly, not by accident.
+
+**M271 «Voice go/no-go barrier».** `iterative`, modelled on M231 — the barrier that gated the whole Thread-B
+chain. Five measured blockers: there is **no LiveKit container** in the demo compose; the endpoint is **hardcoded
+in the frontend** (`AISimulationCallContainer.tsx:58`), not an env var, so repointing needs a demopatch; the AI
+counterpart is an **out-of-repo agent worker** (`livekit.go:106-168` dispatches `anthropos-agent*`, which live in
+five repos no clone set holds — without a registered worker the hero joins a room and nothing answers); a voice
+session writes room-composite Egress **to a shared AWS bucket** (`livekit.go:158-180`), which makes this a
+`safety.md` §2.3 data-controller question rather than an engineering one; and **Playwright has no microphone**.
+The user chose **barrier-only** for this release (2026-08-23). Its exit gate is a written GO or NO-GO with each
+blocker resolved or declared unresolvable — **a NO-GO reached honestly is the deliverable, not a failure.**
+
+### Execution graph
+
+```
+M267 ──┬──→ M269 ──→ M271          M269 needs a start that is not gated;
+       │                            M271 extends M269's harness
+       └──→ (M268 independent — different tables)
+
+M266 ─────────────────────────      cockpit.py only — no overlap with anything
+M268 ─────────────────────────      stack-seeding only
+M270 ─────────────────────────      next-web-app (platform) via demopatch
+```
+
+**Four milestones start cold** — M266 ∥ M267 ∥ M268 ∥ M270 share no files and no repo pairs. M269 is the one
+serialisation point: it changes the shared Playthrough runner and manifest, so nothing parallelises with it.
+
+### Risks
+
+| Risk | Severity | Mitigation |
+|---|---|---|
+| **Voice is unreachable** — no container, no agent, hardcoded endpoint, shared-S3 exposure | blocks-release **if voice is in scope** | It is not. M271 is a barrier; NO-GO is a valid close |
+| **The shared-AWS write is a safety decision, not a technical one** | blocks-M271 | Gate M271 on a recorded data-controller decision before any engineering |
+| **M270's fix lives in a platform repo** | degrades-quality | demopatch, sha-pinned — and record the drift-maintenance cost, or re-scope to diagnosis + a loading affordance only |
+| **A5 trips the content-manifest honesty gate** | degrades-quality | Regenerate the canonical preset and re-pass `CanonicalFileMatchesProjection` in the same commit |
+| **M269 moves a documented assertion boundary** | scope-risk | Record it as a decision; §5.8 states the current boundary as policy |
+| **`BIND_HOST` means new Playthroughs record `skipped` on the very stack they are for** | blocks-M269's value | Land `D-M255-7` inside M269 — it is what makes the milestone self-verifying |
 
 ## Done — v2.9 "new alphabet" (✅ SHIPPED 2026-08-16, tag `v2.9`, branch merged to `main` + deleted)
 
@@ -2475,7 +2618,9 @@ The complete earlier shipped history — **v1.0 "body double"** (2026-06-03, tag
   governing spec is [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md), graduated to a corpus
   runbook (`corpus/ops/demo/playthroughs.md`) by M202.
 
-_Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** via
+_Last updated: 2026-08-23 (**v2.10 "content consolidation" DESIGNED** — 6 milestones M266→M271 from `.agentspace/annotations.md`; branch `release/02.100-content-consolidation`. Also flipped v2.9's § Version plan row from `🚧 IN DEVELOPMENT` to `✅ SHIPPED`, which it had contradicted since 2026-08-16.)_
+>
+> _(prior)_ _Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** via
 `/developer-kit:design-roadmap` — the **re-ground + fidelity + field-hardening release** [the v1.3b / v2.1 / v2.3 /
 v2.6 lineage]: *realign the demo + corpus to the platform's TRUE current state, and fix what drifted.* Headline: the
 skiller→app merge was one step of a consolidate-every-runtime-engine-into-`app` program — skillpath now fully

@@ -309,7 +309,29 @@ real future work, **not** pre-assigned to a minor version (per the `Mxyy` rule, 
 its number at *design* time, not before). They are governed by the same capability spec
 [`spec-drafts/playthroughs/spec.md`](spec-drafts/playthroughs/spec.md).
 
-> ⚠️ **M206 + M207 are RE-FATED by v2.8 "fast build" `M256` (2026-07-27) — this is their last reservation.**
+> ## ⛔ M206 IS DISSOLVED AND M207 IS DROPPED — v2.10 design run, 2026-08-23. Nothing below reserves anything.
+>
+> The box beneath this one said *"do not re-reserve them a sixth time."* **They were re-reserved a sixth time**,
+> and `M256` discharged its D-v28-4 obligation by writing dated verdicts rather than by landing them — which is
+> how a reservation survives an audit designed to end it. The v2.10 run took the fates instead of a seventh.
+>
+> **M206 — DISSOLVED, contents distributed by whether they serve v2.10:**
+>
+> | M206 content | Fate |
+> |---|---|
+> | `ai-simulations.code.UC1`, `ai-simulations.interview.UC1` | **LANDS in M269** «Modality playthroughs» — they are literally the reviewer's code and chat modalities |
+> | `profile.self-evaluation.UC1` | **LANDS in M269** — `M256` already graded the reservation *WEAK* and needing no mirror (`coverage-verdicts.md:117-131`) |
+> | voice (LiveKit) + recording (Chime) + the skill-paths verify terminal | **routed to M271** «Voice go/no-go barrier» |
+>
+> **M207 — DROPPED.** Academy-deployment Playthroughs serve none of v2.10's eight requests; M258 already shipped
+> `pt-academy-chapter-module`, the one that was reachable; and its blocker is **structural, not scheduling** — a
+> demo academy serves its committed FS catalog and is not DB-backed, which no v2.10 milestone changes. Dropped
+> with the reason recorded rather than carried into a seventh release.
+>
+> **Everything below this line is HISTORY.** It is kept because the reasoning is worth reading, not because it
+> reserves work.
+>
+> ⚠️ **M206 + M207 were RE-FATED by v2.8 "fast build" `M256` (2026-07-27) — that was meant to be their last reservation.**
 > They have been re-reserved across **five consecutive releases** (v2.1 → v2.7) without ever being designed —
 > the textbook repeat-deferral signal the Phase-0a audit exists to catch. Under **D-v28-4**, `M256`'s coverage
 > clause requires a **written verdict** on every uncovered curated use case: a **named future milestone** or a
@@ -476,6 +498,29 @@ question (a UX nicety with no owner).
 > `release/02.20-panorama`). No longer dropped. The other three items above remain dropped (re-proposal requires
 > their own fresh design-roadmap run).
 
+## ✅ v2.8 carry-forward — DESTINATIONS ASSIGNED at the v2.10 design run (2026-08-23)
+
+**This block's every item read "Carried to the next release (target assigned at its `design-roadmap` run)". That
+run was v2.9's, and v2.9 shipped without assigning any of them** — its own review records `0 escape-hatch
+entries`, which is true and is exactly how ~12 items rode past untouched. Assigning them here is the whole point
+of the section; leaving them unassigned a second time would repeat verbatim the failure it was created to end.
+
+| Item | Fate at v2.10 |
+|---|---|
+| `FIX-M256-studio-false-green` + `NEGCTL-M256-studio-pair` + `DOC-M256-llm-lane-premise` | **LANDS in M269.** Re-measured as live: the studio Playthrough matches empty scaffolding at +2.1 s, and on 2026-08-23 it reported PASS on `demo-1` and was cited as evidence the migrated studio works — the false green, caught in the act |
+| `BIND_HOST` / `D-M255-7` (deferred ×3) | **LANDS in M269.** Measured live 2026-08-23: the `demo-1` bring-up recorded the Playthrough batch gate as `skipped`, never green, and the suite had to be driven from a tailnet peer. New Playthroughs would record `skipped` on the very stack they exist for |
+| `PT-M257-self-evaluation` (unsigned signoff) | **LANDS in M269** as part of the dissolved M206 — `M256` graded it *WEAK*, needing no mirror |
+| `PERF-M256-parallel-lane` (unsigned signoff) | **KEEP-DEFERRED, NOW SIGNED** (v2.10 design, 2026-08-23). Serves none of the eight requests; no repeat-deferral pressure because it has never blocked a release |
+| `PT-M257-talk-to-data` (unsigned signoff) | **KEEP-DEFERRED, NOW SIGNED.** Its recorded target was one `M256` itself called a mis-route; it needs a real home at a future design run, not a fourth silent carry |
+| `DEF-M10-01` (carried ×18 release dirs) | **RETIRED.** Its premise dissolved at M240 — `media-substrate-spec.md:44` records the S3 read as *"neither necessary … nor sufficient"*. It outlived its own rationale by two releases because nothing formally retired it |
+| M257x clusters 1/3/5 + cluster 4 half · `F2` (`ptvalidate` unwired) · the 2 breached literal ratchets · 4 guard-family REDs · `stack-core` fence failures | **CARRIED, explicitly and unassigned** — none serves the eight requests, and inventing a v2.10 home for them would be scope-padding. ⚠️ They now carry a **named next destination: the v2.11 design run**, not "the next release" |
+
+⚠️ **`M257x cluster 1` — the production-bucket pointer — is the highest-stakes open safety item in this list**
+and was ranked #1 by the user under `TOK-09`. It is carried, not resolved. If it is not landed at v2.11 it
+should be escalated rather than carried a fourth time.
+
+---
+
 ## v2.8 "fast build" carry-forward — the escape-hatch destination
 
 Added at the **v2.8 release close (2026-08-12)**. Until this section existed there was **no destination for a
@@ -552,7 +597,9 @@ Fate 1/2/3 failed. This is the same structural failure this file already names a
   `Mxyy` counter still resumes at **M217** and M216 is **retired as a reservation, not built**. (If M220 bloats, the
   dev-side half drops back out — it is v2.3's declared scope-flex lever.)
 
-_Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** — the **re-ground +
+_Last updated: 2026-08-23 (**v2.10 design run** — M206 DISSOLVED + M207 DROPPED after a sixth re-reservation this file said it did not permit; the v2.8 carry-forward block finally has DESTINATIONS, `DEF-M10-01` retired after 18 release dirs.)_
+>
+> _(prior)_ _Last updated: 2026-07-23 (**v2.7 "july jitter" DESIGNED + PROMOTED to active development** — the **re-ground +
 fidelity + field-hardening release**: realign the demo + corpus to the platform's TRUE current state (the
 skiller→app merge was one step of a consolidate-every-runtime-engine-into-app program — skillpath now fully
 decommissioned into app, jobsim mid-merge, net-new app domains) and fix what drifted. **9 milestones M246 →
