@@ -15,11 +15,15 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 > **⚠️ THIS DOCUMENT WAS REBUILT (2026-08-17) FOR THE NEXT MIGRATION, AND ALMOST NOTHING TECHNICAL
 > SURVIVED.** studio-desk was a **vanilla-TS Vite MPA in front of an Express API**, two processes on
 > two ports (9100 / 9000). It is now a **single Next.js 16 / React 19 process** with its API as route
-> handlers in the same runtime, `output: 'standalone'`, one port. The migration lives on
-> `release/3.2-full-frame` (**on origin at `411a3c15`**; 803 commits, 2,149 files, +346K/−190K, its
-> own M37 *"THE MIGRATION IS OVER"*), and until it merges, `main` is still the old shape — so **state
-> which ref you mean** whenever the two disagree. Everything below is measured against the migrated
-> tree unless a line says otherwise.
+> handlers in the same runtime, `output: 'standalone'`, one port.
+>
+> **⚠️ AND IT IS ON `main` NOW — merged 2026-08-23, PR #123, merge commit `2ddf2ee3`, 874 commits /
+> 2,175 files.** This block used to end *"until it merges, `main` is still the old shape — so state
+> which ref you mean"*. There is no longer a two-ref disagreement to state: `main` **IS** the migrated
+> shape, `vite.config.ts` is gone from it and `next.config.ts` is there. The pre-merge branch tip was
+> `release/3.2-full-frame` @ `411a3c15`, kept here only as provenance — do not send anyone to it, it
+> is now BEHIND main. Everything below is measured against the migrated tree, which is to say against
+> `main`.
 >
 > The claims this file used to make that are now **false**, listed once so a reader who half-remembers
 > them stops: two ports · `VITE_*` env names · `npm run dev` / `npm start` / `npm run build` ·
@@ -46,8 +50,18 @@ It's like a "Figma for job simulations" - a creative tool optimized for designin
 > **starts**, reports **healthy**, and returns **HTTP 500 on every page**. The intersection of what
 > compose passes and what the Dockerfile declares is `{VERSION}` — one of six.
 >
-> Rosetta does not edit the platform repo. Both stack paths inject the correct args from an
-> rext-generated override instead — see *Local Development* below.
+> Rosetta does not edit the platform repo. Both stack paths inject the correct args instead — the
+> demo path from its own rext-owned Dockerfile + `up-injected.sh`, the dev path from an
+> rext-generated compose override (`stack-core/gen_override.py`) — see *Local Development* below.
+>
+> ⚠️ **The dev half of that was OPT-IN until 2026-08-23 and is now unconditional**, and the difference
+> mattered the moment the migration merged. The override's studio-desk arm used to be gated on
+> `--studio-src`: correct while the migrated tree lived on a branch (the default clone was the Vite
+> app, which the base compose's `VITE_*` args served correctly), and *broken the instant `main`
+> became the migrated tree* — a bare `dev-stack up N --profile all` then built the new app with the
+> old args and produced exactly the healthy-and-500ing image described above. Getting correct build
+> args is not a feature you opt into; `--studio-src` now means only what its name says, *build from a
+> different tree*.
 
 ### Architecture
 

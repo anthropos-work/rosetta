@@ -224,19 +224,16 @@ make dev S=backend       # Stop Docker container, develop natively
   gate is *any Clerk organization membership*, never an `@anthropos.work` email (`ant-academy`
   `d5875e34`; `code/proxy.js:298` @ `22df69dd8`). See the Ant Academy row below and
   [`ant-academy.md`](../services/ant-academy.md)
-- **Integration**: Reuse platform identity (Clerk), and **both connect to Core Services over GraphQL** — Studio-Desk via `VITE_GRAPHQL_ENDPOINT`, Ant Academy via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. **Neither is independent of the backend.** *(This page previously called Ant Academy "fully independent of the backend"; that framing was retired at v2.5 M231 — see [`ant-academy.md`](../services/ant-academy.md) — and it is the documented root cause of the "empty academy" demo bug.)*
+- **Integration**: Reuse platform identity (Clerk), and **both connect to Core Services over GraphQL** — Studio-Desk via **`NEXT_PUBLIC_GRAPHQL_ENDPOINT`** (renamed from `VITE_GRAPHQL_ENDPOINT` at the Next migration; note the path is `/graphql/query`, not `/graphql`), Ant Academy via `NEXT_PUBLIC_WUNDERGRAPH_ENDPOINT`. **Neither is independent of the backend.** *(This page previously called Ant Academy "fully independent of the backend"; that framing was retired at v2.5 M231 — see [`ant-academy.md`](../services/ant-academy.md) — and it is the documented root cause of the "empty academy" demo bug.)*
 
 #### Studio-Desk
 
 | Property | Value |
 |:---------|:------|
-| **Technology** | TypeScript, Vite, Express.js — **no framework** (0 react/vue/angular entries in
-`package.json`, 0 `.tsx`/`.jsx` in the repo). *"React"* was published here and contradicted by
-[`studio-desk.md:20`](../services/studio-desk.md) (*"vanilla TS frontend, no framework"*); corrected
-M257x iter-46 |
-| **Port** | 9100 (frontend), 9000 (backend) - configurable via `.env` |
+| **Technology** | **Next.js 16 (App Router) + React 19 + TypeScript, Node ≥24.** ⚠️ This row read *"TypeScript, Vite, Express.js — no framework (0 react/vue/angular entries…, 0 `.tsx`/`.jsx` in the repo)"* until 2026-08-23 and every clause of it is now false. The Next migration **merged to `main`** that day (PR #123, `2ddf2ee3`, 874 commits): `src/`, `vite.config.ts` and every `*.html` entry point are deleted, the ~3,750-LOC Express API is now route handlers inside the same Next runtime, and the build is `output: 'standalone'`. The older *"React"* claim this row was corrected AWAY from at M257x iter-46 was wrong about the tree of its day and is right about this one — a reminder to date a measurement rather than settle it |
+| **Port** | **9000 — ONE port** (container: `9000 + N*OFFSET`; native dev server: **9200**, `npm run dev:next`). `9100` was the Vite frontend port and is dead; there is no second process to give a second port to |
 | **Purpose** | User-facing design tool for creating job simulation blueprints |
-| **Authentication** | Clerk |
+| **Authentication** | Clerk — `@clerk/nextjs`, and the browser key is **`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, INLINED AT BUILD TIME**. An empty value produces HTTP 500 on every gated page behind a container that reports *healthy*, because `/api/health-check` is public by design and cannot witness it |
 | **Location** | Local `../studio-desk` (sibling of platform, cloned by `make init`) |
 
 **Key Features**:
@@ -247,10 +244,18 @@ M257x iter-46 |
 
 **Development**:
 ```bash
-cd studio-desk
-npm install
-npm run dev  # Starts both frontend (9100) and backend (9000)
+cd stack-dev/studio-desk   # the repo is cloned into the stack workspace, not the corpus root
+cp .env.example .env       # REQUIRED — see the Authentication row above
+npm ci
+npm run dev:next           # next dev (Turbopack) on :9200 — one process
 ```
+
+> ⚠️ **`npm run dev` NO LONGER EXISTS**, nor do `start`, `build` or `test` — the migrated
+> `package.json` names them `dev:next` / `start:next` / `build:next` / `test:next`. The old
+> invocation here (*"Starts both frontend (9100) and backend (9000)"*) described two processes that
+> are now one. On a Rosetta dev stack prefer the tooling, which wires the stack's own offset ports and
+> injects secrets rather than copying them:
+> `.agentspace/rosetta-extensions/dev-stack/studio-desk-dev.sh <N>`.
 
 #### Studio-Room (embedded in `app`)
 

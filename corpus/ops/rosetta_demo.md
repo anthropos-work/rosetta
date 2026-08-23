@@ -196,8 +196,10 @@ pull`) and rebuild.
 > browses it end-to-end over HTTPS. Unset ⇒ **byte-identical** to a normal localhost demo (loopback bind, no
 > external listener). The knob flips: HTTPS-everywhere (per-port `tailscale serve` + a tailscale-cert FAPI), the
 > CORS `https://$HOST` origins + studio-desk/academy redirects + every baked URL's scheme, `0.0.0.0` binds, the
-> two platform-family patches (ant-academy `allowedDevOrigins` + the studio-desk `VITE_CLERK_SIGN_IN_URL`
-> overlay), and a `/stack-list` `external_host` record. The host must be a **dotted** MagicDNS FQDN (a dotless
+> platform-family patch (ant-academy `allowedDevOrigins`; the studio-desk
+> `VITE_CLERK_SIGN_IN_URL` **overlay is GONE** — since the Next migration merged to main the sign-in URL is
+> a real declared Dockerfile ARG, `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, so there is no gitignored overlay file to
+> write or strand), and a `/stack-list` `external_host` record. The host must be a **dotted** MagicDNS FQDN (a dotless
 > name is refused). **Proven live cross-machine on a real Linux VM** (the odyssey `billion` box, 2026-07-11):
 > a teammate on another tailnet machine logged in as a seeded hero and completed a real journey over trusted
 > HTTPS — both the employee (`maya-thriving` → `/profile`) and manager (`dan-manager` → `/enterprise/workforce`)

@@ -215,13 +215,15 @@ manifest can carry its label; an unrecognized `jump_to` still works (it's a raw 
 The deep-link catalog is the **outbound** leg: cockpit → a hero's landing surface. Until M249 there was **no
 inbound leg** — once `[Log in as]` dropped the presenter into a sub-app, the only way back to the cockpit to pick
 a *different* hero was to hand-edit the URL back to the cockpit port. M249 closes the loop with a fail-closed
-**"Back to Cockpit"** item in **all four** sub-app menus:
+**"Back to Cockpit"** item in the sub-app menus — **THREE of the four today, not four**: studio-desk's
+was RETIRED by the Next migration and its row below says so. A presenter told the item is in "all four"
+will hunt a control that does not render.
 
 | App | Menu | Reads | Renders |
 |---|---|---|---|
 | **next-web** (Workforce) | the desktop account dropdown (shared `packages/ui` NavbarTop) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
 | **hiring** | the *same* shared account dropdown (one `packages/ui` patch covers both) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
-| **studio-desk** | the user-profile dropdown (`app/core/scaffold/userProfile.js`) | `VITE_COCKPIT_URL` | when set |
+| **studio-desk** | ⚠️ **ABSENT — the patch is RETIRED, not drifted.** Its target `app/core/scaffold/userProfile.js` was DELETED by the Next migration (merged to main 2026-08-23), so `demopatch` would hard-refuse it at G2; `up-injected.sh` writes RETIRED evidence instead of running the ladder. `NEXT_PUBLIC_COCKPIT_URL` **is baked into the image and read by nothing** — the seam is ready, the item is unbuilt | ~~`VITE_COCKPIT_URL`~~ → `NEXT_PUBLIC_COCKPIT_URL`, baked but unread | **never** |
 | **ant-academy** | the user menu (`code/src/components/UserMenu.jsx`) | `NEXT_PUBLIC_COCKPIT_URL` | when set |
 
 **The cockpit URL is a *different port* from the app.** Each item points at **`7700 + OFFSET`** — the cockpit's

@@ -492,7 +492,9 @@ service gets a different subset than any other.
 
 > ⚠️ **`env_file` is RUNTIME-only — it does not reach a build, so "no repo-local `.env` is needed" is false for
 > `next-web-app`.** The build-time values come from compose **build `args:`** (`docker-compose.yml:117-120` for
-> studio-desk's `VITE_*`; `:150-153` for next-web-app's `NEXT_PUBLIC_*`), which compose fills by *variable
+> studio-desk's `VITE_*` — **which are DEAD since the Next migration merged to main (2026-08-23): the migrated
+> `Dockerfile.dev` declares `NEXT_PUBLIC_*` only, docker discards an undeclared build-arg in SILENCE, and rext's
+> compose override supplies the real ones unconditionally**; `:150-153` for next-web-app's `NEXT_PUBLIC_*`), which compose fills by *variable
 > interpolation* — a different mechanism from `env_file`, reading the shell env and the project-directory `.env`.
 > And `next-web-app/Dockerfile.dev` does `COPY . .` then `pnpm turbo build` (`:11`, `:34` @ `8297c684c`), so
 > Next.js reads **repo-local** env files inside the build context: a gitignored `next-web-app/apps/web/.env.production`

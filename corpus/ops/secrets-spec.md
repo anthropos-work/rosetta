@@ -419,6 +419,21 @@ from `eu.anthropic.claude-sonnet-4-6` (`converse` → `pong`, `end_turn`, eu-wes
 > Clerkenstein **minted** list, so coverage reported it **100 % satisfied** while the key the app actually
 > needs (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) was tracked by nothing. A gene that is both **dead and
 > vacuously green** is the worst state available to this DNA: it reports a covered surface that cannot work.
+>
+> **⚠️ AND A SECOND GENE HAD TO MOVE WHEN THE MIGRATION MERGED (2026-08-23).**
+> `platform/NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` was **standard**, which only WARNS. Since the merge that same
+> value is what compose interpolates into studio-desk's `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` **build arg**
+> (`stack-core/gen_override.py`) — a build-time inline that `next build` bakes into the client bundle. So
+> present-but-EMPTY is not a degraded stack, it is HTTP 500 on every gated page behind a container reporting
+> *healthy*. **Promoted to `critical`**, which is what makes the bring-up REFUSE rather than warn past it.
+> Safe for demos: the key is already on Clerkenstein's minted list, so only dev stacks begin gating.
+>
+> Its dead twin `platform/VITE_CLERK_PUBLISHABLE_KEY` is **waived** (`waived-dead-name`) rather than deleted —
+> it stays LISTED so the keep-listed gate still sees it, but names no operators and instructs nobody to fill it.
+> While it was `required` it FAILED on every stack with text byte-identical to the gene beside it: two adjacent
+> failures at equal weight, one that matters and one that cannot, and nothing to tell an operator which was
+> which. Filling it accomplishes exactly nothing — the migrated Dockerfile declares `NEXT_PUBLIC_*` only, and
+> docker discards an undeclared build-arg in silence.
 > The gene is now `studio-desk/NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
 >
 > **The `platform` twin deliberately keeps the `VITE_` name.** `platform/.env_example` still declares it and
