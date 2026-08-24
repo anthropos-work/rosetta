@@ -1,6 +1,30 @@
 # M267 — Progress
 
-**Status: PLANNED.** Not started. Checklist mirrors the `In:` list in [`overview.md`](overview.md).
+**Status: PAUSED AT PHASE 1, section 1 of 6.** Checklist mirrors the `In:` list in
+[`overview.md`](overview.md).
+
+## ▶ RESUME HERE
+
+**Paused by the user 2026-08-24** to take priority work on `main`. Re-enter with
+`/developer-kit:build-milestone` on branch `m267/entitlement-unlock` (rosetta) — the rext branch of the same
+name exists at `v2.9.23-rext` with **no commits**, which is correct: no code work had started.
+
+**What is DONE, and must not be redone:**
+
+- **Phase 0b KB-fidelity: GREEN.** Recorded in [`spec-notes.md`](spec-notes.md) with the three audit-reuse
+  conditions; report in [`kb-fidelity-audit.md`](kb-fidelity-audit.md). Check the conditions, then **skip
+  straight to Phase 1** if they hold.
+- **One doc fix landed** — `corpus/services/sentinel.md` at `:201` and `:93`. The unqualified claim that
+  *"'default' org policies apply to all organizations"* is true for `m2`/`m3`/`m5` and **false for `m6`**
+  (`casbin.go:45`, zero occurrences). **Read that before writing the insert**: there is no one-row way to
+  cover every org, and getting it wrong fails silently behind the PostHog-gated error path.
+
+**What is NOT done:** every checkbox below. No seeder code was written, no test, no stack was touched.
+
+**Where to start:** section 1, and its first real decision is open question 1 in
+[`overview.md`](overview.md) — *is `FEATURE_JOB_SIMULATIONS` the only feature `p6` gates on a demo?* That
+answer decides whether B1's "remove any limitation" is one row per org or several, so it comes before the
+insert, not after.
 
 ## 1. Seed one `p6` row per seeded org
 

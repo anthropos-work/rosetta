@@ -1,10 +1,10 @@
 ---
 active_release: "v2.10 «content consolidation» — branch `release/02.100-content-consolidation`, designed 2026-08-23 from `.agentspace/annotations.md` (8 field requests). Thesis: the demo SHOWS content honestly and a hero can actually CONSUME it."
 active_branch: "release/02.100-content-consolidation"
-active_milestone: "(none started) — M266 «cockpit legibility» is first; M266 ∥ M267 ∥ M268 ∥ M270 all start cold."
+active_milestone: "M267 «the entitlement unlock» — section, STARTED then PAUSED 2026-08-24 at Phase 1 §1 of 6. Phase 0b GREEN (one doc fix landed). Branch `m267/entitlement-unlock`. Resume marker: that milestone's `progress.md` § RESUME HERE."
 last_closed: "M265 — 2026-08-16 (v2.9 «new alphabet», tag `v2.9`, merged `2c0a2cec` 2026-08-17)"
 phase: "designed, not started. 6 milestones M266→M271. The release's own risk is M271 «voice go/no-go barrier»: demo voice has NO LiveKit container, the endpoint is hardcoded in the FRONTEND, the agent workers live in five repos no clone set holds, and a voice session writes to SHARED AWS S3 — a `safety.md` §2.3 data-controller decision, not an engineering one. User chose barrier-only (2026-08-23). Per-milestone detail lives in each milestone's `overview.md`, never here."
-last_updated: "2026-08-23"
+last_updated: "2026-08-24"
 ---
 
 # State

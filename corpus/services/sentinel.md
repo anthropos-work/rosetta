@@ -90,7 +90,7 @@ The enforcer defines **6 request types, 6 policy types, 3 role groupings, 6 matc
 | Matcher | Pattern | Use case |
 |---------|---------|----------|
 | `m` | User-tier quota | A user passes if they are in the policy's tier (`g(user, tier)`) OR the policy tier is `TIER_FREE` (free-tier policies act as an unconditional baseline, substituted from the proto enum `Tier_TIER_FREE`), AND the requested `count` <= the tier `max`. |
-| `m6` | Org-level feature quota | Org-membership check via `g3(org, user)` AND `feat` match AND requested `count` <= the org policy `max` (no tier logic). |
+| `m6` | Org-level feature quota | Org-membership check via `g3(org, user)` AND `feat` match AND requested `count` <= the org policy `max` (no tier logic). ⚠️ **And no `'default'` escape** — unlike `m2`/`m3`/`m5`, the `p6` row must name the org id, so there is no one-row way to cover every org. |
 | `m2` | Org role-based action | "Admins can invite members" |
 | `m3` | Org feature access | Role-based gating of insights, workforce, members CRUD, etc. |
 | `m4` | Direct user action | Subject-object-action equality |
@@ -198,7 +198,7 @@ cd sentinel        # HISTORICAL — repo not cloned by `make init` since 766df6c
 make initdb        # runs init_policy.sql via psql against a HARD-CODED local DSN
 ```
 
-`make initdb` does NOT read `DB_CONNECTION` — it always targets `postgresql://postgres@localhost:5432/postgres` (sslmode=disable). It works only against a local Postgres on port 5432, and relies on `init_policy.sql` being schema-qualified (`sentinel.casbin_rules`) so the seed lands in the right schema regardless of search_path. For a non-local DB, run psql with your own DSN: `psql "$DB_URL" -f init_policy.sql`. The seed defines the base RBAC rules; "default" org policies apply to all organizations unless overridden by org-specific entries.
+`make initdb` does NOT read `DB_CONNECTION` — it always targets `postgresql://postgres@localhost:5432/postgres` (sslmode=disable). It works only against a local Postgres on port 5432, and relies on `init_policy.sql` being schema-qualified (`sentinel.casbin_rules`) so the seed lands in the right schema regardless of search_path. For a non-local DB, run psql with your own DSN: `psql "$DB_URL" -f init_policy.sql`. The seed defines the base RBAC rules; "default" org policies apply to all organizations unless overridden by org-specific entries — **but NOT on every matcher, and the exception is load-bearing.** `m2`, `m3` and `m5` each carry an explicit escape (`'default' == p2.org || r2.org == p2.org` at `casbin.go:22`, the same shape at `:23`, and `p5.org == 'default'` at `:44`), and matcher `m` has the templated tier default at `:21`. **`m6` has NO `'default'` escape at all** (`:45`, measured — zero occurrences of `default` in that line), so a `p6` row naming the org `default` authorizes **nobody**: the row must name the real org id. ⚠️ Read as an unqualified rule, this sentence sends you to a one-row fix that silently grants nothing — which is exactly the trap `M267` hit, and why it is qualified here.
 
 ### Superadmin / elevated local grants
 

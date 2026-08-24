@@ -73,7 +73,7 @@ See [`demopatch-spec.md`](demopatch-spec.md) for the mechanism and its 7 guards.
 | `DEMO_NO_PATCH` | `0` | **all demo-patches applied** | `up-injected.sh:566` |
 | `DEMO_NO_AUTHZ_SKIP` | `0` | ⚠️ **the `app-targetrole-authz-skip` patch is APPLIED** — authorization is short-circuited on the per-member target-role write path. Part of what makes a demo an **authz-weakened build** ([`../safety.md`](../safety.md) §3.2) | `up-injected.sh:1709` |
 | `DEMO_NO_AIREADINESS_LOADMEMBERS_BOUND` | `0` | the `app-aireadiness-snapshot-loadmembers` read-path patch is applied | `up-injected.sh:1710` |
-| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:2555` |
+| `DEMO_NO_PERF_INDEXES` | `0` | the demo perf indexes are created | `up-injected.sh:2779` |
 | `DEMO_NO_SENTINEL_RELOAD` | `0` | the casbin-policy invalidation runs after seeding (the silent-403 catcher). **Since platform `766df6c` there is no `sentinel` container to reload** — the knob now gates a Redis Pub/Sub publish to `sentinel:policy:invalidate`, which the in-process PDP subscribes to | `up-injected.sh:2513` |
 
 ### Remote access
