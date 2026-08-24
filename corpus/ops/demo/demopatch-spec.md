@@ -242,15 +242,33 @@ M258 — see the warning below), while hiring's is still over an explicit **7** 
 
 The `next-web` patches are reverted by a `RETURN` trap so the persistent clone is left git-clean — **but not
 in LIFO order**, and this sentence used to say it was. The next-web trap
-(`demo-stack/up-injected.sh:811` @ rext `62392d2`) reverts *pubweb · studio · pagination · ssr-origin ·
+(`demo-stack/up-injected.sh:825` @ rext `023fd38`) reverts *pubweb · studio · pagination · ssr-origin ·
 aireadiness · thirdparty · interview-result · interview-container · back-to-cockpit* against an apply order of
 *studio · pubweb · pagination · ssr-origin · aireadiness · thirdparty · interview-container · interview-result ·
-back-to-cockpit* (`:827`, `:832`, `:851`, `:863`, `:875`, `:887`, `:901`, `:936`, `:949`): **only two adjacent
+back-to-cockpit* (`:841`, `:846`, `:865`, `:877`, `:889`, `:901`, `:915`, `:950`, `:963`): **only two adjacent
 pairs are inverted — the `urls.ts` sha-chain and the interview flag-gate pair; the other five manifests are
 reverted in apply order.** That is the same
 finding the §4 correction box above records — see its table for the hiring lane, whose revert
-(`:1202`) is likewise not LIFO. **The one lane that IS strict LIFO is `studio-desk`**: apply *back · logout ·
-logo · shell · nothirdparty* (`:992`, `:997`, `:1017`, `:1032`, `:1035`), revert exactly reversed (`:976`).
+(the hiring `RETURN` trap, `:1388`) is likewise not LIFO.
+
+> ⚠️ **These ten anchors were re-derived 2026-08-24 (v2.10 M272) and the previous set was WHOLLY stale.**
+> The trap read `:811` and the applies `:827/:832/:851/:863/:875/:887/:901/:936/:949`; measured against
+> `up-injected.sh` at rext `023fd38` the true sites are the ones above. Two of the old anchors landed on a
+> bare `fi` — which is the only reason this was caught: `anchor_construct_guard`'s
+> *anchor-on-block-terminator* arm fires on a terminator and stays silent on an anchor that merely points
+> at the wrong real line. The other eight were **plausible-but-wrong**, the failure mode this file's own
+> §"the anchor is the contract" warns about, and no fence saw them.
+>
+> 🔴 **The `studio-desk` lane's anchors are NOT re-derived here, because the code they described is gone.**
+> This paragraph used to continue: *"The one lane that IS strict LIFO is `studio-desk`: apply back · logout ·
+> logo · shell · nothirdparty (`:992`, `:997`, `:1017`, `:1032`, `:1035`), revert exactly reversed
+> (`:976`)."* At `023fd38` the five `sd_*_manifest` variables are declared at `:1093-1101` and then used at
+> **exactly one** site — the patch-set fingerprint at `:1111`. There is no `demopatch apply` for any of them
+> anywhere in the file (the complete apply-site list is `841 846 865 877 889 901 915 939 950 963` for
+> next-web and `1408 1411 1430 1447 1460 1468 1477 1509 1520` for hiring). So the claim is not merely
+> mis-anchored — **whether that lane still applies its patches at all is an open question**, and inventing
+> new line numbers for it would have manufactured a citation for behaviour nobody has verified. Left
+> stated, not guessed.
 The invariant is *"the chain reverts in the right order"*, not *"the list is LIFO"* — and all three lanes
 satisfy it. `stack-core/union_apply_guard.py` asserts it for the two lanes that share a clone
 (`_FUNCS = {"next-web": …, "hiring": …}`, `union_apply_guard.py:75`); studio-desk builds from its own clone

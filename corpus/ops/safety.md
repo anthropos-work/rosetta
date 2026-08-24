@@ -571,7 +571,10 @@ injected override existed.
 > `stack-core/gen_override.py` (the **dev** override builder) constructs its port strings **exactly the same
 > way** — bare `"<hostport>:<target>"`, no `127.0.0.1` prefix — so a `dev-N` stack's containers are world-
 > published too, on every `dev-stack up`, **with or without** `--public-host`. **Measured, not read:** the
-> exposure guard now runs *both* emitters and reports `DEMO: 14 ports → 0.0.0.0` and `DEV: 8 ports → 0.0.0.0`.
+> exposure guard now runs *both* emitters and reports `DEMO: 16 ports → 0.0.0.0` and `DEV: 9 ports → 0.0.0.0`.
+> *(Was `DEMO: 14` / `DEV: 8`. **+2 per family is LODGE** — v2.10 M272, §3.1.1 below. The `DEV: 8` was
+> additionally stale by one before that: the guard measured **7** for the dev emitter at the moment M272
+> re-ran it, so this line had drifted from its own fence independently of lodge.)*
 >
 > **This matters MOST because the dev path is opt-in** (§3.5.3). A reader who learns *"remote reach is OFF by
 > default on dev"* will reasonably conclude *"so my dev stack is not exposed."* **That conclusion is false.**
@@ -644,6 +647,36 @@ injected override existed.
 smaller than this corpus used to imply**, because the LAN/host-IP exposure is *already there*. The honest framing
 of `--public-host` is that it does not open the demo — it makes the already-open demo **usable** (a trusted HTTPS
 origin, which Clerk requires for a secure context).
+
+#### 3.1.1 LODGE adds TWO more world-published ports — one of them an operator console (v2.10 M272)
+
+Every `dev-N` and `demo-N` stack now deploys **Lodge** ([`../services/lodge.md`](../services/lodge.md)),
+which publishes **two** offset ports on `0.0.0.0` like everything else here:
+
+| Surface | Port | What is behind it |
+|---|---|---|
+| job **wire** | `8080 + N·10000` | `POST /jobs` — submit, poll, cancel. **No authentication at all.** |
+| operator **panel** | `7787 + N·10000` | submit / watch / cancel jobs, spend by customer, the archive, `/config` |
+
+**State the two honestly, because they are not the same risk.**
+
+- **The panel IS authenticated** — the only authenticated surface a demo has. It refuses to bind beyond
+  loopback without a ≥16-char shared secret (half the pair is refused *at boot*), and a `401` carries
+  `WWW-Authenticate: Basic`, so the browser's own dialog is the login. That is a real gate, and it is
+  stronger than the cockpit beside it, which is a **password-free** "become any seeded hero" launcher.
+- **The wire is NOT.** The four job routes take no credential. Anyone who can reach `8080 + N·10000` can
+  submit a job. What bounds it is that a rosetta stack supplies **no model credentials**, so a submitted
+  job fails at its first model call — and the `HYPERFORGE_CAP_*` ceilings bound spend even where creds
+  exist. **That is a bound on consequence, not an access control**, and it is the honest framing: put
+  credentials into a stack's lodge and the wire becomes an unauthenticated way to spend money.
+
+The per-stack secret is **deterministic** (`rosetta-lodge-{dev,demo}-N-panel-secret`) and written in the
+tooling, exactly like the per-stack Directus secret beside it. It is a throwaway that keeps a browser
+honest — **not** a credential that makes the panel safe to expose to an untrusted network. Everything
+Part 3 says about who may reach a stack applies to it unchanged.
+
+Both ports are in the exposure guard's denominator (`stack-injection/exposure_claim_guard.py`), which is
+why the counts above moved 14→16 and 8→9 rather than silently staying put.
 
 ### 3.2 What a demo actually IS — an unauthenticated, authz-weakened build
 
@@ -914,7 +947,7 @@ Separate namespace, no ambient inheritance.
 
 🔴 **What OPT-IN does NOT mean — read this before you conclude your dev stack is private.** It is *not* the case
 that a no-flag `dev-stack up` is unreachable from the network. **Every `dev-N` container is published on
-`0.0.0.0` already** — see §3.1, where this is now measured for the dev emitter (`8 ports → 0.0.0.0`) and not
+`0.0.0.0` already** — see §3.1, where this is now measured for the dev emitter (`9 ports → 0.0.0.0`, lodge included) and not
 merely asserted — and on Linux Docker's iptables **bypass `ufw`/`firewalld`**. What `--public-host` adds is the
 **trusted HTTPS origin on the tailnet** (a `tailscale serve` front + a real cert), *not* the LAN exposure, which
 was there before you ever heard of this flag. The opt-in governs **reachability by name, over TLS, from another

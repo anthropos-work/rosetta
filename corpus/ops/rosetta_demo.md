@@ -246,6 +246,26 @@ published port. M12 makes `N` a **single shared resource across both kinds**.
 > directus service, so teardown / registry / verify all correctly see nothing. Full lifecycle:
 > [`directus-local.md`](directus-local.md) § "Container lifecycle (M22)".
 
+> **LODGE rides it too — and it is the first service that brings a NAMED VOLUME with it (v2.10 M272).**
+> Every `dev-N` and `demo-N` stack emits a `lodge` compose service (`hyper-studio`'s deployable): the job
+> **wire** on `8080 + N·10000` and the **operator panel** — a real webapp — on `7787 + N·10000`, container
+> `<project>-lodge-1`, on the stack's `app-network`. Same dividend as Directus above: because it is a
+> compose service, teardown / registry / auto-verify needed **no new lifecycle code**. Unlike Directus it
+> is **default-ON** (opt out with `DEV_NO_LODGE=1` / `DEMO_NO_LODGE=1`) and it declares **no `profiles:`
+> key**, so it is in every profile selection.
+>
+> 🔴 **The teardown DESTROYS its data, and nothing else will tell you.** `lodge-data` is a **named** volume
+> — the first any rosetta stack has had; every other mount is a host bind. Both teardown paths pass
+> `down -v`, so `dev-down N` / `demo-down N` delete that stack's **entire lodge job store, forgespace,
+> archive and run history**. That is correct for a disposable stack, and it is stated here because the
+> named volume is exactly the thing a reader of the Directus paragraph above would not expect.
+>
+> It is a named volume *on purpose*: lodge runs each job under a pooled uid with its forgespace chowned
+> `0700`, and a macOS bind mount virtualises ownership — a host bind would hide that isolation rather than
+> enforce it. The built image is **not** removed on teardown (it is shared across stacks and is the build
+> cache); reclaim with `docker rmi $(docker images -q 'lodge:rosetta-*')`. Full picture:
+> [`../services/lodge.md`](../services/lodge.md).
+
 ## Post-set-dress policy reload (v1.10 "method acting", M42e P5 — REWRITTEN v2.8 M258 for sentinel-in-app)
 
 Right **after** the set-dress seed and **before** the auto-verify, a fresh demo-up **reloads the

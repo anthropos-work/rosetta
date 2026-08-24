@@ -80,7 +80,7 @@ corpus row of substance** before 2026-08-07.
 | **the five `livekit-agent*` repos** | `livekit-agent`, `livekit-agent-chain`, `livekit-agent-azure-eu`, `livekit-agent-azure-eu-fr`, `livekit-agent-azure-us` — all Python, all one LiveKit Cloud project (`subdomain = "anthropos-pbvktu3v"`), five distinct registered agent names. **`app` dispatches exactly three.** | **KEEP 3 · DECIDE 2** | § 8 below |
 | **`ant-observability`** (Shell, 2026-08-05) | Two things in one repo: Claude Code usage telemetry (OTel→Prometheus/Loki/Grafana), **and** `product-monitoring/` — the platform's live outside-in monitoring, on a Proxmox VM reachable only over Tailscale. | **KEEP — the corpus's largest single blind spot** | [`observability.md`](../ops/observability.md) |
 | **`sim-qa`** (TypeScript, 2026-07-31) | A **developer-invoked** QA harness that drives production GraphQL as a real user, issuing **7 mutations**. Needs a production `sk_live_` Clerk key and mints a JWT against a real user's session. **Sessions are `is_test=true` by default.** | **KEEP — with its scope stated** | § 9 below + a scope note on [`safety.md`](../ops/safety.md) |
-| **`hyper-studio`** (TypeScript, 2026-08-06) | The most actively developed repo in the org (827 commits since 2026-06-17). A CLI suite of content-creation agents around **HyperForge**, self-declared *"peer to `studio-desk` and `anthropos-studio-room`"*. **Zero runtime coupling to the platform today** — no GraphQL, no Clerk, no DB, no deployment. | **KEEP — PRE-INTEGRATION** | § 10 below |
+| **`hyper-studio`** (TypeScript, 2026-08-06; **re-measured 2026-08-24**) | The most actively developed repo in the org (827 commits since 2026-06-17). A content-creation engine (**HyperForge**) plus **Lodge**, its deployable — self-declared *"peer to `studio-desk` and `anthropos-studio-room`"*. **Zero *platform* coupling** — no GraphQL, no Clerk, no shared DB — and that part still holds. ⚠️ **"no deployment" was ACCURATE on 2026-08-06 and went STALE eight days later** — the `Dockerfile` landed 2026-08-14 (`717b40e6`) and `deploy/docker-compose.yml` 2026-08-19 (`49216fc3`); the repo now also ships `deploy/lodge.service`, `deploy/terraform/` and 4 workflows. Re-measure this row rather than trusting it: at ~800 commits a quarter it ages in days, not months. Since **v2.10 M272 its Lodge service runs in every `dev-N` and `demo-N` stack** (wire `8080 + N·10000`, operator panel `7787 + N·10000`). | **KEEP — INTEGRATED (v2.10 M272)** | [`../services/lodge.md`](../services/lodge.md) · § 10 below |
 | **`analytics-go`** (Go, 2025-02-12) | A two-file Brevo event tracker, **`app/go.mod:14` `v0.3.1`** — a direct compile-time dependency carrying **Stripe subscription-lifecycle events** (`app/internal/payments/handler.go:302-316`). Untouched for ~18 months; `v0.3.1` is its newest tag. | **KEEP — DORMANT AND LOAD-BEARING. Do not delete** | [`shared_libraries.md`](shared_libraries.md) |
 | **`anthropos-knowledge-base`** (2026-08-06) | A Claude Code plugin + company knowledge base — **and it contains a second, parallel platform-architecture corpus** covering this project's subject. | **KEEP — and RECONCILE** | § 11 below |
 | **`github-runner-config`** (Shell, 2026-06-26) | 2 files / 63 lines. A non-idempotent `init.sh` that bootstraps an Ubuntu box for a self-hosted GitHub Actions runner. Registers no runner, provisions nothing. | **KEEP — known, not documented in depth** | this row. Its value is the *fact* it records: **CI runs on self-hosted EU runners reaching AWS over Tailscale** (`CLAUDE.md:11-12`). **Not a runbook** |
@@ -357,7 +357,7 @@ model, not a contradiction.
 
 ---
 
-## 10. `hyper-studio` — pre-integration, and the corpus already borrows from it
+## 10. `hyper-studio` — INTEGRATED at v2.10 M272 (and the corpus already borrowed from it)
 
 A plain TypeScript/Node CLI — no framework, **four runtime deps** (`@anthropic-ai/claude-agent-sdk`,
 `dotenv`, `yaml`, `zod`). It is the designated successor to **studio-room** (generation), *not* to
@@ -366,12 +366,27 @@ studio-desk — there is no UI code at all. Its own record says why:
 **creation only — edit was never possible**. HyperForge exists precisely to close that gap."* A second
 agent, **HyperPlay**, is specced to drive content on the platform and is **unbuilt**.
 
-**It does not touch the platform today**: a combined grep for `wundergraph|anthropos.work|/graphql/query|clerk|DATABASE_URL|livekit|directus|judge0|bunny|chime|postgres` over `origin/main` returns **3 hits,
-all prose, zero in code**; `grep -inE graphql` → 0 repo-wide. No `.github/`, no Dockerfile, no compose,
-no terraform — **no deployment exists.**
+**It does not touch the platform**: a combined grep for `wundergraph|anthropos.work|/graphql/query|clerk|DATABASE_URL|livekit|directus|judge0|bunny|chime|postgres` over `origin/main` returned **3 hits,
+all prose, zero in code**; `grep -inE graphql` → 0 repo-wide. **That half still holds**, and it is what
+makes the integration below cheap: lodge shares no DB, no Redis, no Clerk tenancy and no GraphQL surface
+with the platform, so it needed **zero** platform-repo edits and adds no `depends_on` edge.
 
-**Filing it as a live Tier-2 service would misstate the architecture**; leaving it out entirely already
-misstated something else — [`secrets-spec.md:309`](../ops/secrets-spec.md) uses
+> 🔴 **RETRACTED (2026-08-24): *"No `.github/`, no Dockerfile, no compose, no terraform — no deployment
+> exists."*** That sentence was **true on 2026-08-06** and is false now. Measured at `b55369df`: the
+> `Dockerfile` landed **2026-08-14** (`717b40e6`), `deploy/docker-compose.yml` **2026-08-19**
+> (`49216fc3`), and the repo also carries `deploy/lodge.service`, `deploy/terraform/` (5 files) and
+> **4** GitHub workflows. Nothing was mis-measured — the repo grew a deployment eight days after this
+> section was written, which is what ~800 commits a quarter does to a dated claim.
+>
+> **Since v2.10 M272 its `lodge` service is deployed in every `dev-N` and `demo-N` stack** — the job
+> wire on `8080 + N·10000` and the operator panel on `7787 + N·10000`. Full picture:
+> [`../services/lodge.md`](../services/lodge.md). So the filing question this section poses below is
+> now answered: it is not a Tier-2 platform service, it is a **non-platform neighbour** that every
+> stack runs.
+
+**Filing it as a live Tier-2 service would still misstate the architecture** — it is not part of the
+platform's service graph, and being deployed alongside one does not make it one; leaving it out entirely
+already misstated something else — [`secrets-spec.md:309`](../ops/secrets-spec.md) uses
 `../hyper-studio/.env.example` as the template for `app`'s five AWS Bedrock secret genes. **The corpus
 borrows a file from a repo it never mentions.**
 

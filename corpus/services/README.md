@@ -84,6 +84,7 @@ services talk to each other see [`../architecture/dependency_map.md`](../archite
 | [`hiring.md`](hiring.md) | Hiring | The recruiting **org-type** (`is_hiring`) + the candidate-comparison read-model. Authored from a live render-probe, not inferred |
 | [`clerk-integration.md`](clerk-integration.md) | Clerk | The cross-cutting single source of truth for how the platform uses Clerk (vs. per-service mentions elsewhere) |
 | [`clerkenstein.md`](clerkenstein.md) | Clerkenstein | The **Clerk mock** that makes demo stacks Clerk-free — a `rosetta-extensions` section, consumed per-stack at a pinned tag |
+| [`lodge.md`](lodge.md) | Lodge (`hyper-studio`) | **The content-creation engine's deployable — net-new in every stack at v2.10 M272.** One Node process, **two** listeners: the job **wire** (`POST /jobs`, poll, result, cancel, `/healthz`, `/readyz`) on `8080 + N·10000`, and the **operator panel** — a real webapp (submit/watch/cancel, spend, archive, `/config`) — on `7787 + N·10000`, gated by a shared secret over the browser's own Basic-auth dialog. Shares **no** DB, Redis, Clerk tenancy or GraphQL surface with the platform, which is why it needed zero platform edits. ⚠️ The corpus graded this repo *"zero runtime coupling … no deployment, PRE-INTEGRATION"* until M272 — it has shipped a Dockerfile, a compose file, a systemd unit and terraform the whole time |
 
 ## Archived / merged — kept as redirects
 
