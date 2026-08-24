@@ -10,6 +10,14 @@
 
 It's like a "Figma for job simulations" - a creative tool optimized for designing realistic work experiences.
 
+> **Developing it against a running stack (v2.10 M273).** A dev stack can serve studio-desk natively
+> from the `hstudio-integration` git worktree, hot-reloading in ~2 s:
+> `dev-stack/engine-switch.sh <N> live`. Two traps it handles for you: the backend's CORS allows only
+> the **pre-migration** ports 9000/9100, so an offset native port is refused at the preflight (a
+> signed-in Studio whose every panel says "couldn't load", over a backend whose logs look healthy); and
+> the backend must be **re-created, not restarted**, for the new origin to take effect. See
+> [`../ops/dev-live-engines.md`](../ops/dev-live-engines.md).
+
 ## Technical Deep Dive (For Engineers)
 
 > **⚠️ THIS DOCUMENT WAS REBUILT (2026-08-17) FOR THE NEXT MIGRATION, AND ALMOST NOTHING TECHNICAL

@@ -163,6 +163,21 @@ Open **`http://localhost:17787/`**, any username, the stack's secret as the pass
 platform's own Makefile and rext is not in it; this corpus takes zero platform edits. Lodge is on the
 `dev-N` (N ≥ 1) and `demo-N` paths only.
 
+### Live engine — developing lodge against a running stack (v2.10 M273)
+
+A dev stack can serve lodge **natively from a git worktree** instead of from its image, so an edit is
+live in ~3 s. `LODGE_TYPE_CORPUS_HOME` then points at the worktree's own `code/hyper-artifacts`, so
+type-corpus edits are live too.
+
+```bash
+.agentspace/rosetta-extensions/dev-stack/engine-switch.sh 1 live    # native, from the worktree
+.agentspace/rosetta-extensions/dev-stack/engine-switch.sh 1 baked   # back to the container
+```
+
+⚠️ **The live panel takes NO credential** — native lodge binds loopback, where the secret and Host
+allowlist above simply do not apply. Same panel, different exposure. Full contract, including what the
+switch does and does not migrate: [`../ops/dev-live-engines.md`](../ops/dev-live-engines.md).
+
 ### Standalone, from the checkout (no Docker)
 
 hyper-studio ships its own dev launcher, which is the better tool when you are working *on* lodge:
