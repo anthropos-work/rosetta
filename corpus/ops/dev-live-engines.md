@@ -64,7 +64,16 @@ arrives. `engine-switch.sh` adds the origin to `platform/.env` — but **the bac
 not restarted**: compose reads `--env-file` at *create* time, so `docker restart` silently changes
 nothing. The switch prints the exact recreate command.
 
-**5. `/api/health-check` answering 200 does not mean studio-desk works.** The route is public and
+**5. A fresh worktree has no `.env`, and the failure is AI-shaped.** studio-desk reads its own `.env`
+from the source dir; a new worktree has none, and nothing provisions it automatically. The app still
+boots, still answers health 200, still renders — and every AI call 500s with Azure's *"The API deployment
+for this resource does not exist"*, because without `AI_PROVIDER_CHAIN` / `AI_OPENAI_API_KEY` /
+`AI_ANTHROPIC_API_KEY` it falls through to the `AZURE_OPENAI_*` pair `platform/.env` does export, for
+which no deployment name is configured anywhere. `engine-switch.sh` now seeds it from the canonical clone
+and says so; if neither exists it warns and tells you to run `/stack-secrets`. Symptom to recognise:
+`POST /api/ai/triage 500` from the advanced builder's copilot.
+
+**6. `/api/health-check` answering 200 does not mean studio-desk works.** The route is public and
 Clerk-blind by design, so it answers 200 while every gated page 500s on an empty publishable key. Judge
 studio-desk by a page, not by its health route.
 
