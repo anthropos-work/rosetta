@@ -73,10 +73,24 @@ This is the part that is easy to get wrong, and each failure looks like a differ
 2. **`LODGE_PANEL_SECRET`, ≥ 16 characters.** The pair is the opt-in and **half a pair is refused at boot**
    (`panel-server.ts:498`). A short secret on a public interface is refused for the same reason.
 3. **`LODGE_PANEL_AUTHORITIES`** — the `Host` allowlist, and **the one that is missing from
-   `deploy/lodge.env.example` entirely**. Bound to the wildcard `0.0.0.0`, the panel answers only the
-   literal authority `0.0.0.0`, which no browser or proxy ever sends, so **every request is refused 403 —
-   including its own health probe**. The knob (hyper-studio v03.01 M48, `D-M48-04`) *replaces* the
-   derivation from `host`. Reported upstream: their shipped profile alone cannot expose the panel.
+   `deploy/lodge.env.example` entirely**. Bound to the wildcard `0.0.0.0` the panel would answer only the
+   literal authority `0.0.0.0`, which no browser or proxy ever sends — so on a current image it **REFUSES
+   TO BOOT** rather than serve something unreachable: `boot.refused`, **exit 78**, and the whole container
+   goes with it, wire included. The knob (hyper-studio v03.01 M48, `D-M48-04`) *replaces* the derivation
+   from `host`. Reported upstream: their shipped profile alone cannot expose the panel.
+
+> ⚠️ **This entry described a running panel that 403s everything, and that was WRONG for a current image
+> — corrected 2026-08-24 by running it.** That IS what the pre-M48 image on this box did (`lodge:m46-sim2`,
+> built 2026-08-19: it booted, challenged, accepted the credential, then refused every request with
+> *"this panel is bound to '0.0.0.0' and answers that authority only"*). hyper-studio `a3430baf` (M48 S2)
+> turned that unreachable-by-construction state into a **boot refusal**, which is strictly better — loud
+> and fail-closed instead of quietly serving 403s. Measured on `lodge:rosetta-0a9eb16b`: wildcard host +
+> a valid secret + no authorities → `exited exit=78`, both ports dead.
+>
+> **A runtime 403 is still reachable — just not this way.** With an authority list present but not
+> matching what the client sends (a wrong port, a DNS name, a reverse proxy), the panel boots and then
+> refuses that client 403, its own probes included. So: **missing list ⇒ dead container; wrong list ⇒
+> live container, 403 for the mismatched caller.** Different failures, different first move.
 
 **The login flow is the browser's own.** A `401` carries
 `WWW-Authenticate: Basic realm="Lodge operator panel"` (`panel-server.ts:1390`), so the browser prompts and
@@ -193,9 +207,10 @@ profile — every one a `CHOOSE:` line naming the policy question it answers.
 | the named-volume fence (semantic, allowlisted) | `dev-stack/tests/test_dev_teardown_sweep_m258.py` |
 
 ⚠️ **The `lodge-panel` probe row is deliberately weak and must not be read as strong.** `http` accepts any
-2xx/3xx/4xx, so it passes on 401 (correct) *and* on 403 (the Host-authority refusal — the panel refusing
-every request). The assert that can tell them apart is `lodge_verify`, which presents the credential and
-demands 200. Keep both; neither alone grades the panel.
+2xx/3xx/4xx, so it passes on 401 (correct) *and* on 403 — a *wrong* authority list, where the panel boots
+and then refuses the mismatched caller. It would catch a *missing* list anyway, since that is a boot
+refusal and the probe reports 000. The assert that closes the 403 gap is `lodge_verify`, which presents
+the credential and demands 200. Keep both; neither alone grades the panel.
 
 ## Related
 
