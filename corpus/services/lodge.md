@@ -227,6 +227,56 @@ and then refuses the mismatched caller. It would catch a *missing* list anyway, 
 refusal and the probe reports 000. The assert that closes the 403 gap is `lodge_verify`, which presents
 the credential and demands 200. Keep both; neither alone grades the panel.
 
+## ⚠️ studio-desk submits to it — the FIRST caller in the field (2026-08-24)
+
+Since 2026-08-24 lodge has a real consumer inside a rosetta stack: **studio-desk fires a second
+generation at it every time an author presses generate**, beside the studio-room run it has always
+made. One simulation design, compiled twice, so the two artifacts can be read side by side. That is
+what lodge is here to be evaluated for.
+
+It changes nothing above. The two services still share no database, no Redis and no Clerk tenancy;
+the edge is a plain HTTP POST from a studio-desk **route handler**, and it added no compose
+`depends_on` and no platform-repo edit.
+
+**Four server-only variables carry the wiring**, provisioned per stack by
+`rext dev-stack/engine-switch.sh` (`lodge_desk_env_apply`) at the stack's **own offset ports**:
+
+| Variable | Value on `dev-5` |
+|---|---|
+| `LODGE_ENABLED` | `1` — the SERVER half of the gate |
+| `LODGE_WIRE_URL` | `http://127.0.0.1:58080` |
+| `LODGE_PANEL_URL` | `http://localhost:57787` |
+| `LODGE_CUSTOMER` | `studio-desk` |
+
+Four things about this are worth carrying:
+
+1. **The gate is a conjunction across two tiers.** Client-side it is `isSuperAdmin`; server-side it
+   is `LODGE_ENABLED`. Both must hold. None of the four is `NEXT_PUBLIC_`, deliberately — that
+   prefix is inlined at BUILD time, so a container could not be re-pointed at a different lodge
+   without a rebuild.
+2. **Pointing at the un-offset `8080`/`7787` is the failure to watch for.** On a box running two
+   stacks it submits one stack's designs to the other's lodge, and the jobs land in a panel nobody
+   is watching. Nothing errors.
+3. **`customer` is `studio-desk` — the calling SERVICE, not the tenant.** It is lodge's only
+   isolation key and its only identity axis, and lodge authenticates nothing. The org and the user
+   ride as ordinary params (`origin_service`, `origin_user_id`, `origin_user_eid`,
+   `origin_org_eid`), stamped from the session inside the route where a user cannot edit them.
+4. **A lodge failure is visible and non-blocking, by construction.** The submit is detached and
+   catches everything; the studio-room generation is unaffected. Proven live on `dev-5`: with lodge
+   stopped the route answers `502 lodge_unreachable` and studio-desk keeps serving.
+
+**The `$0` lever, worth knowing before you test anything here:** blank `brief_mode` in the params
+and the engine's `grading-axis-unanswered` throws at **provision**, before any model call. A full
+submit-and-read-back round trip then costs nothing — `worked 0s`, `spend ≥ $0.0000` — which is how
+every gate in this integration was proven without buying a generation.
+
+**The panel reads the submitted documents back** as of the same date. Open a job and the modal
+renders the envelope *and* every bone — the cast, the tasks, the criteria — under its own path and
+byte size. Before that it showed the envelope alone, and a malformed cast passed inspection.
+
+The full integration is documented on the caller's side, in `studio-desk` at
+`knowledge/engineering/backend/lodge-integration.md`.
+
 ## Related
 
 - [`org-repos.md`](../architecture/org-repos.md) — the `hyper-studio` row (corrected at M272)

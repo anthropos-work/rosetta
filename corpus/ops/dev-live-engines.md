@@ -100,6 +100,40 @@ Ports are reclaimed with the identity-checked reaper the host-native services al
 (`reap_port <port> <identity-regex>`), which refuses an empty pattern and **reports rather than kills** a
 process it cannot identify as ours.
 
+> ⚠️ **`stop` HONOURS `--engines`, and did not until 2026-08-24.** Every other verb filtered and this
+> one swept both, so `stop --engines lodge` killed studio-desk as its second act. That matters more
+> than it sounds: stopping lodge alone is the obvious way to prove studio-desk survives a lodge
+> outage, and the broken form made the result read as *the app crashes when lodge goes down* — the
+> exact opposite of what the operator was testing. The two are indistinguishable from outside the box.
+> Fixed, with `dev-stack/tests/test_engine_switch.py` asserting each engine's teardown sits under its
+> own guard. `live.env` is now cleared only when the last engine goes.
+
+## studio-desk needs lodge's address, and the switcher provides it
+
+studio-desk fires a second generation at lodge whenever an author presses generate. It reads four
+**server-only** variables, and `engine-switch.sh` writes them into the desk env at this stack's own
+**offset** ports (`lodge_desk_env_apply`):
+
+```
+LODGE_ENABLED=1
+LODGE_WIRE_URL=http://127.0.0.1:$((8080 + N*OFFSET))
+LODGE_PANEL_URL=http://localhost:$((7787 + N*OFFSET))
+LODGE_CUSTOMER=studio-desk
+```
+
+Two properties worth knowing, both of which have a failure mode that is silent:
+
+- **They are REWRITTEN, never appended.** An append-only helper leaves two assignments of every key
+  after two runs, and dotenv readers disagree about which wins.
+- **The offset is the whole point.** Un-offset `8080`/`7787` submits this stack's designs to whatever
+  lodge holds the default ports — on a two-stack box, the other stack's — and the jobs land in a panel
+  nobody is watching. Nothing errors.
+
+Both desk paths get them: the dev worktree's `.env`, and the demo's copied container environment (a
+demo image built before the second engine existed carries none of these, so they are added at run time
+rather than baked). The integration itself is
+[`../services/lodge.md`](../services/lodge.md) § *studio-desk submits to it*.
+
 ## Related
 
 - [`../services/lodge.md`](../services/lodge.md) — the engine, its two listeners, the boot preflight

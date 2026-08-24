@@ -443,7 +443,16 @@ Usage: `make up PROFILE=core`
 > webapp (`7787 + N·10000`, browser Basic-auth). It shares **no** DB, Redis, Clerk tenancy or GraphQL
 > surface with the platform and adds no `depends_on` edge — which is why it needed **zero** platform-repo
 > edits. Opt out with `DEV_NO_LODGE=1` / `DEMO_NO_LODGE=1`.
-> See [`corpus/services/lodge.md`](corpus/services/lodge.md).
+>
+> **⚠️ It has a real caller as of 2026-08-24 — `studio-desk` submits to it.** Every press of generate
+> fires a hyper-forge run beside the studio-room one, from the same design, so the two artifacts can be
+> compared. Four **server-only** variables carry it (`LODGE_ENABLED`, `LODGE_WIRE_URL`,
+> `LODGE_PANEL_URL`, `LODGE_CUSTOMER`), written per stack at its **own offset ports** by
+> `rext dev-stack/engine-switch.sh` — pointing them at the un-offset `8080`/`7787` silently submits one
+> stack's designs to another's lodge. `customer` is the calling **service**, never the tenant. A lodge
+> failure is non-blocking by construction: the submit is detached and the studio-room run is unaffected.
+> See [`corpus/services/lodge.md`](corpus/services/lodge.md) § *studio-desk submits to it* and
+> [`corpus/ops/dev-live-engines.md`](corpus/ops/dev-live-engines.md).
 
 ## Key Documentation Locations
 
