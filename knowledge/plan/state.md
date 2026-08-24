@@ -49,6 +49,14 @@ M269.
 **Start with M267 if you want the demo usable soonest** — it is the smallest milestone in the release (one
 seeder INSERT) and it unblocks the thing the reviewer actually hit: heroes cannot start a simulation.
 
+**Three CHECKPOINT milestones gate the release** (added 2026-08-24): `MC01` after { M266 ∥ M268 }, `MC02` after
+{ M267 → M269, M270 }, and `MC03` last, after M271. All `iterative`. They exist because on 2026-08-23 a demo
+came up with autoverify green, a refused demo-patch, a batch gate reporting `skipped`, a health route
+answering 200 over pages that 500, and a Playthrough passing against empty scaffolding — five ways for a
+closed milestone to leave a broken stack, in one day. Each gate is two-sided: **it works on a real stack AND
+the corpus describes what shipped**, with every doc clause read against the running stack rather than the diff.
+A failing checkpoint routes work BACK to the milestone that owns it.
+
 ## Phase
 
 **Designed, not started.** Every fact in [`roadmap.md`](roadmap.md) § v2.10 was measured 2026-08-23 against the

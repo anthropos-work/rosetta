@@ -139,7 +139,7 @@ SHIPPED) lives in [`roadmap-legacy.md`](roadmap-legacy.md). Future versions + th
 
 | **v2.8** | **fast build** | The **time-to-ready release** — *from nothing, to live, to provably live, fast.* Measure the machine and spend it deliberately: a repeatable build bench + two checked-in measured host profiles + one **hard headroom assert wired into the gate**, then sharpen the Playthrough suite (faster · effective · covered), then collapse the demo/dev bring-up (**666 s → ≤ 360 s**), then bake the Playthroughs into the bring-up so a stack comes up **and proves itself**. Triggered by [`evidence/build-annotation.md`](releases/archive/02.80-fast-build/evidence/build-annotation.md) (a measured 11 m 12 s cycle: UI-tier builds **66 %**, image export/unpack alone **43 %**, the box never above load 4.90/8) + the standing "18/18 green while things still don't work" gap ([`evidence/playthrough-map.md`](releases/archive/02.80-fast-build/evidence/playthrough-map.md)) | M255 (HARD barrier) → M256 → **M257x** → M257 → M258 | ✅ **SHIPPED 2026-08-13 (tag `v2.8`)** (branch `release/02.80-fast-build` merged to `main` + deleted, designed 2026-07-27; **5** milestones — M257x «platform re-alignment» was an **unplanned mid-release insertion**, the corpus having drifted from the platform; measuring against a stale description measures nothing. Tooling + docs only, **0 platform-repo edits** and **0 net-new deps**, both verified. **Achieved: 450 s → 286.99 s on `macmini`** — beating the 360 s gate and its 300 s stretch. ⚠️ **The `666 → 360` framing above is retired:** 666.29 s was measured on `billion` (x86_64/containerd) and **does not transfer** to the arm64 development host; M257 re-pointed its gate to the host that exists and met it there against that host's own 449.51 s — a **36.2 %** cut, not 46 %. Both numbers are true; only their combination would mislead, and this release's own rule — *state the environment with every number* — forbids it. **M257x and M258 closed `closed-incomplete` by user ruling, not on gate**; M258's clause 3 was never measured clean. Carry-forward named item-by-item in `roadmap-vision.md` § v2.8.) |
 
-| **v2.10** | **content consolidation** | The **field-response release** — eight requests from a reviewer driving the live `demo1` stack, and seven of them are smaller than they look. "Heroes cannot start a simulation" is **one missing Casbin `p6` row** (matcher 6 has no `'default'` escape, and the row is normally written by a Clerk licensing path a demo never runs). The seeded score and its pass/fail verdict come from **two different hashes**, so a failed session can show a 95. The cockpit's content cards carry a box-inside-a-card nobody can read. Against that, **voice is the one thing that is bigger**: no LiveKit container, an endpoint hardcoded in the frontend, agent workers in five uncloned repos, and recordings written to a **shared AWS bucket** — a `safety.md` §2.3 decision, so it ships as a go/no-go barrier only | M266 ∥ M267 ∥ M268 ∥ M270, then M267 → M269 → M271 | 🚧 **IN DEVELOPMENT** (branch `release/02.100-content-consolidation`, designed 2026-08-23) |
+| **v2.10** | **content consolidation** | The **field-response release** — eight requests from a reviewer driving the live `demo1` stack, and seven of them are smaller than they look. "Heroes cannot start a simulation" is **one missing Casbin `p6` row** (matcher 6 has no `'default'` escape, and the row is normally written by a Clerk licensing path a demo never runs). The seeded score and its pass/fail verdict come from **two different hashes**, so a failed session can show a 95. The cockpit's content cards carry a box-inside-a-card nobody can read. Against that, **voice is the one thing that is bigger**: no LiveKit container, an endpoint hardcoded in the frontend, agent workers in five uncloned repos, and recordings written to a **shared AWS bucket** — a `safety.md` §2.3 decision, so it ships as a go/no-go barrier only | { M266 ∥ M268 } → MC01 · { M267 → M269, M270 } → MC02 · M271 → **MC03** | 🚧 **IN DEVELOPMENT** (branch `release/02.100-content-consolidation`, designed 2026-08-23) |
 | **v2.9** | **new alphabet** | The **taxonomy-realignment release** — the platform's vocabulary was rewritten under us. `feat/taxonomyv2` landed in `app` (+99 commits → v2.3.2) and `next-web-app` (+27 → v2.144.1): a governed **canon** that **retires 61,216 entries, 21,871 of them roles** (`next-web-app` `e883efd37`), leaving ~4k skills against the 42,790 this corpus measured on 2026-06-29. Node-ids **moved but are redirectable**; retired ids **404**. Rosetta's own `MinRows: 40000` capture floor (`stack-snapshot/taxonomy/taxonomy.go:104`) **aborts capture** on the new canon, so nothing downstream runs until it is re-derived. Also ships the net-new `/taxonomy` browser as a proven demo surface, and corrects `taxonomy`-folded-into-`app` (`app` now has **zero** first-party modules) | M259 (HARD barrier) → M260 → M261 → { M262 ∥ M263 ∥ M264 } → M265 | ✅ **SHIPPED** 2026-08-16 (tag `v2.9`, merged `2c0a2cec` 2026-08-17; branch deleted) |
 
 > The complete v1.x version-plan table (v1.0 "body double" … v1.10 "method acting", all ✅ SHIPPED) is preserved
@@ -213,6 +213,9 @@ by two releases because nothing formally retired it.
 | **M269** | Modality playthroughs | `section` | B2 (chat · code · document) | large |
 | **M270** | Skill-paths first paint | `section` | B3 | medium |
 | **M271** | Voice go/no-go barrier | `iterative` | B2's voice clause | large |
+| **MC01** | *Checkpoint* — shown truthfully | `iterative` | proves M266 + M268 on a real stack | medium |
+| **MC02** | *Checkpoint* — actually consumable | `iterative` | proves M267 + M269 + M270 on demo **and** dev | large |
+| **MC03** | *Final checkpoint* — the release is real | `iterative` | proves the whole release + the docs | large |
 
 **M266 «Cockpit legibility».** All five cockpit requests are one file — `demo-stack/cockpit.py`, server-rendered
 Python f-strings with no template engine. A1's manager/non-manager split is already available as
@@ -272,20 +275,52 @@ session writes room-composite Egress **to a shared AWS bucket** (`livekit.go:158
 The user chose **barrier-only** for this release (2026-08-23). Its exit gate is a written GO or NO-GO with each
 blocker resolved or declared unresolvable — **a NO-GO reached honestly is the deliverable, not a failure.**
 
+### The checkpoint layer — MC01, MC02, MC03
+
+**Every milestone in this release could close green and leave the demo broken**, because that is precisely what
+happened on 2026-08-23, five separate ways in a single day:
+
+- autoverify printed *"all liveness + readiness probes passed"* while a demo-patch had been **refused**, and the
+  hiring bundle shipped with every PostHog flag off.
+- `/api/health-check` answered **200** on a container whose every gated page returned **500** — that route is
+  public by design and *structurally cannot* witness the failure.
+- The Playthrough batch gate recorded **`skipped`**, never green, because the stack was `--public-host`. A
+  release-level gate reported nothing at all, and looked fine doing it.
+- The studio Playthrough reported **PASS** and was cited as evidence the migrated studio works; it matches empty
+  scaffolding at +2.1 s.
+- The manager menu was missing an item and pointed Assign at a legacy surface — on a stack every probe called
+  healthy.
+
+One shape underneath all five: **a milestone closes, its tests pass, its probes are green, and the thing it
+delivered does not work on a real stack — or works, and is documented as something else.** Unit tests cannot see
+this; neither can a diff. The checkpoints are the layer that grades a **cluster** against a *running stack* and
+against *its own docs*.
+
+Each is `iterative`, because you cannot write the fix list before you have looked. Each gate is **two-sided** —
+it works on a real stack **and** the corpus describes what actually shipped — and every doc clause is read
+against the **running stack**, never against the commit that changed it, because a doc can agree with its diff
+and disagree with reality. **A checkpoint that fails sends work back to the milestone that owns it**; one that
+absorbs the work it was built to detect stops detecting anything.
+
 ### Execution graph
 
 ```
-M267 ──┬──→ M269 ──→ M271          M269 needs a start that is not gated;
-       │                            M271 extends M269's harness
-       └──→ (M268 independent — different tables)
+M266 ──┐
+       ├──────────────────→ MC01  (shown truthfully)
+M268 ──┘
 
-M266 ─────────────────────────      cockpit.py only — no overlap with anything
-M268 ─────────────────────────      stack-seeding only
-M270 ─────────────────────────      next-web-app (platform) via demopatch
+M267 ──┬──→ M269 ──┐
+       │           ├──────→ MC02  (actually consumable — demo AND dev)
+M270 ──────────────┘
+                 │
+       M269 ──→ M271 ──────┐
+                            ├──→ MC03  (final — the release is real)
+              MC01, MC02 ───┘
 ```
 
-**Four milestones start cold** — M266 ∥ M267 ∥ M268 ∥ M270 share no files and no repo pairs. M269 is the one
-serialisation point: it changes the shared Playthrough runner and manifest, so nothing parallelises with it.
+**Four milestones still start cold** — M266 ∥ M267 ∥ M268 ∥ M270 share no files and no repo pairs. M269 is the
+one serialisation point among the delivery milestones: it changes the shared Playthrough runner and manifest.
+The checkpoints never parallelise — each one's whole job is to observe a cluster that has finished.
 
 ### Risks
 
