@@ -250,8 +250,15 @@ the edge is a plain HTTP POST from a studio-desk **route handler**, and it added
 
 Four things about this are worth carrying:
 
-1. **The gate is a conjunction across two tiers.** Client-side it is `isSuperAdmin`; server-side it
-   is `LODGE_ENABLED`. Both must hold. None of the four is `NEXT_PUBLIC_`, deliberately — that
+1. **`LODGE_ENABLED` is the WHOLE gate, and privilege is not part of it.** ⚠️ This read *"a
+   conjunction across two tiers — client-side `isSuperAdmin`, server-side `LODGE_ENABLED`"* until
+   2026-08-25. The client half is **gone**: no seeded persona on a demo stack is a super-admin, so
+   the second engine could never fire on the stack a developer actually drives. **A deployment that
+   never sets `LODGE_ENABLED=1` therefore has no lodge involvement at all, for any user at any
+   privilege level** — the browser still POSTs to studio-desk's own `/api/lodge/jobs` on each
+   generate, because it cannot know the answer without asking, and gets a `404` recorded as
+   `skipped`: no job, no outbound call, no cost, no error surface. Strict equality to `'1'`; `0`,
+   `true` and empty are all OFF. None of the four variables is `NEXT_PUBLIC_`, deliberately — that
    prefix is inlined at BUILD time, so a container could not be re-pointed at a different lodge
    without a rebuild.
 2. **Pointing at the un-offset `8080`/`7787` is the failure to watch for.** On a box running two
