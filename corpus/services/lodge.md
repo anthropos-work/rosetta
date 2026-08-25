@@ -238,29 +238,55 @@ It changes nothing above. The two services still share no database, no Redis and
 the edge is a plain HTTP POST from a studio-desk **route handler**, and it added no compose
 `depends_on` and no platform-repo edit.
 
-**Four server-only variables carry the wiring**, provisioned per stack by
+**Five server-only variables carry the wiring**, provisioned per stack by
 `rext dev-stack/engine-switch.sh` (`lodge_desk_env_apply`) at the stack's **own offset ports**:
 
 | Variable | Value on `dev-5` |
 |---|---|
-| `LODGE_ENABLED` | `1` — the SERVER half of the gate |
+| `LODGE_ENABLED` | `1` — whether this deployment talks to lodge at all |
+| `LODGE_REQUIRE_SUPER_ADMIN` | `0` — WHO may spend. Relaxed for this stack; the app defaults to `1` |
 | `LODGE_WIRE_URL` | `http://127.0.0.1:58080` |
 | `LODGE_PANEL_URL` | `http://localhost:57787` |
 | `LODGE_CUSTOMER` | `studio-desk` |
 
+⚠️ **This table had FOUR rows until 2026-08-25**, when the gate grew its privilege half back.
+`LODGE_REQUIRE_SUPER_ADMIN` is the net-new one, and a stack provisioned from the old four-row block
+inherits the app's restrictive default: lodge is wired, reachable, and refuses every submit with a
+`403` the browser records as a skip. Nothing looks broken and the second engine never runs.
+
 Four things about this are worth carrying:
 
-1. **`LODGE_ENABLED` is the WHOLE gate, and privilege is not part of it.** ⚠️ This read *"a
-   conjunction across two tiers — client-side `isSuperAdmin`, server-side `LODGE_ENABLED`"* until
-   2026-08-25. The client half is **gone**: no seeded persona on a demo stack is a super-admin, so
-   the second engine could never fire on the stack a developer actually drives. **A deployment that
-   never sets `LODGE_ENABLED=1` therefore has no lodge involvement at all, for any user at any
-   privilege level** — the browser still POSTs to studio-desk's own `/api/lodge/jobs` on each
-   generate, because it cannot know the answer without asking, and gets a `404` recorded as
-   `skipped`: no job, no outbound call, no cost, no error surface. Strict equality to `'1'`; `0`,
-   `true` and empty are all OFF. None of the four variables is `NEXT_PUBLIC_`, deliberately — that
-   prefix is inlined at BUILD time, so a container could not be re-pointed at a different lodge
-   without a rebuild.
+1. **The gate is TWO switches, both on the SERVER, and privilege is one of them again.**
+   ⚠️ **This item has been wrong twice in two days, so check the date on anything you read about
+   this gate — both superseded shapes are still quoted elsewhere.** It first described *"a
+   conjunction across two tiers — client-side `isSuperAdmin`, server-side `LODGE_ENABLED`"*; on
+   2026-08-25 it read *"`LODGE_ENABLED` is the WHOLE gate, and privilege is not part of it"*. The
+   first went because a value the browser computes cannot be a boundary, and because it fired for
+   nobody on a stack a developer drives — no seeded persona is a super-admin. The second went the
+   same day, because dropping privilege altogether handed a **billable** second generation to every
+   author in production: a measured forge run cost **$9.90**. What ships is both halves, server-side,
+   in studio-desk's `app/api/lodge/_lib/gate.ts`, evaluated *before* the request body is parsed:
+   - **`LODGE_ENABLED`** — whether this deployment talks to lodge at all. **A deployment that never
+     sets `LODGE_ENABLED=1` has no lodge involvement of any kind, for any user at any privilege
+     level** — the browser still POSTs to studio-desk's own `/api/lodge/jobs` on each generate,
+     because it cannot know the answer without asking, and gets a `404` recorded as `skipped`: no
+     job, no outbound call, no cost, no error surface. Strict equality to `'1'`; `0`, `true` and
+     empty are all OFF.
+   - **`LODGE_REQUIRE_SUPER_ADMIN`** — WHO may spend, **defaulting to `1`**: a deployment that
+     enables lodge and says nothing else gets the restrictive answer, which is the only safe default
+     for a switch that authorises spend. The predicate is admin of the **active** org (free, off the
+     session) **AND** a whitelisted local part at `@anthropos.work` — and the email is resolved by
+     one Clerk backend call rather than read off the session, because Clerk's default token emits no
+     `email` claim, so the session-derived `isSuperAdmin` reads `false` for a real super-admin and a
+     spend gate built on it would be a feature nobody can use. It fails **closed**: an unreachable
+     Clerk refuses, saying *"could not resolve the caller's email"* rather than *"not a
+     super-admin"*, which would send someone to the wrong allow-list. A refusal is `403`, logged
+     server-side with its reason and recorded by the caller as a **skip** — no Sentry event, no
+     console noise, nothing rendered, because in production that is the ordinary path for almost
+     every author. `engine-switch.sh` writes `0` per stack; the app's default is never weakened.
+
+   None of the five variables is `NEXT_PUBLIC_`, deliberately — that prefix is inlined at BUILD
+   time, so a container could not be re-pointed at a different lodge without a rebuild.
 2. **Pointing at the un-offset `8080`/`7787` is the failure to watch for.** On a box running two
    stacks it submits one stack's designs to the other's lodge, and the jobs land in a panel nobody
    is watching. Nothing errors.
@@ -271,6 +297,13 @@ Four things about this are worth carrying:
 4. **A lodge failure is visible and non-blocking, by construction.** The submit is detached and
    catches everything; the studio-room generation is unaffected. Proven live on `dev-5`: with lodge
    stopped the route answers `502 lodge_unreachable` and studio-desk keeps serving.
+
+**In production the switch is plumbed and OFF.** Both studio-desk terraform trees (`terraform/`
+for studio.anthropos.work, `terraform-v2/` for studio2) pass `LODGE_ENABLED`, `LODGE_WIRE_URL` and
+`LODGE_PANEL_URL` into the task definition, with `lodge_enabled` defaulting to `"0"` — not caution
+but the only correct value while **no lodge is deployed** and there is therefore no URL to point it
+at. `LODGE_REQUIRE_SUPER_ADMIN` is deliberately **not** a terraform variable: production must not be
+able to relax a spend boundary by editing one string in a task definition.
 
 **The `$0` lever, worth knowing before you test anything here:** blank `brief_mode` in the params
 and the engine's `grading-axis-unanswered` throws at **provision**, before any model call. A full

@@ -110,24 +110,37 @@ process it cannot identify as ours.
 
 ## studio-desk needs lodge's address, and the switcher provides it
 
-studio-desk fires a second generation at lodge whenever an author presses generate. It reads four
+studio-desk fires a second generation at lodge whenever an author presses generate. It reads five
 **server-only** variables, and `engine-switch.sh` writes them into the desk env at this stack's own
 **offset** ports (`lodge_desk_env_apply`):
 
 ```
 LODGE_ENABLED=1
+LODGE_REQUIRE_SUPER_ADMIN=0
 LODGE_WIRE_URL=http://127.0.0.1:$((8080 + N*OFFSET))
 LODGE_PANEL_URL=http://localhost:$((7787 + N*OFFSET))
 LODGE_CUSTOMER=studio-desk
 ```
 
-Two properties worth knowing, both of which have a failure mode that is silent:
+⚠️ **This block said FOUR and had no `LODGE_REQUIRE_SUPER_ADMIN` line until 2026-08-25**, when the
+app grew a server-side privilege check on top of `LODGE_ENABLED`. Provision a stack from the old
+four-line form and lodge is wired, reachable, and refuses every submit with a `403` that the browser
+records as a skip — the stack looks correct and the second engine never runs.
+
+Three properties worth knowing, all of which have a failure mode that is silent:
 
 - **They are REWRITTEN, never appended.** An append-only helper leaves two assignments of every key
   after two runs, and dotenv readers disagree about which wins.
 - **The offset is the whole point.** Un-offset `8080`/`7787` submits this stack's designs to whatever
   lodge holds the default ports — on a two-stack box, the other stack's — and the jobs land in a panel
   nobody is watching. Nothing errors.
+- **`LODGE_REQUIRE_SUPER_ADMIN=0` is a per-stack RELAXATION, not the app's default.** The app
+  defaults to super-admin-only — admin of the **active** org AND a whitelisted first name at
+  `@anthropos.work`, resolved server-side by a Clerk backend call — because in production the second
+  generation is real money (a measured forge run cost $9.90). No seeded persona on a dev or demo
+  stack satisfies that predicate, so the switcher relaxes it here, explicitly, per stack. Don't
+  "fix" the app's default to match this file; the two disagree on purpose, the same way the native
+  panel's missing credential does under § *Five things that will cost you an afternoon*.
 
 Both desk paths get them: the dev worktree's `.env`, and the demo's copied container environment (a
 demo image built before the second engine existed carries none of these, so they are added at run time

@@ -446,10 +446,18 @@ Usage: `make up PROFILE=core`
 >
 > **⚠️ It has a real caller as of 2026-08-24 — `studio-desk` submits to it.** Every press of generate
 > fires a hyper-forge run beside the studio-room one, from the same design, so the two artifacts can be
-> compared. Four **server-only** variables carry it (`LODGE_ENABLED`, `LODGE_WIRE_URL`,
-> `LODGE_PANEL_URL`, `LODGE_CUSTOMER`), written per stack at its **own offset ports** by
-> `rext dev-stack/engine-switch.sh` — pointing them at the un-offset `8080`/`7787` silently submits one
-> stack's designs to another's lodge. `customer` is the calling **service**, never the tenant. A lodge
+> compared. **Five server-only** variables carry it (`LODGE_ENABLED`, `LODGE_REQUIRE_SUPER_ADMIN`,
+> `LODGE_WIRE_URL`, `LODGE_PANEL_URL`, `LODGE_CUSTOMER`) — ⚠️ **this banner said FOUR and omitted the
+> second until 2026-08-25** — written per stack at its **own offset ports** by
+> `rext dev-stack/engine-switch.sh`; pointing them at the un-offset `8080`/`7787` silently submits one
+> stack's designs to another's lodge. **The gate is TWO switches and both are on the SERVER**:
+> `LODGE_ENABLED=1` (does this deployment talk to lodge at all) **AND** a real super-admin check —
+> admin of the active org plus a whitelisted local part at `@anthropos.work`, the email resolved by a
+> Clerk backend call because the session token carries no `email` claim. It **defaults to restrictive**
+> (`LODGE_REQUIRE_SUPER_ADMIN` unset ⇒ required), because the second generation is billable — a
+> measured forge run cost **$9.90** — and a `dev-N`/`demo-N` stack relaxes it to `0` per stack, since no
+> seeded persona qualifies. A refusal is `403`, recorded by the caller as a **skip**: no error surface.
+> `customer` is the calling **service**, never the tenant. A lodge
 > failure is non-blocking by construction: the submit is detached and the studio-room run is unaffected.
 > See [`corpus/services/lodge.md`](corpus/services/lodge.md) § *studio-desk submits to it* and
 > [`corpus/ops/dev-live-engines.md`](corpus/ops/dev-live-engines.md).
