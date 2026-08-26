@@ -22,6 +22,13 @@ a production-shaped database. This doc is the safe, confirmed way to do that one
 still comes up and is fully usable — it just shows an **empty catalog** (the seeder degrades gracefully); the
 catalog goes real the moment the cache is filled and replayed.
 
+> **Figure update (2026-08-26).** The catalog a set-dressed stack *shows* is now the **taxonomy-v2 canon** —
+> **3,562 skills / 709 roles / 32 categories** (`organization_id IS NULL AND deleted = false`), because
+> production adopted the canon and the snapshot carries the serving predicate's inputs (the `deleted` flags +
+> the redirect tables) verbatim. The ≥42,790 figure above survives as the **physical row count** (42,908
+> public rows) — the legacy set is soft-deleted **in place**, not removed. Both figures are correct; never
+> merge them. Full story: [`../architecture/taxonomy-canon.md`](../architecture/taxonomy-canon.md) §8.
+
 ## The decision in one picture
 
 ```
@@ -106,6 +113,16 @@ separate `~/.pgpass`/Tailscale wiring is required when that DSN already reaches 
 Pick the **first applicable** source from the capture-source precedence (full table in
 [`snapshot-spec.md`](snapshot-spec.md#the-capture-source-policy-m9a-d3--the-read-half-safety)). On a typical box
 that means **(1) dump-ingest** if a staging dump is available, otherwise **(2) primary-read** over Tailscale.
+
+> ⚠️ **A source that LOOKS right and is not: the `canon_live` schema on the Ithaca taxonomy DB.** The
+> taxonomy-rebuild workspace keeps a **`canon_live`** schema that mirrors prod's live canon on a **nightly
+> refresh** — it exists *for the rebuild tooling*, downstream of prod. It is **NOT the serving source**: it is
+> up to a day stale, it is not what the app's `/taxonomy` surface serves, and its schema digest is not the
+> platform's — so a capture from it would be a fabrication wearing real data's clothes. **Never point a
+> capture `--dsn` at it.** Capture from prod's `public` schema (Option 2) or a dump of it (Option 1) — the
+> only places the serving predicate (`organization_id IS NULL AND deleted = false`), the soft-delete flags and
+> the redirect tables are authoritative. See
+> [`../architecture/taxonomy-canon.md`](../architecture/taxonomy-canon.md) §8.
 
 > **This is a privileged, prod-touching READ. Confirm before running it.** It is **operator-initiated and
 > separate from any bring-up** — `/demo-up` / `/dev-up` never run a capture (they only ever *replay*; see below).
