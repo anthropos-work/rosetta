@@ -233,6 +233,76 @@ tmux new-session -d -s dfd-app-$N -c "$(pwd)/$WT" \
   "bash -lc '. $ENVF; make setup && make gen && go run .'"   # app is the only Go target since 766df6c
 ```
 
+### Native backend with REAL Clerk verification — the complete recipe gap (proven on `macmini` demo-1, 2026-08-26)
+
+The recipe above rewires **infra** endpoints. What it does not say is what happens to **auth** — because on
+the box it was written for, nothing happened: an *injected* stack's backend image carries the disarmed authn
+provider (claims read straight through, never verified). A **pristine** `go run .` / binary build is a
+different animal: it runs the **real `clerk-sdk-go`** — RS256 via JWKS, issuer-checked, Management-API-backed
+— and against a Clerkenstein stack it fails in three distinct ways until three gaps are closed. All three
+were closed live on `macmini`'s demo-1 (2026-08-26): **zero token failures post-fix** (last
+`can't verify token … invalid issuer ""` at 12:23:54Z, none after the redeploy), a direct
+`POST :18082/graphql/query` with a minted Bearer returning **real canon data** (`taxonomyCategories`:
+AI Skills, Agriculture, …), and `/taxonomy`, `/library`, `/home` all rendering **signed-in** with zero
+visible error boxes.
+
+**(a) The session token needs an issuer BOTH SDK families accept — a TOOLING-side fix, rext draft PR #9.**
+`clerk-sdk-go/v2@v2.7.0` (`jwt/jwt.go:142` `isValidIssuer`, called at `:204`) requires `iss` to start
+`https://clerk.` (or contain `.clerk.accounts`); Clerkenstein's RS256 mint carried **no `iss` at all**, so a
+native backend rejected every session while the injected stack — and the Node side, which never validates
+`iss` during verification — kept working. And a *present* `iss` is not free: `@clerk/backend` reads `iss` to
+pick the **cookie namespace** (`usesSuffixedCookies`), and **no single `iss` value satisfies both SDKs** —
+so the fix also mints the **suffixed** cookie namespaces (`__session_<sfx>`, `__client_uat_<sfx>`,
+`__clerk_db_jwt_<sfx>`) alongside the un-suffixed ones. Both halves are **`rosetta-extensions` draft PR #9**
+(branch `fix/clerkenstein-rs256-issuer`; `RS256Issuer = "https://clerk.rosetta-demo.local"`). **Check that
+PR's state before re-deriving any of this** — if it is merged and the stack's rext pin carries it, gap (a)
+does not exist for you.
+
+**(b) The SDK's JWKS + Management API base is HARDCODED to `https://api.clerk.com` — the host needs a root
+TLS terminator.** There is no env override on the verify path a native process uses, so the hostname has to
+be impersonated on the host. The macOS pattern used (all three parts required):
+
+```bash
+# 1. /etc/hosts:                     127.0.0.1 api.clerk.com
+# 2. a TLS terminator on 127.0.0.1:443 forwarding to the stack's fake-BAPI loopback port
+#    (demo-1: 15401 = 5401+OFF; the container is plain HTTP on :443, published 127.0.0.1-only).
+#    Port 443 needs ROOT on macOS -> a LaunchDaemon; the pattern used (com.stevemini.clerk-tls):
+#      socat OPENSSL-LISTEN:443,bind=127.0.0.1,reuseaddr,fork,cert=<...>/api.clerk.com.pem,key=<...>,verify=0 \
+#            TCP4:127.0.0.1:15401
+# 3. the cert: mkcert api.clerk.com, with the mkcert CA in the SYSTEM keychain (a Go process
+#    trusts the system trust store, not your user keychain).
+```
+
+Keep the listener bound `127.0.0.1` — this impersonates a real vendor hostname and must never be reachable
+off-box. Per-stack, the forward target is `5401 + N×10000`.
+
+**(c) Directus cutover for the NATIVE process + the poisoned-cache purge.** The `--local-content` cutover
+re-points the *container's* env; a native `go run .` sources `platform/.env`, which still points at prod. In
+the native env file (`$ENVF` above) add:
+
+```bash
+echo "DIRECTUS_BASE_ADDR='http://localhost:$((8055+OFF))'"          # the stack's OWN Directus
+echo "DIRECTUS_PUBLIC_BASE_ADDR='http://localhost:$((8055+OFF))'"   # both were pointed local on the proven run
+echo "DIRECTUS_TOKEN="                                              # EMPTY — never the prod token
+# then purge the cms Redis cache (DB 5, simulations_*, 24 h TTL, cache-FIRST — a stale entry outlives the cutover):
+redis-cli -p $((6379+OFF)) -n 5 --scan --pattern 'simulations_*' | xargs -r redis-cli -p $((6379+OFF)) -n 5 DEL
+```
+
+Without the purge the native backend keeps serving whatever the cache holds from before the cutover — the
+same DB-5 reproducibility caveat `corpus/ops/snapshot-spec.md` documents.
+
+**(d) On a `--public-host` stack the backend port is HELD by root tailscaled — and the failure is a clean
+"graceful shutdown".** `:8082+OFF` is tailscale-served; root `tailscaled` holds it **invisibly to user-level
+`lsof`**, the native wildcard bind dies `EADDRINUSE`, and the app exits with a clean "graceful shutdown"
+line that reads as a mystery. Sequence: `tailscale serve --https=$((8082+OFF)) off` → start the native
+backend → **re-add the serve**. Full trap (plus the macOS sleep trap):
+`corpus/ops/demo/tailscale-serve.md` § *macOS host traps*.
+
+**Residual, recorded — not a blocker:** with real verification passing, the SSR `userMemberships` operation
+is denied by an ent privacy rule (`organization org-context is missing`). Authorization-layer, **newly
+reachable** now that tokens verify — not caused by this recipe, and no visible breakage on the three
+verified pages. Tracked in `knowledge/plan/platform-defect-register.md` (PD-v29-A).
+
 ---
 
 ## Wrap up / cleanup — when the feature is truly done (user-initiated, AFTER the Phase 9 ritual)

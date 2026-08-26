@@ -562,3 +562,30 @@ handlers; the working side-menu path is the reference implementation.
 
 **Measured environment:** `demo1` rebuilt 2026-08-13 on `billion`, ant-academy `7ae25e95b`, served at
 `https://demo1.anthropos.work:13077`.
+
+---
+
+## PD-v29-A — `app`: SSR `userMemberships` denied by an ent privacy rule ("organization org-context is missing")
+
+**Found:** 2026-08-26, on `macmini` `demo-1` · **Repo:** `app` (ent privacy / authorization layer) ·
+**Status:** open · **Severity:** low — no visible page breakage on any verified surface ·
+**Provenance: MEASURED**, on the first run of a **native (uninjected) backend with real `clerk-sdk-go`
+verification** against a Clerkenstein stack.
+
+**Newly *reachable*, not new.** Every injected stack runs the disarmed authn (claims read straight through),
+and until rext draft PR #9 (`fix/clerkenstein-rs256-issuer`) closed the RS256 issuer gap, a pristine backend
+rejected every session before authorization could run at all. With token verification now passing, the next
+layer answers: the SSR `userMemberships` operation is denied by an **ent privacy rule** with
+`organization org-context is missing` — the request reaches the privacy layer without an org context attached,
+and the rule (correctly, per its own contract) refuses. This is **authorization-layer, not token
+verification** — the same request's sibling operations answer with real canon data.
+
+**Observed impact: none visible.** `/taxonomy`, `/library` and `/home` all render signed-in with zero visible
+error boxes; the denial surfaces only in the backend log. Filed because the class is the one this register
+exists for: a privacy rule that fails closed on a missing context is *probably* right, but whether SSR is
+supposed to carry an org context on that operation is a platform question, and today nothing answers it.
+
+**Deciding code not yet pinned** (the PD-v28-B tier: a report, not a full derivation — half a report, said
+plainly). Follow-up before escalating: pin the privacy rule and the SSR call site, and establish whether the
+org context is meant to be threaded there. Recipe + full environment:
+`.claude/skills/dev-for-dummies/reference.md` § *Native backend with REAL Clerk verification*.
