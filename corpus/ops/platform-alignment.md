@@ -149,6 +149,16 @@ as unanswerable. Measure the artifact before assuming a migration invalidates it
 Landed as `stack-snapshot/replay/schema.go` (`TargetSchema`, `ResolveTargetSchema`) +
 `pg.SchemasHoldingAllTablesSQL`.
 
+> **"Permanently" was authored 2026-07-31 and falsified 2026-08-11.** Prod executed the pending teardown —
+> `cms` collapsed into `public` — so the prod-read side moved after all, eleven days after this section wrote
+> the disagreement down as permanent. The rule above is thereby demonstrated twice in one surface: the **replay** side, which
+> resolves at the point of use, survived the teardown **without an edit**; the **capture** side, which still
+> declares `Schema = "cms"` in a constant, is now the one place left encoding a dead answer — a
+> `sim-embeddings` capture against post-collapse prod refuses at the source (loud and correct). The re-point +
+> M211-style digest re-key is tracked as a KNOWN ISSUE in [`snapshot-spec.md`](snapshot-spec.md) § *The
+> library surfaces* (recorded 2026-08-26, when the cold-start capture on `macmini` had to leave the surface
+> out).
+
 ---
 
 ## 3. Why nobody noticed — pinning disables drift detection

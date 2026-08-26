@@ -74,6 +74,12 @@ customer-scoped rows as if they were shareable reference data.**
 > breaks the one link that makes it useful — it is the size of the surface the tooling *captures*, and that
 > surface is `cms`. The other two former-`cms` rows above (`studio_documents`, `studio_tasks`) are **0** public
 > either way, so their re-label is inert; this one is not.
+>
+> **Update 2026-08-26:** prod **dropped the `cms` schema on 2026-08-11** (collapsed into `public`), so the
+> capture surface's declared schema now resolves **nowhere at the source** and a `sim-embeddings` capture
+> refuses — correctly. The row keeps its `cms.` label: it is a dated measurement of a schema that existed when
+> it was taken. The surface re-point + digest re-key is tracked as a KNOWN ISSUE in
+> [`snapshot-spec.md`](snapshot-spec.md) § *The library surfaces*.
 
 The **public content template library** (global simulations/skill-paths) is **not** in any of the merged app
 tables — it lives in the **`directus` schema inside the SAME `postgres` database** (served at
