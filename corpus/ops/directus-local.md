@@ -1,5 +1,39 @@
 # The Per-Stack Local Directus
 
+> ## ⚠️ A BLANK `DIRECTUS_TOKEN` MAKES DRAFTS INVISIBLE — silently, at every layer
+>
+> **Measured 2026-08-26 on `demo-3`.** Directus's **Public policy pins `status = published`** on both
+> content collections:
+>
+> ```
+> directus_permissions | simulations | read | {"_and":[{"status":{"_eq":"published"}}]}
+> directus_permissions | skill_paths | read | {"_and":[{"status":{"_eq":"published"}}]}
+> ```
+>
+> `DIRECTUS_TOKEN` ships **BLANK** (`.env_example:92`) and the demo override sets it blank again
+> (`docker-compose.injected.yml`, `DIRECTUS_TOKEN=`), so `app` reads Directus **anonymously** and
+> Directus removes the rows **before app's own filters are evaluated**. No filter in `app` can
+> override it. Same org, same query, one variable:
+>
+> | | anonymous | with an admin token |
+> |---|---|---|
+> | `groupBy=status` | `published=4` | `published=4, draft=2, archived=1` |
+>
+> **Why this is worth a banner rather than a footnote.** Every check reads green. The stack boots,
+> the API answers 200, the counts are internally consistent, and psql shows the drafts sitting in the
+> table. The only symptom is content that *should* be there and isn't — which reads as "this org has
+> no drafts", not as a misconfiguration. It is the same root cause as the long-documented
+> *"stack boots, catalog empty"* symptom, with a wider blast radius than that entry describes.
+>
+> **It is load-bearing for any authoring surface.** Studio's content catalog exists to show
+> unfinished work; with a blank token it would ship showing none, on every by-the-book stack.
+>
+> **Getting a token without re-arming prod writes:** the per-stack Directus mints its own admin user
+> (`directus.directus_users.token` on the stack's own Postgres), so a stack can read its OWN token
+> without any prod credential ever being involved — which is what keeps this compatible with the
+> `DIRECTUS_TOKEN` non-rearm safety in [`secrets-spec.md`](secrets-spec.md). The token that must never
+> be re-armed is the one pointing at **prod** Directus; a per-stack token points at the stack's own.
+
 **What this is.** By default a stack reads its public content (the simulation catalog, skill-path library, etc.)
 **live from production** — **`backend`** (the cms domain, in-process since cms-in-app v8.0) points
 `DIRECTUS_BASE_ADDR` at `content.anthropos.work`. ⚠️ **This page said `cms`, "the only platform service that
@@ -328,6 +362,49 @@ per-sequence `directus.sequences.skills` JSON array of `{node_id, …}` resolvin
   outside tooling scope.
 
 ---
+
+## Two caches sit between a direct DB write and a page
+
+A stack that writes content **straight to Postgres** — a fixture, a repair script, a `psql` session —
+bypasses Directus, and there are **TWO** read-through caches downstream of that write, not one. They
+fail in opposite directions, which is why purging only the first makes the system look fixed:
+
+| Cache | Where | Symptom when stale |
+|---|---|---|
+| **Directus'** own | Redis **db 4** (`CACHE_STORE=redis`) | the Directus API serves the **previous** rows — the DB is right and every API read is wrong |
+| **`app`'s** content cache | Redis **db 5** (`REDIS_CMS_CACHE_INDEX`, default 5) | Directus serves the **new** rows and `app` never asks it — so the API is right and the page is still wrong |
+
+`app` wraps every Directus item read in a 24 h read-through cache, deliberately isolated in its own
+Redis database so it cannot collide with the streams (db 4 also carries Watermill's `cms` /
+`jobsimulation` keys) or the worker queues (db 0) — `app/main.go`, *"cms-in-app cache isolation"*. The
+key shape is `<collection>_<id>_<queryhash>` (`internal/cms/directus/collection.go`), so the hash
+changes with the **projection**: a slim list query and a full item read cache separately, and one can
+be fresh while the other is stale.
+
+**Measured, and the reason this section exists.** A re-seed gave every fixture simulation a sequence
+row. Postgres was correct, Directus returned the sequence under `app`'s exact projection, and `app`
+still panicked on `Sequences[0]` — because it never asked Directus. The two obvious checks (query the
+DB, curl the API) **both passed** while the page kept failing. Purge both:
+
+```bash
+# Directus' cache (needs an admin token; any user row with a non-empty token will do)
+curl -sX POST -H "Authorization: Bearer $DIRECTUS_TOKEN" http://localhost:$((8055 + N*10000))/utils/cache/clear
+# app's content cache — its db is dedicated to it, and every key is rebuilt from Postgres on next read
+docker exec demo-$N-redis-1 redis-cli -n 5 FLUSHDB
+```
+
+`rosetta-extensions`' `orgcontent-fixture` now does both at the end of every run, and its `--clean`
+reclaims the `directus.sequences` rows it wrote — **`sequences` carries no foreign key to
+`simulations`** (checked), so deleting the parent neither cascades nor errors; it silently strands
+the child, which a derivation-based clean can then never find again.
+
+> **A sequence-less simulation is not a cosmetic gap.** `JobSimulation.ToDomain` dereferences
+> `s.Sequences[0]` unconditionally, so one such row **panics the resolver that reads it** and fails
+> the whole GraphQL response. Measured on a set-dressed stack: **307 of 307** real public simulations
+> have a sequence. Any fixture that omits one produces a shape production cannot produce — and a
+> fixture that cannot produce production's shape does not verify the system, it breaks a surface.
+> Studio's home page reads simulations that way, so a seeded org rendered *"We couldn't load your
+> workspace"* while the catalog — whose slim projection never calls `ToDomain` — looked healthy.
 
 ## What's still future work
 
