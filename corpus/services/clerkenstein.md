@@ -358,6 +358,64 @@ The **live cross-machine acceptance** is **M215**. The full remote-access recipe
 [`../ops/demo/tailscale-serve.md`](../ops/demo/tailscale-serve.md); bring-up mechanics:
 [`recipe-browser-login.md §B`](../ops/demo/recipe-browser-login.md).
 
+### What a PRISTINE (uninjected) backend needs before it will accept a Clerkenstein token (2026-08-26/27)
+
+Everything else in this file assumes the platform's Clerk has been **disarmed by injection** — the backend
+image carries the patched authn provider and reads claims straight through without verifying anything. Run
+the backend **natively** (`go run .`, or the `/tmp/app-binary` build) against a Clerkenstein stack and that
+assumption is gone: it runs the **real `clerk-sdk-go/v2`**, RS256-over-JWKS, issuer-checked,
+Management-API-backed. **Three** things must be true before a Clerkenstein session is usable end-to-end, and
+they fail in three different places — one before authn will accept the token, one *after* it accepts it, and
+one that has to hold for either to be reachable at all:
+
+1. **An `iss` both SDK families accept** — `clerk-sdk-go` requires the `https://clerk.*` shape;
+   `@clerk/backend` reads the *same* claim to pick its cookie namespace, and no single value satisfies both,
+   so the suffixed cookie namespaces are minted alongside the un-suffixed ones.
+2. **The nested org claim** — `org: {"eid": "<org uuid>"}` **as well as** flat `org_id`/`org_role`. The
+   platform's provider grants org context all-or-nothing off the nested shape (`claimOrgPublicMeta="org"`;
+   `claimOrg="org"` in the internal jwks successor), so a token that verifies but omits it gets *past* authn
+   and is then refused one layer down by ent/privacy (*"organization org-context is missing"*) and by
+   sentinel (*"forbidden: organization mismatch"*).
+3. **`https://api.clerk.com` reachable and answering as the stack's fake-BAPI** — the SDK's JWKS +
+   Management-API base is **hardcoded**, with no env override on the verify path, so the hostname has to be
+   impersonated on the host: `/etc/hosts` + a **root** TLS terminator on `127.0.0.1:443` forwarding to the
+   stack's fake-BAPI port, with its CA in the *system* trust store (a Go process does not read a user
+   keychain). Bind the terminator to loopback and leave it there — it impersonates a real vendor hostname.
+
+Items 1 and 2 are **tooling-side fixes, and they are `rosetta-extensions` draft PR #9**
+(`fix/clerkenstein-rs256-issuer`: `91dd503` the issuer + suffixed cookies, `de89909` the nested org claim) —
+**check that PR's state before re-deriving any of this**; if it is merged and this stack's rext pin carries
+it, neither gap exists for you. Item 3 is a host recipe, not a code change. The full operator recipe, with
+the Directus cutover, the held-port trap and the exact commands, is the dev-for-dummies backend-target
+section (`.claude/skills/dev-for-dummies/reference.md` § *Native backend with REAL Clerk verification*) —
+and the **CORS gap that precedes all three** lives there too, as gap (0): it is not an auth problem, and it
+is the one that costs the most time.
+
+#### The origin rule — and the "Secure cookie" formulation it is often given in
+
+A demo served over a plain-`http://` **non-localhost** origin renders a signed-out or blank page while the
+byte-identical stack works fine on `http://localhost:<port>`. That asymmetry is real and it is why
+`~/bin/demo-tunnel` (which lands the browser on `http://localhost:13000`) works where
+`http://<magicdns>:13000` does not. The mechanism this corpus states is **secure context**: `clerk-js` needs
+Web Crypto, `http://localhost` **is** a secure context by fiat (a W3C *potentially trustworthy origin*), and
+`http://<any dotted host>` is not — [`../ops/demo/tailscale-serve.md`](../ops/demo/tailscale-serve.md)
+§ *Why HTTPS everywhere?* (M213-D-SCHEME-1).
+
+> **⚠️ Do not restate that rule as *"the FAPI is HTTPS, so its session cookies are `Secure` and are not sent
+> to an `http://` origin"* — MEASURED 2026-08-27 on `macmini` demo-1, and it is not what this stack does.**
+> Clerkenstein sets its handshake cookies **without `Secure`**: `clerk-frontend/server.go:426-428` (and
+> `:439-441` for the suffixed trio) emit `Path=/; SameSite=Lax` and nothing else, and `@clerk/nextjs` passes
+> the directives through **verbatim** — a handshake driven at `http://localhost:13000/home` was observed
+> returning nine `Set-Cookie` headers, every one of them `Path=/;SameSite=Lax`, no `Secure` on any. The
+> omission is **deliberate and documented in the mirror's own source**: `clerk-frontend/seat.go:16-22`
+> records that a browser treating the FAPI origin as non-secure **drops `Secure` cookies outright**, which is
+> exactly why the seat pin is a request *header*. (That comment's premise — *"the FAPI's cert is
+> self-signed"* — is itself only true on a **local-trust** stack: under `--public-host` the FAPI serves a real
+> `tailscale cert` Let's Encrypt cert, and the `macmini` demo-1 FAPI at `:15400` is one of those. The cookies
+> carry no `Secure` either way, so the conclusion is unchanged and the reasoning behind it is narrower than it
+> reads.) So the cookie half of the folk rule describes a stack that is not this one; the secure-context half
+> is the load-bearing part, and the localhost exemption belongs to **it**.
+
 ## Read next (in the `clerkenstein/` section)
 
 - **`knowledge/kb-index.md`** — the KB entry point (scope, architecture, alignment, injection, coverage).

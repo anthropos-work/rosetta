@@ -507,6 +507,18 @@ teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tail
 **Why HTTPS everywhere?** Clerk's `clerk-js` needs a **secure context** (Web Crypto) — a plain-`http://` MagicDNS
 origin is not one, so HTTPS on the app origin is effectively required, not cosmetic (M213-D-SCHEME-1).
 
+> **The corollary a native-run afternoon keeps rediscovering (2026-08-27): `http://localhost` IS a secure
+> context, and that is the whole reason a tunnel works where a tailnet URL does not.** `localhost` is a W3C
+> *potentially trustworthy origin* — exempt by fiat, no certificate involved — so the **identical** stack that
+> renders blank at `http://<magicdns>:13000` renders signed-in at `http://localhost:13000`, and an SSH/port
+> forward (`~/bin/demo-tunnel`) is not a workaround for a networking problem, it is the exemption doing its
+> job. Two consequences worth holding: (1) *"it works through the tunnel"* is **not** evidence that a tailnet
+> origin works — it is evidence of nothing except the exemption; (2) if you want the tailnet origin, you want
+> `tailscale serve`'s HTTPS, which is what this whole runbook is. ⚠️ **Do not restate this as a `Secure`-cookie
+> rule** — Clerkenstein's session cookies carry no `Secure` attribute at all, measured 2026-08-27; the
+> measurement and the source lines are in
+> [`../../services/clerkenstein.md`](../../services/clerkenstein.md) § *The origin rule*.
+
 **Why per-port, not a single port-less `https://<host>`?** M213's reverse proxy is **`tailscale serve`** run
 **per port**, PRESERVING the offset-port scheme (M213 decision D-PROXY-2): each browser-facing plaintext service
 gets `tailscale serve --bg --https=<offsetport> http://127.0.0.1:<offsetport>`. So the only thing that changes
