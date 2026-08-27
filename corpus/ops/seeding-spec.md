@@ -83,6 +83,61 @@ session/assignment seeders **behind** it, so their `sim_id` / `skill_path_id` / 
 the **real replayed public templates** (the M10 linkage; free-value fallback when no content snapshot is replayed) —
 see [`snapshot-spec.md`](snapshot-spec.md#the-directus-content-surface-m10--the-second-real-surface).
 
+> ### ⚠️ The M10 linkage has a SECOND way to produce a ref that resolves to nothing — and it is not the fallback (measured 2026-08-27)
+>
+> The free-value fallback above is the *documented* dangling-ref path: no content snapshot ⇒ empty pool ⇒
+> `linkedRefDistinct` returns its free `deterministicUUID`
+> (`stack-seeding/seeders/contentref.go:297-302`, `pickDistinct` `:106-114` returns `""` **only** on an empty
+> pool). The other path fires on a **fully-replayed** stack, where the pool is healthy and every fallback is
+> unused:
+>
+> **`public.skill_path_sessions` is also used as an FK ANCHOR for SIMULATION assignments, and its
+> `skill_path_id` then holds a SIMULATION id.** A completed assignment needs an
+> `organization_assignment_sessions` row, whose `session_id` is FK-enforced onto `skill_path_sessions(id)`
+> (M257 re-pointed it off the old `local_skill_path_sessions` mirror) — and there is no simulation-session
+> equivalent to point at. So the assignment seeders write a carrier row and put the **assigned resource's**
+> id in `skill_path_id` — `stack-seeding/seeders/assignments.go:270` (`resourceID, // skill_path_id (the
+> assigned path)`, where `resourceID` is whatever the assignment's `resource_type` names, simulation
+> included) for the generic path, and `seeders/hiring_funnel.go:335`
+> (`simID, // skill_path_id (the assigned position)`) for the recruiter funnel. `skill_path_id` carries **no DB FK** (the very property that makes these surfaces reachable without
+> a content store), so nothing refuses it.
+>
+> **Measured on `macmini` demo-1, 2026-08-27** — 767 rows, 36 distinct refs:
+>
+> | `version` | writer | rows | distinct refs | ROWS whose ref is not a skill path | …of those, ref IS a simulation |
+> |---|---|---:|---:|---:|---:|
+> | `1` | `SkillpathSessionsSeeder` (stories) | 556 | 22 | **0** | 0 |
+> | `assignment` | `AssignmentsSeeder` | 196 | 28 | **96** | 96 |
+> | `hiring-assignment` | `HiringFunnelSeeder` | 1 | 1 | **1** | 1 |
+> | `hero-completed`, `2`, `2026-08-26-…` | hero / activity | 14 | 13 | 0 | 0 |
+>
+> — i.e. **97 of 767 rows**, carrying **14 distinct** UUIDs between them.
+>
+> All 14 unmatched UUIDs resolve in `directus.simulations` — so this is **not** the stories seeder and **not**
+> the free fallback, and the refs are not invented: they are real captured prod content, filed under the
+> wrong noun. (The claim this was handed over as — *"the stories seed writes `skill_path_sessions` rows
+> referencing skill-path UUIDs that exist neither in the stack's Directus nor in prod"* — is the **effect**
+> seen from the CMS resolver, which looks the UUID up as a skill path and finds nothing. The attribution and
+> the "not in Directus" half are corrected here against the measurement; the stories seeder was clean on this
+> stack.)
+>
+> **Why it is visible.** A carrier row left `active`/`completed` is counted by
+> `IntelligenceManager.InsightsBySkillPaths` (which filters `StatusIn(active, completed)`), so the enterprise
+> **Skill Paths scoreboard grows phantom rows** with a blank title and `0m` — one per simulation assignment.
+> **Fix in flight in `rosetta-extensions`** (in the working tree, uncommitted as of 2026-08-27): give the
+> non-`skill_path` carrier rows `status = "archived"`, which keeps the FK and drops them out of every insight
+> query. The same change retires the off-enum `"in_progress"` the app never had
+> (`pending|active|completed|archived`) in favour of `"active"` — that one made **every** mid-progress
+> learning session invisible and reported *"In Progress = 0"* on every scoreboard row. Re-check the rext repo
+> before quoting this as landed.
+>
+> **A re-seed does not repair an already-written row.** `CopyRowsIdempotent` merges
+> `INSERT … SELECT … ON CONFLICT (<id>) DO NOTHING` (`stack-seeding/pg/pg.go:335-368`, the clause built at
+> `:404-416`), and every row's `id` is a `deterministicUUID` of a stable key — so a second run re-derives the
+> same id, hits the
+> conflict, and **keeps the old column values**. Any fix to a *value* (a ref, a status) lands only on a
+> re-seeded-from-empty stack or behind an explicit heal.
+
 ### The production-isolation boundary (the safety contract)
 
 > **The consolidated safety contract** — this write-side boundary plus the snapshot read-side firewall — is
