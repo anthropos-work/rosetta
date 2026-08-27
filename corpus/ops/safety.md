@@ -321,13 +321,39 @@ fenced twice over:
   header; prod serves only the public predicate). The earlier "every stack keeps
   `DIRECTUS_BASE_ADDR=content.anthropos.work`" state (the M10 collection-schema gap) is **retired** — the gap
   is closed (M21 structure capture + auto-provision) and the per-stack Directus is booted (M22) + cut over (M23).
+
+  > ⚠️ **THE FENCE HOLDS, BUT NOT BY THE POINTER — AND ON DEV IT DOES NOT HOLD AT ALL** (measured
+  > 2026-08-27). `app/internal/cms/directus/directus.go`'s `PostMultipart` builds the file-upload endpoint
+  > from a **literal** `https://content.anthropos.work/files` and **ignores `c.baseURL` entirely**, then
+  > attaches whatever `c.token` the stack holds. Every file a simulation import writes — the source zip
+  > (UNCONDITIONALLY, `jobsimimport.go:322`), role avatars, sim assets — is therefore addressed at
+  > **production**, from any stack, regardless of the M23 cutover. The cutover re-points configuration and
+  > this code path does not read configuration.
+  >
+  > **On a demo the claim above still holds**, and by the first mechanism it names rather than the third:
+  > `DIRECTUS_TOKEN` is emptied on every demo container, so the upload carries **no** `Authorization`
+  > header and prod refuses an anonymous write (measured: `demo-5-backend-1` carries length 0). Nothing was
+  > written. **The token strip is load-bearing here in a way the bullet above does not make obvious** — it
+  > is not a belt beside the pointer's braces, it is the only thing holding.
+  >
+  > **On a DEV stack it does not hold.** `stack-dev/platform/.env` carries a real 32-character
+  > `DIRECTUS_TOKEN` (measured) because a non-`--local-content` dev stack reads content live from prod —
+  > the documented fallback. An import there POSTs the zip, the avatars and the assets at **production
+  > Directus with that token**, and whether it writes depends only on that token's scope. This is the same
+  > shape as the S3-private exposure iter-284 closed, and the same sentence applies: the demo override
+  > shuts it, and an operator whose `platform/.env` carries real credentials re-opens it on dev.
+  >
+  > **Fix of record** is the platform one-liner — resolve from `c.baseURL`, as every other call in that
+  > file does. `anthropos-work/app` has issues disabled, so it is recorded here rather than filed. A rext
+  > demopatch (`app-directus-upload-endpoint`) applies it on the demo build, which buys **correctness**
+  > (imports complete instead of 401-ing) and **not** safety — the demo was never the exposed side.
 - **Prod S3 buckets — BOTH are covered, and the PRIVATE one only since M257x iter-284.** Both are hardcoded
   to production buckets in the platform compose (`docker-compose.yml:82` private / `:83` public @ `0c91421`,
   on the `backend` block), so neither is settable from `.env`. **Two pointers** carry a bucket into a stack and
   both are now forced to `""`: `PreflightEnv` blanks **both** on every target
   (`isolation/audit.go:153-154`) — that is the **seeder's** environment — and the demo's injected compose
   override strips both on every emitted service (`stack-injection/gen_injected_override.py:771-772`, emitted
-  by `demo-stack/up-injected.sh:2171`) — that is the **running container's**. The seeder pointer alone was
+  by `demo-stack/up-injected.sh:2322`) — that is the **running container's**. The seeder pointer alone was
   never enough, and the incident proved it: the `s3:PutObject` came from `backend`, which reads its own
   compose env and never sees the seeder's. (Snapshot media is carried as **refs only** today — the byte
   payloads + a cloud snapshot store are **deferred (unscheduled backlog)**, see "Future" below.)
