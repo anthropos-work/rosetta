@@ -233,18 +233,87 @@ tmux new-session -d -s dfd-app-$N -c "$(pwd)/$WT" \
   "bash -lc '. $ENVF; make setup && make gen && go run .'"   # app is the only Go target since 766df6c
 ```
 
-### Native backend with REAL Clerk verification — the complete recipe gap (proven on `macmini` demo-1, 2026-08-26)
+### Native backend with REAL Clerk verification — the complete recipe gap (proven on `macmini` demo-1, 2026-08-26; CORS added 2026-08-27)
 
 The recipe above rewires **infra** endpoints. What it does not say is what happens to **auth** — because on
 the box it was written for, nothing happened: an *injected* stack's backend image carries the disarmed authn
 provider (claims read straight through, never verified). A **pristine** `go run .` / binary build is a
 different animal: it runs the **real `clerk-sdk-go`** — RS256 via JWKS, issuer-checked, Management-API-backed
-— and against a Clerkenstein stack it fails in three distinct ways until three gaps are closed. All three
-were closed live on `macmini`'s demo-1 (2026-08-26): **zero token failures post-fix** (last
+— and against a Clerkenstein stack it fails until the gaps below are closed. They were closed live on
+`macmini`'s demo-1 (2026-08-26): **zero token failures post-fix** (last
 `can't verify token … invalid issuer ""` at 12:23:54Z, none after the redeploy), a direct
 `POST :18082/graphql/query` with a minted Bearer returning **real canon data** (`taxonomyCategories`:
 AI Skills, Agriculture, …), and `/taxonomy`, `/library`, `/home` all rendering **signed-in** with zero
 visible error boxes.
+
+> ### 🔴 CORRECTION (2026-08-27) — this section said *"it fails in three distinct ways until three gaps are closed"*, and **auth was never the first one**
+>
+> There are **five**, and the one that costs the most time is not an auth gap at all: it is **CORS**, gap
+> **(0)** below, which was found the day *after* this section was written and only because the browser was
+> finally driven **without** a Playwright route-interception in the way. Ordered by how much time each one
+> takes from you, not by layer: **(0) CORS**, then (a) the issuer, (a2) the nested org claim, (b) the
+> `api.clerk.com` terminator, (c) the Directus cutover, (d) the held port. Gap (0) is the only one whose
+> symptom is *the product looking broken while every probe you own says it is fine*.
+
+**(0) CORS IS THE NUMBER-ONE NATIVE-RUN TRAP — and it lies to you.** The backend's browser allowlist is
+`app/internal/cors/cors.go:36-44` (`https://anthropos.work`, `https://*.anthropos.work`,
+`http://localhost:{8000,9000,9100}`, `http://188.245.93.70:8000`) plus, on `platform.Development` **only**,
+`:66-74` (`http://localhost:3000`, `http://localhost:3001`, `http://anthropos.local`,
+`http://*.anthropos.local`). **An offset origin is on neither list** — and note `:3000`/`:3001` are there
+un-offset, so the un-offset dev ports are the ONLY frontend ports that work without configuration, which is
+why this never bit the box the recipe was written for. The one escape hatch is
+`CORS_EXTRA_ORIGINS` (`:24`, applied `:78-82` under `if !environment.IsProduction()`), and it is read with
+**`os.Getenv` at `cors.New()` — i.e. once, while the routes are being registered at process start**
+(`internal/web/backend/backend.go:124` and its six siblings). So: **exporting it into a running backend does
+nothing, and the injected override that sets it applies to the CONTAINER, not to your native process.** Put
+it in `$ENVF` and restart:
+
+```bash
+echo "CORS_EXTRA_ORIGINS=http://localhost:$((3000+OFF)),http://localhost:$((3001+OFF)),http://localhost:$((9000+OFF))"
+# on a --public-host stack add the https trio for the MagicDNS host too (same offset ports)
+```
+
+**The exact probe that proves it** — a preflight from an origin that is NOT allowed **still returns
+`204 No Content`**; the tell is the *absence* of `Access-Control-Allow-Origin`, not the status:
+
+```bash
+# allowed origin -> 204 WITH the ACAO header
+curl -s -i -X OPTIONS http://127.0.0.1:$((8082+OFF))/graphql/query \
+  -H 'Origin: http://localhost:'$((3000+OFF)) \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type,authorization' | grep -i '^HTTP/\|allow-origin'
+#   HTTP/1.1 204 No Content
+#   Access-Control-Allow-Origin: http://localhost:13000
+
+# an origin you did NOT allow -> 204 and NOTHING ELSE
+curl -s -i -X OPTIONS http://127.0.0.1:$((8082+OFF))/graphql/query \
+  -H 'Origin: http://localhost:13099' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type,authorization' | grep -i '^HTTP/\|allow-origin'
+#   HTTP/1.1 204 No Content        <- and no ACAO line. THAT is the failure.
+```
+
+**Why it burns hours.** Every non-browser probe passes: `curl`, a python client, a direct
+`POST /graphql/query` with a minted Bearer — none of them are subject to CORS, and the backend answers all of
+them with real data (an actual `POST` from the disallowed origin returns the very same `200` and the very
+same JSON body — it is *missing the ACAO header*, and the browser is the only party that acts on that,
+by discarding a response it already received). Meanwhile the app's own log is
+clean, the backend log shows the query **executing**, and the browser shows a page frame with a **blank
+three-dot spinner** where every GraphQL-fed panel should be. The evidence all points at the data layer. It is
+the browser.
+
+> ⚠️ **Validating with a Playwright route-interception that injects ACAO headers HIDES this bug —
+> it did, for hours (2026-08-27).** A harness that wraps `page.route()` around the backend origin and fulfils
+> responses with `Access-Control-Allow-Origin: *` added is *manufacturing the exact header the bug is about*:
+> the interception makes the pages render, the run goes green, and the product is still broken for every human
+> who opens the same URL. **A CORS claim may only be validated by a browser that was given no help** — plain
+> `page.goto()`, no `route()` on the backend origin — or by the header-presence probe above. This is the
+> route-interception sibling of the older "the egress pre-check curls from the host, not from inside the
+> container" trap in `corpus/services/clerkenstein.md`:
+> a check that runs somewhere the failure cannot reach it.
+
+Canonical CORS reference (the container path, the `--public-host` https trio, the emitter):
+`corpus/ops/demo/frontend-tier.md` § *Offset-origin CORS*.
 
 **(a) The session token needs an issuer BOTH SDK families accept — a TOOLING-side fix, rext draft PR #9.**
 `clerk-sdk-go/v2@v2.7.0` (`jwt/jwt.go:142` `isValidIssuer`, called at `:204`) requires `iss` to start
@@ -257,6 +326,17 @@ so the fix also mints the **suffixed** cookie namespaces (`__session_<sfx>`, `__
 (branch `fix/clerkenstein-rs256-issuer`; `RS256Issuer = "https://clerk.rosetta-demo.local"`). **Check that
 PR's state before re-deriving any of this** — if it is merged and the stack's rext pin carries it, gap (a)
 does not exist for you.
+
+**(a2) …and the token needs the NESTED org claim, or every org-scoped surface denies AFTER verifying it.**
+The same rext PR #9 branch carries it (`de89909`, *"mint nested org claim (`{"eid"}`) in session tokens"*):
+the platform's real Clerk provider reads the org from a **nested** `org: {"eid": "<org uuid>"}` claim
+(`claimOrgPublicMeta="org"`, and `claimOrg="org"` in its internal jwks successor) **all-or-nothing** —
+flat `org_id` + `org_role` alone do not grant org context. Clerkenstein minted only the flat shape, so a
+freshly-verifying native backend passed the token and then denied every org-scoped read one layer down
+(ent/privacy *"organization org-context is missing"*, sentinel *"forbidden: organization mismatch"*). The
+nested claim is **additive** — `omitempty` keeps org-less mints byte-identical, and the flat `org_eid` stays
+for the disarmed colony/clerkenstein verifiers (`clerkenstein/shared/jwt.go`, `Claims.Org` / `OrgClaim`).
+This is what **closed PD-v29-A**; see the residual note below.
 
 **(b) The SDK's JWKS + Management API base is HARDCODED to `https://api.clerk.com` — the host needs a root
 TLS terminator.** There is no env override on the verify path a native process uses, so the hostname has to
@@ -298,10 +378,20 @@ line that reads as a mystery. Sequence: `tailscale serve --https=$((8082+OFF)) o
 backend → **re-add the serve**. Full trap (plus the macOS sleep trap):
 `corpus/ops/demo/tailscale-serve.md` § *macOS host traps*.
 
-**Residual, recorded — not a blocker:** with real verification passing, the SSR `userMemberships` operation
-is denied by an ent privacy rule (`organization org-context is missing`). Authorization-layer, **newly
-reachable** now that tokens verify — not caused by this recipe, and no visible breakage on the three
-verified pages. Tracked in `knowledge/plan/platform-defect-register.md` (PD-v29-A).
+> **✅ The residual is CLOSED (2026-08-27) — and it was never an authorization-layer platform question.**
+> This paragraph used to read: *"Residual, recorded — not a blocker: with real verification passing, the SSR
+> `userMemberships` operation is denied by an ent privacy rule (`organization org-context is missing`).
+> Authorization-layer, **newly reachable** now that tokens verify … Tracked in
+> `knowledge/plan/platform-defect-register.md` (PD-v29-A)."* The denial was **gap (a2) above** — the missing
+> nested `org` claim — i.e. one more Clerkenstein fidelity hole, on the tooling side, fixed in the same rext
+> PR #9. The privacy rule was right the whole time: the request genuinely carried no org context, because the
+> token genuinely did not name one. **PD-v29-A is closed as NOT-A-PLATFORM-DEFECT**; the register entry keeps
+> the evidence.
+
+**Residual, recorded — not a blocker:** the seeded stack's `public.skill_path_sessions` carry
+`skill_path_id` values that are not skill paths (the assignment seeders use those rows as the FK anchor for a
+**simulation** assignment), so the CMS resolves them to nothing. Rosetta-side, not platform —
+`corpus/ops/seeding-spec.md` § *the M10 linkage* has the measurement and the in-flight fix.
 
 ---
 

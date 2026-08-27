@@ -536,6 +536,55 @@ CORS_EXTRA_ORIGINS=http://localhost:13000,http://localhost:13001,http://localhos
 > the MagicDNS host via the `ant-academy-dev-origins` sha-pinned patch. The full recipe + topology:
 > [`tailscale-serve.md`](tailscale-serve.md).
 
+> ### ⚠️ The NATIVE-backend twist (2026-08-27) — the number-one trap of a native run, and it is invisible to every probe you own
+>
+> Everything above describes the **containerised** backend, which the injected override configures for you.
+> Run the backend **natively** against a stack (the dev-for-dummies backend-target recipe) and the override
+> configures nothing on your side: the env var has to be in **your** env file, and it is read
+> **`os.Getenv` at `cors.New()` — once, at process start**, while the routes register
+> (`app/internal/cors/cors.go:79`; call sites `app/internal/web/backend/backend.go:124` +6 siblings,
+> `app/internal/web/web.go:152`). **Exporting it into a running backend does nothing.** Restart, or it is not
+> set.
+>
+> **It is also not just the REST dashboards.** The paragraph above scoped the blast radius to `/api/*`,
+> because that is what the container path had ever needed. On a native run the same allowlist gates the
+> **browser's GraphQL** calls to `:8082+off/graphql/query` — which is to say *the whole authenticated
+> product*. The signature: the page frame paints, then every data panel sits on a **blank three-dot
+> spinner** forever, while the backend log shows the query **executing** and returning rows. It reads as a
+> data or an auth failure. It is neither.
+>
+> **The probe: an unlisted origin still gets `204`. The tell is the MISSING header, never the status.**
+>
+> ```bash
+> curl -s -i -X OPTIONS http://127.0.0.1:18082/graphql/query \
+>   -H 'Origin: http://localhost:13000' \
+>   -H 'Access-Control-Request-Method: POST' \
+>   -H 'Access-Control-Request-Headers: content-type,authorization' | grep -i '^HTTP/\|allow-origin'
+> # HTTP/1.1 204 No Content
+> # Access-Control-Allow-Origin: http://localhost:13000     <- allowed
+>
+> curl -s -i -X OPTIONS http://127.0.0.1:18082/graphql/query \
+>   -H 'Origin: http://localhost:13099' \
+>   -H 'Access-Control-Request-Method: POST' \
+>   -H 'Access-Control-Request-Headers: content-type,authorization' | grep -i '^HTTP/\|allow-origin'
+> # HTTP/1.1 204 No Content                                  <- and NO ACAO line. That is the failure.
+> ```
+>
+> (Both measured on `macmini` demo-1's native `:18082`, 2026-08-27, against `app` `afdbd7eeb` = v2.16.1 =
+> prod.) The **actual** `POST` behaves the same way: an unlisted origin gets a normal `200` with the real
+> JSON body and **no** `Access-Control-Allow-Origin` — the server answered, the browser threw the answer
+> away. That is precisely why `curl`, a python client and a hand-minted-Bearer GraphQL call all pass while
+> the product is dead.
+>
+> **🔴 A Playwright route-interception that injects ACAO headers HIDES this bug — it did, for hours.**
+> A harness that `page.route()`s the backend origin and fulfils with `Access-Control-Allow-Origin: *` added is
+> **manufacturing the exact header whose absence is the defect**: the pages render, the run goes green, and
+> every human opening the same URL still gets spinners. A CORS claim is only ever validated by a browser
+> given **no** help (plain `page.goto()`, no `route()` on the backend origin) or by the header-presence probe
+> above. It is the same class as the egress pre-check that curls from the host instead of from inside the
+> container ([`../../services/clerkenstein.md`](../../services/clerkenstein.md) § *Remote HTTPS over the
+> tailnet*): a check placed where the failure cannot reach it.
+
 This is emitted by `gen_injected_override.py` (the `backend` service gets an additive `environment:` block), so it
 applies to a stack brought up **through the demo injected override** (`/demo-up`). The **dev** override
 (`stack-core/gen_override.py`) does **not** emit it today and the dev bring-up runs no UI tier — so a `dev-N`'s
