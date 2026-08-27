@@ -565,10 +565,25 @@ handlers; the working side-menu path is the reference implementation.
 
 ---
 
-## PD-v29-A — `app`: SSR `userMemberships` denied by an ent privacy rule ("organization org-context is missing")
+## PD-v29-A — ✅ CLOSED 2026-08-27 — NOT a platform defect, a missing claim in OUR mint
+
+> **The privacy rule was right; the token was wrong.** This entry filed the SSR `userMemberships` denial
+> (*"organization org-context is missing"*) as an open platform question — *"whether SSR is supposed to carry
+> an org context on that operation is a platform question, and today nothing answers it."* It is answered, and
+> the answer is not on the platform's side: **Clerkenstein was minting only the FLAT org claims**
+> (`org_id` + `org_role`), while the platform's Clerk provider grants org context **all-or-nothing off a
+> NESTED `org: {"eid": "<org uuid>"}` claim** (`claimOrgPublicMeta="org"`; `claimOrg="org"` in the internal
+> jwks successor). The request reached the privacy layer with no org context because the **token named no
+> org** — the rule failed closed on a genuinely absent context, which is the contract it advertises. Fixed
+> tooling-side in `rosetta-extensions` draft PR #9 (`de89909`, *"mint nested org claim (`{"eid"}`) in session
+> tokens"*, branch `fix/clerkenstein-rs256-issuer`); the claim is additive and `omitempty` keeps org-less
+> mints byte-identical. **No platform change was or is needed.** The entry stays, per this file's
+> append-never-rewrite rule: the derivation below is what a native-backend run looks like *before* the claim
+> exists, and it will look like this again on any stack pinned to a pre-`de89909` rext.
 
 **Found:** 2026-08-26, on `macmini` `demo-1` · **Repo:** `app` (ent privacy / authorization layer) ·
-**Status:** open · **Severity:** low — no visible page breakage on any verified surface ·
+**Status:** **closed — not a defect** (was: open) · **Severity:** low — no visible page breakage on any
+verified surface ·
 **Provenance: MEASURED**, on the first run of a **native (uninjected) backend with real `clerk-sdk-go`
 verification** against a Clerkenstein stack.
 
@@ -589,3 +604,57 @@ supposed to carry an org context on that operation is a platform question, and t
 plainly). Follow-up before escalating: pin the privacy rule and the SSR call site, and establish whether the
 org context is meant to be threaded there. Recipe + full environment:
 `.claude/skills/dev-for-dummies/reference.md` § *Native backend with REAL Clerk verification*.
+
+---
+
+## PD-v29-B — `next-web-app`: `apps/hiring` never remaps Clerk's prefixed org role, so EVERY org admin is bounced out of `/enterprise/*`
+
+**Found (live):** M224 iter-08, v2.4 "casting call" — an admin recruiter driven into the hiring app was
+**bounced to the candidate Home with 0 insights rows**, and the attribution was derived there. **Re-hit and
+filed here:** 2026-08-27, on `macmini`'s staging copy (native backend `:18082`, hiring app `:13001`) ·
+**Repo:** `next-web-app` · **Status:** open upstream · **Severity:** **high — the entire Hiring enterprise
+area is unreachable for the role it is built for, in PRODUCTION, not only under Clerkenstein** ·
+**Provenance: MEASURED live at M224** (the browser reading is in that milestone's progress ledger,
+`releases/archive/02.40-casting-call/m224-the-callback/progress.md` iter-08/09) · **SOURCE READ at
+`origin/main` on 2026-08-27** — every line cited below was read out of `git show origin/main:…`, not out of a
+local branch, so the claim "still live upstream" is a measurement and not an assumption.
+
+**Both apps receive the same value; only one of them converts it.** Clerk's client-side `useAuth().orgRole`
+is the **prefixed** form (`org:admin` / `org:basic_member` / `org:content_creator`) — this corpus already
+says so in [`../../corpus/services/clerk-integration.md`](../../corpus/services/clerk-integration.md) — and
+both products hand it to their provider through the identical **cast**, which converts nothing:
+
+| | file (`origin/main`) | line |
+|---|---|---|
+| hands `orgRole` over, cast, unconverted | `apps/hiring/src/app/(authenticated)/(verified)/layout.tsx` | `:91` — `userRole={orgRole as MembershipRoles}` |
+| …identically | `apps/web/src/app/(authenticated)/(verified)/layout.tsx` | `:92` — same line |
+| **web CONVERTS it** | `apps/web/src/context/UserStatusContext.tsx` | `:77` `function remapUserRole(…)`, applied `:198` `role: remapUserRole(userRole)` |
+| **hiring stores it RAW** | `apps/hiring/src/context/UserStatusContext.tsx` | `:174` `role: userRole` — no remap function exists in the file |
+| the gate that then refuses | `apps/hiring/src/app/(authenticated)/(verified)/enterprise/EnterpriseWrapper.tsx` | `:23` `if (role !== MembershipRoles.Admin)` → `:24` `router.replace('/profile')`; `:31` renders a full-screen loader meanwhile |
+
+`MembershipRoles.Admin` is the **unprefixed** `admin`, so `'org:admin' !== MembershipRoles.Admin` and the
+effect is total: **every** `/enterprise/*` route in the Hiring app redirects a genuine org admin to
+`/profile` → the candidate home, and the enterprise nav collapses to "Home". Members / Assign / Results /
+Feedback / Settings are not degraded — they are **unreachable**, and no insights query ever fires.
+
+**This is not a demo artifact, and the corpus has been treating it as one since 2026-06.** Rosetta already
+carries a sha-pinned demo-patch for it — `next-hiring-role-remap`
+([`../../corpus/ops/demo/demopatch-spec.md`](../../corpus/ops/demo/demopatch-spec.md)), landed at M224 iter-09,
+whose own row states the attribution correctly: *"**NOT Clerkenstein** (`org:admin` is faithful to real Clerk
+RBAC), **NOT the seeder**."* The patch made the recruiter vantage work **for the demo**, and the platform half
+was never routed anywhere a platform engineer reads — it lives in a milestone that closed at v2.4 "casting
+call" (2026-07-18) and in a patch inventory. That is exactly the failure mode the top of this file was written
+about: *"a defect recorded inside a closed milestone has been **filed where it cannot be found**."* Filing it
+here is the overdue half; the patch is the workaround, not the report.
+
+**The fix is eight lines and already written twice.** Port `apps/web`'s `remapUserRole` verbatim into
+`apps/hiring/src/context/UserStatusContext.tsx` and apply it at the `role:` assignment. One import changes
+with it: `apps/hiring` imports `MembershipRoles` **type-only**, and the helper reads the enum at runtime, so
+it must become a value import. A reference implementation exists on this box as
+`next-web-app` `5e241a7f9` *"fix(hiring): remap clerk prefixed org roles so org admins reach /enterprise"* —
+a **local** commit on `local/assessments-redesign`, **not upstream**; `origin/main` is unchanged and the
+defect is live.
+
+**Measured environment:** `next-web-app` `940f2f34f` (branch `local/assessments-redesign`, v2.161.0) against
+`app` `afdbd7eeb` (v2.16.1 = prod) run natively on `macmini`, hiring app on `:13001`, identity
+`rae-recruiter` (hiring org admin).
