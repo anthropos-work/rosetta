@@ -30,6 +30,54 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-2026-08-28-promote-path-authorizes-on-studio_task-org-never-on-the-simulation-tenant`
+**Found:** 2026-08-28, adversarial review of the publish-endpoint design · **Filed here:** same day ·
+**Repo:** `app` · **Status:** open · **Severity:** MEDIUM — a defence-in-depth gap that becomes a
+cross-tenant write **in composition with** the sibling slug defect, not on its own ·
+**Provenance: SOURCE READ at `app` `4bccda085`.** No request was issued. **An adversarial reviewer rated
+this HIGH and claimed it lets any caller re-tenant-and-publish any simulation by naming its id; that claim
+was checked and is WRONG — the calibration is recorded below, because a register entry that overstates its
+own severity teaches a reader to discount the next one.**
+
+**The gap.** The write primitive performs no read of the row it modifies:
+
+```go
+// internal/cms/directus/collections/jobsimulation.go:123-142
+func (c *JobSimulationCollection) PublishJobSimulations(ctx, simulationId uuid.UUID, organizationId *string, superUser bool) (bool, error) {
+	if !superUser && organizationId == nil { return false, fmt.Errorf("organization id is required") }
+	var body = map[string]any{"private": false, "status": "published"}
+	if organizationId != nil { body["private"] = true; body["tenant_id"] = organizationId }
+	_, err := c.Query().PatchRaw(ctx, simulationId.String(), body)
+```
+
+It checks that an organization is **present**, never that it **owns** `simulationId`, and the patch sets
+`tenant_id` and `status: "published"`. Its whole safety comes from its caller.
+
+**Why it is NOT a standalone hole.** `StudioManager.PublishSimulation` (`studio/studioManager.go:440-470`)
+gates it with `GetStudioTaskBySimulationID`, which for a non-super-user **does** scope on the organization
+(`repository/studio.go:183-189`, `predicates = append(predicates, studiotask.OrganizationID(*organizationId))`),
+followed by an explicit org-mismatch check (`studioManager.go:462-467`). Tenant A naming tenant B's
+simulation gets no studio task back and stops at *"simulation not found"*. The denial-of-service variant
+the reviewer proposed additionally requires creating a `studio_task` that names a victim's `simulation_id`;
+no reachable path offers that (`SetSimulationID` appears only in generated ent code and in an unrelated
+skillpath repository).
+
+**Why it is still a defect.** The gate authorizes against **`studio_task.organization_id`** and never
+against **`simulations.tenant_id`**. Those are two different records, and nothing keeps them in step. The
+sibling defect
+(`PLATFORM-2026-08-28-simulation-import-REPLACE-crosses-TENANTS-and-re-tenants-the-victim`) is a mechanism
+that makes them diverge: it re-tenants a simulation row without touching the studio task that points at it.
+After that, the gate consults a record whose organization no longer describes the row being written, passes,
+and the promote re-tenants and publishes. **Two medium defects that compose into a cross-tenant write.**
+
+**Fix.** Re-anchor promotion on the simulation's own stored `tenant_id` — read the row, compare, refuse —
+rather than on the studio task's organization. Doing this also removes the composition risk independently of
+whether the sibling defect is fixed first.
+
+**Not measured:** whether any `studio_task.organization_id` and `simulations.tenant_id` pair currently
+disagree in production. That is one join away and worth answering.
+
+
 ### `PLATFORM-2026-08-28-simulation-import-REPLACE-crosses-TENANTS-and-re-tenants-the-victim`
 **Found:** 2026-08-28, designing the lodge publication endpoint · **Filed here:** same day · **Repo:** `app` ·
 **Status:** open · **Severity:** HIGH — cross-tenant overwrite plus silent change of ownership ·
