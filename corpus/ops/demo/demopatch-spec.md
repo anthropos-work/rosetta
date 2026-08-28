@@ -303,7 +303,15 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 
 ## 5. The patch inventory
 
-**23 patches: 11 × `next-web-app` (3 × `apps/web` + 2 × `apps/hiring` + 3 × `packages/ui` + 2 × `packages/core-js` + 1 × `packages/graphql`) · 2 × `app` · 5 × `ant-academy` · 5 × `studio-desk`.**
+**27 patches: 14 × `next-web-app` (4 × `apps/web` + 3 × `apps/hiring` + 3 × `packages/ui` + 3 × `packages/core-js` + 1 × `packages/graphql`) · 3 × `app` · 5 × `ant-academy` · 5 × `studio-desk`.**
+
+> ⚠️ **RE-DERIVED FROM THE DIRECTORY 2026-08-27, and the previous line was stale by FOUR — not by the one
+> this pass added.** It read `23 patches: 11 × next-web-app … 2 × app`; the truth on disk was 26 before
+> `app-directus-upload-endpoint` and is 27 after. The `next-web-app` sub-breakdown by package was stale in
+> three of its five terms. The fence caught the total because `TestPatchInventory` pins its OWN constants
+> against this table — and the constants had been carried forward correctly while the prose had not, which
+> is the inverse of the M253 failure recorded below. **Both mirrors move in one commit or neither is
+> trustworthy.**
 
 > **v2.7 "july jitter" M249 adds FIVE — the cross-app "Back to Cockpit" family + the FIRST-EVER `studio-desk` SOURCE patches:** `next-web-back-to-cockpit` (a `packages/ui` NavbarTop item — SHARED, so it bakes into BOTH the web and hiring images; `packages/ui` goes 2 → 3); the **three** `studio-desk` patches (`studio-desk-back-to-cockpit` + `studio-desk-logout-url` + `studio-desk-logo-url` — a NEW repo in this inventory, image-baked via a net-new `build_frontend_studio_desk` patch ladder + patch-set fingerprint, §5-bis); and `ant-academy-back-to-cockpit` (native-run, `ant-academy` goes 4 → 5). See §"Additive-UI injection" for the pattern the four "Back to Cockpit" items share.
 
@@ -324,8 +332,8 @@ A refused patch **warns and continues** — it never aborts a good bring-up.
 >    aireadiness-flag twin, for the content-stories interview sessions) were never added to the table. Added below.
 >    *(**Landed v2.6 M238 harden — the standing hygiene gap is closed:** `demo-stack/tests/test_patch_inventory.py`
 >    (`TestPatchInventory`) is the directory-driven fence. It enumerates every `patches/<name>/<name>.yaml`, loads
->    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**23** at v2.7 M253) AND
->    the per-repo breakdown (`11 next-web-app · 2 app · 5 ant-academy · 5 studio-desk`) against this §5 table — so adding, removing,
+>    each through `manifest_loader` (valid + `scope=demo` + `id==dirname`), and pins the EXACT total (**27** at 2026-08-27) AND
+>    the per-repo breakdown (`14 next-web-app · 3 app · 5 ant-academy · 5 studio-desk`) against this §5 table — so adding, removing,
 >    or mis-filing a patch goes RED until BOTH this table and the fence's constants are updated together.)*
 
 > **Mirrored-count discipline (v2.7 release-level note, C1).** v2.7 shipped **three** count-drifts: the
