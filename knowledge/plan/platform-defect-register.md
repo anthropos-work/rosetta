@@ -30,6 +30,59 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-2026-08-28-simulation-import-REPLACE-crosses-TENANTS-and-re-tenants-the-victim`
+**Found:** 2026-08-28, designing the lodge publication endpoint · **Filed here:** same day · **Repo:** `app` ·
+**Status:** open · **Severity:** HIGH — cross-tenant overwrite plus silent change of ownership ·
+**Provenance: SOURCE READ, line by line, at `app` `4bccda085`.** No cross-tenant import was executed and this
+entry does not claim one was. Every line below was read; the *consequence* is derived from those lines.
+
+**The defect.** The simulation importer decides create-vs-replace with a lookup that has **no tenancy
+filter**, then patches whatever row it finds.
+
+```go
+// internal/cms/directus/collections/jobsimulation.go:847
+existingSim, err := c.GetJobSimulationBySlug(ctx, newSimInput.Slug, nil, true, nil)
+//                                                          organizationIds ^^^^  ^^^^ superUser
+```
+
+`GetJobSimulationBySlug` (`:169-205`) applies `SetFilter("[slug][_eq]", slug)` and puts the
+`tenant_id` / `private` filters inside `if !superUser` (`:195-205`). This call passes `superUser=true` and
+`organizationIds=nil`, so **the only filter is the slug**, across every tenant, returning `Data[0]`.
+
+What then happens with the foreign row (`:843-880`):
+
+- `replace=false` → `return … fmt.Errorf("job simulation with slug %s already exists", …)` (`:851`).
+  A **cross-tenant existence disclosure**: tenant A learns tenant B holds that slug.
+- `replace=true` → `c.Query().PatchRaw(ctx, existingSim.ID.String(), newSimInput)` (`:874`).
+  **Tenant B's simulation is overwritten by tenant A's content.**
+
+And it is not only an overwrite. `JobSimulationInput` carries `TenantId *string \`json:"tenant_id,omitempty"\``
+and `Private bool` (`jobsimulation_input.go:23`, `:36`), and the importer sets them from the CALLER's org
+(`jobsimimport.go:403-410`). So the patch body re-tenants the victim's row: **B does not get a corrupted
+simulation, B loses it to A.**
+
+**Why this is live rather than theoretical.**
+
+1. The legacy studio generator always passes `replace=true` — `internal/cms/studio/studioManager.go:409`.
+   This is the path running in production today.
+2. The slug is **caller-controlled**: it is read from the uploaded package, so a collision does not have to
+   be waited for.
+3. There is **no tenancy guard anywhere between the caller and the patch**. The importer's only tenancy code
+   (`jobsimimport.go:403-410`) *sets* the input's tenant; it never checks the existing row's owner.
+
+**The codebase already knows how to do this.** `applyPrivateCorpusFilters` (`jobsimulation.go:326`) exists to
+scope a query to one tenant and is used by the LIST paths (`:442`, `:518`). The write path does not use it.
+
+**Minimal safe fix (for the platform team, not this repo).** Scope the create-vs-replace lookup to the
+caller's organization, and refuse rather than patch when the found row's `tenant_id` differs from the
+caller's. **Honest caveat:** scoping the lookup changes behaviour for legitimate re-imports of *public*
+simulations (`tenant_id` null), so the fix is not a one-line filter — the public case needs its own rule.
+
+**Not measured here:** how many simulations currently share a slug across tenants, and whether any
+production collision has already occurred. Both are answerable with a query against `directus.simulations`
+and are worth answering before assuming the exposure is hypothetical.
+
+
 ### `PLATFORM-M257x-graphql-authz-middleware-FAILS-OPEN-and-REST-has-no-blanket-gate`
 **Found:** M257x iter-120 (2026-08-07) · **Filed here:** iter-121 (2026-08-07) · **Repo:** `app` ·
 **Status:** open · **Severity:** high (the platform's own source calls one half of it *"fail open"* and
