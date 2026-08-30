@@ -507,6 +507,18 @@ teammate's browser ── https://billion.taildc510.ts.net:13000 ──▶  tail
 **Why HTTPS everywhere?** Clerk's `clerk-js` needs a **secure context** (Web Crypto) — a plain-`http://` MagicDNS
 origin is not one, so HTTPS on the app origin is effectively required, not cosmetic (M213-D-SCHEME-1).
 
+> **The corollary a native-run afternoon keeps rediscovering (2026-08-27): `http://localhost` IS a secure
+> context, and that is the whole reason a tunnel works where a tailnet URL does not.** `localhost` is a W3C
+> *potentially trustworthy origin* — exempt by fiat, no certificate involved — so the **identical** stack that
+> renders blank at `http://<magicdns>:13000` renders signed-in at `http://localhost:13000`, and an SSH/port
+> forward (`~/bin/demo-tunnel`) is not a workaround for a networking problem, it is the exemption doing its
+> job. Two consequences worth holding: (1) *"it works through the tunnel"* is **not** evidence that a tailnet
+> origin works — it is evidence of nothing except the exemption; (2) if you want the tailnet origin, you want
+> `tailscale serve`'s HTTPS, which is what this whole runbook is. ⚠️ **Do not restate this as a `Secure`-cookie
+> rule** — Clerkenstein's session cookies carry no `Secure` attribute at all, measured 2026-08-27; the
+> measurement and the source lines are in
+> [`../../services/clerkenstein.md`](../../services/clerkenstein.md) § *The origin rule*.
+
 **Why per-port, not a single port-less `https://<host>`?** M213's reverse proxy is **`tailscale serve`** run
 **per port**, PRESERVING the offset-port scheme (M213 decision D-PROXY-2): each browser-facing plaintext service
 gets `tailscale serve --bg --https=<offsetport> http://127.0.0.1:<offsetport>`. So the only thing that changes
@@ -697,6 +709,33 @@ The live `billion` run surfaced the exact host-prereq + rext-fix set a fresh Lin
 > **Numbering note.** The ledger skips **F10** (unused). **F13** — a jobsimulation-service startup crash — is
 > **off the proven journey path** and out of this runbook's host-deploy scope (it would hit any demo, remote or
 > local); it is recorded in the milestone findings ledger + routed to standing backlog, not baked here.
+
+## macOS host traps (the Mac-mini `demo-1` findings, 2026-08-26)
+
+The F-ledger above is a Linux VM's. Running a stack host on **macOS** (`macmini`, the M4 Pro Mac mini) surfaced
+two traps of its own — both found the expensive way, both with symptoms that point everywhere except the cause.
+
+**M1 — `tailscale serve` makes ROOT `tailscaled` hold the port, INVISIBLY to user-level `lsof`.** After
+`tailscale serve --https=<port>`, the listener on that port is the **root** `tailscaled` process — and on macOS
+a user-level `lsof -i :<port>` shows **nothing** (without root, `lsof` only sees your own processes), so the
+port reads free while it is not. A native process then binding the wildcard (`0.0.0.0:<port>`) dies
+`EADDRINUSE` — and if that process is the Go backend, it does not even *look* like a bind failure: the app
+exits with a clean **"graceful shutdown"** log line, a mystery exit over a port every probe says is free. This
+is the same serve-vs-bind conflict the Linux ledger knows in the **opposite direction** (a container's
+`0.0.0.0` bind shadows `serve` — the dev-for-dummies gotcha #1); the macOS twist is the invisibility.
+**Sequence that works:** `tailscale serve --https=<port> off` → start the native process (its wildcard bind
+succeeds) → **re-add the serve**. Both listeners then coexist and the tailnet origin is fronted as before.
+Recipe context: the dev-for-dummies native-backend section, which hits exactly this on the tailscale-served
+backend port.
+
+**M2 — a headless Mac SLEEPS despite `pmset sleep 0`, and a hardened stack host cannot be network-woken.**
+`sleep 0` in `pmset` is **not sufficient** on a Mac used headlessly (no display attached) — the box slept
+anyway, taking every stack on it off the tailnet, and with **Bonjour advertising disabled** (a common
+hardening on an always-on box) the sleeping Mac cannot be woken over the network by name either. Two-part fix,
+both proven on `macmini`: set **`sudo pmset -a disablesleep 1`** on any Mac used as a stack host (verify:
+`pmset -g` → `SleepDisabled 1`), and when it does sleep, wake it with an explicit **Wake-on-LAN magic packet**
+to its Ethernet MAC — not a Bonjour name resolution, which has nothing to answer it. The one-time prereq is
+also listed in [`../setup_guide.md`](../setup_guide.md) § macOS.
 
 ## Safety framing
 

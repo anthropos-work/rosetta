@@ -741,6 +741,22 @@ sim embeddings (and their metadata) so the library renders the real public catal
 self-contained for replay — pairing it with a directus replay (which carries the public sims) lights the full
 library, but neither replay FK-depends on the other.
 
+> ⚠️ **KNOWN ISSUE (2026-08-26) — the surface's declared schema no longer exists at the capture source, and a
+> capture REFUSES (correctly).** `simembeddings.Schema` is still `const "cms"`, and prod **collapsed the `cms`
+> schema into `public` on 2026-08-11** — the teardown the cms-in-app fold had left pending finally ran. A
+> `sim-embeddings` capture against post-collapse prod therefore fails loud at the source; the refusal is the
+> tooling doing its job, not a bug to shout down (the 2026-08-26 cold-start capture on `macmini` looped
+> `taxonomy directus` and deliberately left this surface out). The **replay** side already survives this
+> class — `ResolveTargetSchema` asks the *target* where the surface lives
+> ([`platform-alignment.md`](platform-alignment.md) § *derive it AT THE POINT OF USE*), and the digest is
+> schema-independent for a table-narrowed surface, so a box holding a pre-collapse cached layer keeps
+> replaying it. The **capture** side is the last place still encoding the old answer in a constant. The fix is
+> the M211 pattern one more time: **re-point the surface at `public` + re-key the cached layer under the new
+> digest** (the rows are unchanged — `scripts/cms-data-sync/sync.sql` had been copying `cms`→`public` since
+> the fold). Until it lands, a genuinely fresh box (no cached `sim-embeddings` layer — `macmini` is one) gets
+> a real taxonomy + content and an **empty AI-sim library**: `searchSimulations` has no vectors, the
+> documented rc-4/rc-5 degradation — now with a capture that cannot refill it.
+
 **2. The library-category taxonomy (4 tables added to the existing `directus` surface).** `/library/skill-paths`
 + `/library/ai-simulations` show no categories until these are replayed:
 

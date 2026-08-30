@@ -10,6 +10,12 @@ how it is governed.
 > both `origin/main`, in `stack-dev/`. Every count below is either read from a file in that tree or quoted from
 > the platform's own source comments — and each is labelled with which.
 
+> **Update 2026-08-26 — production ADOPTED the canon, and it is now measured rather than inferred from a plan
+> document.** Everything below stands as the M259 reading of the checked-in artifact; **§8** records the fact
+> that changes its status: prod's `public.*` tables now **serve** the canon (`organization_id IS NULL AND
+> deleted = false` → 3,562 skills / 709 roles / 32 categories), with the legacy set soft-deleted **in place**
+> and the redirect tables loaded. §6's snapshot-cost reading is likewise superseded where marked.
+
 ---
 
 ## 1. Where it lives
@@ -56,6 +62,11 @@ them into one figure.
 
 The `redirect.go` row is the **oldest**; the commit message sits between it and the current files. All three
 describe the same consolidation at three moments of its regeneration.
+
+> **A FOURTH set exists since 2026-08-26 — the LIVE one.** Production's adopted counts are **3,562 skills /
+> 709 roles / 32 categories** (§8). Same rule as the other three: a dated snapshot, never merged — note the
+> live roles figure (**709**) is three above the bundle's 706, exactly the class of regeneration delta the
+> paragraph above says to record rather than average away.
 
 Measured from the bundle, 2026-08-14:
 
@@ -170,30 +181,40 @@ fails a test** rather than passing review as "just another get-or-create".
 
 ## 6. What it costs this project
 
-### 6.1 Five net-new tables sit OUTSIDE the snapshot capture surface
+### 6.1 Five net-new tables sit OUTSIDE the snapshot capture surface — ✅ four of the five have since JOINED it
 
-`feat/taxonomyv2` adds these ent schemas:
+`feat/taxonomyv2` adds these ent schemas. **The table below was authored at M259 all-❌ and is updated in
+place**: M260/M261 (this same release) grew the surface **10 → 14 tables**, and the 2026-08-26 live capture
+(§8) proves each landed row with a real row count.
 
 | Table | Captured today? | Consequence on a replayed stack |
 |---|---|---|
-| `skill_redirect` | ❌ | no redirect resolution — a retired id is simply dead |
-| `job_role_redirect` | ❌ | same, for roles |
-| `category_translation` | ❌ | the EN/IT axis loses the category level |
-| `specialization_translation` | ❌ | …and the specialization level |
-| `taxonomy_canon_state` | ❌ | the `/taxonomy` page's canon-state panel has nothing to read |
+| `skill_redirect` | ✅ M260/M261 (12,835 rows live, 2026-08-26) | redirect resolution works |
+| `job_role_redirect` | ✅ M260/M261 (11,182 rows live) | same, for roles |
+| `category_translation` | ✅ M260/M261 (29 rows live) | the EN/IT category level survives replay |
+| `specialization_translation` | ✅ M260/M261 (283 rows live) | …and the specialization level |
+| `taxonomy_canon_state` | ❌ still outside the surface | the `/taxonomy` page's canon-state panel has nothing to read |
 
-The capture surface (`rosetta-extensions/stack-snapshot/taxonomy/taxonomy.go`) covers ten tables — `categories`,
-`job_role_categories`, `job_role_embeddings`, `job_role_skills`, `job_role_translations`, `job_roles`,
-`skill_embeddings`, `skill_translations`, `skills`, `specializations`. **Note `skill_translations` and
-`job_role_translations` ARE captured**, so only the two *new* translation levels are missing — the language axis
-degrades partially, not wholly.
+The capture surface (`rosetta-extensions/stack-snapshot/taxonomy/taxonomy.go`) covered **ten** tables when this
+doc was authored — `categories`, `job_role_categories`, `job_role_embeddings`, `job_role_skills`,
+`job_role_translations`, `job_roles`, `skill_embeddings`, `skill_translations`, `skills`, `specializations` —
+and covers **fourteen** now (the ten plus the four ✅ rows above). Only `taxonomy_canon_state` remains out, so
+the canon-state-panel consequence stands and the two language-axis consequences no longer do.
 
-### 6.2 The capture floor aborts before any of that matters
+### 6.2 The capture floor aborts before any of that matters — ✅ and then it didn't, for a reason worth naming
 
 `stack-snapshot/taxonomy/taxonomy.go:104` pins `MinRows: 40000` on `public.skills`, enforced at
 `capture/capture.go:392` — *"refusing to persist a broken snapshot"*. Against a **3,562**-row canon the capture
 **aborts**, so there is no snapshot, no set-dress, no demo and no `dev-N`. It fails loudly, which is correct
 behaviour for the under-capture case it was built for; it is simply now asserting a size nobody measured.
+
+> **✅ Measured live 2026-08-26 — the capture COMPLETES against post-adoption prod** (14 tables, 309,545 rows,
+> `primary-read`, digest `8b19b5b0…` — §8). Two independent things closed the gap this section predicted.
+> M260 («the floor comes down», this release) owned the floor. And **production's adoption itself defused it**:
+> the consolidation is a **soft-delete in place**, so `public.skills` still holds **42,908 physical rows**
+> (3,562 canon + 39,346 `deleted = true`) — above the old 40,000 floor regardless. The row that scared this
+> section — *"a 3,562-row canon"* — never became the physical row count, because prod deleted nothing
+> physically.
 
 ### 6.3 The seed's exposure is a coverage problem, not a quality one
 
@@ -292,6 +313,54 @@ two facts that resize downstream work:
    resolve-or-drop path for the other two thirds.
 2. **Five tables must join the capture surface**, or the demo gets a taxonomy that cannot explain its own
    history and loses two levels of the language axis.
+
+---
+
+## 8. LIVE — prod's `public.*` IS the canon (measured 2026-08-26)
+
+**The question §1–§7 could not answer is now measured: production adopted the canon.** At M259 this doc — and
+the `CLAUDE.md` banner that cites it — could only say *"whether production has adopted the canon is NOT
+measured by us; the platform's plan says not as of 2026-08-14, but that is a document."* On 2026-08-26 it was
+read from prod itself (the sanctioned `primary-read` DSN; the counts below are from the capture manifest that
+read produced — `.agentspace` digest `8b19b5b0…`, 14 tables, 309,545 rows, `public_only: true`).
+
+**The serving model is a soft-delete in place, and every number closes:**
+
+| Quantity | Count | How it's read |
+|---|---:|---|
+| canon skills (`organization_id IS NULL AND deleted = false`) | **3,562** | prod live, 2026-08-26 |
+| canon job roles (same predicate) | **709** | prod live |
+| canon categories | **32** | prod live |
+| legacy skills, soft-deleted **in place** (`deleted = true`) | **39,346** | derived: 42,908 public rows − 3,562 |
+| legacy roles, soft-deleted in place | 21,846 | derived: 22,555 public rows − 709 |
+| `public.skill_redirects` | **12,835** | live table — matches the bundle exactly |
+| `public.job_role_redirects` | **11,182** | live table — matches the bundle exactly |
+| `public.skill_embeddings` | 3,562 | **canon rows only** — the legacy set has no embeddings |
+| `public.job_role_embeddings` | 707 | two canon roles lack an embedding; recorded, not explained |
+
+Three consequences, in descending order of how often they will be needed:
+
+1. **The platform's `public.*` tables ARE the live canonical taxonomy.** Canon rows are
+   `organization_id IS NULL AND deleted = false`; the legacy set was retired by **flag, not by DELETE**; the
+   redirect data §3 read from CSVs is loaded as live tables. The app's `/taxonomy` surface
+   (`internal/taxonomyapi`, §1's table) serves exactly this predicate — what a prod user sees *is* the canon.
+2. **A replayed stack serves the live canon identically to prod — no extra step.** The stacksnap taxonomy
+   surface (14 tables, §6.1) captures the whole thing **including the `deleted` flag column** and both
+   redirect tables, so replay carries the serving predicate's inputs verbatim: same rows, same flags, same
+   redirects. There is no post-replay canon-activation step to run, and nobody should go looking for one.
+3. **The figures dispute ends in a two-figure world, permanently.** *"How many skills?"* now has two correct
+   answers that must never be merged: **3,562** (what the platform serves) and **42,908** (what
+   `public.skills` physically holds). The soft-delete is why the ≥42,790 floor language of
+   [`shared_libraries.md`](shared_libraries.md#taxonomy-figures) still describes the physical table, and why
+   §6.2's 40,000-row capture floor never tripped.
+
+> ⚠️ **`canon_live` is a MIRROR, not a source — never capture from it.** The taxonomy-rebuild workspace's
+> Postgres (on the Ithaca dev server) carries a **`canon_live` schema refreshed nightly FROM prod's live
+> canon** — it exists so the rebuild tooling has something to diff against, downstream of prod. It is **not**
+> the serving source: it is up to a day stale, it is not what `internal/taxonomyapi` serves, and its schema
+> digest is not the platform's. A capture `--dsn` must point at prod's `public` schema (or a dump of it) — the
+> only places the serving predicate, the `deleted` flags and the redirect tables are authoritative. See the
+> source-selection warning in [`../ops/snapshot-cold-start.md`](../ops/snapshot-cold-start.md).
 
 ---
 

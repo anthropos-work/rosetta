@@ -71,6 +71,13 @@ We recommend using [Homebrew](https://brew.sh/) for package management.
     *   *Verification*: `tmux -V`
     *   Native processes (`next-web-app`, backend when developed locally, ant-academy) run in named tmux
         sessions so they survive Claude Code session closure.
+10. **Headless / stack-host Macs only — disable sleep FOR REAL** (`sudo pmset -a disablesleep 1`):
+    *   `pmset sleep 0` is **not sufficient** on a Mac running headless (no display): the box sleeps anyway
+        (observed on the `macmini` stack host, 2026-08-26), taking every stack on it off the tailnet — and
+        with Bonjour advertising disabled it cannot be network-woken by name; waking it needs an explicit
+        **Wake-on-LAN magic packet** to its Ethernet MAC.
+    *   *Verification*: `pmset -g | grep SleepDisabled` → `SleepDisabled 1`.
+    *   Full trap write-up: [`demo/tailscale-serve.md`](demo/tailscale-serve.md) § macOS host traps.
 
 </details>
 
