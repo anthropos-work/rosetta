@@ -30,6 +30,32 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-2026-08-29-import-uploads-every-file-BEFORE-checking-the-name-and-cannot-delete`
+**Found:** 2026-08-28 (adversarial review of the publish design) · **Filed here:** 2026-08-29 · **Repo:** `app` ·
+**Status:** open · **Severity:** LOW-MEDIUM — unbounded storage growth, no data exposure ·
+**Provenance: SOURCE READ at `app` `4bccda085`.** Not driven live.
+
+**The defect.** `ImportJobSimulationPackage` writes every file the package carries — role avatars, office
+documents, collaborative assets, and the source zip itself — before anything validates that the simulation
+can be created: `CreateFile` at `internal/cms/jobsimimport/jobsimimport.go:250`, `:258`, `:282` and `:322`,
+all upstream of the create-vs-replace decision at
+`internal/cms/directus/collections/jobsimulation.go:847`.
+
+The Directus client exposes **no DELETE verb** (`internal/cms/directus/querybuilder.go:36-130`), so nothing
+reclaims them. A package rejected for any reason — a taken slug, a malformed field, a failed validation —
+has already written its whole payload into the three shared folders (`file.go:16-18`), permanently.
+
+**Why it matters more with an automated caller.** A human retries a rejected publish once or twice. An
+automated publisher retries on a schedule, and each attempt writes a fresh full copy. There is also no
+body-size bound on the inbound package.
+
+**Fix.** Resolve the slug and decide create-vs-replace **before** the first `CreateFile`. A rejection then
+costs nothing. This is a reordering of the existing import sequence, not new logic.
+
+**Reported by decision, 2026-08-29:** the alternative — bounding retries on the caller's side and accepting
+the orphans as known waste — was considered and declined in favour of fixing the cause.
+
+
 ### `PLATFORM-2026-08-28-promote-path-authorizes-on-studio_task-org-never-on-the-simulation-tenant`
 **Found:** 2026-08-28, adversarial review of the publish-endpoint design · **Filed here:** same day ·
 **Repo:** `app` · **Status:** open · **Severity:** MEDIUM — a defence-in-depth gap that becomes a
