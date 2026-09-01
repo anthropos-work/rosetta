@@ -302,8 +302,12 @@ Read by **`backend`**, not by this container:
 ```bash
 # HISTORICAL — the `storage` service is merged into `app` and its compose service was deleted at
 # platform `838d907`; the repo left `repos.yml` with it, so `make init` never clones it and
-# `cd storage` assumes a hand-clone. NB the Go MODULE is NOT dead — `app/go.mod:17` still
-# requires `storage v0.15.2` as a type shim, so the repo is frozen as a service, live as a library.
+# `cd storage` assumes a hand-clone. The Go MODULE is now dead too: `app/go.mod` requires NOTHING
+# under anthropos-work at `c334f559` (2026-09-01). The type shim moved in-tree to
+# `app/internal/storage/contract.go` ("This file replaces github.com/anthropos-work/storage as a Go
+# dependency"), and `internal/storagens/callsites_test.go` (TestNoRPCStorageClientsRemain) now bans
+# the whole module, not just the RPC constructors. Frozen as a service AND as a library.
+# This comment claimed `app/go.mod:17` still required `storage v0.15.2` until 2026-09-01.
 cd storage
 go test -v ./...
 ```

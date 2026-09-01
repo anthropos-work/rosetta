@@ -1,9 +1,38 @@
 # Shared Libraries
 
-> ## ⚠️⚠️ `app` NOW REQUIRES **ZERO** ORG-PRIVATE MODULES — measured v2.9 M263, 2026-08-15
+> ## ⚠️⚠️ `app` NOW REQUIRES **ZERO** ORG-PRIVATE MODULES — re-measured 2026-09-01 at `app` `c334f559`
 >
-> At `app` **`4bccda085`** (v2.3.2), `grep anthropos-work/ app/go.mod` returns **one line: the
-> `module` declaration itself.** Not five, not one — **none.** The taxonomy-v2 program finished the
+> **Re-confirmed at today's `origin/main`** (`c334f559`, 2026-09-01): `grep anthropos-work/ app/go.mod`
+> returns **one line — the `module` declaration itself.** First measured at `4bccda085` (v2.3.2, v2.9
+> M263, 2026-08-15) and unchanged since. Not five, not one — **none.**
+>
+> **The platform now fences this itself.**
+> `app/internal/taxonomy/module_import_guard_test.go` → **`TestNoFirstPartyModulesInGoMod`**, described
+> in its own comment as *"the end-state assertion for the whole fold-in series"*: it scans **both
+> `go.mod` and `go.sum`** for any `github.com/anthropos-work/` line other than `app`'s own and fails
+> the build if one returns. It exists because *"an import guard cannot see a `go get` that adds a
+> requirement without an import."* Per-module import guards sit under it —
+> `internal/{ai,proto,taxonomy}/module_import_guard_test.go` and
+> `internal/storagens/callsites_test.go` (`TestNoRPCStorageClientsRemain`, which bans the **whole**
+> `github.com/anthropos-work/storage` module, not just its RPC constructors).
+>
+> **Where each one went (measured at `c334f559`):**
+>
+> | Former module | In-tree home |
+> |---|---|
+> | `ai` | `app/internal/ai/` (folded `1e457fa70`) |
+> | `analytics-go` | `app/internal/tracking/brevo_tracker.go` — *"ported byte-for-byte from analytics-go/brevo v0.3.1"* |
+> | `colony` | `app/internal/platform/` (`doc.go:2` names the ported `colony v0.35.2` surface) |
+> | `colony/authn` | `app/internal/authn/` (provider at `internal/authn/provider/clerk/`) |
+> | `proto` | `app/internal/proto/` |
+> | `storage` | `app/internal/storage/contract.go` — *"This file replaces github.com/anthropos-work/storage as a Go dependency"* |
+> | `taxonomy` | `app/internal/taxonomy/` |
+>
+> The only `anthropos-work/<module>` strings left in `app`'s Go source are **comments and negative
+> assertions** — commented-out imports, `doc.go` history notes, and the banned-module constants the
+> guards match on.
+>
+> The taxonomy-v2 program finished the
 > fold that `ai` started: `e72f18199` — *"chore(deps): fold taxonomy in — app has no first-party
 > module left"* — and `colony` went with it. `colony/authn` now lives **in-tree at
 > `app/internal/authn`**, provider at `internal/authn/provider/clerk/`.
@@ -13,14 +42,16 @@
 > there was nothing to clone, and a demo bring-up failed FATAL — correctly, since without the disarm
 > every demo login 401s. The fix (rext `v2.9.2`) swaps the in-tree package instead.
 >
-> **Everything below this box describes the module era and is kept as history.** The five-library
-> grouping still names real repos with real owners; what changed is that `app` no longer *imports*
-> any of them. Re-measure before citing any require line here — the block was seven at `b948604f`,
-> five at `3eaadae6`, and zero at `4bccda085`, which is three different answers inside one release
-> cycle.
+> **Everything below this box describes the module era and is kept as history — including the second
+> banner, which still tabulates the five-module require set and is SUPERSEDED by this one.** The
+> five-library grouping still names real repos with real owners; what changed is that `app` no longer
+> *imports* any of them. Re-measure before citing any require line below — the block was seven at
+> `b948604f`, five at `3eaadae6`, and zero at `4bccda085`, holding at `c334f559`: three different
+> answers inside one release cycle.
 
 
-> ## ⚠️ This document's subject set is NOT `app`'s require set — corrected M257x iter-123
+> ## ⚠️ HISTORICAL (module era) — this document's subject set is NOT `app`'s require set
+> ### Corrected M257x iter-123; **SUPERSEDED 2026-09-01 — the require set below is now EMPTY**
 >
 > The "five shared libraries" is a **historical grouping**, and every count below is taken over it.
 > `app`'s actual org-private module requirements, measured at `app` **`3eaadae6`** (v1.371.1),
@@ -37,8 +68,9 @@
 >
 > `go.sum:64-73` carries exactly those five, two lines each — **no `ai`, no `authn`, no `messenger`.**
 >
-> **The one sentence to carry away: "merged into `app`" describes the RUNTIME, not the module graph.**
-> `ai` left `go.mod`; **`storage` did not.** Read the two as one rule and you conclude `storage` is
+> **The one sentence to carry away, as of the reading below: "merged into `app`" described the RUNTIME,
+> not the module graph.** ⚠️ **That gap has since CLOSED — the two came back together on 2026-09-01**,
+> when the last org require left `go.mod`. Read below: `ai` left `go.mod`; **`storage` did not — then.** Read the two as one rule and you conclude `storage` is
 > deletable, which is false twice over — it is a compile-time requirement of the backend monolith *and*
 > the repo is still maintained (HEAD **2026-08-05**, tags out to **`v0.15.8`**, six past `app`'s pin).
 >
@@ -99,8 +131,8 @@ never to *"what does `app` depend on"*.
 | **ai** | A thin wrapper over OpenAI/Azure/Anthropic/Bedrock/Mistral behind one `ai.AI` interface. **Folded into `app` at `1e457fa70`; in no live `go.mod`** |
 | **authn** | Clerk JWT authentication (now shipped **inside colony** as `colony/authn`; the standalone repo is legacy) |
 | **taxonomy** | The **node-id library** (`NodeID` type + ID generation/validation) — **not** a dataset |
-| **storage** *(not one of "the five" — added M257x iter-123)* | `app/go.mod:17` `v0.15.2`. A **type shim**: `app` imports `sdk/storage` + `sdk/storage/v1` (32 files / 36 import lines) and implements the three-method `Service` interface **itself** (`app/internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}`). **No SDK RPC client is constructed; `STORAGE_RPC_ADDR` occurs in zero Go source.** The service is gone; the module is not |
-| **analytics-go** *(not one of "the five" — added M257x iter-123)* | `app/go.mod:14` `v0.3.1`. Two files (`analytics.go` + `brevo/brevo.go`): a `sync.Once` `Init`/`Track` fan-out to Brevo's `EventsApi.CreateEvent`. Wrapped by `app/internal/tracking`; the load-bearing consumer is **Stripe subscription lifecycle → Brevo**, `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired at **`main.go:494-495`** @ `app` `ad9f3c498` — `trackingManager := tracking.New(os.Getenv("BREVO_KEY"))` and the `payments.New(…, trackingManager)` that consumes it, which are the file's **only two** `trackingManager` lines. ⚠️ **This carried a `main.go` line range until M257x iter-138, by then the storage-in-app comment block**, and it named a *different* construct at all four refs the corpus reads (`b948604f`: a jobsim `BACKEND_USERS_RPC_ADDR` comment; `9d00a313`: an AI-Readiness auto-assign comment; `2035f9a4` + `ad9f3c498`: the storage comment). The `handler.go:302-316` half was **verified and is exact**. Repo untouched since **2025-02-12**; `v0.3.1` is its newest tag — **dormant, not dead** |
+| **storage** *(not one of "the five" — added M257x iter-123; ⚠️ **no longer a require at all since 2026-09-01** — the shim moved to `app/internal/storage/contract.go` and `internal/storagens/callsites_test.go` bans the module)* | *(historical)* `app/go.mod:17` `v0.15.2`. A **type shim**: `app` imports `sdk/storage` + `sdk/storage/v1` (32 files / 36 import lines) and implements the three-method `Service` interface **itself** (`app/internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}`). **No SDK RPC client is constructed; `STORAGE_RPC_ADDR` occurs in zero Go source.** The service is gone; the module is not |
+| **analytics-go** *(not one of "the five" — added M257x iter-123; ⚠️ **no longer a require at all since 2026-09-01** — ported byte-for-byte into `app/internal/tracking/brevo_tracker.go`)* | *(historical)* `app/go.mod:14` `v0.3.1`. Two files (`analytics.go` + `brevo/brevo.go`): a `sync.Once` `Init`/`Track` fan-out to Brevo's `EventsApi.CreateEvent`. Wrapped by `app/internal/tracking`; the load-bearing consumer is **Stripe subscription lifecycle → Brevo**, `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired at **`main.go:494-495`** @ `app` `ad9f3c498` — `trackingManager := tracking.New(os.Getenv("BREVO_KEY"))` and the `payments.New(…, trackingManager)` that consumes it, which are the file's **only two** `trackingManager` lines. ⚠️ **This carried a `main.go` line range until M257x iter-138, by then the storage-in-app comment block**, and it named a *different* construct at all four refs the corpus reads (`b948604f`: a jobsim `BACKEND_USERS_RPC_ADDR` comment; `9d00a313`: an AI-Readiness auto-assign comment; `2035f9a4` + `ad9f3c498`: the storage comment). The `handler.go:302-316` half was **verified and is exact**. Repo untouched since **2025-02-12**; `v0.3.1` is its newest tag — **dormant, not dead** |
 
 > ### How they are consumed (this matters)
 > **None of these are cloned by `make init`** — they are **absent from

@@ -303,21 +303,30 @@ package). The repos still exist and are still owned; `app` simply no longer impo
 - colony: Platform framework (logging+Sentry, DB, Redis, GraphQL/RPC servers, middleware, pub/sub via Watermill); **also contains `authn`**
 - proto: Protobuf definitions (RPC contracts) + hand-written domain types
 - ~~taxonomy~~: **FOLDED INTO `app` at `e72f18199`** (2026-08-14) — *"app has no first-party module left"*. It was a **node-id library** (`NodeID` type + generation/validation), never a dataset. The skill/job-role DATA lives in `app`'s `public` schema (**≥42,790 skills / ≥22,470 job roles** in production as last measured, 2026-06-29), and the **governed canon** — 3,562 skills / 706 roles — is now a checked-in artifact at `app/taxonomy-canon/` with its own loader. See [`taxonomy-canon.md`](corpus/architecture/taxonomy-canon.md)
-- **storage** (`go.mod:17`): a **TYPE SHIM, not an RPC edge.** `app` imports `sdk/storage` (the `Client`/`PublicClient` structs) and `sdk/storage/v1` (the three-method `Service` interface) at 36 import lines across 32 files, then **implements that interface itself** — `internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}` with its own in-process manager. No SDK RPC client is ever constructed and `STORAGE_RPC_ADDR` occurs in **zero** Go source
-- **analytics-go** (`go.mod:14`): a two-file Brevo product-event tracker (`Init`/`Track` fan-out). Wrapped by `app/internal/tracking`, and it carries **Stripe subscription-lifecycle events → Brevo** at `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired at **`main.go:494-495`** @ `app` `ad9f3c498` (the file's only two `trackingManager` lines; **this pinned the storage-in-app comment block instead, until M257x iter-138**, and `handler.go:302-316` was verified exact). The repo has been untouched since **2025-02-12** and `v0.3.1` **is its newest tag** — dormant, and load-bearing
+- ~~storage~~: **NO LONGER A REQUIRE — in-tree since 2026-09-01** at `app/internal/storage/contract.go` (*"This file replaces github.com/anthropos-work/storage as a Go dependency"*), and `internal/storagens/callsites_test.go` (`TestNoRPCStorageClientsRemain`) now bans the **whole module**, not just its RPC constructors. *(Historical, `go.mod:17`)* a **TYPE SHIM, not an RPC edge.** `app` imports `sdk/storage` (the `Client`/`PublicClient` structs) and `sdk/storage/v1` (the three-method `Service` interface) at 36 import lines across 32 files, then **implements that interface itself** — `internal/storage/service.go:48-56` fills `sdkstorage.Client{V1: NewService(...)}` with its own in-process manager. No SDK RPC client is ever constructed and `STORAGE_RPC_ADDR` occurs in **zero** Go source
+- ~~analytics-go~~: **NO LONGER A REQUIRE — in-tree since 2026-09-01** at `app/internal/tracking/brevo_tracker.go` (*"ported byte-for-byte from analytics-go/brevo v0.3.1"*). *(Historical, `go.mod:14`)* a two-file Brevo product-event tracker (`Init`/`Track` fan-out). Wrapped by `app/internal/tracking`, and it carries **Stripe subscription-lifecycle events → Brevo** at `app/internal/payments/handler.go:302-316` (seven event names switched off `entSub.Status`), wired at **`main.go:494-495`** @ `app` `ad9f3c498` (the file's only two `trackingManager` lines; **this pinned the storage-in-app comment block instead, until M257x iter-138**, and `handler.go:302-316` was verified exact). The repo has been untouched since **2025-02-12** and `v0.3.1` **is its newest tag** — dormant, and load-bearing
 - ~~ai~~: **folded INTO `app`** at `1e457fa70` (2026-08-04) from tag `v1.40.2`, now `app/internal/ai/` with **84 importing files**, and kept out by `.github/workflows/ai-module-guard.yml` — a **PR-time CI job** running `TestNoExternalAIModuleImports`, *not* a build-time failure, and it **passes** when its merge conflicts (`:96-100`). Cost tracking is `app/internal/aiusage`; **vendor selection** lives in each consumer's wrapper — a caller-supplied switch, not an EU-first fallback ladder
 - ~~authn~~: Clerk JWT authentication — shipped **inside colony** as `colony/authn`; in no repo's `go.mod`
 
-> **⚠️ "Merged into `app`" describes the RUNTIME, not the module graph — and the two came apart.**
-> `ai` left `go.mod`; **`storage` did not.** A cleanup driven by this file as it read before 2026-08-07
-> would have deleted **two** repos `app` cannot build without: `storage` (a direct require, *and* still
-> maintained — HEAD 2026-08-05, tags out to `v0.15.8`, six past app's pin) and `analytics-go`, which
-> nothing guards at all. **`ai` must not be deleted either**, for a reason that lives in this repo:
-> `rosetta-extensions/stack-seeding` pins `ai v1.40.1`, so a doc-driven "app doesn't import it any more"
-> deletion breaks **Rosetta's own tooling**. (`app/internal/ai/module_import_guard_test.go:15-17` and
-> `app/CLAUDE.md:289-294` both say so.) The org-module block is **actively shrinking** — at `b948604f`
-> it was **seven** (`ai` at `:14`, `messenger` at `:17`) — so treat any list here as a dated measurement,
-> never as a standing fact.
+> **⚠️ "Merged into `app`" once described the RUNTIME and not the module graph — the two have since
+> come back together.** Measured at `app` **`c334f559`** (2026-09-01, `origin/main`): **`go.mod` requires
+> no org module at all**, and the platform fences it —
+> `app/internal/taxonomy/module_import_guard_test.go` → **`TestNoFirstPartyModulesInGoMod`**, *"the
+> end-state assertion for the whole fold-in series"*, which scans **both `go.mod` and `go.sum`** for any
+> `github.com/anthropos-work/` line other than `app`'s own. Per-module guards sit under it
+> (`internal/{ai,proto,taxonomy}/module_import_guard_test.go`, `internal/storagens/callsites_test.go`).
+> **This box said *"`ai` left `go.mod`; `storage` did not"* until 2026-09-01** — `storage` and
+> `analytics-go` left too, so the two repos it called *"`app` cannot build without"* are no longer
+> build-critical.
+>
+> **The repos must still not be deleted** — the reasons changed, not the conclusion. They still exist,
+> are still owned, and `rosetta-extensions/stack-seeding` still pins `ai v1.40.1`, so a doc-driven "app
+> doesn't import it any more" deletion breaks **Rosetta's own tooling**
+> (`app/internal/ai/module_import_guard_test.go:15-17`; `app/CLAUDE.md:289-294`). The frozen `cms` and
+> `jobsimulation` husks also still require `ai v1.40.2`.
+>
+> **The block went seven (`b948604f`) → five (`3eaadae6`) → zero (`4bccda085`, holding at `c334f559`)**,
+> so treat any list here as a dated measurement, never as a standing fact.
 >
 > Since the merges these libraries are imported by **app**, **sentinel**, **storage** and **messenger**
 > only — and **all three of the others are now frozen legacy**: `storage` + `messenger` since `838d907`,
@@ -536,7 +545,7 @@ Usage: `make up PROFILE=core`
 - `corpus/architecture/frontend_architecture.md`: Next.js monorepo deep dive
 - `corpus/architecture/external_services.md`: Clerk, Directus, GraphQL, AI providers, LiveKit, Chime
 - `corpus/architecture/dependency_map.md`: Service inter-dependency matrix with Redis Streams events
-- `corpus/architecture/shared_libraries.md`: the internal Go libraries. **Its subject set is the five historical "shared libraries" and that is NOT `app`'s require set** — measured at `app` `3eaadae6`, `app/go.mod:14-18` is `analytics-go`, `colony`, `proto`, `storage`, `taxonomy`. `ai` was folded into `app` (`1e457fa70`); `authn` ships inside colony as `colony/authn` and is a dependency of no service
+- `corpus/architecture/shared_libraries.md`: the internal Go libraries. **Its subject set is the five historical "shared libraries" and `app` HAS no require set** — at `app` `c334f559` (2026-09-01) `go.mod` requires **zero** org modules, fenced by `TestNoFirstPartyModulesInGoMod`. This entry said the require set was `analytics-go`, `colony`, `proto`, `storage`, `taxonomy` (`app/go.mod:14-18` @ `3eaadae6`) until 2026-09-01; all are in-tree, as are `ai` (`1e457fa70`) and `authn` (shipped inside colony, now `app/internal/authn`)
 - `corpus/architecture/security_compliance.md`: Security, data protection, EU compliance, multi-tenancy
 - `corpus/architecture/ai_architecture.md`: AI models, provider routing, voice engine, recording, cost tracking
 - `corpus/architecture/alignment_testing.md`: The alignment test class + framework (`rosetta-extensions/alignment/`) — measuring how faithfully a mirror engine (e.g. Clerkenstein) reproduces a source engine as a 0–100% score
