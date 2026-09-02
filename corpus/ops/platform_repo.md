@@ -127,13 +127,16 @@ Use `docker compose --profile <name> config --services` to confirm a profile's e
 > all (it built from a git URL), and neither was `ant-academy`, which is cloned by hand or by
 > the demo bring-up and has **no compose service** (runs natively / Vercel).
 >
-> The shared libraries are **not** here either — they are pulled as Go modules, see
-> [Shared Libraries](../architecture/shared_libraries.md). **Two lists, and they are not the same
-> list:** the doc's five *subjects* are `colony`, `authn`, `proto`, `ai`, `taxonomy` (historical),
-> while the five modules a stack actually **imports** are `analytics-go`, `colony`, `proto`,
-> `storage`, `taxonomy` (`app/go.mod:14-18` @ `app` `ad9f3c498`). `ai` was folded into `app`
-> in-tree and `authn` ships inside colony, so neither is pulled; `analytics-go` and `storage` are
-> pulled and were in neither list here until M257x iter-133.
+> The shared libraries are **not** here either — and ⚠️ **they are no longer pulled as Go modules
+> at all** (corrected 2026-09-01). `app` requires **ZERO** org-private modules: at `app` `c334f559`,
+> `grep anthropos-work/ app/go.mod` returns one line, the `module` declaration itself, fenced by
+> `app/internal/taxonomy/module_import_guard_test.go` → `TestNoFirstPartyModulesInGoMod` (which scans
+> **`go.mod` and `go.sum`**). Every one is in-tree — `internal/tracking` (analytics-go),
+> `internal/platform` + `internal/authn` (colony), `internal/proto`, `internal/storage`,
+> `internal/taxonomy`, `internal/ai`. **This block said *"the five modules a stack actually imports are
+> `analytics-go`, `colony`, `proto`, `storage`, `taxonomy`"*** (`app/go.mod:14-18` @ `ad9f3c498`) until
+> 2026-09-01; see [Shared Libraries](../architecture/shared_libraries.md), whose five *subjects* are a
+> historical repo grouping and never were the import set.
 
 ## Ports
 

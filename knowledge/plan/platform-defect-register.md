@@ -30,6 +30,133 @@ discharged because it was written down somewhere. M255's close had already been 
 
 ## Open
 
+### `PLATFORM-2026-08-29-import-uploads-every-file-BEFORE-checking-the-name-and-cannot-delete`
+**Found:** 2026-08-28 (adversarial review of the publish design) · **Filed here:** 2026-08-29 · **Repo:** `app` ·
+**Status:** open · **Severity:** LOW-MEDIUM — unbounded storage growth, no data exposure ·
+**Provenance: SOURCE READ at `app` `4bccda085`.** Not driven live.
+
+**The defect.** `ImportJobSimulationPackage` writes every file the package carries — role avatars, office
+documents, collaborative assets, and the source zip itself — before anything validates that the simulation
+can be created: `CreateFile` at `internal/cms/jobsimimport/jobsimimport.go:250`, `:258`, `:282` and `:322`,
+all upstream of the create-vs-replace decision at
+`internal/cms/directus/collections/jobsimulation.go:847`.
+
+The Directus client exposes **no DELETE verb** (`internal/cms/directus/querybuilder.go:36-130`), so nothing
+reclaims them. A package rejected for any reason — a taken slug, a malformed field, a failed validation —
+has already written its whole payload into the three shared folders (`file.go:16-18`), permanently.
+
+**Why it matters more with an automated caller.** A human retries a rejected publish once or twice. An
+automated publisher retries on a schedule, and each attempt writes a fresh full copy. There is also no
+body-size bound on the inbound package.
+
+**Fix.** Resolve the slug and decide create-vs-replace **before** the first `CreateFile`. A rejection then
+costs nothing. This is a reordering of the existing import sequence, not new logic.
+
+**Reported by decision, 2026-08-29:** the alternative — bounding retries on the caller's side and accepting
+the orphans as known waste — was considered and declined in favour of fixing the cause.
+
+
+### `PLATFORM-2026-08-28-promote-path-authorizes-on-studio_task-org-never-on-the-simulation-tenant`
+**Found:** 2026-08-28, adversarial review of the publish-endpoint design · **Filed here:** same day ·
+**Repo:** `app` · **Status:** open · **Severity:** MEDIUM — a defence-in-depth gap that becomes a
+cross-tenant write **in composition with** the sibling slug defect, not on its own ·
+**Provenance: SOURCE READ at `app` `4bccda085`.** No request was issued. **An adversarial reviewer rated
+this HIGH and claimed it lets any caller re-tenant-and-publish any simulation by naming its id; that claim
+was checked and is WRONG — the calibration is recorded below, because a register entry that overstates its
+own severity teaches a reader to discount the next one.**
+
+**The gap.** The write primitive performs no read of the row it modifies:
+
+```go
+// internal/cms/directus/collections/jobsimulation.go:123-142
+func (c *JobSimulationCollection) PublishJobSimulations(ctx, simulationId uuid.UUID, organizationId *string, superUser bool) (bool, error) {
+	if !superUser && organizationId == nil { return false, fmt.Errorf("organization id is required") }
+	var body = map[string]any{"private": false, "status": "published"}
+	if organizationId != nil { body["private"] = true; body["tenant_id"] = organizationId }
+	_, err := c.Query().PatchRaw(ctx, simulationId.String(), body)
+```
+
+It checks that an organization is **present**, never that it **owns** `simulationId`, and the patch sets
+`tenant_id` and `status: "published"`. Its whole safety comes from its caller.
+
+**Why it is NOT a standalone hole.** `StudioManager.PublishSimulation` (`studio/studioManager.go:440-470`)
+gates it with `GetStudioTaskBySimulationID`, which for a non-super-user **does** scope on the organization
+(`repository/studio.go:183-189`, `predicates = append(predicates, studiotask.OrganizationID(*organizationId))`),
+followed by an explicit org-mismatch check (`studioManager.go:462-467`). Tenant A naming tenant B's
+simulation gets no studio task back and stops at *"simulation not found"*. The denial-of-service variant
+the reviewer proposed additionally requires creating a `studio_task` that names a victim's `simulation_id`;
+no reachable path offers that (`SetSimulationID` appears only in generated ent code and in an unrelated
+skillpath repository).
+
+**Why it is still a defect.** The gate authorizes against **`studio_task.organization_id`** and never
+against **`simulations.tenant_id`**. Those are two different records, and nothing keeps them in step. The
+sibling defect
+(`PLATFORM-2026-08-28-simulation-import-REPLACE-crosses-TENANTS-and-re-tenants-the-victim`) is a mechanism
+that makes them diverge: it re-tenants a simulation row without touching the studio task that points at it.
+After that, the gate consults a record whose organization no longer describes the row being written, passes,
+and the promote re-tenants and publishes. **Two medium defects that compose into a cross-tenant write.**
+
+**Fix.** Re-anchor promotion on the simulation's own stored `tenant_id` — read the row, compare, refuse —
+rather than on the studio task's organization. Doing this also removes the composition risk independently of
+whether the sibling defect is fixed first.
+
+**Not measured:** whether any `studio_task.organization_id` and `simulations.tenant_id` pair currently
+disagree in production. That is one join away and worth answering.
+
+
+### `PLATFORM-2026-08-28-simulation-import-REPLACE-crosses-TENANTS-and-re-tenants-the-victim`
+**Found:** 2026-08-28, designing the lodge publication endpoint · **Filed here:** same day · **Repo:** `app` ·
+**Status:** open · **Severity:** HIGH — cross-tenant overwrite plus silent change of ownership ·
+**Provenance: SOURCE READ, line by line, at `app` `4bccda085`.** No cross-tenant import was executed and this
+entry does not claim one was. Every line below was read; the *consequence* is derived from those lines.
+
+**The defect.** The simulation importer decides create-vs-replace with a lookup that has **no tenancy
+filter**, then patches whatever row it finds.
+
+```go
+// internal/cms/directus/collections/jobsimulation.go:847
+existingSim, err := c.GetJobSimulationBySlug(ctx, newSimInput.Slug, nil, true, nil)
+//                                                          organizationIds ^^^^  ^^^^ superUser
+```
+
+`GetJobSimulationBySlug` (`:169-205`) applies `SetFilter("[slug][_eq]", slug)` and puts the
+`tenant_id` / `private` filters inside `if !superUser` (`:195-205`). This call passes `superUser=true` and
+`organizationIds=nil`, so **the only filter is the slug**, across every tenant, returning `Data[0]`.
+
+What then happens with the foreign row (`:843-880`):
+
+- `replace=false` → `return … fmt.Errorf("job simulation with slug %s already exists", …)` (`:851`).
+  A **cross-tenant existence disclosure**: tenant A learns tenant B holds that slug.
+- `replace=true` → `c.Query().PatchRaw(ctx, existingSim.ID.String(), newSimInput)` (`:874`).
+  **Tenant B's simulation is overwritten by tenant A's content.**
+
+And it is not only an overwrite. `JobSimulationInput` carries `TenantId *string \`json:"tenant_id,omitempty"\``
+and `Private bool` (`jobsimulation_input.go:23`, `:36`), and the importer sets them from the CALLER's org
+(`jobsimimport.go:403-410`). So the patch body re-tenants the victim's row: **B does not get a corrupted
+simulation, B loses it to A.**
+
+**Why this is live rather than theoretical.**
+
+1. The legacy studio generator always passes `replace=true` — `internal/cms/studio/studioManager.go:409`.
+   This is the path running in production today.
+2. The slug is **caller-controlled**: it is read from the uploaded package, so a collision does not have to
+   be waited for.
+3. There is **no tenancy guard anywhere between the caller and the patch**. The importer's only tenancy code
+   (`jobsimimport.go:403-410`) *sets* the input's tenant; it never checks the existing row's owner.
+
+**The codebase already knows how to do this.** `applyPrivateCorpusFilters` (`jobsimulation.go:326`) exists to
+scope a query to one tenant and is used by the LIST paths (`:442`, `:518`). The write path does not use it.
+
+**Minimal safe fix (for the platform team, not this repo).** Scope the create-vs-replace lookup to the
+caller's organization, and refuse rather than patch when the found row's `tenant_id` differs from the
+caller's. **Honest caveat:** scoping the lookup changes behaviour for legitimate re-imports of *public*
+simulations (`tenant_id` null), so the fix is not a one-line filter — the public case needs its own rule.
+
+**Not measured here:** how many simulations currently share a slug across tenants, and whether any
+production collision has already occurred. Both are answerable with a query against `directus.simulations`
+and are worth answering before assuming the exposure is hypothetical.
+
+
 ### `PLATFORM-M257x-graphql-authz-middleware-FAILS-OPEN-and-REST-has-no-blanket-gate`
 **Found:** M257x iter-120 (2026-08-07) · **Filed here:** iter-121 (2026-08-07) · **Repo:** `app` ·
 **Status:** open · **Severity:** high (the platform's own source calls one half of it *"fail open"* and
