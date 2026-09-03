@@ -24,7 +24,8 @@ You should already have, per `setup_guide.md`:
 - `make up postgresql` succeeds and Postgres is healthy.
 
 You also need:
-- A recent prod `pg_dump` SQL file (plain SQL, not custom format), accessible at a known path (e.g. `~/prod_dump.sql`).
+- A recent prod dump, accessible at a known path (e.g. `~/prod_dump.dump`). ⚠️ **This read *"a `pg_dump` SQL file (plain SQL, not custom format)"* until 2026-09-03.** The scheduled backups are **`PGDMP` custom format**, and have been since at least the 2026-08 rotation — verify with `head -c5 <file>`, which prints `PGDMP`. See § 2 for where they live and how to restore one; the old `cat … | psql` path only works on a hand-made plain-SQL dump.
+- A Postgres **17** client for the restore (`brew install postgresql@17`, or just `docker run --rm postgres:17-alpine`). The archive is written at **dump version 1.15** by a pg_dump 17 client, and `pg_restore` 15.x refuses it outright with `unsupported version (1.15) in file header`. The *server* can stay 15.x — new client against old server is the supported direction.
 - Access to a **dev Clerk app** (NOT production Clerk). If you don't have one, create a fresh dev application in the Clerk dashboard and copy its publishable + secret keys.
 - Your prod email address — the same email that exists in `public.users` of the dump.
 
@@ -110,24 +111,96 @@ The flag is gated in `apps/web/src/app/layout.tsx` — production builds (which 
 
 ## 2. Restore the prod DB dump
 
-Bring up Postgres only, then pipe the dump into `psql`:
+> ⚠️ **Rewritten 2026-09-03.** This section piped a plain-SQL file into `psql`
+> (`cat ~/prod_dump.sql | … psql …`). The scheduled backups are **`PGDMP` custom format**, so
+> that command fails on a real backup. Custom format is a net win — it takes `--schema`
+> filters and `-j`, so you restore less and faster — but the ordering rule in 2b is new and
+> **silently corrupts the restore if you skip it**.
+
+### 2a. Fetch a backup
+
+Scheduled RDS backups land in S3, roughly twice daily, ~2.5 GiB each:
+
+```bash
+export AWS_PAGER=""
+BUCKET=production-db-backup20240909101503214700000001
+
+# newest full dump
+aws s3api list-objects-v2 --bucket "$BUCKET" --prefix rds/full/ \
+  --query "reverse(sort_by(Contents,&LastModified))[:5].[LastModified,Size,Key]" --output text
+
+aws s3 cp "s3://$BUCKET/rds/full/backup_<id>-<n>.dump" ~/prod_dump.dump
+```
+
+There is a `rds/per-schema/` tree alongside `rds/full/` if you only need one schema. If the
+target machine has no AWS access, fetch on a machine that does and copy it across — verify with
+`shasum -a 256` on both ends. (On macOS, `rsync` is **openrsync**: it rejects `--append-verify`
+*and exits 0 while having transferred nothing*. Use `scp`, and always compare checksums.)
+
+Read the archive before restoring — this also tells you which schemas are inside:
+
+```bash
+pg_restore --list ~/prod_dump.dump | head -20        # needs a pg17 client (see Prerequisites)
+pg_restore --list ~/prod_dump.dump | awk '$4=="TABLE" {print $5}' | sort | uniq -c
+```
+
+### 2b. Create the schemas FIRST — including `extensions`
+
+**`pg_restore --schema=X` does not create schema X**, and a missing `extensions` schema is the
+single most expensive mistake in this guide. `extensions` holds the `vector` type. If `public`
+is restored before it exists, **every table with a vector column fails to create** — and the
+restore still reports success. You find out much later, when the app throws
+`relation "similarities" does not exist` on the simulations library.
 
 ```bash
 cd platform
 docker compose up -d postgresql
-# wait for it to be healthy
 until docker compose exec -T postgresql pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 
-# Restore (~5-10 min for a 500MB dump)
-cat ~/prod_dump.sql | docker compose exec -T postgresql psql -U postgres -d postgres -v ON_ERROR_STOP=0 > /tmp/restore.log 2>&1
+docker compose exec -T postgresql psql -U postgres -d postgres < /dev/null -c "
+  CREATE SCHEMA IF NOT EXISTS extensions;
+  CREATE SCHEMA IF NOT EXISTS sentinel;
+  CREATE SCHEMA IF NOT EXISTS directus;
+  CREATE EXTENSION IF NOT EXISTS vector SCHEMA extensions;"
+```
 
-# Sanity check
-docker compose exec -T postgresql psql -U postgres -d postgres -c "
+### 2c. Restore
+
+`--schema` selects what you want and leaves the rest behind. The `zz_dropped_*` schemas are
+unscrubbed shadow copies of decommissioned services — skip them unless you specifically need
+them. Add `--schema=directus` only if you want CMS content locally (see § 5).
+
+```bash
+NET=$(docker inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' \
+        $(docker compose ps -q postgresql))
+
+docker run --rm --network "$NET" -v "$HOME:/dumps:ro" postgres:17-alpine \
+  pg_restore --dbname="postgresql://postgres@postgresql:5432/postgres?sslmode=disable" \
+    --no-owner --no-privileges \
+    --schema=public --schema=sentinel --schema=extensions \
+    --jobs=4 /dumps/prod_dump.dump 2> /tmp/restore.err
+```
+
+### 2d. Verify by counting tables, not by reading stderr
+
+A partial restore is quiet. Compare what the archive holds against what landed:
+
+```bash
+pg_restore --list ~/prod_dump.dump | awk '$4=="TABLE" && $5=="public" {print $6}' | sort -u | wc -l
+docker compose exec -T postgresql psql -U postgres -d postgres -At < /dev/null \
+  -c "SELECT count(*) FROM pg_tables WHERE schemaname='public';"
+```
+
+**These two numbers must match.** If the second is lower, list the difference and restore just
+the missing tables with repeated `--table=` flags — do **not** re-run a full `--schema=public`,
+which re-inserts data into the tables that did land.
+
+```bash
+docker compose exec -T postgresql psql -U postgres -d postgres < /dev/null -c "
   SELECT 'users' tbl, COUNT(*) FROM public.users
   UNION ALL SELECT 'organizations', COUNT(*) FROM public.organizations
   UNION ALL SELECT 'memberships', COUNT(*) FROM public.memberships
-  UNION ALL SELECT 'casbin_rules', COUNT(*) FROM sentinel.casbin_rules;
-"
+  UNION ALL SELECT 'casbin_rules', COUNT(*) FROM sentinel.casbin_rules;"
 ```
 
 **Expected warnings during restore** (all harmless):
@@ -267,11 +340,28 @@ docker compose -f platform/docker-compose.yml restart backend
 > consumer only). Publishing to that channel reloads without a bounce. `restart backend` is the blunter
 > path and always works.
 
-### 3d. (Optional, recommended) Customize the dev Clerk session token
+### 3d. Customize the dev Clerk session token — MANDATORY, not optional
 
-Clerk's session token doesn't include your DB UUID by default, so the Anthropos backend has to fetch your user/org from the Clerk Backend API on every request. Clerk rate-limits aggressively (HTTP 429), and the first few page loads after a fresh login can fail with "organization mismatch" errors.
+> ⚠️ **Corrected 2026-09-03. This step was labelled "(Optional, recommended)" and its claim set
+> was incomplete — following it verbatim leaves every org-scoped page empty.** The old JSON
+> supplied only `org.eid`. `colony v0.35.2` needs **three** org claims and returns nil unless all
+> three are non-empty, which surfaces as `forbidden: organization mismatch` on
+> `organizationMembers` and `org-context is missing: ent/privacy: deny rule` on everything else.
 
-In the Clerk dashboard → Sessions → "Customize session token", add these custom claims:
+From `colony/authn/provider/clerk/clerk_user.go:148-175`:
+
+```go
+clerkId,   _ = u.tokenClaims.Extra["org_id"].(string)
+clerkRole, _ = u.tokenClaims.Extra["org_role"].(string)
+if orgPM, ok := u.tokenClaims.Extra["org"].(map[string]any); ok {
+    orgEid, _ = orgPM["eid"].(string)
+}
+if clerkId == "" || clerkRole == "" || orgEid == "" {
+    return nil          // -> ErrOrgMismatch on every org-scoped query
+}
+```
+
+In the Clerk dashboard → Sessions → "Customize session token", use **exactly** this:
 
 ```json
 {
@@ -279,11 +369,35 @@ In the Clerk dashboard → Sessions → "Customize session token", add these cus
   "email": "{{user.primary_email_address}}",
   "firstname": "{{user.first_name}}",
   "lastname": "{{user.last_name}}",
-  "org": {
-    "eid": "{{org.public_metadata.eid}}"
-  }
+  "org_id": "{{org.id}}",
+  "org_role": "{{org.role}}",
+  "org": "{{org.public_metadata}}"
 }
 ```
+
+Note `"org"` takes the **whole `public_metadata` object**, not `.eid` — colony indexes into it
+itself. This matches the `long-session` JWT template already configured on the shared dev
+instances, which is why environments cloned from a working one behave and hand-built ones did not.
+
+Two things that make this hard to diagnose:
+
+- **The JWT template and the session token are different Clerk features** with different claim
+  shapes. Copying a working instance's *template* does not fix its *session token*, and the
+  dashboard shows them in separate places.
+- **The shape is baked in at token issue time.** After changing it you must sign out and back in;
+  an existing session keeps the old claims and keeps failing.
+
+To confirm rather than guess, mint a token for a live session and decode it:
+
+```bash
+SID=$(curl -s "https://api.clerk.com/v1/sessions?user_id=$CLERK_USER_ID&status=active" \
+       -H "Authorization: Bearer $CLERK_SECRET" | python3 -c "import json,sys;print(json.load(sys.stdin)[0]['id'])")
+curl -s -X POST "https://api.clerk.com/v1/sessions/$SID/tokens" \
+  -H "Authorization: Bearer $CLERK_SECRET" \
+  | python3 -c "import base64,json,sys;p=json.load(sys.stdin)['jwt'].split('.')[1];print(json.dumps(json.loads(base64.urlsafe_b64decode(p+'='*(-len(p)%4))),indent=1))"
+```
+
+`org_id`, `org_role` and `org.eid` must all be present and non-empty.
 
 This is dashboard-only as of 2026-05; there's no public REST endpoint to script it.
 
@@ -505,6 +619,112 @@ runtime](setup_guide.md#acquire-the-studio-runtime--required-before-make-up-or-t
 > decommissioned, and `app` needs the Python runtime because it now hosts the embedded studio-room
 > pipeline. **The requirement migrated with the fold; this troubleshooting entry did not**
 > (`D-M257x-265-1`; two sibling copies in `setup_guide.md` and `staging-bringup.md` carried the same text).
+
+### `backend` exits 1 immediately: "webhook secret may not be empty"
+
+```
+can't init clerk events manager: can't init svix webhook handler: webhook secret may not be empty
+```
+
+`CLERK_WEBHOOK_SECRET` is blank. The svix handler is constructed at boot and refuses an empty
+secret, so the container dies before serving anything. Clerk cannot reach a laptop, so no real
+webhook will ever arrive — any well-formed value works, and an obviously fake one is preferable
+so nobody mistakes it for real:
+
+```bash
+CLERK_WEBHOOK_SECRET=whsec_RkFLRS1MT0NBTC1ERVYtTk9ULUEtUkVBTC1TRUNSRVQ=
+CLERK_WEBHOOK_REDIRECT_URL=https://fake.invalid/clerk-webhook-not-configured-local-dev
+```
+
+### `directus` is `unhealthy`, 503 on `/server/health`, sims library empty
+
+```
+CredentialsProviderError: Could not load credentials from any providers
+```
+
+`DIRECTUS_STORAGE=s3` on a machine with no AWS credentials. `docker-compose.yml` reads it as
+`STORAGE_LOCATIONS=${DIRECTUS_STORAGE:-local}` and defaults to `local` for exactly this reason —
+someone copying a working `.env` from a machine that *does* have AWS credentials carries the `s3`
+value across. Set `DIRECTUS_STORAGE=local` and recreate the container.
+
+With `local`, the restored `directus_files` rows still point at S3 keys, so locally-served asset
+bytes 404. The backend reads production `content.anthropos.work` for the public asset plane, so
+library imagery still renders; only locally-authored assets are missing.
+
+### 403 on `/_next/static/chunks/*` when reached by hostname
+
+```
+⚠ Blocked cross-origin request to Next.js dev resource /_next/… from "<host>".
+```
+
+Next.js 16 blocks cross-origin dev resources by default. Reaching the dev server as anything
+other than `localhost` needs the host listed in `apps/web/next.config.mjs`:
+
+```js
+allowedDevOrigins: ['<short-host>', '<host>.<tailnet>.ts.net', '<tailscale-ip>'],
+```
+
+### Login loops forever on `?__clerk_handshake=…`
+
+Clerk sets `__session` / `__client_uat` with `Secure; SameSite=None`. Browsers grant secure-context
+status only to `localhost`/`127.0.0.1`, so over **plain HTTP to any other hostname the cookies are
+silently dropped** and the handshake repeats indefinitely. This is browser policy — no app or
+Clerk setting changes it. Pick one:
+
+- browse `http://localhost:3000` on the box itself;
+- `ssh -L 3000:127.0.0.1:3000 -L 8082:127.0.0.1:8082 <host>` and use `localhost` remotely (the
+  ports must match, because the bundle hardcodes them);
+- `tailscale serve --bg --https=443 http://127.0.0.1:3000` for a real certificate;
+- or, for a throwaway profile, launch Chrome with
+  `--unsafely-treat-insecure-origin-as-secure=http://<host>:3000 --user-data-dir=/tmp/<profile>`.
+
+### Go build killed: "cannot allocate memory" / `signal: killed`
+
+`docker compose --profile all up --build` builds every service concurrently. A **cold** build
+compiles `internal/data/ent` (large, generated) while next-web-app runs its Turbo build, and the
+pair exceeds a default Docker Desktop allocation. Machines that already have images built never
+hit this, because their rebuilds are incremental — so "it works on mine" proves nothing here.
+Build one service at a time:
+
+```bash
+for svc in backend next-web-app studio-desk directus-setup; do
+  docker compose --profile all build "$svc" || break
+done
+```
+
+### A remote setup script stops silently partway through
+
+`docker compose exec -T` reads stdin. A script piped in as `ssh host 'zsh -s' < script.sh` has
+**the rest of itself consumed** by the first such command, and the shell exits 0 as though it
+finished. Either redirect every one (`docker compose exec -T … < /dev/null`) or — simpler — `scp`
+the script and run it as a file.
+
+### Clerk works from one machine but not another (`api.clerk.com` hijack)
+
+A machine that has run the **rosetta demo stack** may still carry its Clerk interception:
+`/etc/hosts` maps `127.0.0.1 api.clerk.com`, with a root `socat` on `:443` presenting an
+mkcert-forged `api.clerk.com` certificate and forwarding to the demo's `fake-bapi`. Every Clerk
+call from that machine's browser then hits the fake API. It is invisible from any other machine,
+which makes it look like an app bug. Check and clear:
+
+```bash
+grep -c clerk /etc/hosts                       # must be 0
+ping -c1 api.clerk.com                         # must NOT be 127.0.0.1
+echo | openssl s_client -connect api.clerk.com:443 -servername api.clerk.com 2>/dev/null \
+  | openssl x509 -noout -issuer                # must be a real CA, not "mkcert development CA"
+
+sudo cp /etc/hosts /etc/hosts.bak && sudo sed -i '' '/api\.clerk\.com/d' /etc/hosts
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+```
+
+The demo also parks user-owned `socat` forwarders on 3000/3001/9000 (loopback-only), which
+collide with `pnpm dev`. Killing them does not touch its containers or volumes.
+
+### `docker compose --profile all` fails: `path "…/directus" not found`
+
+`--profile all` includes `directus-setup`, whose build context is `../directus`. `make init` does
+not clone that repo — clone it as a sibling, or bring the stack up without it
+(`--profile core --profile frontend`).
 
 ### Next.js build crashes with "STRIPE_SECRET_KEY is not configured"
 Next.js statically evaluates server routes at build time and reads from `process.env`. Compose `env_file` is runtime-only. Drop a gitignored `next-web-app/apps/web/.env.production` containing the keys the routes need (Stripe, OpenAI, Azure OpenAI, Clerk publishable, Wundergraph endpoint, etc.) before `docker compose build`.
